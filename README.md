@@ -6,16 +6,12 @@
 A **Pala** egy interaktív terminálos felhasználói felület (TUI) a Kréta e-napló rendszerhez. Az iOS alkalmazás OAuth2 hitelesítési folyamatait szimulálva közvetlen, gyors és látványos terminálos hozzáférést biztosít a diákok adatlapjához, jegyeihez, órarendjéhez és hiányzásaihoz.
 
 ## Főbb funkciók
-- **Élő Dashboard (TUI nézet)**: Valós idejű, automatikusan frissülő terminálos felület folyamatban lévő óra hátralévő idejének számlálójával és napi teendőkkel.
-- **Pala Wrapped**: Spotify-stílusú interaktív éves statisztikai összefoglaló (legszorgalmasabb nap, tanári rangsor, késések összesítése, üzenetek statisztikája).
-- **Bizonyítvány Tervező & Szellem Jegyek**: Célátlag kalkulátor és hipotetikus jegy szimulátor a tantárgyankénti átlagok javításához.
-- **Tantárgyi és Osztályátlagok Részletesen**: Saját átlagod összevetése az osztályátlaggal, eltérések, trendek (↗ / ↘) és jegy-határhelyzet figyelmeztetések.
-- **Jegy-trendek & Eloszlás Dashboard**: Dinamikus y-tengelyű éves kumulatív átlagvonal-grafikon és színes érdemjegy eloszlási hisztogram.
-- **Globális Haladó Kereső**: Ékezet-érzéketlen keresés a jegyekben, házi feladatokban, órarendben, vizsgákban, üzenetekben és hiányzásokban.
-- **Téma Választó & ASCII Banner**: Támogatja a Classic Blue, Neon Matrix (Zöld), Midnight Pink, és Classic Amber témákat testreszabható ASCII főmenü bannerrel.
-- **ICS Naptár, CSV és Git Export**: Órarend és jegytörténet mentése standard formátumokba (.ics, .csv) vagy helyi Git repóba.
-- **Automatikus OAuth2 Token Frissítés**: Megbízható háttér-hitelesítés párhuzamos API hívások és token lejárás esetén is (fájlkorrupció-elleni védelemmel).
-- **Windows UTF-8 & FFI Konzol Mód**: Kényszerített UTF-8 kódolás (`chcp 65001`) az ékezetes karakterek hibátlan megjelenítéséhez és FFI alapú billentyűzet-echo helyreállítás.
+- **Élő Dashboard (TUI felület)**
+- **Pala Wrapped (Éves statisztika)**
+- **Bizonyítvány Tervező & Szellem Jegyek**
+- **Jegy-trendek & Átlagok**
+- **Globális Haladó Kereső**
+- *...és még több!*
 
 ## Telepítés
 
