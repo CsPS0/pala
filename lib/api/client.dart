@@ -606,6 +606,61 @@ class KretaClient {
     return null;
   }
 
+  Future<List<Map<String, dynamic>>?> getTeachers() async {
+    final url = KretaAPI.teachers();
+    final data = await _getAPI(url, silent: true);
+    if (data is List) {
+      return data.map((e) => e is Map<String, dynamic> ? e : (e is Map ? Map<String, dynamic>.from(e) : <String, dynamic>{})).toList();
+    }
+    return null;
+  }
+
+  Future<bool> sendMessage({
+    required String subject,
+    required String text,
+    required List<int> recipientIds,
+    List<String>? attachmentPaths,
+  }) async {
+    if (accessToken == null) return false;
+    final url = Uri.parse(KretaAPI.sendMessage());
+    
+    final body = jsonEncode({
+      'targy': subject,
+      'szoveg': text,
+      'cimzettLista': recipientIds.map((id) => {'azonosito': id, 'tipus': {'kod': 'TANAR'}}).toList(),
+      'csatolmanyok': [],
+    });
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+          'User-Agent': KretaAPI.userAgent,
+        },
+        body: body,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      } else if (response.statusCode == 401) {
+        if (await refreshAccessToken()) {
+          return await sendMessage(
+            subject: subject,
+            text: text,
+            recipientIds: recipientIds,
+            attachmentPaths: attachmentPaths,
+          );
+        }
+      }
+      PalaLogger.debug('Failed to send message: ${response.statusCode} - ${response.body}');
+    } catch (e) {
+      PalaLogger.debug('Error sending message: $e');
+    }
+    return false;
+  }
+
   Future<bool> refreshAccessToken() async {
     if (refreshToken == null) return false;
     if (_activeRefreshFuture != null) {
@@ -642,6 +697,22 @@ class KretaClient {
       }
     } catch (e) {
       PalaLogger.debug('Failed to refresh access token: $e');
+    }
+    return false;
+  }
+
+  Future<bool> revokeToken() async {
+    if (refreshToken == null) return false;
+    final revokeUrl = Uri.parse(KretaAPI.logout);
+    try {
+      final res = await http.post(
+        revokeUrl,
+        headers: KretaAPI.tokenHeaders,
+        body: KretaAPI.revokeRequestBody(refreshToken!),
+      );
+      return res.statusCode == 200 || res.statusCode == 204;
+    } catch (e) {
+      PalaLogger.debug('Failed to revoke refresh token: $e');
     }
     return false;
   }

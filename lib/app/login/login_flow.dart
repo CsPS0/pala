@@ -6,7 +6,7 @@ extension PalaAppLoginFlow on PalaApp {
         prompt: 'Válassz bejelentkezési opciót',
         options: [
           'Kréta bejelentkezés (Valós intézményi fiók)',
-          '🧪 Demó profil betöltése (Teszt Elek - Offline tesztadatok)',
+          'Demó profil betöltése (Teszt Elek - Offline tesztadatok)',
         ],
       ).interact();
 

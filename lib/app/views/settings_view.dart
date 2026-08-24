@@ -79,7 +79,7 @@ extension PalaAppSettingsView on PalaApp {
             }
             final profiles = data['profiles'] as List;
             final options = profiles.map((p) => '${p['name']} (${p['instituteCode']})').toList();
-            options.add('🧪 Demó profil (Teszt Elek)');
+            options.add('Demó profil (Teszt Elek)');
             options.add('Mégse');
             
             final choice = Select(
@@ -223,20 +223,19 @@ extension PalaAppSettingsView on PalaApp {
           _clearScreen();
         } else if (action == 6) {
           final confirm = Confirm(
-            prompt: 'Biztosan törölni szeretnéd a mentett profilokat?',
+            prompt: 'Biztosan törölni szeretnéd az összes mentett profilt és adatot (Kijelentkezés)?',
             defaultValue: false,
           ).interact();
   
           if (confirm) {
-            final authFile = _getAuthFile();
-            if (authFile.existsSync()) {
-              authFile.deleteSync();
-              print('Mentett bejelentkezések törölve.\n');
-              print('A módosítások érvénybe lépéséhez a program most kilép.');
-              exit(0);
-            } else {
-              print('Nincs mentett bejelentkezés.\n');
-            }
+            print('Token visszavonása a Kréta szerveren...');
+            try {
+              await _client?.revokeToken();
+            } catch (_) {}
+            AppState.instance.clearAllData();
+            print('Mentett bejelentkezések és adatok sikeresen törölve.\n');
+            print('A program most kilép.');
+            exit(0);
           }
         }
       }
@@ -304,7 +303,7 @@ extension PalaAppSettingsView on PalaApp {
               print('  - macOS (Homebrew):    \x1B[1;36mbrew upgrade pala\x1B[0m');
               print('  - Manuális szkript:    \x1B[1;36mcurl -fsSL https://raw.githubusercontent.com/CsPS0/pala/main/install.sh | bash\x1B[0m\n');
             } else {
-              print('\n\x1B[32m[✓] A legfrissebb verziót használod (Verzió: $currentVersion)\x1B[0m\n');
+              print('\n\x1B[32m[OK] A legfrissebb verziót használod (Verzió: $currentVersion)\x1B[0m\n');
             }
           } else {
             print('\nHiba: Nem sikerült lekérdezni a verzióinformációkat a GitHubról (Szerver válaszkód: ${res.statusCode}).');

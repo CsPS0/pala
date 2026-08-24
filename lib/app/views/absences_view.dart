@@ -23,7 +23,7 @@ extension PalaAppAbsencesView on PalaApp {
         }
 
         if (action == 2) {
-          print('\n--- 🚨 Veszélyzóna Kalkulátor 🚨 ---');
+          print('\n--- Veszélyzóna Kalkulátor ---');
           print('Kiszámoljuk, mennyire vagy közel a kritikus 250 órás (vagy 30%-os) határhoz.');
           int totalAbsences = absences.length;
           double percent = (totalAbsences / 250.0) * 100;
@@ -466,7 +466,7 @@ extension PalaAppAbsencesView on PalaApp {
     if (!await _ensureClientReady()) return;
     
     _clearScreen();
-    print('\n--- 🎯 Bizonyítvány Tervező (Minden tárgy célzása) 🎯 ---');
+    print('\n--- Bizonyítvány Tervező (Minden tárgy célzása) ---');
     print('Adatok lekérése...');
     
     final grades = await _client!.getGrades();
@@ -535,12 +535,12 @@ extension PalaAppAbsencesView on PalaApp {
 
       String resultStr = '';
       if (currentAvg >= 4.5) {
-        resultStr = '\x1B[92mElérted az 5-öst! 🎉\x1B[0m';
+        resultStr = '\x1B[92mElérted az 5-öst!\x1B[0m';
       } else {
         final requiredFives = (targetThreshold * weightSum - sum) / (500 - targetThreshold * 100);
         final count = requiredFives.ceil();
         if (count <= 0) {
-          resultStr = '\x1B[92mMegvan a cél! 🎉\x1B[0m';
+          resultStr = '\x1B[92mMegvan a cél!\x1B[0m';
         } else {
           resultStr = '\x1B[1;36m$count db 5-ös\x1B[0m';
         }

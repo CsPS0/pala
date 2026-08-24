@@ -46,6 +46,12 @@ class KretaAPI {
         'refresh_token': refreshToken,
       };
 
+  static Map<String, String> revokeRequestBody(String refreshToken) => {
+        'client_id': clientId,
+        'token': refreshToken,
+        'token_type_hint': 'refresh_token',
+      };
+
   static Map<String, String> get tokenHeaders => {
         'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
         'user-agent': userAgent,
@@ -92,6 +98,10 @@ class KretaAPI {
         BaseKreta.kreta(iss) + KretaApiEndpoints.capabilities;
     static String messages() =>
         BaseKreta.kretaAdmin + KretaApiEndpoints.messages;
+    static String teachers() =>
+        BaseKreta.kretaAdmin + KretaApiEndpoints.teachers;
+    static String sendMessage() =>
+        BaseKreta.kretaAdmin + KretaApiEndpoints.sendMessage;
 }
 
 class BaseKreta {
@@ -122,4 +132,6 @@ class KretaApiEndpoints {
     static const capabilities = "/ellenorzo/V3/Sajat/Intezmenyek";
     static const messages = "/api/v1/kommunikacio/postaladaelemek/sajat";
     static String message(int id) => "/api/v1/kommunikacio/postaladaelemek/$id";
+    static const teachers = "/api/v1/kommunikacio/tanarok";
+    static const sendMessage = "/api/v1/kommunikacio/uzenetek";
 }

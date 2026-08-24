@@ -62,6 +62,11 @@ extension PalaAppAuthManager on PalaApp {
       }
   
       await authFile.writeAsString(EncryptionUtil.encrypt(jsonEncode(root)));
+      if (Platform.isLinux || Platform.isMacOS) {
+        try {
+          Process.runSync('chmod', ['600', authFile.path]);
+        } catch (_) {}
+      }
     }
 
 }

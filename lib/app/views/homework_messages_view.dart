@@ -51,13 +51,19 @@ extension PalaAppHomeworkView on PalaApp {
         final action = Select(
           prompt: 'Üzenetek',
           options: [
+            '[+] Új üzenet küldése tanárnak',
             'Legutóbbi 5 üzenet (Gyorsolvasás)',
             'Üzenetek listázása és részletek',
             'Vissza'
           ],
         ).interact();
   
-        if (action == 2) return;
+        if (action == 3) return;
+        if (action == 0) {
+          await _sendMessageFlow();
+          continue;
+        }
+
         _clearScreen();
         print('\n--- Üzenetek ---');
         final messages = await _client!.getMessages();
@@ -79,7 +85,7 @@ extension PalaAppHomeworkView on PalaApp {
           return dateB.compareTo(dateA);
         });
 
-        if (action == 0) {
+        if (action == 1) {
           final limit = 5;
           print('Üzenetek teljes tartalmának letöltése...\n');
           for (var msg in messages.take(limit)) {
@@ -224,6 +230,116 @@ extension PalaAppHomeworkView on PalaApp {
       print('\x1B[31mHiba történt a letöltés során.\x1B[0m');
     }
     _pause();
+  }
+
+  Future<void> _sendMessageFlow() async {
+    _clearScreen();
+    _showMainMenuBanner();
+    print('\n--- Új üzenet írása tanárnak ---');
+
+    print('Tanárok listájának betöltése...');
+    final teachers = await _client!.getTeachers() ?? [];
+    if (teachers.isEmpty) {
+      print('Nem található elérhető tanár az intézményben.');
+      _pause();
+      return;
+    }
+
+    final mode = Select(
+      prompt: 'Válassz szerkesztési módot',
+      options: [
+        'Webes Szerkesztő (Böngészőben - Ajánlott)',
+        'Helyi Szövegszerkesztő (Terminál)',
+        'Mégse',
+      ],
+    ).interact();
+
+    if (mode == 2) return;
+
+    final student = await _client!.getStudentData(silent: true);
+    final studentName = student?.name ?? 'Diák';
+
+    if (mode == 0) {
+      print('\n\x1B[1;33m[+] Helyi webszerver indítása és böngésző megnyitása...\x1B[0m');
+      print('Az üzenet megírásához és elküldéséhez használd a megnyílt böngészőablakot.');
+      print('\x1B[90m(Várakozás az elküldésre a böngészőből... Nyomj Ctrl+C-t ha meg szeretnéd szakítani)\x1B[0m\n');
+
+      final result = await WebComposerServer.start(
+        teachers: teachers,
+        studentName: studentName,
+      );
+
+      if (result != null) {
+        print('Üzenet fogadva a böngészőből!');
+        print('Küldés a Kréta rendszeren keresztül...');
+        final success = await _client!.sendMessage(
+          subject: result.subject,
+          text: result.text,
+          recipientIds: result.recipientIds,
+          attachmentPaths: result.attachmentPaths,
+        );
+
+        if (success) {
+          print('\n\x1B[1;32m[OK] Az üzenet sikeresen elküldve!\x1B[0m\n');
+        } else {
+          print('\n\x1B[1;31m[HIBA] Hiba történt az üzenet elküldése során.\x1B[0m\n');
+        }
+      } else {
+        print('\n\x1B[90mÜzenetküldés megszakítva.\x1B[0m\n');
+      }
+      _pause();
+    } else if (mode == 1) {
+      final teacherOptions = teachers.map((t) {
+        final name = t['nev'] ?? t['name'] ?? 'Tanár';
+        final sub = t['tantargyak'] ?? t['subjects'] ?? '';
+        return sub.toString().isNotEmpty ? '$name ($sub)' : name.toString();
+      }).toList();
+      teacherOptions.add('Mégse');
+
+      final teacherChoice = Select(
+        prompt: 'Válassz címzett tanárt',
+        options: teacherOptions,
+      ).interact();
+
+      if (teacherChoice == teacherOptions.length - 1) return;
+      final selectedTeacher = teachers[teacherChoice];
+      final recipientId = int.tryParse((selectedTeacher['azonosito'] ?? selectedTeacher['id'] ?? '0').toString()) ?? 0;
+
+      final subject = Utf8Input(prompt: 'Üzenet tárgya').interact().trim();
+      if (subject.isEmpty) {
+        print('A tárgy nem lehet üres!');
+        _pause();
+        return;
+      }
+
+      print('\nÍrd be az üzenet szövegét:');
+      final text = Utf8Input(prompt: 'Üzenet törzse').interact().trim();
+      if (text.isEmpty) {
+        print('Az üzenet szövege nem lehet üres!');
+        _pause();
+        return;
+      }
+
+      final confirm = Confirm(
+        prompt: 'Biztosan elküldöd az üzenetet a következőnek: ${selectedTeacher['nev']}?',
+        defaultValue: true,
+      ).interact();
+
+      if (confirm) {
+        print('Küldés folyamatban...');
+        final success = await _client!.sendMessage(
+          subject: subject,
+          text: text,
+          recipientIds: [recipientId],
+        );
+        if (success) {
+          print('\n\x1B[1;32m[OK] Az üzenet sikeresen elküldve!\x1B[0m\n');
+        } else {
+          print('\n\x1B[1;31m[HIBA] Hiba történt az üzenet elküldése során.\x1B[0m\n');
+        }
+      }
+      _pause();
+    }
   }
 
 }

@@ -9,6 +9,7 @@ import 'package:pala/models/models.dart';
 import 'package:pala/utils/chart_generator.dart';
 import 'package:pala/utils/ics_exporter.dart';
 import 'package:pala/utils/encryption.dart';
+import 'package:pala/utils/web_composer.dart';
 import 'package:pala/app/components/custom_menu.dart';
 import 'package:pala/app/components/utf8_input.dart';
 import 'package:pala/app/theme.dart';

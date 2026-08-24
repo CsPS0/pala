@@ -94,7 +94,7 @@ extension PalaAppDashboardView on PalaApp {
         if (currentLesson != null) {
           final diff = currentLesson.endTime!.difference(nowTime).inMinutes;
           final sub = AppState.instance.applyAlias(currentLesson.subject);
-          countdownWidget = '⏳ \x1B[1;33m$sub órából hátra van: $diff perc\x1B[0m';
+          countdownWidget = '\x1B[1;33m$sub órából hátra van: $diff perc\x1B[0m';
         } else {
           for (var lesson in todayLessons) {
             if (lesson.startTime != null && lesson.startTime!.isAfter(nowTime)) {
@@ -105,19 +105,19 @@ extension PalaAppDashboardView on PalaApp {
           if (nextLesson != null) {
             final diff = nextLesson.startTime!.difference(nowTime).inMinutes;
             final sub = AppState.instance.applyAlias(nextLesson.subject);
-            countdownWidget = '⏱️ \x1B[1;36mKövetkező óra ($sub) kezdődik: $diff perc múlva\x1B[0m';
+            countdownWidget = '\x1B[1;36mKövetkező óra ($sub) kezdődik: $diff perc múlva\x1B[0m';
           } else {
-            countdownWidget = '🎉 \x1B[1;32mA mai óráid véget értek! Szép estét!\x1B[0m';
+            countdownWidget = '\x1B[1;32mA mai óráid véget értek! Szép estét!\x1B[0m';
           }
         }
       } else {
-        countdownWidget = '🏖️ \x1B[1;32mMa nincsenek tanítási óráid!\x1B[0m';
+        countdownWidget = '\x1B[1;32mMa nincsenek tanítási óráid!\x1B[0m';
       }
       print('$countdownWidget\n');
 
       // Maintenance Widget
       if (student?.nextDowntime != null) {
-        print('\x1B[33m⚠️ Tervezett leállás: ${student!.nextDowntime!.toLocal()}\x1B[0m\n');
+        print('\x1B[33m[!] Tervezett leállás: ${student!.nextDowntime!.toLocal()}\x1B[0m\n');
       }
 
       final leftLines = <String>[];
@@ -125,7 +125,7 @@ extension PalaAppDashboardView on PalaApp {
 
       leftLines.add('\x1B[1;32m--- Mai Órarend ---\x1B[0m');
       if (todayLessons.isEmpty) {
-        leftLines.add('Nincs több órád mára! 🎉');
+        leftLines.add('Nincs több órád mára!');
       } else {
         for (var lesson in todayLessons) {
           final isPast = lesson.endTime != null && lesson.endTime!.isBefore(DateTime.now());

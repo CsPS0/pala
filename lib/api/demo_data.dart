@@ -1094,10 +1094,13 @@ class DemoData {
     ];
   }
 
+  static List<Message>? _cachedMessages;
+
   /// Electronic diary messages.
   static List<Message> getMessages() {
+    if (_cachedMessages != null) return _cachedMessages!;
     final now = DateTime.now();
-    return [
+    _cachedMessages = [
       Message(
         id: 101,
         senderName: 'Kossuth Lajos (Osztályfőnök)',
@@ -1139,6 +1142,42 @@ class DemoData {
         text: 'Sikeresen elindítottad a Pala TUI demó profilját (Teszt Elek). Minden funkció – a grafikonoktól a Pala Wrappedig – teljes mértékben elérhető és tesztelhető offline módban.',
         attachments: [],
       ),
+    ];
+    return _cachedMessages!;
+  }
+
+  static void addSentMessage({required String subject, required String text, required String recipientName, List<String>? attachmentNames}) {
+    final list = getMessages();
+    final newId = 200 + list.length;
+    final attachments = (attachmentNames ?? []).asMap().entries.map((e) => MessageAttachment(id: e.key + 10, name: e.value)).toList();
+    list.insert(
+      0,
+      Message(
+        id: newId,
+        senderName: 'Címzett: $recipientName (Elküldve)',
+        subject: subject,
+        sentDate: DateTime.now(),
+        isRead: true,
+        text: text,
+        attachments: attachments,
+      ),
+    );
+  }
+
+  /// Teachers directory in Pala Minta Gimnázium.
+  static List<Map<String, dynamic>> getTeachers() {
+    return [
+      {'azonosito': 1, 'nev': 'Dr. Számoló Szilárd', 'tantargyak': 'Matematika'},
+      {'azonosito': 2, 'nev': 'Arany Jánosné', 'tantargyak': 'Magyar nyelv és irodalom'},
+      {'azonosito': 3, 'nev': 'Kossuth Lajos (Osztályfőnök)', 'tantargyak': 'Történelem, Osztályfőnöki'},
+      {'azonosito': 4, 'nev': 'Smith John', 'tantargyak': 'Angol nyelv'},
+      {'azonosito': 5, 'nev': 'Neumann János', 'tantargyak': 'Digitális kultúra, Informatika'},
+      {'azonosito': 6, 'nev': 'Eötvös Loránd', 'tantargyak': 'Fizika'},
+      {'azonosito': 7, 'nev': 'Irinyi János', 'tantargyak': 'Kémia'},
+      {'azonosito': 8, 'nev': 'Szent-Györgyi Albert', 'tantargyak': 'Biológia'},
+      {'azonosito': 9, 'nev': 'Hajós Alfréd', 'tantargyak': 'Testnevelés és egészségfejlesztés'},
+      {'azonosito': 10, 'nev': 'Teleki Pál', 'tantargyak': 'Földrajz'},
+      {'azonosito': 11, 'nev': 'Dr. Igazgató István', 'tantargyak': 'Intézményvezető'},
     ];
   }
 

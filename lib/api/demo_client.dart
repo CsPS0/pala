@@ -76,4 +76,31 @@ class DemoKretaClient extends KretaClient {
   Future<List<Absence>?> getAbsences() async {
     return DemoData.getAbsences();
   }
+
+  @override
+  Future<List<Map<String, dynamic>>?> getTeachers() async {
+    return DemoData.getTeachers();
+  }
+
+  @override
+  Future<bool> sendMessage({
+    required String subject,
+    required String text,
+    required List<int> recipientIds,
+    List<String>? attachmentPaths,
+  }) async {
+    final teachers = DemoData.getTeachers();
+    final recipientNames = recipientIds.map((id) {
+      final t = teachers.firstWhere((element) => element['azonosito'] == id, orElse: () => {'nev': 'Tanár'});
+      return t['nev'] as String;
+    }).join(', ');
+
+    DemoData.addSentMessage(
+      subject: subject,
+      text: text,
+      recipientName: recipientNames.isNotEmpty ? recipientNames : 'Tanár',
+      attachmentNames: attachmentPaths?.map((p) => p.split(RegExp(r'[\\/]')).last).toList(),
+    );
+    return true;
+  }
 }

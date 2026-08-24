@@ -51,28 +51,28 @@ class PalaTheme {
   
   // Custom prefix for menu and prompts
   static String get promptPrefix => '$primary?$reset';
-  static String get arrowPrefix => '$primary❯$reset';
+  static String get arrowPrefix => '$primary>$reset';
 
   static void configureInteractTheme() {
     Theme.defaultTheme = Theme(
       inputPrefix: '$primary?$reset ',
-      inputSuffix: ' \x1B[90m›\x1B[0m',
-      successPrefix: '\x1B[32m✔\x1B[0m ',
+      inputSuffix: ' \x1B[90m>\x1B[0m',
+      successPrefix: '\x1B[32m[OK]\x1B[0m ',
       successSuffix: ' \x1B[90m·\x1B[0m',
-      errorPrefix: '\x1B[31m✘\x1B[0m ',
+      errorPrefix: '\x1B[31m[HIBA]\x1B[0m ',
       hiddenPrefix: '****',
       messageStyle: (x) => '\x1B[1m$x\x1B[0m',
       errorStyle: (x) => '\x1B[31m$x\x1B[0m',
       hintStyle: (x) => '\x1B[90m($x)\x1B[0m',
       valueStyle: (x) => '$primary$x$reset',
       defaultStyle: (x) => '$primary$x$reset',
-      activeItemPrefix: '$primary❯$reset',
+      activeItemPrefix: '$primary>$reset',
       inactiveItemPrefix: ' ',
       activeItemStyle: (x) => '$primaryBold$x$reset',
       inactiveItemStyle: (x) => x,
-      checkedItemPrefix: '$primary✔$reset',
-      uncheckedItemPrefix: ' ',
-      pickedItemPrefix: '$primary❯$reset',
+      checkedItemPrefix: '$primary[x]$reset',
+      uncheckedItemPrefix: '[ ]',
+      pickedItemPrefix: '$primary>$reset',
       unpickedItemPrefix: ' ',
       showActiveCursor: false,
       progressPrefix: '',

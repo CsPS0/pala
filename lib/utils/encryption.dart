@@ -19,37 +19,49 @@ class EncryptionUtil {
     return Encrypter(AES(key, mode: AESMode.gcm));
   }
 
-  static IV _getIV(String salt) {
+  static IV _getLegacyIV(String salt) {
     final bytes = _getKeyBytes(salt);
     return IV(Uint8List.fromList(bytes.sublist(0, 16)));
   }
 
+  /// Encrypts plaintext using AES-GCM with a cryptographically secure random IV.
+  /// Output format: "v2:<iv_base64>:<ciphertext_base64>"
   static String encrypt(String plainText) {
     try {
       final encrypter = _getEncrypter('pala-tui-secret-salt-v1');
-      final iv = _getIV('pala-tui-secret-salt-v1');
+      final iv = IV.fromSecureRandom(16);
       final encrypted = encrypter.encrypt(plainText, iv: iv);
-      return encrypted.base64;
+      return 'v2:${iv.base64}:${encrypted.base64}';
     } catch (e) {
       print('Hiba a titkosítás során: $e');
       return '';
     }
   }
 
+  /// Decrypts ciphertext, supporting both v2 randomized IV and v1 legacy static IV formats.
   static String decrypt(String encryptedText) {
+    // Check for v2 format: "v2:<iv_base64>:<ciphertext_base64>"
+    if (encryptedText.startsWith('v2:')) {
+      final parts = encryptedText.split(':');
+      if (parts.length == 3) {
+        final iv = IV.fromBase64(parts[1]);
+        final encrypted = Encrypted.fromBase64(parts[2]);
+        final encrypter = _getEncrypter('pala-tui-secret-salt-v1');
+        return encrypter.decrypt(encrypted, iv: iv);
+      }
+    }
+
+    // Fallback: Legacy v1 format (try Pala salt first, then legacy Folio salt)
     final encrypted = Encrypted.fromBase64(encryptedText);
-    
-    // Try current Pala salt first
     try {
       final encrypter = _getEncrypter('pala-tui-secret-salt-v1');
-      final iv = _getIV('pala-tui-secret-salt-v1');
+      final iv = _getLegacyIV('pala-tui-secret-salt-v1');
       return encrypter.decrypt(encrypted, iv: iv);
     } catch (_) {}
 
-    // Fallback to legacy Folio salt for seamless migration
     try {
       final encrypter = _getEncrypter('folio-cli-secret-salt-v1');
-      final iv = _getIV('folio-cli-secret-salt-v1');
+      final iv = _getLegacyIV('folio-cli-secret-salt-v1');
       return encrypter.decrypt(encrypted, iv: iv);
     } catch (_) {}
 

@@ -4,7 +4,7 @@ A **Pala** egy interaktív terminálos Kréta e-napló kliens (TUI). Ez a dokume
 
 ## 1. Bejelentkezés és Demó Üzemmód
 - **Normál bejelentkezés**: Az első indításkor meg kell adni az intézmény kódját (pl. `bmszc-neumann`). Ha nem tudod a kódot, használd a beépített keresőt az iskola neve alapján. A bejelentkezéshez az oktatási azonosítóra és a jelszóra van szükség.
-- **🧪 Demó / Teszt üzemmód (Teszt Elek)**: Ha a Kréta szerverei éppen nem érhetők el (pl. nyári karbantartás alatt), vagy csak tesztelni szeretnéd a funkciókat, indítsd az alkalmazást a `pala --demo` paranccsal, vagy válaszd a bejelentkező képernyőn a *🧪 Demó profil betöltése* opciót. Ez teljes, élethű fiktív adatbázissal (szeptember 1-től június 21-ig tartó jegyek, órarend, házi feladatok, üzenetek, mulasztások) futtatja az alkalmazást internetkapcsolat nélkül.
+- **[DEMÓ] Demó / Teszt üzemmód (Teszt Elek)**: Ha a Kréta szerverei éppen nem érhetők el (pl. nyári karbantartás alatt), vagy csak tesztelni szeretnéd a funkciókat, indítsd az alkalmazást a `pala --demo` paranccsal, vagy válaszd a bejelentkező képernyőn a *Demó profil betöltése* opciót. Ez teljes, élethű fiktív adatbázissal (szeptember 1-től június 21-ig tartó jegyek, órarend, házi feladatok, üzenetek, mulasztások) futtatja az alkalmazást internetkapcsolat nélkül.
 
 ## 2. Főmenü Funkciók és Kimutatások
 - **Élő Dashboard**: Azonnali visszaszámlálás az óra végéig, óraközi szünetek ideje, mai órarend és rendszer-karbantartási figyelmeztetések. 30 másodpercenként automatikusan frissül.

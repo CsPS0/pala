@@ -16,7 +16,7 @@ extension PalaAppGradesView on PalaApp {
         _clearScreen();
 
         if (action == 3) {
-          print('\n--- 👻 Szellem Jegyek (Ghost Grades) 👻 ---');
+          print('\n--- Szellem Jegyek (Ghost Grades) ---');
           print('Adatok lekérése...');
           final grades = await _client!.getGrades();
           if (grades == null || grades.isEmpty) {

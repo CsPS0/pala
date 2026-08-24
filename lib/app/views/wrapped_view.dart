@@ -216,7 +216,7 @@ extension PalaAppWrappedView on PalaApp {
     // Intro
     _clearScreen();
     print('\x1B[1;36m========================================');
-    print('         🎉 PALA WRAPPED 🎉');
+    print('              PALA WRAPPED');
     print('========================================\x1B[0m\n');
     print('Készen állsz, hogy megnézd a tanéved összefoglalóját?');
     print('Dőlj hátra, és nézzük meg, mit alkottál idén!');
@@ -227,10 +227,10 @@ extension PalaAppWrappedView on PalaApp {
     await showSlide('A Nagy Kép', [
       'Idén összesen \x1B[1;33m$totalGrades\x1B[0m darab jegyet szereztél.',
       'Ebből \x1B[1;32m$total5s darab ötös\x1B[0m volt!',
-      total1s > 0 ? '...és becsúszott \x1B[1;31m$total1s darab egyes\x1B[0m is. (De ezen már ne görcsölj!)' : 'És egyetlen egyest sem kaptál! Ez elképesztő! 👏',
+      total1s > 0 ? '...és becsúszott \x1B[1;31m$total1s darab egyes\x1B[0m is. (De ezen már ne görcsölj!)' : 'És egyetlen egyest sem kaptál! Ez elképesztő!',
       '',
       'Az egész éves teljesítményed (összes tantárgy alapján):',
-      '⭐ ${PalaTheme.primaryBold}Év végi átlagod: ${overallAvg.toStringAsFixed(2)}${PalaTheme.reset} ⭐'
+      '${PalaTheme.primaryBold}Év végi átlagod: ${overallAvg.toStringAsFixed(2)}${PalaTheme.reset}'
     ], color: PalaTheme.primary);
 
     // Generate bar chart for grades
@@ -269,7 +269,7 @@ extension PalaAppWrappedView on PalaApp {
     String bestWeekdayStr = bestWeekday != -1 ? weekdays[bestWeekday - 1] : "Szerda";
     await showSlide('A Legszorgalmasabb Napod & Kedvenc Tanárod', [
       'A hét napjai közül leginkább a(z) \x1B[1;32m$bestWeekdayStr\x1B[0m volt a te napod,',
-      'amikor összesen \x1B[1;33m$maxFivesOnWeekday darab ötöst\x1B[0m zsebeltél be a tanévben! 🏆',
+      'amikor összesen \x1B[1;33m$maxFivesOnWeekday darab ötöst\x1B[0m zsebeltél be a tanévben!',
       '',
       topTeacherCount > 0 ? 'A legtöbb jegyet \x1B[1;36m$topTeacher\x1B[0m tanárodtól kaptad,' : 'Nem sikerült beazonosítani, ki osztotta a legtöbb jegyet,',
       topTeacherCount > 0 ? 'aki összesen \x1B[1;35m$topTeacherCount alkalommal\x1B[0m értékelt téged.' : 'de biztosan mindenki sokat dolgozott veled!'
@@ -287,7 +287,7 @@ extension PalaAppWrappedView on PalaApp {
     // Slide 4: Absences & Communication
     String delayStr = totalDelaysCount > 0 
       ? 'Becsúszott mellé \x1B[1;33m$totalDelaysCount darab késés\x1B[0m is, összesen \x1B[1;35m$totalDelayMinutes percet\x1B[0m vesztegetve el.'
-      : 'És egyetlen egyszer sem késtél el! Mindig pontos voltál! ⏰';
+      : 'És egyetlen egyszer sem késtél el! Mindig pontos voltál!';
       
     String topSenderStr = topSenderCount > 0
       ? 'A legtöbb üzenetet \x1B[1;36m$topSender\x1B[0m küldte neked ($topSenderCount alkalommal).'
@@ -308,7 +308,7 @@ extension PalaAppWrappedView on PalaApp {
     // Outro
     _clearScreen();
     print('\x1B[1;32m========================================');
-    print('      KÉSZ, VÉGE, VAKÁCIÓ! 🏖️');
+    print('          KÉSZ, VÉGE, VAKÁCIÓ!');
     print('========================================\x1B[0m\n');
     print('Köszönjük, hogy a \x1B[1mPala\x1B[0m-t használtad az éven!');
     print('Jó pihenést a nyárra, találkozunk szeptemberben!\n');
