@@ -19,6 +19,7 @@ void main(List<String> arguments) async {
     ..addOption('username', abbr: 'u', help: 'Felhasználónév (oktatási azonosító)')
     ..addOption('password', abbr: 'p', help: 'Jelszó')
     ..addFlag('daemon', abbr: 'd', negatable: false, help: 'Háttérfolyamatként futtatás értesítésekhez')
+    ..addFlag('demo', abbr: 'm', negatable: false, help: 'Indítás beépített demó profillal (Teszt Elek - Offline tesztadatok)')
     ..addFlag('version', abbr: 'v', negatable: false, help: 'Verzióinformáció megjelenítése')
     ..addFlag('help', abbr: 'h', negatable: false, help: 'Megjeleníti ezt a súgót')
     ..addFlag('debug', negatable: false, help: 'Debug mód: részletes hibaüzenetek a stderr-en')
@@ -35,13 +36,13 @@ void main(List<String> arguments) async {
   if (argResults['completions'] != null) {
     final shell = argResults['completions'].toString().toLowerCase();
     if (shell == 'bash') {
-      print('complete -W "-i -u -p -d -v -h --institute --username --password --daemon --version --help --completions" pala');
+      print('complete -W "-i -u -p -d -m -v -h --institute --username --password --daemon --demo --version --help --completions" pala');
     } else if (shell == 'zsh') {
-      print('compdef _pala pala\n_pala() { _arguments "-i" "-u" "-p" "-d" "-v" "-h" "--institute" "--username" "--password" "--daemon" "--version" "--help" "--completions" }');
+      print('compdef _pala pala\n_pala() { _arguments "-i" "-u" "-p" "-d" "-m" "-v" "-h" "--institute" "--username" "--password" "--daemon" "--demo" "--version" "--help" "--completions" }');
     } else if (shell == 'fish') {
-      print('complete -c pala -s i -l institute\ncomplete -c pala -s u -l username\ncomplete -c pala -s p -l password\ncomplete -c pala -s d -l daemon\ncomplete -c pala -s v -l version\ncomplete -c pala -s h -l help\ncomplete -c pala -l completions');
+      print('complete -c pala -s i -l institute\ncomplete -c pala -s u -l username\ncomplete -c pala -s p -l password\ncomplete -c pala -s d -l daemon\ncomplete -c pala -s m -l demo\ncomplete -c pala -s v -l version\ncomplete -c pala -s h -l help\ncomplete -c pala -l completions');
     } else if (shell == 'powershell') {
-      print('Register-ArgumentCompleter -Native -CommandName pala -ScriptBlock { param(\$commandName, \$parameterName, \$wordToComplete, \$commandAst, \$fakeBoundParameters); @("-i", "-u", "-p", "-d", "-v", "-h", "--institute", "--username", "--password", "--daemon", "--version", "--help", "--completions") | Where-Object { \$_ -like "\$wordToComplete*" } }');
+      print('Register-ArgumentCompleter -Native -CommandName pala -ScriptBlock { param(\$commandName, \$parameterName, \$wordToComplete, \$commandAst, \$fakeBoundParameters); @("-i", "-u", "-p", "-d", "-m", "-v", "-h", "--institute", "--username", "--password", "--daemon", "--demo", "--version", "--help", "--completions") | Where-Object { \$_ -like "\$wordToComplete*" } }');
     } else {
       print('Ismeretlen shell. Támogatott: bash, zsh, fish, powershell');
     }
@@ -66,6 +67,11 @@ void main(List<String> arguments) async {
 
   if (argResults['daemon']) {
     await app.runDaemon();
+    exit(0);
+  }
+
+  if (argResults['demo']) {
+    await app.runDemo(startInDashboard: argResults.rest.contains('dash'));
     exit(0);
   }
 

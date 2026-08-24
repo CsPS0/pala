@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:interact/interact.dart';
 import 'package:pala/api/client.dart';
+import 'package:pala/api/demo_client.dart';
 import 'package:pala/models/models.dart';
 import 'package:pala/utils/chart_generator.dart';
 import 'package:pala/utils/ics_exporter.dart';
@@ -32,6 +33,8 @@ part 'views/dashboard_view.dart';
 part 'views/wrapped_view.dart';
 
 class PalaApp {
+  bool isDemo = false;
+
   Future<bool> _ensureClientReady() async {
     if (_client == null) {
       print('Hiba: Kliens nincs inicializálva. Próbálj újra bejelentkezni!');
@@ -156,6 +159,23 @@ class PalaApp {
 ██║     ██║  ██║███████╗██║  ██║
 ╚═╝     ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝''');
     print(PalaTheme.reset);
+    if (isDemo) {
+      print('\x1B[1;33m  >>> DEMÓ ÜZEMMÓD: Teszt Elek (Offline) <<<\x1B[0m\n');
+    }
+  }
+
+  Future<void> runDemo({bool startInDashboard = false}) async {
+    AppState.instance.migrateOldFiles();
+    PalaTheme.configureInteractTheme();
+    _showBanner();
+    isDemo = true;
+    _client = DemoKretaClient();
+    print('\x1B[1;32m[+] Demó profil betöltve: Teszt Elek (Pala Minta Gimnázium)\x1B[0m\n');
+    if (startInDashboard) {
+      await _showDashboard();
+    } else {
+      await _mainMenu();
+    }
   }
 
   Future<void> runInteractive({bool startInDashboard = false}) async {
@@ -293,7 +313,9 @@ class PalaApp {
         }
       }
 
-      final promptText = AppState.instance.isOffline ? 'Pala Főmenü \x1B[1;31m[OFFLINE MÓD]\x1B[0m' : 'Pala Főmenü';
+      final promptText = isDemo 
+          ? 'Pala Főmenü \x1B[1;33m[DEMÓ: Teszt Elek]\x1B[0m' 
+          : (AppState.instance.isOffline ? 'Pala Főmenü \x1B[1;31m[OFFLINE MÓD]\x1B[0m' : 'Pala Főmenü');
 
       if (_lastMainMenuIndex >= displayOptions.length) {
         _lastMainMenuIndex = 0;

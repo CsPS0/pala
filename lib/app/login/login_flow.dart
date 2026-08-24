@@ -2,6 +2,22 @@ part of '../cli_app.dart';
 
 extension PalaAppLoginFlow on PalaApp {
   Future<void> _performLoginFlow() async {
+      final loginMode = Select(
+        prompt: 'Válassz bejelentkezési opciót',
+        options: [
+          'Kréta bejelentkezés (Valós intézményi fiók)',
+          '🧪 Demó profil betöltése (Teszt Elek - Offline tesztadatok)',
+        ],
+      ).interact();
+
+      if (loginMode == 1) {
+        isDemo = true;
+        _client = DemoKretaClient();
+        print('\n\x1B[1;32m[+] Demó profil sikeresen betöltve: Teszt Elek (Pala Minta Gimnázium)\x1B[0m\n');
+        await _mainMenu();
+        return;
+      }
+
       final hasCodeChoice = Select(
         prompt: 'Tudod az intézmény kódját?',
         options: ['Igen, tudom a kódját', 'Nem, keresés név alapján'],

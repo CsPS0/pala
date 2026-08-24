@@ -79,6 +79,7 @@ extension PalaAppSettingsView on PalaApp {
             }
             final profiles = data['profiles'] as List;
             final options = profiles.map((p) => '${p['name']} (${p['instituteCode']})').toList();
+            options.add('🧪 Demó profil (Teszt Elek)');
             options.add('Mégse');
             
             final choice = Select(
@@ -91,6 +92,12 @@ extension PalaAppSettingsView on PalaApp {
               await authFile.writeAsString(jsonEncode(data));
               print('Profil sikeresen kiválasztva! Kérlek indítsd újra az alkalmazást.\n');
               exit(0);
+            } else if (choice == profiles.length) {
+              isDemo = true;
+              _client = DemoKretaClient();
+              print('Átváltva Demó profilra: Teszt Elek!\n');
+              sleep(Duration(seconds: 1));
+              return;
             }
           } catch (_) {
             print('Hiba a profilok betöltésekor.\n');

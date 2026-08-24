@@ -113,6 +113,7 @@ pala
 ```
 **Gyors parancsok és argumentumok:**
 - `pala dash` : Azonnali belépés az Élő Dashboard (TUI) nézetbe.
+- `pala --demo` : Indítás beépített demó/teszt profillal (**Teszt Elek** - offline adatok Kréta nélkül).
 - `pala --daemon` : Háttérfolyamat indítása az értesítésekhez.
 - `pala -i <intezmenykod> -u <felhasznalonev> -p <jelszo>` : Gyors belépés paraméterekkel.
 - `pala --help` : Részletes súgó megjelenítése.
