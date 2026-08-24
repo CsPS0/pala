@@ -355,7 +355,7 @@ class KretaClient {
       }
       file.writeAsStringSync(jsonEncode(cache));
     } catch (e) {
-      FolioLogger.debug('Failed to save cache for $url: $e');
+      PalaLogger.debug('Failed to save cache for $url: $e');
     }
   }
 
@@ -386,14 +386,14 @@ class KretaClient {
           }
           return data;
         } else if (response.statusCode == 401) {
-          FolioLogger.debug('Received 401 for $url. Attempting to refresh token...');
+          PalaLogger.debug('Received 401 for $url. Attempting to refresh token...');
           final refreshed = await refreshAccessToken();
           if (refreshed) {
-            FolioLogger.debug('Token refreshed successfully. Retrying request...');
+            PalaLogger.debug('Token refreshed successfully. Retrying request...');
             headers['authorization'] = 'Bearer $accessToken';
             continue;
           } else {
-            FolioLogger.debug('Failed to refresh token.');
+            PalaLogger.debug('Failed to refresh token.');
             if (!silent) {
               print('Hiba az API lekérdezés során ($url): 401 - Bejelentkezési munkamenet lejárt.');
             }
@@ -403,14 +403,14 @@ class KretaClient {
           if (!silent) {
             print('Hiba az API lekérdezés során ($url): ${response.statusCode} - ${response.body}');
           }
-          FolioLogger.debug('API error ($url): ${response.statusCode} (attempt $attempt/$maxRetries)');
+          PalaLogger.debug('API error ($url): ${response.statusCode} (attempt $attempt/$maxRetries)');
           break;
         }
       } catch (e) {
-        FolioLogger.debug('Network error ($url): $e (attempt $attempt/$maxRetries)');
+        PalaLogger.debug('Network error ($url): $e (attempt $attempt/$maxRetries)');
         if (attempt < maxRetries) {
           final delay = Duration(seconds: 1 << (attempt - 1)); // 1s, 2s, 4s
-          FolioLogger.debug('Retrying in ${delay.inSeconds}s...');
+          PalaLogger.debug('Retrying in ${delay.inSeconds}s...');
           await Future.delayed(delay);
           continue;
         }
@@ -455,7 +455,7 @@ class KretaClient {
         return true;
       }
     } catch (e) {
-      FolioLogger.debug('Failed to download attachment $id: $e');
+      PalaLogger.debug('Failed to download attachment $id: $e');
     }
     return false;
   }
@@ -641,7 +641,7 @@ class KretaClient {
         return true;
       }
     } catch (e) {
-      FolioLogger.debug('Failed to refresh access token: $e');
+      PalaLogger.debug('Failed to refresh access token: $e');
     }
     return false;
   }

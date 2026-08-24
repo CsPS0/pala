@@ -1,6 +1,6 @@
 part of '../cli_app.dart';
 
-extension FolioCliAppHomeworkView on FolioCliApp {
+extension PalaAppHomeworkView on PalaApp {
   Future<void> _showHomework() async {
       while (true) {
         if (!await _ensureClientReady()) return;
@@ -96,7 +96,7 @@ extension FolioCliAppHomeworkView on FolioCliApp {
                   fullText = fetchedText;
                 }
               } catch (e) {
-                FolioLogger.debug('Failed to fetch message content for id ${msg.id}: $e');
+                PalaLogger.debug('Failed to fetch message content for id ${msg.id}: $e');
               }
             }
             
@@ -164,7 +164,7 @@ extension FolioCliAppHomeworkView on FolioCliApp {
                   fullText = fetchedText;
                 }
               } catch (e) {
-                FolioLogger.debug('Failed to fetch message content: $e');
+                PalaLogger.debug('Failed to fetch message content: $e');
               }
               _clearScreen();
               print('\n--- Üzenet Részletei ---');

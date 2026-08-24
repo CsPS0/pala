@@ -1,6 +1,6 @@
 part of '../cli_app.dart';
 
-extension FolioCliAppDaemonLogic on FolioCliApp {
+extension PalaAppDaemonLogic on PalaApp {
   Future<void> _checkNewItems() async {
       final state = AppState.instance;
       final oldGradesCount = int.tryParse(state.getAuthData()['gradesCount']?.toString() ?? '0') ?? 0;
@@ -9,7 +9,7 @@ extension FolioCliAppDaemonLogic on FolioCliApp {
       if (grades != null) {
         if (grades.length > oldGradesCount && oldGradesCount > 0) {
           final newGradesCount = grades.length - oldGradesCount;
-          await _showToast('Folio (Kréta)', 'Kaptál $newGradesCount új jegyet!');
+          await _showToast('Pala (Kréta)', 'Kaptál $newGradesCount új jegyet!');
         }
         final currentData = state.getAuthData();
         currentData['gradesCount'] = grades.length;
@@ -21,7 +21,7 @@ extension FolioCliAppDaemonLogic on FolioCliApp {
       if (homeworks != null) {
         if (homeworks.length > oldHwCount && oldHwCount > 0) {
           final newHwCount = homeworks.length - oldHwCount;
-          await _showToast('Folio (Kréta)', 'Kaptál $newHwCount új házi feladatot!');
+          await _showToast('Pala (Kréta)', 'Kaptál $newHwCount új házi feladatot!');
         }
         final currentData = state.getAuthData();
         currentData['homeworkCount'] = homeworks.length;
@@ -36,7 +36,7 @@ extension FolioCliAppDaemonLogic on FolioCliApp {
         for (var exam in exams) {
           final examDateStr = exam.date?.toString().split(' ').first;
           if (examDateStr == tomorrowStr) {
-            await _showToast('Folio (Kréta)', 'Holnap dolgozat: ${exam.subject} (${exam.mode})');
+            await _showToast('Pala (Kréta)', 'Holnap dolgozat: ${exam.subject} (${exam.mode})');
             break;
           }
         }
@@ -55,7 +55,7 @@ extension FolioCliAppDaemonLogic on FolioCliApp {
   \$texts[0].AppendChild(\$template.CreateTextNode('$safeTitle')) > \$null
   \$texts[1].AppendChild(\$template.CreateTextNode('$safeMessage')) > \$null
   \$toast = [Windows.UI.Notifications.ToastNotification]::new(\$template)
-  \$notifier = [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("FolioCLI")
+  \$notifier = [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("Pala")
   \$notifier.Show(\$toast)
   ''';
         await Process.run('powershell', ['-Command', script]);
@@ -82,7 +82,7 @@ extension FolioCliAppDaemonLogic on FolioCliApp {
       final script = '''
 \$action = New-ScheduledTaskAction -Execute "$exePath" -Argument "--daemon"
 \$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes 60)
-Register-ScheduledTask -Action \$action -Trigger \$trigger -TaskName "FolioCLIDaemon" -Description "Folio CLI háttérfolyamat" -Force
+Register-ScheduledTask -Action \$action -Trigger \$trigger -TaskName "PalaDaemon" -Description "Pala háttérfolyamat (értesítések)" -Force
 ''';
       Process.runSync('powershell', ['-Command', script]);
       print('Háttérfolyamat sikeresen telepítve (óránként fut).');
@@ -94,7 +94,10 @@ Register-ScheduledTask -Action \$action -Trigger \$trigger -TaskName "FolioCLIDa
   void uninstallDaemon() {
     if (!Platform.isWindows) return;
     try {
-      Process.runSync('schtasks', ['/Delete', '/TN', 'FolioCLIDaemon', '/F']);
+      Process.runSync('schtasks', ['/Delete', '/TN', 'PalaDaemon', '/F']);
+      try {
+        Process.runSync('schtasks', ['/Delete', '/TN', 'FolioCLIDaemon', '/F']);
+      } catch (_) {}
       print('Háttérfolyamat eltávolítva.');
     } catch (e) {
       print('Hiba az eltávolítás során: \$e');

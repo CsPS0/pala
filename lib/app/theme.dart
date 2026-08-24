@@ -1,7 +1,7 @@
 import 'state/app_state.dart';
 import 'package:interact/interact.dart';
 
-class FolioTheme {
+class PalaTheme {
   // Available theme options
   static const String themeBlue = 'blue';
   static const String themeGreen = 'green';

@@ -1,6 +1,6 @@
 # Fejlesztői Dokumentáció
 
-Ez a leírás a `folio-cli` architektúráját, fejlesztési és buildelési folyamatát foglalja össze.
+Ez a leírás a `pala` architektúráját, fejlesztési és buildelési folyamatát foglalja össze.
 
 ## Architektúra és Csomagok
 Az alkalmazás kizárólag a Dart ökoszisztémára épít, Flutter függőségek nélkül, amely garantálja a gyors AOT fordítást.
@@ -8,17 +8,16 @@ Az alkalmazás kizárólag a Dart ökoszisztémára épít, Flutter függősége
 Kiemelt függőségek:
 1. interact: Interaktív terminál-felületek (menük, bevitel, maszkolás) kezelése.
 2. http: Kommunikáció a Kréta IDP és V3 (Ellenőrző) API-kkal.
-3. html: Kiegészítő OAuth2 wrapper a webes tartalék bejelentkezéshez.
-4. args: Parancssori argumentumok feldolgozása.
+3. args: Parancssori argumentumok feldolgozása.
 
 Fő modulok:
 - **api/client.dart**: Hálózati réteg és OAuth2 token menedzsment. A token-frissítések (`refreshAccessToken`) aszinkron zárolással (`_activeRefreshFuture`) vannak ellátva, így elkerülhetők a párhuzamos API-hívások során fellépő `auth.json` fájl-íródási race-condition hibák és titkosítási korrupciók.
 - **models/**: Típusbiztos model osztályok (Grade, Student, Absence, TimetableEntry, stb.) a Kréta API válaszok feldolgozására. Az UTC dátumokat azonnal helyi időzónába konvertálják. A `isSummaryGrade` metódus ékezet-érzékeny és ékezet-mentes szűréssel is kiszűri a félévi/év végi összefoglaló értékeléseket.
-- **app/state/app_state.dart**: Singleton a helyi konfigurációk (`state.json` és titkosított `auth.json`) kezelésére, a választott témák és az ASCII banner beállítások perzisztálására.
-- **app/theme.dart**: A parancssor globális témasémáit és színkódjait (szövegek, menü jelölők, gombok, grafikonok) vezérlő modul.
+- **app/state/app_state.dart**: Singleton a helyi konfigurációk (`state.json` és titkosított `auth.json`) kezelésére a `~/.config/pala/` mappa alatt, a választott témák és az ASCII banner beállítások perzisztálására.
+- **app/theme.dart**: A parancssor globális témasémáit és színkódjait (szövegek, menü jelölők, gombok, grafikonok) vezérlő modul (`PalaTheme`).
 - **app/views/**:
   - **dashboard_view.dart**: Aszinkron billentyűzet-olvasó eseményhurok és órarendi óra-visszaszámláló widget. A főmenüből külön alfolyamatként (subprocess) indul, ami izolálja az aszinkron `stdin` folyamatot a főprogram konzol-leíróitól.
-  - **wrapped_view.dart**: Spotify-Wrapped stílusú statisztikákat (késések, tanári eloszlás, legszorgalmasabb nap, üzenetek) vizualizáló slides.
+  - **wrapped_view.dart**: Spotify-Wrapped stílusú statisztikákat (késések, tanári eloszlás, legszorgalmasabb nap, üzenetek) vizualizáló slides (`Pala Wrapped`).
   - **absences_view.dart**: Veszélyzóna kalkulátor, osztályátlag és eltérés-táblázat, valamint a heti kumulatív jegy-trendek dashboardja.
   - **grades_view.dart**: Szellem jegyek kalkulátor, jegy heatmap és a globális ékezet-érzéketlen keresőmotor.
 - **app/components/utf8_input.dart**: Egyéni parancssoros beviteli wrapper, amely garantálja az echo (karakter-megjelenítés) helyes állapotát a Windows konzolon.
@@ -29,7 +28,7 @@ Fő modulok:
 ## Tesztelés
 A fejlesztés során az alábbi ellenőrzéseket javasolt lefolytatni minden commit előtt:
 1. Statikus analízis: `dart analyze` (nem lehet hiba, vagy force-unwrap `!`).
-2. Nyers CLI indítás: `dart run bin/folio_cli.dart --help` futtathatósága.
+2. Nyers TUI indítás: `dart run bin/pala.dart --help` futtathatósága.
 3. Dummy adatok: Off-line fallback tesztelés cache-ből hálózat leválasztásával.
 
 ## Kréta API Specifikumok és Időzónák
@@ -41,11 +40,11 @@ Windows rendszereken a PowerShell alapértelmezett Windows-1252 kódolása miatt
 ## Build, Fordítás és CI/CD Pipeline
 A natív végrehajtható fájl (`.exe` vagy bináris) előállításához az alábbi parancs használatos:
 ```bash
-dart compile exe bin/folio_cli.dart
+dart compile exe bin/pala.dart -o pala
 ```
 
 **Automatizált CI/CD (GitHub Actions):**
-- **release.yml**: Valahányszor új "Release" jön létre, a GitHub Actions automatikusan lefordítja a kódot Ubuntu, Windows és macOS környezeteken (`ubuntu-latest`, `windows-latest`, `macos-latest`), és feltölti a kiadáshoz az artifactokat (`folio-cli.exe`, `folio-cli-linux`, `folio-cli-macos`).
-- **aur.yml**: Arch Linux felhasználóknak az alkalmazás az AUR-on (Arch User Repository) is elérhető (`folio-cli-bin`). A publikálást a `.github/workflows/aur.yml` kezeli, ami a beállított SSH kulccsal szinkronizálja a `packaging/PKGBUILD` fájlt.
-- **Csomagkezelők**: A projekt gyökérkönyvtárában található `bucket/folio-cli.json` (Scoop Windows-hoz) és `Formula/folio-cli.rb` (Homebrew macOS/Linux-hoz) fájlok gondoskodnak arról, hogy az alkalmazás telepíthető legyen csomagkezelőkből, anélkül, hogy külön repót kéne fenntartani.
+- **release.yml**: Valahányszor új "Release" jön létre, a GitHub Actions automatikusan lefordítja a kódot Ubuntu, Windows és macOS környezeteken (`ubuntu-latest`, `windows-latest`, `macos-latest`), és feltölti a kiadáshoz az artifactokat (`pala.exe`, `pala-linux`, `pala-macos`).
+- **aur.yml**: Arch Linux felhasználóknak az alkalmazás az AUR-on (Arch User Repository) is elérhető (`pala-bin`). A publikálást a `.github/workflows/aur.yml` kezeli, ami a beállított SSH kulccsal szinkronizálja a `packaging/PKGBUILD` fájlt.
+- **Csomagkezelők**: A projekt gyökérkönyvtárában található `bucket/pala.json` (Scoop Windows-hoz) és `Formula/pala.rb` (Homebrew macOS/Linux-hoz) fájlok gondoskodnak arról, hogy az alkalmazás telepíthető legyen csomagkezelőkből, anélkül, hogy külön repót kéne fenntartani.
 A fordított állomány a Windows Task Scheduler-en keresztüli háttérfutáskor láthatatlan módban indul.

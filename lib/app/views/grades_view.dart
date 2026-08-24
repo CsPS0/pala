@@ -1,6 +1,6 @@
 part of '../cli_app.dart';
 
-extension FolioCliAppGradesView on FolioCliApp {
+extension PalaAppGradesView on PalaApp {
   Future<void> _showGrades() async {
       while (true) {
         if (!await _ensureClientReady()) return;
@@ -450,7 +450,7 @@ extension FolioCliAppGradesView on FolioCliApp {
           fullText = fetched;
         }
       } catch (e) {
-        FolioLogger.debug('Failed to fetch message body: $e');
+        PalaLogger.debug('Failed to fetch message body: $e');
       }
       _clearScreen();
       _showMainMenuBanner();

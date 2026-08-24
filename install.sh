@@ -1,14 +1,14 @@
 #!/bin/bash
 set -e
 
-# Folio CLI univerzális Linux/macOS telepítő szkript
-# Használat: curl -fsSL https://raw.githubusercontent.com/CsPS0/folio-cli/main/install.sh | bash
+# Pala univerzális Linux/macOS telepítő szkript
+# Használat: curl -fsSL https://raw.githubusercontent.com/CsPS0/pala/main/install.sh | bash
 
-REPO="CsPS0/folio-cli"
+REPO="CsPS0/pala"
 BIN_DIR="/usr/local/bin"
-BIN_NAME="folio-cli"
+BIN_NAME="pala"
 
-echo "Folio CLI letöltése és telepítése..."
+echo "Pala letöltése és telepítése..."
 
 # Legújabb verzió kiderítése
 LATEST_RELEASE=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
@@ -25,9 +25,9 @@ OS="$(uname -s)"
 ARCH="$(uname -m)"
 
 if [ "$OS" = "Linux" ]; then
-    ASSET_NAME="folio-cli-linux"
+    ASSET_NAME="pala-linux"
 elif [ "$OS" = "Darwin" ]; then
-    ASSET_NAME="folio-cli-macos"
+    ASSET_NAME="pala-macos"
 else
     echo "Nem támogatott operációs rendszer: $OS"
     exit 1
@@ -42,4 +42,4 @@ chmod +x "$BIN_NAME"
 echo "Telepítés a $BIN_DIR mappába (sudo jogosultság szükséges lehet)..."
 sudo mv "$BIN_NAME" "$BIN_DIR/$BIN_NAME"
 
-echo "Sikeres telepítés! Futtasd a 'folio-cli' parancsot az indításhoz."
+echo "Sikeres telepítés! Futtasd a 'pala' parancsot az indításhoz."

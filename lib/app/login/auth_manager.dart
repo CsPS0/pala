@@ -1,6 +1,6 @@
 part of '../cli_app.dart';
 
-extension FolioCliAppAuthManager on FolioCliApp {
+extension PalaAppAuthManager on PalaApp {
   Future<void> _saveAuth() async {
       if (_client?.accessToken == null) return;
       

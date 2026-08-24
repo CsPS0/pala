@@ -38,7 +38,7 @@ class ChartGenerator {
       String color = '\x1B[0m'; // Default
       if (value < 2.0) color = '\x1B[31m'; // Red
       else if (value < 3.0) color = '\x1B[33m'; // Yellow
-      else if (value < 4.0) color = FolioTheme.primary; // Cyan
+      else if (value < 4.0) color = PalaTheme.primary; // Cyan
       else color = '\x1B[32m'; // Green
       
       final valStr = value.toStringAsFixed(2).padLeft(4);

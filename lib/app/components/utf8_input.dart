@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'dart:convert';
 
-import 'package:folio_cli/app/theme.dart';
-import 'package:folio_cli/utils/win32_console.dart';
+import 'package:pala/app/theme.dart';
+import 'package:pala/utils/win32_console.dart';
 
 /// A UTF-8 aware text input replacement for the `interact` package's `Input`.
 ///
@@ -26,8 +26,8 @@ class Utf8Input {
   Utf8Input({required this.prompt, this.defaultValue});
 
   String interact() {
-    final prefix = FolioTheme.primary;
-    final reset = FolioTheme.reset;
+    final prefix = PalaTheme.primary;
+    final reset = PalaTheme.reset;
     final hint = defaultValue != null ? ' \x1B[90m($defaultValue)\x1B[0m' : '';
 
     // Restore terminal to normal mode before reading.

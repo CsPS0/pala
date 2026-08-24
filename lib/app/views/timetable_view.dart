@@ -1,6 +1,6 @@
 part of '../cli_app.dart';
 
-extension FolioCliAppTimetableView on FolioCliApp {
+extension PalaAppTimetableView on PalaApp {
   Future<void> _showTimetable() async {
       while (true) {
         if (!await _ensureClientReady()) return;
@@ -311,7 +311,7 @@ extension FolioCliAppTimetableView on FolioCliApp {
       final outDir = desktop.existsSync() ? desktop.path : home;
       
       final sep = Platform.isWindows ? '\\' : '/';
-      final file = File('$outDir${sep}folio_naptar.ics');
+      final file = File('$outDir${sep}pala_naptar.ics');
       await file.writeAsString(icsContent);
       
       print('Sikeres exportálás! A naptár elmentve ide: ${file.path}\n');

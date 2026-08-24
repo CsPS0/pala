@@ -9,10 +9,10 @@ class IcsExporter {
     final buffer = StringBuffer();
     buffer.writeln('BEGIN:VCALENDAR');
     buffer.writeln('VERSION:2.0');
-    buffer.writeln('PRODID:-//Folio//Folio CLI//HU');
+    buffer.writeln('PRODID:-//Pala//Pala TUI//HU');
     buffer.writeln('CALSCALE:GREGORIAN');
     buffer.writeln('METHOD:PUBLISH');
-    buffer.writeln('X-WR-CALNAME:Folio Órarend és Vizsgák');
+    buffer.writeln('X-WR-CALNAME:Pala Órarend és Vizsgák');
 
     final now = DateTime.now().toUtc();
     final dtstamp = _formatDate(now);
@@ -24,7 +24,7 @@ class IcsExporter {
 
       final subject = lesson.subject;
       final theme = lesson.theme ?? '';
-      final uid = 'lesson-${lesson.uid ?? start.millisecondsSinceEpoch}@folio';
+      final uid = 'lesson-${lesson.uid ?? start.millisecondsSinceEpoch}@pala';
 
       buffer.writeln('BEGIN:VEVENT');
       buffer.writeln('UID:$uid');
@@ -43,7 +43,7 @@ class IcsExporter {
       final subject = exam.subject;
       final type = exam.mode;
       final theme = exam.theme ?? '';
-      final uid = 'exam-${exam.uid ?? date.millisecondsSinceEpoch}@folio';
+      final uid = 'exam-${exam.uid ?? date.millisecondsSinceEpoch}@pala';
 
       buffer.writeln('BEGIN:VEVENT');
       buffer.writeln('UID:$uid');

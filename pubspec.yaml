@@ -1,7 +1,10 @@
-name: folio_cli
-description: A console application for the Kreta API.
+name: pala
+description: Interaktív terminálos felület (TUI) a Kréta e-napló rendszerhez.
 version: 1.2.3
-# homepage: https://www.example.com
+# homepage: https://github.com/CsPS0/pala
+
+executables:
+  pala: pala
 
 environment:
   sdk: '>=3.0.0 <4.0.0'

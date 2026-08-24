@@ -1,11 +1,11 @@
 part of '../cli_app.dart';
 
-extension FolioCliAppWrappedView on FolioCliApp {
-  Future<void> _showFolioWrapped() async {
+extension PalaAppWrappedView on PalaApp {
+  Future<void> _showPalaWrapped() async {
     if (!await _ensureClientReady()) return;
 
     _clearScreen();
-    print('${FolioTheme.primaryBold}Adatok kinyerése a Folio Wrapped-hez...${FolioTheme.reset}');
+    print('${PalaTheme.primaryBold}Adatok kinyerése a Pala Wrapped-hez...${PalaTheme.reset}');
 
     final gradesFuture = _client!.getGrades();
     final averagesFuture = _client!.getAverages();
@@ -216,7 +216,7 @@ extension FolioCliAppWrappedView on FolioCliApp {
     // Intro
     _clearScreen();
     print('\x1B[1;36m========================================');
-    print('         🎉 FOLIO WRAPPED 🎉');
+    print('         🎉 PALA WRAPPED 🎉');
     print('========================================\x1B[0m\n');
     print('Készen állsz, hogy megnézd a tanéved összefoglalóját?');
     print('Dőlj hátra, és nézzük meg, mit alkottál idén!');
@@ -230,8 +230,8 @@ extension FolioCliAppWrappedView on FolioCliApp {
       total1s > 0 ? '...és becsúszott \x1B[1;31m$total1s darab egyes\x1B[0m is. (De ezen már ne görcsölj!)' : 'És egyetlen egyest sem kaptál! Ez elképesztő! 👏',
       '',
       'Az egész éves teljesítményed (összes tantárgy alapján):',
-      '⭐ ${FolioTheme.primaryBold}Év végi átlagod: ${overallAvg.toStringAsFixed(2)}${FolioTheme.reset} ⭐'
-    ], color: FolioTheme.primary);
+      '⭐ ${PalaTheme.primaryBold}Év végi átlagod: ${overallAvg.toStringAsFixed(2)}${PalaTheme.reset} ⭐'
+    ], color: PalaTheme.primary);
 
     // Generate bar chart for grades
     String drawBar(int count, int maxCount, String color) {
@@ -245,7 +245,7 @@ extension FolioCliAppWrappedView on FolioCliApp {
     await showSlide('A Jegyek Eloszlása', [
       'Így néz ki a teljes éves bizonyítványod statisztikája:\n',
       'Ötösök:   ${drawBar(gradesDist[4], maxGradeCount, '\x1B[32m')}',
-      'Négyesek: ${drawBar(gradesDist[3], maxGradeCount, FolioTheme.primary)}',
+      'Négyesek: ${drawBar(gradesDist[3], maxGradeCount, PalaTheme.primary)}',
       'Hármasok: ${drawBar(gradesDist[2], maxGradeCount, '\x1B[33m')}',
       'Kettesek: ${drawBar(gradesDist[1], maxGradeCount, '\x1B[38;5;208m')}',
       'Egyesek:  ${drawBar(gradesDist[0], maxGradeCount, '\x1B[31m')}',
@@ -310,7 +310,7 @@ extension FolioCliAppWrappedView on FolioCliApp {
     print('\x1B[1;32m========================================');
     print('      KÉSZ, VÉGE, VAKÁCIÓ! 🏖️');
     print('========================================\x1B[0m\n');
-    print('Köszönjük, hogy a \x1B[1mFolio CLI\x1B[0m-t használtad az éven!');
+    print('Köszönjük, hogy a \x1B[1mPala\x1B[0m-t használtad az éven!');
     print('Jó pihenést a nyárra, találkozunk szeptemberben!\n');
     _pause('Vissza a főmenübe...');
   }

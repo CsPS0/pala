@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
-import 'package:folio_cli/utils/logger.dart';
+import 'package:pala/utils/logger.dart';
 
 class AppState {
   static final AppState instance = AppState._internal();
@@ -15,7 +15,7 @@ class AppState {
 
   String get configDir {
     final home = Platform.environment['HOME'] ?? Platform.environment['USERPROFILE'] ?? '.';
-    return '$home/.config/folio';
+    return '$home/.config/pala';
   }
 
   void _ensureConfigDir() {
@@ -29,6 +29,32 @@ class AppState {
     _ensureConfigDir();
     final home = Platform.environment['HOME'] ?? Platform.environment['USERPROFILE'] ?? '.';
     
+    // 1. Migrate from old ~/.config/folio if exists
+    final oldConfigDir = Directory('$home/.config/folio');
+    if (oldConfigDir.existsSync()) {
+      try {
+        final oldAuthInFolio = File('${oldConfigDir.path}/auth.json');
+        if (oldAuthInFolio.existsSync() && !authFile.existsSync()) {
+          oldAuthInFolio.copySync(authFile.path);
+        }
+        final oldStateInFolio = File('${oldConfigDir.path}/state.json');
+        if (oldStateInFolio.existsSync() && !stateFile.existsSync()) {
+          oldStateInFolio.copySync(stateFile.path);
+        }
+        final oldAliasesInFolio = File('${oldConfigDir.path}/aliases.json');
+        if (oldAliasesInFolio.existsSync() && !aliasesFile.existsSync()) {
+          oldAliasesInFolio.copySync(aliasesFile.path);
+        }
+        final oldCacheInFolio = File('${oldConfigDir.path}/cache.json');
+        if (oldCacheInFolio.existsSync() && !File('$configDir/cache.json').existsSync()) {
+          oldCacheInFolio.copySync('$configDir/cache.json');
+        }
+      } catch (e) {
+        PalaLogger.debug('Failed to migrate from ~/.config/folio: $e');
+      }
+    }
+
+    // 2. Migrate from legacy ~/.folio_*.json files
     final oldAuth = File('$home/.folio_auth.json');
     if (oldAuth.existsSync() && !authFile.existsSync()) {
       oldAuth.copySync(authFile.path);
@@ -64,7 +90,7 @@ class AppState {
       final content = file.readAsStringSync();
       return jsonDecode(content) as Map<String, dynamic>;
     } catch (e) {
-      FolioLogger.debug('Failed to load file ${file.path}: $e');
+      PalaLogger.debug('Failed to load file ${file.path}: $e');
       return {};
     }
   }
@@ -73,7 +99,7 @@ class AppState {
     try {
       file.writeAsStringSync(jsonEncode(data));
     } catch (e) {
-      FolioLogger.debug('Failed to save file ${file.path}: $e');
+      PalaLogger.debug('Failed to save file ${file.path}: $e');
     }
   }
 

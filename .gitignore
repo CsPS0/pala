@@ -13,6 +13,9 @@ doc/api/
 .flutter-plugins-dependencies
 
 *.exe
+pala
+pala-linux
+pala-macos
 folio-cli
 folio-cli-linux
 folio-cli-macos

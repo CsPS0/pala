@@ -1,6 +1,6 @@
 part of '../cli_app.dart';
 
-extension FolioCliAppDashboardView on FolioCliApp {
+extension PalaAppDashboardView on PalaApp {
   Future<void> _showDashboard() async {
     if (!await _ensureClientReady()) return;
 
@@ -52,7 +52,7 @@ extension FolioCliAppDashboardView on FolioCliApp {
         stdin.lineMode = false;
       }
     } catch (e) {
-      FolioLogger.debug('Failed to set terminal raw mode: $e');
+      PalaLogger.debug('Failed to set terminal raw mode: $e');
     }
 
     final subscription = stdin.listen((List<int> bytes) {
@@ -69,7 +69,7 @@ extension FolioCliAppDashboardView on FolioCliApp {
       final halfWidth = (width / 2).floor() - 2;
 
       // Header
-      print('\x1B[1;36mFolio Élő Dashboard\x1B[0m - Frissítve: ${DateTime.now().toString().split('.')[0]}');
+      print('\x1B[1;36mPala Élő Dashboard\x1B[0m - Frissítve: ${DateTime.now().toString().split('.')[0]}');
       print('Nyomj \x1B[33mq\x1B[0m-t a kilépéshez a főmenübe.\n');
 
       // Countdown Widget
@@ -204,7 +204,7 @@ extension FolioCliAppDashboardView on FolioCliApp {
           }
         }
         if (bestAvg > 0) {
-          rightLines.add('Legjobb: ${AppState.instance.applyAlias(bestSubj)} (${FolioTheme.primary}${bestAvg.toStringAsFixed(2)}${FolioTheme.reset})');
+          rightLines.add('Legjobb: ${AppState.instance.applyAlias(bestSubj)} (${PalaTheme.primary}${bestAvg.toStringAsFixed(2)}${PalaTheme.reset})');
           rightLines.add('Legrosszabb: ${AppState.instance.applyAlias(worstSubj)} (\x1B[31m${worstAvg.toStringAsFixed(2)}\x1B[0m)');
         }
       }
@@ -265,7 +265,7 @@ extension FolioCliAppDashboardView on FolioCliApp {
         stdin.lineMode = true;
       }
     } catch (e) {
-      FolioLogger.debug('Failed to restore terminal mode: $e');
+      PalaLogger.debug('Failed to restore terminal mode: $e');
     }
     stdout.write('\x1B[?25h');
     stdout.write('\x1B[2J\x1B[H');

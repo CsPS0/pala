@@ -25,7 +25,7 @@ class KretaAPI {
         '&code_challenge=$codeChallenge'
         '&redirect_uri=${Uri.encodeComponent(redirectUri)}'
         '&client_id=$clientId'
-        '&state=folio_student_mobile';
+        '&state=pala_student_mobile';
     if (instituteCode != null) {
       return '$base&acr_values=institute_code:$instituteCode';
     }

@@ -1,6 +1,6 @@
 part of '../cli_app.dart';
 
-extension FolioCliAppStudentView on FolioCliApp {
+extension PalaAppStudentView on PalaApp {
   Future<void> _showStudentData() async {
       while (true) {
         if (!await _ensureClientReady()) return;

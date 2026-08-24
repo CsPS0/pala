@@ -1,6 +1,6 @@
 part of '../cli_app.dart';
 
-extension FolioCliAppExportView on FolioCliApp {
+extension PalaAppExportView on PalaApp {
   Future<void> _exportToCsv() async {
       if (!await _ensureClientReady()) return;
       _clearScreen();
@@ -17,7 +17,7 @@ extension FolioCliAppExportView on FolioCliApp {
         final outDir = desktop.existsSync() ? desktop.path : home;
 
         if (grades != null && grades.isNotEmpty) {
-          final csvFile = File(p.join(outDir, 'Folio_Jegyek.csv'));
+          final csvFile = File(p.join(outDir, 'Pala_Jegyek.csv'));
           String csvContent = 'Tantárgy;Érték;Dátum;Téma\n';
           for (var g in grades) {
             final t = g.subject;
@@ -32,7 +32,7 @@ extension FolioCliAppExportView on FolioCliApp {
         }
         
         if (absences != null && absences.isNotEmpty) {
-          final csvFile = File(p.join(outDir, 'Folio_Mulasztasok.csv'));
+          final csvFile = File(p.join(outDir, 'Pala_Mulasztasok.csv'));
           String csvContent = 'Tantárgy;Dátum;Igazolt;Típus\n';
           for (var a in absences) {
             final t = a.subject;
@@ -79,7 +79,7 @@ extension FolioCliAppExportView on FolioCliApp {
 
     try {
       final home = Platform.environment['USERPROFILE'] ?? Platform.environment['HOME'] ?? '.';
-      final gitDir = Directory(p.join(home, 'Folio_Jegyek_Git'));
+      final gitDir = Directory(p.join(home, 'Pala_Jegyek_Git'));
       
       if (!gitDir.existsSync()) {
         gitDir.createSync(recursive: true);

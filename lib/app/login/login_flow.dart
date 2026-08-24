@@ -1,6 +1,6 @@
 part of '../cli_app.dart';
 
-extension FolioCliAppLoginFlow on FolioCliApp {
+extension PalaAppLoginFlow on PalaApp {
   Future<void> _performLoginFlow() async {
       final hasCodeChoice = Select(
         prompt: 'Tudod az intézmény kódját?',
@@ -52,7 +52,7 @@ extension FolioCliAppLoginFlow on FolioCliApp {
       bool success = false;
 
       if (authMethod == 1) {
-        final url = 'https://idp.e-kreta.hu/connect/authorize?prompt=login&nonce=wylCrqT4oN6PPgQn2yQB0euKei9nJeZ6_ffJ-VpSKZU&response_type=code&code_challenge_method=S256&scope=openid%20email%20offline_access%20kreta-ellenorzo-webapi.public%20kreta-eugyintezes-webapi.public%20kreta-fileservice-webapi.public%20kreta-mobile-global-webapi.public%20kreta-dkt-webapi.public%20kreta-ier-webapi.public&code_challenge=HByZRRnPGb-Ko_wTI7ibIba1HQ6lor0ws4bcgReuYSQ&redirect_uri=https://mobil.e-kreta.hu/ellenorzo-student/prod/oauthredirect&client_id=kreta-ellenorzo-student-mobile-ios&state=folio_student_mobile&acr_values=institute_code:${_client!.instituteCode}';
+        final url = 'https://idp.e-kreta.hu/connect/authorize?prompt=login&nonce=wylCrqT4oN6PPgQn2yQB0euKei9nJeZ6_ffJ-VpSKZU&response_type=code&code_challenge_method=S256&scope=openid%20email%20offline_access%20kreta-ellenorzo-webapi.public%20kreta-eugyintezes-webapi.public%20kreta-fileservice-webapi.public%20kreta-mobile-global-webapi.public%20kreta-dkt-webapi.public%20kreta-ier-webapi.public&code_challenge=HByZRRnPGb-Ko_wTI7ibIba1HQ6lor0ws4bcgReuYSQ&redirect_uri=https://mobil.e-kreta.hu/ellenorzo-student/prod/oauthredirect&client_id=kreta-ellenorzo-student-mobile-ios&state=pala_student_mobile&acr_values=institute_code:${_client!.instituteCode}';
         
         print('\nHa a böngésző nem nyílna meg automatikusan, nyisd meg az alábbi linket (Ctrl+Kattintás):');
         print(url);

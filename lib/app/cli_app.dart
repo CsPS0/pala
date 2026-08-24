@@ -3,17 +3,17 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:interact/interact.dart';
-import 'package:folio_cli/api/client.dart';
-import 'package:folio_cli/models/models.dart';
-import 'package:folio_cli/utils/chart_generator.dart';
-import 'package:folio_cli/utils/ics_exporter.dart';
-import 'package:folio_cli/utils/encryption.dart';
-import 'package:folio_cli/app/components/custom_menu.dart';
-import 'package:folio_cli/app/components/utf8_input.dart';
-import 'package:folio_cli/app/theme.dart';
-import 'package:folio_cli/utils/logger.dart';
-import 'package:folio_cli/utils/win32_console.dart';
-import 'package:folio_cli/version.dart';
+import 'package:pala/api/client.dart';
+import 'package:pala/models/models.dart';
+import 'package:pala/utils/chart_generator.dart';
+import 'package:pala/utils/ics_exporter.dart';
+import 'package:pala/utils/encryption.dart';
+import 'package:pala/app/components/custom_menu.dart';
+import 'package:pala/app/components/utf8_input.dart';
+import 'package:pala/app/theme.dart';
+import 'package:pala/utils/logger.dart';
+import 'package:pala/utils/win32_console.dart';
+import 'package:pala/version.dart';
 import 'package:path/path.dart' as p;
 import 'state/app_state.dart';
 
@@ -31,7 +31,7 @@ part 'views/export_view.dart';
 part 'views/dashboard_view.dart';
 part 'views/wrapped_view.dart';
 
-class FolioCliApp {
+class PalaApp {
   Future<bool> _ensureClientReady() async {
     if (_client == null) {
       print('Hiba: Kliens nincs inicializálva. Próbálj újra bejelentkezni!');
@@ -134,32 +134,33 @@ class FolioCliApp {
   void _showBanner() {
     print('\x1B[36m');
     print(r'''
-    _____     _ _       
-   |  ___|__ | (_) ___  
-   | |_ / _ \| | |/ _ \ 
-   |  _| (_) | | | (_) |'''
-    '\n   |_|  \\___/|_|_|\\___/ CLI $appVersion\n');
+    ____        __       
+   / __ \____ _/ /___ _  
+  / /_/ / __ `/ / __ `/  
+ / ____/ /_/ / / /_/ /   
+/_/    \__,_/_/\__,_/  TUI '''
+    '$appVersion\n');
     print('\x1B[0m');
   }
 
   void _showMainMenuBanner() {
     if (!AppState.instance.showAsciiBanner) return;
     
-    final color = FolioTheme.primary;
+    final color = PalaTheme.primary;
     print(color);
     print(r'''
-███████╗ ██████╗ ██╗     ██╗ ██████╗ 
-██╔════╝██╔═══██╗██║     ██║██╔═══██╗
-█████╗  ██║   ██║██║     ██║██║   ██║
-██╔══╝  ██║   ██║██║     ██║██║   ██║
-██║     ╚██████╔╝███████╗██║╚██████╔╝
-╚═╝      ╚═════╝ ╚══════╝╚═╝ ╚═════╝ ''');
-    print(FolioTheme.reset);
+██████╗  █████╗ ██╗      █████╗ 
+██╔══██╗██╔══██╗██║     ██╔══██╗
+██████╔╝███████║██║     ███████║
+██╔═══╝ ██╔══██║██║     ██╔══██║
+██║     ██║  ██║███████╗██║  ██║
+╚═╝     ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝''');
+    print(PalaTheme.reset);
   }
 
   Future<void> runInteractive({bool startInDashboard = false}) async {
     AppState.instance.migrateOldFiles();
-    FolioTheme.configureInteractTheme();
+    PalaTheme.configureInteractTheme();
     _showBanner();
 
     print('Keresem a mentett bejelentkezést...');
@@ -175,9 +176,8 @@ class FolioCliApp {
     }
 
     print('\x1B[38;5;208m=============================================================');
-    print(' FIGYELEM! Kérjük, kapcsold ki a Folio/Firka kiegészítőt');
-    print(' a böngésződben a bejelentkezés idejére, mert jelenleg');
-    print(' problémák vannak a bejelentkezési felülettel!');
+    print(' FIGYELEM! Kérjük, kapcsold ki a böngészős kiegészítőket');
+    print(' a bejelentkezés idejére, mert megzavarhatják a hitelesítést!');
     print('=============================================================\x1B[0m\n');
 
     await _performLoginFlow();
@@ -187,7 +187,7 @@ class FolioCliApp {
   Future<void> _checkForUpdates() async {
     try {
       final res = await http.get(
-        Uri.parse('https://api.github.com/repos/CsPS0/folio-cli/releases/latest'),
+        Uri.parse('https://api.github.com/repos/CsPS0/pala/releases/latest'),
       ).timeout(Duration(seconds: 2));
       
       if (res.statusCode == 200) {
@@ -197,23 +197,23 @@ class FolioCliApp {
         
         if (latestVersion != null && latestVersion != currentVersion && latestVersion.startsWith('v')) {
           print('\x1B[33m\n=============================================================');
-          print('[!] Új Folio CLI verzió érhető el: $latestVersion (Jelenlegi: $currentVersion)');
+          print('[!] Új Pala verzió érhető el: $latestVersion (Jelenlegi: $currentVersion)');
           print('Kérjük, frissíts a legújabb verzióra a következő parancsok egyikével:');
-          print('  - Windows (Scoop):     scoop update folio-cli');
-          print('  - Linux (APT):         sudo apt update && sudo apt install folio-cli');
-          print('  - macOS (Homebrew):    brew upgrade folio-cli');
-          print('  - Manuális szkript:    curl -fsSL https://raw.githubusercontent.com/CsPS0/folio-cli/main/install.sh | bash');
+          print('  - Windows (Scoop):     scoop update pala');
+          print('  - Linux (APT):         sudo apt update && sudo apt install pala');
+          print('  - macOS (Homebrew):    brew upgrade pala');
+          print('  - Manuális szkript:    curl -fsSL https://raw.githubusercontent.com/CsPS0/pala/main/install.sh | bash');
           print('=============================================================\x1B[0m\n');
         }
       }
     } catch (e) {
-      FolioLogger.debug('Update check failed: $e');
+      PalaLogger.debug('Update check failed: $e');
     }
   }
 
   Future<void> runWithCredentials(String instituteCode, String username, String password, {bool startInDashboard = false}) async {
     AppState.instance.migrateOldFiles();
-    FolioTheme.configureInteractTheme();
+    PalaTheme.configureInteractTheme();
     _client = KretaClient(instituteCode: instituteCode);
     _client!.onTokenRefreshed = () async {
       await _saveAuth();
@@ -246,13 +246,13 @@ class FolioCliApp {
             hiddenItems = state['hiddenMenuItems'];
           }
         } catch (e) {
-          FolioLogger.debug('Failed to parse state file: $e');
+          PalaLogger.debug('Failed to parse state file: $e');
         }
       }
 
       final layout = [
         {'type': 'separator', 'label': '------------------'},
-        {'type': 'action', 'id': 10, 'label': 'Folio Wrapped (Év végi összefoglaló)'},
+        {'type': 'action', 'id': 10, 'label': 'Pala Wrapped (Év végi összefoglaló)'},
         {'type': 'action', 'id': 0, 'label': 'Tanulói adatlap'},
         {'type': 'action', 'id': 2, 'label': 'Órarend'},
         {'type': 'separator', 'label': '------------------'},
@@ -293,7 +293,7 @@ class FolioCliApp {
         }
       }
 
-      final promptText = AppState.instance.isOffline ? 'Folio Főmenü \x1B[1;31m[OFFLINE MÓD]\x1B[0m' : 'Folio Főmenü';
+      final promptText = AppState.instance.isOffline ? 'Pala Főmenü \x1B[1;31m[OFFLINE MÓD]\x1B[0m' : 'Pala Főmenü';
 
       if (_lastMainMenuIndex >= displayOptions.length) {
         _lastMainMenuIndex = 0;
@@ -363,7 +363,7 @@ class FolioCliApp {
           break;
         case 10:
           _clearScreen();
-          await _showFolioWrapped();
+          await _showPalaWrapped();
           _clearScreen();
           break;
         case -2:

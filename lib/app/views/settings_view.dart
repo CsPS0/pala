@@ -1,6 +1,6 @@
 part of '../cli_app.dart';
 
-extension FolioCliAppSettingsView on FolioCliApp {
+extension PalaAppSettingsView on PalaApp {
   Future<void> _showSettings() async {
       int _lastSettingsMenuIndex = 0;
       while (true) {
@@ -114,7 +114,7 @@ extension FolioCliAppSettingsView on FolioCliApp {
         } else if (action == 3) {
           _clearScreen();
           final customizableOptions = [
-            {'id': 10, 'label': 'Folio Wrapped (Év végi összefoglaló)'},
+            {'id': 10, 'label': 'Pala Wrapped (Év végi összefoglaló)'},
             {'id': 0, 'label': 'Tanulói adatlap'},
             {'id': 2, 'label': 'Órarend'},
             {'id': 1, 'label': 'Legutóbbi jegyek'},
@@ -137,7 +137,7 @@ extension FolioCliAppSettingsView on FolioCliApp {
                 hiddenItems = state['hiddenMenuItems'];
               }
             } catch (e) {
-              FolioLogger.debug('Failed to parse settings state file: $e');
+              PalaLogger.debug('Failed to parse settings state file: $e');
             }
           }
           
@@ -195,7 +195,7 @@ extension FolioCliAppSettingsView on FolioCliApp {
           
           if (choice < themes.length) {
             AppState.instance.setTheme(themeValues[choice]);
-            FolioTheme.configureInteractTheme();
+            PalaTheme.configureInteractTheme();
             print('\nTéma sikeresen átállítva!');
             _pause();
           }
@@ -281,7 +281,7 @@ extension FolioCliAppSettingsView on FolioCliApp {
         
         try {
           final res = await http.get(
-            Uri.parse('https://api.github.com/repos/CsPS0/folio-cli/releases/latest'),
+            Uri.parse('https://api.github.com/repos/CsPS0/pala/releases/latest'),
           ).timeout(Duration(seconds: 4));
           
           if (res.statusCode == 200) {
@@ -290,12 +290,12 @@ extension FolioCliAppSettingsView on FolioCliApp {
             final currentVersion = appVersion;
             
             if (latestVersion != null && latestVersion != currentVersion && latestVersion.startsWith('v')) {
-              print('\x1B[33m\n[!] Új Folio CLI verzió érhető el: $latestVersion (Jelenlegi: $currentVersion)\x1B[0m\n');
+              print('\x1B[33m\n[!] Új Pala verzió érhető el: $latestVersion (Jelenlegi: $currentVersion)\x1B[0m\n');
               print('Frissítési parancsok:');
-              print('  - Windows (Scoop):     \x1B[1;36mscoop update folio-cli\x1B[0m');
-              print('  - Linux (APT):         \x1B[1;36msudo apt update && sudo apt install folio-cli\x1B[0m');
-              print('  - macOS (Homebrew):    \x1B[1;36mbrew upgrade folio-cli\x1B[0m');
-              print('  - Manuális szkript:    \x1B[1;36mcurl -fsSL https://raw.githubusercontent.com/CsPS0/folio-cli/main/install.sh | bash\x1B[0m\n');
+              print('  - Windows (Scoop):     \x1B[1;36mscoop update pala\x1B[0m');
+              print('  - Linux (APT):         \x1B[1;36msudo apt update && sudo apt install pala\x1B[0m');
+              print('  - macOS (Homebrew):    \x1B[1;36mbrew upgrade pala\x1B[0m');
+              print('  - Manuális szkript:    \x1B[1;36mcurl -fsSL https://raw.githubusercontent.com/CsPS0/pala/main/install.sh | bash\x1B[0m\n');
             } else {
               print('\n\x1B[32m[✓] A legfrissebb verziót használod (Verzió: $currentVersion)\x1B[0m\n');
             }

@@ -1,6 +1,6 @@
 part of '../cli_app.dart';
 
-extension FolioCliAppAbsencesView on FolioCliApp {
+extension PalaAppAbsencesView on PalaApp {
   Future<void> _showAbsences() async {
       while (true) {
         if (!await _ensureClientReady()) return;

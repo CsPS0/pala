@@ -17,14 +17,14 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
         include:
           - os: ubuntu-latest
-            artifact_name: folio-cli-linux
-            asset_name: folio-cli-linux
+            artifact_name: pala-linux
+            asset_name: pala-linux
           - os: windows-latest
-            artifact_name: folio-cli.exe
-            asset_name: folio-cli.exe
+            artifact_name: pala.exe
+            asset_name: pala.exe
           - os: macos-latest
-            artifact_name: folio-cli-macos
-            asset_name: folio-cli-macos
+            artifact_name: pala-macos
+            asset_name: pala-macos
 
     steps:
       - name: Checkout repository
@@ -38,32 +38,32 @@ jobs:
 
       - name: Compile Windows executable
         if: matrix.os == 'windows-latest'
-        run: dart compile exe bin/folio_cli.dart -S debug-info-windows.map -o ${{ matrix.artifact_name }}
+        run: dart compile exe bin/pala.dart -S debug-info-windows.map -o ${{ matrix.artifact_name }}
 
       - name: Compile Linux executable & Create .deb package
         if: matrix.os == 'ubuntu-latest'
         run: |
-          dart compile exe bin/folio_cli.dart -S debug-info-linux.map -o ${{ matrix.artifact_name }}
+          dart compile exe bin/pala.dart -S debug-info-linux.map -o ${{ matrix.artifact_name }}
           
           VERSION=${GITHUB_REF_NAME#v}
           if [ -z "$VERSION" ] || [ "$VERSION" = "main" ]; then VERSION="1.0.0"; fi
           
           mkdir -p deb_pkg/usr/bin
-          cp ${{ matrix.artifact_name }} deb_pkg/usr/bin/folio-cli
-          chmod +x deb_pkg/usr/bin/folio-cli
+          cp ${{ matrix.artifact_name }} deb_pkg/usr/bin/pala
+          chmod +x deb_pkg/usr/bin/pala
           
           mkdir -p deb_pkg/DEBIAN
           cat <<EOF > deb_pkg/DEBIAN/control
-          Package: folio-cli
+          Package: pala
           Version: ${VERSION}
           Section: utils
           Priority: optional
           Architecture: amd64
           Maintainer: Solti Csongor Péter <csps0@users.noreply.github.com>
-          Description: Terminal-based client for the Hungarian Kréta electronic school diary system.
+          Description: Interaktív terminálos felület (TUI) a Kréta e-napló rendszerhez.
           EOF
           
-          dpkg-deb --build deb_pkg folio-cli_${VERSION}_amd64.deb
+          dpkg-deb --build deb_pkg pala_${VERSION}_amd64.deb
 
       - name: Upload .deb for APT Repo
         if: matrix.os == 'ubuntu-latest'
@@ -75,7 +75,7 @@ jobs:
 
       - name: Compile macOS executable
         if: matrix.os == 'macos-latest'
-        run: dart compile exe bin/folio_cli.dart -S debug-info-macos.map -o ${{ matrix.artifact_name }}
+        run: dart compile exe bin/pala.dart -S debug-info-macos.map -o ${{ matrix.artifact_name }}
 
       - name: Upload Workflow Artifact
         uses: actions/upload-artifact@v4
@@ -153,9 +153,9 @@ jobs:
           VERSION=${GITHUB_REF_NAME#v}
           if [ -z "$VERSION" ] || [ "$VERSION" = "main" ]; then VERSION="1.2.0"; fi
           
-          WIN_HASH=$(sha256sum bin-win/folio-cli.exe | awk '{print $1}')
-          LIN_HASH=$(sha256sum bin-lin/folio-cli-linux | awk '{print $1}')
-          MAC_HASH=$(sha256sum bin-mac/folio-cli-macos | awk '{print $1}')
+          WIN_HASH=$(sha256sum bin-win/pala.exe | awk '{print $1}')
+          LIN_HASH=$(sha256sum bin-lin/pala-linux | awk '{print $1}')
+          MAC_HASH=$(sha256sum bin-mac/pala-macos | awk '{print $1}')
           
           export VERSION WIN_HASH LIN_HASH MAC_HASH
           
@@ -168,25 +168,25 @@ jobs:
           mac_hash = os.environ['MAC_HASH']
           
           # 1. Update Scoop manifest
-          scoop_path = 'bucket/folio-cli.json'
+          scoop_path = 'bucket/pala.json'
           with open(scoop_path, 'r', encoding='utf-8') as f:
               scoop_data = json.load(f)
           
           scoop_data['version'] = version
-          scoop_data['architecture']['64bit']['url'] = f"https://github.com/CsPS0/folio-cli/releases/download/v{version}/folio-cli.exe"
+          scoop_data['architecture']['64bit']['url'] = f"https://github.com/CsPS0/pala/releases/download/v{version}/pala.exe"
           scoop_data['architecture']['64bit']['hash'] = win_hash
           
           with open(scoop_path, 'w', encoding='utf-8') as f:
               json.dump(scoop_data, f, indent=4)
           
           # 2. Update Homebrew formula
-          brew_path = 'Formula/folio-cli.rb'
+          brew_path = 'Formula/pala.rb'
           with open(brew_path, 'r', encoding='utf-8') as f:
               content = f.read()
           
           content = re.sub(r'version \".*?\"', f'version "{version}"', content)
-          content = re.sub(r'releases/download/v.*/folio-cli-macos', f'releases/download/v{version}/folio-cli-macos', content)
-          content = re.sub(r'releases/download/v.*/folio-cli-linux', f'releases/download/v{version}/folio-cli-linux', content)
+          content = re.sub(r'releases/download/v.*/pala-macos', f'releases/download/v{version}/pala-macos', content)
+          content = re.sub(r'releases/download/v.*/pala-linux', f'releases/download/v{version}/pala-linux', content)
           
           content = re.sub(r'(on_macos do\s+url.*?\s+sha256\s+\")[a-f0-9]+(\")', r'\g<1>' + mac_hash + r'\g<2>', content, flags=re.DOTALL)
           content = re.sub(r'(on_linux do\s+url.*?\s+sha256\s+\")[a-f0-9]+(\")', r'\g<1>' + lin_hash + r'\g<2>', content, flags=re.DOTALL)
@@ -210,6 +210,6 @@ jobs:
           # Configure Git and Push
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add bucket/folio-cli.json Formula/folio-cli.rb packaging/PKGBUILD
+          git add bucket/pala.json Formula/pala.rb packaging/PKGBUILD
           git commit -m "chore: auto-update scoop, homebrew, and aur manifests to v$VERSION [skip ci]"
           git push origin HEAD:main

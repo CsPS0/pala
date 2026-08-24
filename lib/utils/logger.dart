@@ -1,17 +1,19 @@
 import 'dart:io';
 
-/// Lightweight debug logger for Folio CLI.
+/// Lightweight debug logger for Pala.
 ///
-/// Activated via `--debug` flag or `FOLIO_DEBUG=1` environment variable.
+/// Activated via `--debug` flag or `PALA_DEBUG=1` (or `FOLIO_DEBUG=1`) environment variable.
 /// Outputs to stderr so it doesn't interfere with normal stdout output.
-class FolioLogger {
+class PalaLogger {
   static bool _enabled = false;
 
   /// Initialize the logger. Call once at app startup.
   static void init({bool enabled = false}) {
-    _enabled = enabled || Platform.environment['FOLIO_DEBUG'] == '1';
+    _enabled = enabled ||
+        Platform.environment['PALA_DEBUG'] == '1' ||
+        Platform.environment['FOLIO_DEBUG'] == '1';
     if (_enabled) {
-      stderr.writeln('[DEBUG] Folio debug logging enabled.');
+      stderr.writeln('[DEBUG] Pala debug logging enabled.');
     }
   }
 
