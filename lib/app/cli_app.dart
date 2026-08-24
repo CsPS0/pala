@@ -135,7 +135,7 @@ class PalaApp {
   }
 
   void _showBanner() {
-    print('\x1B[36m');
+    print(PalaTheme.primary);
     print(r'''
     ____        __       
    / __ \____ _/ /___ _  
@@ -143,7 +143,7 @@ class PalaApp {
  / ____/ /_/ / / /_/ /   
 /_/    \__,_/_/\__,_/  TUI '''
     '$appVersion\n');
-    print('\x1B[0m');
+    print(PalaTheme.reset);
   }
 
   void _showMainMenuBanner() {

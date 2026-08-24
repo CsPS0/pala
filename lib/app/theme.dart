@@ -3,10 +3,10 @@ import 'package:interact/interact.dart';
 
 class PalaTheme {
   // Available theme options
+  static const String themeOrange = 'orange';
   static const String themeBlue = 'blue';
   static const String themeGreen = 'green';
   static const String themePink = 'pink';
-  static const String themeOrange = 'orange';
 
   // Helper to get the currently selected theme
   static String get _current => AppState.instance.theme;
@@ -18,11 +18,11 @@ class PalaTheme {
         return '\x1B[32m'; // Green
       case themePink:
         return '\x1B[35m'; // Magenta/Pink
-      case themeOrange:
-        return '\x1B[38;5;208m'; // Orange
       case themeBlue:
-      default:
         return '\x1B[36m'; // Cyan/Blue
+      case themeOrange:
+      default:
+        return '\x1B[38;5;208m'; // Vibrant Orange / Amber
     }
   }
 
@@ -33,11 +33,11 @@ class PalaTheme {
         return '\x1B[1;32m';
       case themePink:
         return '\x1B[1;35m';
-      case themeOrange:
-        return '\x1B[1;38;5;208m';
       case themeBlue:
-      default:
         return '\x1B[1;36m';
+      case themeOrange:
+      default:
+        return '\x1B[1;38;5;208m';
     }
   }
 

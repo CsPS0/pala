@@ -6,7 +6,7 @@ class AppState {
   static final AppState instance = AppState._internal();
   
   bool isOffline = false;
-  String theme = 'blue';
+  String theme = 'orange';
   bool showAsciiBanner = true;
 
   AppState._internal() {

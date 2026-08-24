@@ -191,8 +191,8 @@ extension PalaAppSettingsView on PalaApp {
         } else if (action == -4) {
           _clearScreen();
           print('\n--- Színséma / Téma választása ---');
-          final themes = ['Classic Blue (Cian)', 'Neon Matrix (Zöld)', 'Midnight Pink (Rózsaszín/Lila)', 'Classic Amber (Narancs)'];
-          final themeValues = ['blue', 'green', 'pink', 'orange'];
+          final themes = ['Pala Amber (Narancs - Alapértelmezett)', 'Classic Blue (Cián)', 'Neon Matrix (Zöld)', 'Midnight Pink (Rózsaszín/Lila)'];
+          final themeValues = ['orange', 'blue', 'green', 'pink'];
           
           final currentIdx = themeValues.indexOf(AppState.instance.theme);
           final choice = Select(
