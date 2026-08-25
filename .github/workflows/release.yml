@@ -119,6 +119,22 @@ jobs:
           file_target_version: stable
           private_key: ${{ secrets.APT_SIGNING_KEY }}
 
+      - name: Deploy Website to gh-pages alongside APT
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git fetch origin gh-pages:gh-pages || git branch gh-pages
+          git checkout gh-pages
+          
+          git checkout main -- docs/
+          cp -r docs/* .
+          rm -rf docs
+          
+          git add index.html styles.css app.js
+          git commit -m "Deploy landing website to gh-pages alongside APT repo" || echo "No changes to commit"
+          git push origin gh-pages
+
   update-manifests:
     name: Auto-update Scoop & Homebrew Manifests
     needs: build

@@ -7,7 +7,7 @@ extension PalaAppSettingsView on PalaApp {
         _clearScreen();
         _showMainMenuBanner();
         final layout = [
-          {'type': 'separator', 'label': '------------------'},
+          {'type': 'separator', 'label': '--- Terminális (TUI) Beállítások ---'},
           {'type': 'action', 'id': 0, 'label': 'Profilváltás'},
           {'type': 'action', 'id': 1, 'label': 'Új fiók hozzáadása'},
           {'type': 'action', 'id': 6, 'label': 'Összes mentett adat törlése (Kijelentkezés)'},
@@ -16,6 +16,9 @@ extension PalaAppSettingsView on PalaApp {
           {'type': 'action', 'id': -2, 'label': 'Tanár/Tantárgy átnevezése (Aliasok)'},
           {'type': 'action', 'id': -4, 'label': 'Színséma / Téma választása'},
           {'type': 'action', 'id': -5, 'label': 'Főmenü ASCII Banner ki/be'},
+          {'type': 'action', 'id': -7, 'label': 'Szülői igazolás keret (Jelenleg: ${AppState.instance.parentalQuota} nap)'},
+          {'type': 'separator', 'label': '--- Webes Felület Beállításai ---'},
+          {'type': 'action', 'id': -8, 'label': 'Webes felület beállításai [ZÁROLVA]'},
           {'type': 'separator', 'label': '------------------'},
           {'type': 'action', 'id': 4, 'label': 'Naptár exportálása (.ics)'},
           {'type': 'action', 'id': 5, 'label': 'Adatok exportálása (CSV)'},
@@ -132,6 +135,7 @@ extension PalaAppSettingsView on PalaApp {
             {'id': 7, 'label': 'Üzenetek'},
             {'id': 8, 'label': 'Keresés'},
             {'id': -2, 'label': 'Dashboard (Élő nézet)'},
+            {'id': -3, 'label': 'Pala Webes felület (Web UI)'},
           ];
           
           final stateFile = AppState.instance.stateFile;
@@ -216,6 +220,54 @@ extension PalaAppSettingsView on PalaApp {
           AppState.instance.setShowAsciiBanner(newVal);
           print('\nASCII Art banner sikeresen ${newVal ? "BEKAPCSOLVA" : "KIKAPCSOLVA"}!');
           _pause();
+          _clearScreen();
+        } else if (action == -7) {
+          final currentQuota = AppState.instance.parentalQuota;
+          final input = Utf8Input(
+            prompt: 'Hány nap szülői igazolási keretet engedélyez az iskolád egy tanévben?',
+            defaultValue: currentQuota.toString(),
+          ).interact().trim();
+          final val = int.tryParse(input);
+          if (val != null && val > 0 && val <= 60) {
+            AppState.instance.setParentalQuota(val);
+            print('\n\x1B[1;32m[OK] Szülői igazolási keret sikeresen beállítva: $val nap.\x1B[0m');
+          } else {
+            print('\n\x1B[1;31m[HIBA] Érvénytelen szám (1 és 60 közötti egész szám szükséges).\x1B[0m');
+          }
+          _pause();
+          _clearScreen();
+        } else if (action == -8) {
+          _clearScreen();
+          _showMainMenuBanner();
+          print('\n\x1B[33m--- Webes Felület Beállításai ---\x1B[0m');
+          print('\x1B[33m[!] A webes felület beállításai zárolva vannak a terminálban,\x1B[0m');
+          print('hogy a böngészős beállítások ne íródjanak felül véletlenül.\n');
+
+          final unlock = Confirm(
+            prompt: 'Szeretnéd feloldani a zárolást és megnyitni a webes beállításokat?',
+            defaultValue: false,
+          ).interact();
+
+          if (unlock) {
+            _clearScreen();
+            _showMainMenuBanner();
+            print('\n\x1B[32m[FELOLDVA] Webes felület beállításai:\x1B[0m\n');
+            final webChoice = Select(
+              prompt: 'Válassz műveletet',
+              options: [
+                'Webes felület megnyitása a böngészőben (Pala Web)',
+                'Helyi böngésző gyorsítótár ürítése (figyelmeztetés beállítása)',
+                'Vissza'
+              ],
+            ).interact();
+
+            if (webChoice == 0) {
+              await runWeb();
+            } else if (webChoice == 1) {
+              print('\n\x1B[32m[OK] A böngészős gyorsítótár a következő webes megnyitáskor ürítve lesz.\x1B[0m');
+              _pause();
+            }
+          }
           _clearScreen();
         } else if (action == -6) {
           _clearScreen();

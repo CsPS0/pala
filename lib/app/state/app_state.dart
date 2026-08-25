@@ -8,6 +8,7 @@ class AppState {
   bool isOffline = false;
   String theme = 'orange';
   bool showAsciiBanner = true;
+  int parentalQuota = 5;
 
   AppState._internal() {
     loadTheme();
@@ -143,6 +144,16 @@ class AppState {
     if (state.containsKey('showAsciiBanner')) {
       showAsciiBanner = state['showAsciiBanner'] == true;
     }
+    if (state.containsKey('parentalQuota') && state['parentalQuota'] is int) {
+      parentalQuota = state['parentalQuota'];
+    }
+  }
+
+  void setParentalQuota(int quota) {
+    parentalQuota = quota;
+    final state = getAppState();
+    state['parentalQuota'] = parentalQuota;
+    saveAppState(state);
   }
 
   void saveTheme(String newTheme) {

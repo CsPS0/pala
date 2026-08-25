@@ -5,10 +5,8 @@ doc/api/
 .env*
 *.dart.js
 *.info.json
-*.js
-*.js_
-*.js.deps
-*.js.map
+!docs/*.js
+!website/**
 .flutter-plugins
 .flutter-plugins-dependencies
 
@@ -38,3 +36,9 @@ GEMINI.md
 bin/test_*.dart
 fix_encoding.dart
 student_data_search.txt
+
+# Node / Next.js
+node_modules/
+.next/
+website/node_modules/
+website/.next/

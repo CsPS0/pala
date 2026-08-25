@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pala — A Modern, Nyílt Forráskódú Kréta Kliens</title>
+  <meta name="description" content="Kezeld a jegyeidet, órarendedet, hiányzásaidat és dolgozataidat asztali gépen, mobilon, böngészőben vagy terminálban.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="container">
+      <a href="#" class="brand">
+        <span class="brand-badge">PALA</span>
+        <span>Kréta Kliens</span>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#funkciok">Funkciók</a></li>
+          <li><a href="#platformok">Platformok</a></li>
+          <li><a href="#telepites">Telepítés</a></li>
+          <li><a href="#biztonsag">Biztonság</a></li>
+          <li><a href="https://github.com/CsPS0/pala" target="_blank" rel="noopener">GitHub</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="#telepites" class="btn btn-primary">Letöltés</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-pill">
+        <span>Nyílt forráskódú</span> • <span>Villámgyors</span> • <span>Offline-kompatibilis</span>
+      </div>
+
+      <h1>
+        A modern, intelligens és letisztult <span>Kréta élmény</span>.
+      </h1>
+
+      <p>
+        Kezeld a jegyeidet, órarendedet, mulasztásaidat és tanári üzeneteidet asztali alkalmazásban, mobilon, böngészőben vagy terminálban — reklámok és lassulások nélkül.
+      </p>
+
+      <!-- Smart Dynamic CTA Button -->
+      <div class="hero-cta">
+        <a id="main-download-btn" href="https://github.com/CsPS0/pala/releases/latest" class="btn btn-primary btn-lg">
+          Letöltés felismerése...
+        </a>
+        <a href="https://github.com/CsPS0/pala" target="_blank" rel="noopener" class="btn btn-secondary btn-lg">
+          GitHub Forráskód
+        </a>
+      </div>
+
+      <!-- Version & Detected OS Info -->
+      <div class="version-info">
+        <span id="detected-os-badge">Platform automatikus észlelése...</span>
+        <span>•</span>
+        <span>Legfrissebb verzió: <strong id="latest-version-tag" class="version-tag">v1.2.3</strong></span>
+        <span id="latest-release-date"></span>
+      </div>
+
+      <!-- Platform Filter Chips -->
+      <div class="platform-row">
+        <a href="#telepites" class="platform-chip" data-platform="windows">Windows Desktop</a>
+        <a href="#telepites" class="platform-chip" data-platform="android">Android (.apk)</a>
+        <a href="#telepites" class="platform-chip" data-platform="ios">iOS</a>
+        <a href="#telepites" class="platform-chip" data-platform="macos">macOS</a>
+        <a href="#telepites" class="platform-chip" data-platform="linux">Linux</a>
+        <a href="#telepites" class="platform-chip" data-platform="tui">Terminál (TUI)</a>
+      </div>
+
+      <!-- Interactive UI Mockup Preview -->
+      <div class="mockup-container">
+        <div class="mockup-header">
+          <div class="mockup-dot red"></div>
+          <div class="mockup-dot yellow"></div>
+          <div class="mockup-dot green"></div>
+          <span class="mockup-title">Pala Desktop — Vezérlőpult</span>
+        </div>
+        <div class="mockup-body">
+          <div class="mockup-sidebar">
+            <div class="mockup-nav-item active">Vezérlőpult</div>
+            <div class="mockup-nav-item">Érdemjegyek</div>
+            <div class="mockup-nav-item">Órarend (5 napos)</div>
+            <div class="mockup-nav-item">Feladatok & Dolgozatok</div>
+            <div class="mockup-nav-item">Üzenetek & Tanárok</div>
+            <div class="mockup-nav-item">Mulasztások & Veszélyzóna</div>
+            <div class="mockup-nav-item">Statisztikák & Célátlag</div>
+          </div>
+          <div class="mockup-content">
+            <div class="mockup-grid">
+              <div class="mockup-card">
+                <div class="mockup-card-title">Tanulmányi Átlag</div>
+                <div class="mockup-card-val">4.82</div>
+              </div>
+              <div class="mockup-card">
+                <div class="mockup-card-title">Mai Órák</div>
+                <div class="mockup-card-val">6 tanóra</div>
+              </div>
+              <div class="mockup-card">
+                <div class="mockup-card-title">Szülői Igazolás Keret</div>
+                <div class="mockup-card-val">2 / 3 nap</div>
+              </div>
+            </div>
+            <div class="mockup-card" style="background: rgba(255, 136, 0, 0.08); border-color: rgba(255, 136, 0, 0.3);">
+              <div class="mockup-card-title" style="color: var(--primary);">FOLYAMATBAN LÉVŐ TANÓRA</div>
+              <div style="font-weight: 800; font-size: 1.1rem; color: #fff; margin-top: 4px;">Matematika • Terem: 204</div>
+              <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">Hátra van még: 18 perc (Vége: 10:45)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="funkciok" class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Minden, amire a tanév során szükséged van</h2>
+        <p class="section-subtitle">A Pala nem csupán egy egyszerű kliens, hanem egy komplett tanulói asszisztens.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon-box">01</div>
+          <h3>Élő Visszaszámláló & Órarend</h3>
+          <p>Valós idejű órarendi visszaszámlálás dinamikus folyamatjelzővel, teremszámokkal, tanárokkal és elmaradó órák jelzésével.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">02</div>
+          <h3>Célátlag & Szellem Jegy Kalkulátor</h3>
+          <p>Kiszámítja, hogy hány darab 5-ös szükséges a kitűzött tanulmányi átlag eléréséhez, és azonnal szimulálhatsz feltételes jegyeket.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">03</div>
+          <h3>250 Órás Veszélyzóna & Igazolás</h3>
+          <p>Pontos hiányzásmérő a 250 órás tantárgyi osztályozóvizsga-küszöbhöz, szülői keret figyelővel és 1-kattintásos igazolás generátorral.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">04</div>
+          <h3>Közvetlen Tanári Üzenetküldés</h3>
+          <p>Írj üzenetet közvetlenül tanáraidnak a beépített tantárgyi és órarendi névsorból, vagy válaszolj a beérkezett levelekre egy kattintással.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">05</div>
+          <h3>Pala Wrapped & Story Megosztás</h3>
+          <p>Év végi összefoglaló kártya, amelyet 9:16 formátumban azonnal lementhetsz és megoszthatsz Instagram vagy Facebook történetként.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">06</div>
+          <h3>100% Offline & Gyorsítótár</h3>
+          <p>Nincs internet a suliban? A Pala minden adatot titkosított helyi gyorsítótárban tárol, így internetkapcsolat nélkül is azonnal elérhető.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Platforms & Installation Section -->
+  <section id="telepites" class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Válaszd ki a platformodat</h2>
+        <p class="section-subtitle">A Pala minden eszközödön natívan és villámgyorsan fut.</p>
+      </div>
+
+      <!-- Tab Buttons -->
+      <div class="install-tabs">
+        <button class="install-tab active" data-tab="tab-desktop">Windows Asztali Alkalmazás</button>
+        <button class="install-tab" data-tab="tab-mobile">Mobil (Android & iOS)</button>
+        <button class="install-tab" data-tab="tab-cli">Terminál (TUI / CLI)</button>
+        <button class="install-tab" data-tab="tab-web">Webes Felület</button>
+      </div>
+
+      <!-- Tab 1: Windows Desktop -->
+      <div id="tab-desktop" class="install-panel active">
+        <h3>Pala Windows Asztali Alkalmazás</h3>
+        <p style="color: var(--text-muted); margin-top: 6px;">
+          Kényelmes, egérrel és billentyűzettel vezérelhető asztali felület Windows 10 és Windows 11 rendszerekre, Start menü integrációval.
+        </p>
+
+        <div style="margin-top: 20px;">
+          <a href="https://github.com/CsPS0/pala/releases/latest" class="btn btn-primary">
+            Telepítő Letöltése (.exe)
+          </a>
+        </div>
+
+        <div style="margin-top: 24px;">
+          <p style="font-weight: 700; font-size: 0.9rem; color: var(--text-main);">Parancssoros Start menü bejegyzés létrehozása:</p>
+          <div class="code-block">
+            <span id="code-shortcut">pala --install-shortcut</span>
+            <button class="copy-btn" data-copy-target="code-shortcut">Másolás</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Mobile -->
+      <div id="tab-mobile" class="install-panel">
+        <h3>Mobil Alkalmazás (Android & iOS)</h3>
+        <p style="color: var(--text-muted); margin-top: 6px;">
+          Hordozható, érintőképernyőre optimalizált élmény okostelefonokra és táblagépekre.
+        </p>
+
+        <div style="display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap;">
+          <a href="https://github.com/CsPS0/pala/releases/latest" class="btn btn-primary">
+            Android APK Letöltése (.apk)
+          </a>
+          <a href="https://github.com/CsPS0/pala" class="btn btn-secondary">
+            iOS Telepítési Útmutató
+          </a>
+        </div>
+      </div>
+
+      <!-- Tab 3: Terminal / CLI -->
+      <div id="tab-cli" class="install-panel">
+        <h3>Terminálos Kliens (TUI) Telepítése</h3>
+        <p style="color: var(--text-muted); margin-top: 6px;">
+          Telepítsd a kedvenc csomagkezelőddel Windows, Linux és macOS rendszereken:
+        </p>
+
+        <div style="margin-top: 16px;">
+          <p style="font-weight: 700; font-size: 0.85rem; color: var(--text-main);">Windows (Scoop):</p>
+          <div class="code-block">
+            <span id="code-scoop">scoop bucket add pala https://github.com/CsPS0/pala-bucket && scoop install pala</span>
+            <button class="copy-btn" data-copy-target="code-scoop">Másolás</button>
+          </div>
+
+          <p style="font-weight: 700; font-size: 0.85rem; color: var(--text-main); margin-top: 12px;">Linux & macOS (Gyors telepítő):</p>
+          <div class="code-block">
+            <span id="code-curl">curl -fsSL https://raw.githubusercontent.com/CsPS0/pala/main/install.sh | bash</span>
+            <button class="copy-btn" data-copy-target="code-curl">Másolás</button>
+          </div>
+
+          <p style="font-weight: 700; font-size: 0.85rem; color: var(--text-main); margin-top: 12px;">macOS (Homebrew):</p>
+          <div class="code-block">
+            <span id="code-brew">brew tap CsPS0/pala && brew install pala</span>
+            <button class="copy-btn" data-copy-target="code-brew">Másolás</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 4: Web UI -->
+      <div id="tab-web" class="install-panel">
+        <h3>Helyi Webes Felület (Pala Web)</h3>
+        <p style="color: var(--text-muted); margin-top: 6px;">
+          Nyisd meg a Palát közvetlenül a böngésződben helyi szerverként a terminálból:
+        </p>
+
+        <div class="code-block" style="margin-top: 16px;">
+          <span id="code-web">pala --web</span>
+          <button class="copy-btn" data-copy-target="code-web">Másolás</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Security Section -->
+  <section id="biztonsag" class="section">
+    <div class="container">
+      <div class="security-banner">
+        <div>
+          <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 12px;">Teljes Adatbiztonság & Adatvédelem</h2>
+          <p style="color: var(--text-muted); font-size: 0.95rem;">
+            A személyes tanulmányi adataid kizárólag a tiéd. A Pala nem használ köztes proxy szervereket, és nem gyűjt telemetriát.
+          </p>
+        </div>
+
+        <ul class="security-points">
+          <li>Közvetlen kapcsolat a hivatalos Kréta API szervereivel</li>
+          <li>A jelszavak és tokenek AES-256 titkosítással tárolódnak a helyi eszközön</li>
+          <li>100% nyílt forráskódú és függetlenül auditálható forráskód</li>
+          <li>Nincs adatgyűjtés, nincsenek analitikai követőkódok és nincsenek reklámok</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="brand">
+          <span class="brand-badge">PALA</span>
+          <span>Kréta Kliens</span>
+        </div>
+
+        <div style="display: flex; gap: 20px; font-size: 0.88rem;">
+          <a href="https://github.com/CsPS0/pala" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/CsPS0/pala/releases" target="_blank" rel="noopener">Kiadások</a>
+          <a href="https://github.com/CsPS0/pala/blob/main/LICENSE" target="_blank" rel="noopener">MIT Licenc</a>
+          <a href="https://github.com/CsPS0/pala/blob/main/docs/DATA_SECURITY.md" target="_blank" rel="noopener">Adatvédelem</a>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        Pala — Nem hivatalos, nyílt forráskódú Kréta kliens. A Kréta az eKréta Informatikai Zrt. védjegye.
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

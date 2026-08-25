@@ -10,6 +10,7 @@ import 'package:pala/utils/chart_generator.dart';
 import 'package:pala/utils/ics_exporter.dart';
 import 'package:pala/utils/encryption.dart';
 import 'package:pala/utils/web_composer.dart';
+import 'package:pala/web/pala_web_server.dart';
 import 'package:pala/app/components/custom_menu.dart';
 import 'package:pala/app/components/utf8_input.dart';
 import 'package:pala/app/theme.dart';
@@ -179,6 +180,21 @@ class PalaApp {
     }
   }
 
+  Future<void> runDemoWeb() async {
+    AppState.instance.migrateOldFiles();
+    isDemo = true;
+    _client = DemoKretaClient();
+    await PalaWebServer.runInteractive(client: _client!);
+  }
+
+  Future<void> runWeb() async {
+    AppState.instance.migrateOldFiles();
+    PalaTheme.configureInteractTheme();
+
+    await _tryAutoLogin();
+    await PalaWebServer.runInteractive(client: _client);
+  }
+
   Future<void> runInteractive({bool startInDashboard = false}) async {
     AppState.instance.migrateOldFiles();
     PalaTheme.configureInteractTheme();
@@ -287,6 +303,8 @@ class PalaApp {
         {'type': 'separator', 'label': '------------------'},
         {'type': 'action', 'id': 8, 'label': 'Keresés'},
         {'type': 'action', 'id': -2, 'label': 'Dashboard (Élő nézet)'},
+        {'type': 'action', 'id': -3, 'label': 'Pala Webes felület (Web UI)'},
+        {'type': 'action', 'id': -4, 'label': 'Pala Asztali Alkalmazás (Desktop UI)'},
         {'type': 'action', 'id': 9, 'label': 'Beállítások'},
         {'type': 'action', 'id': 100, 'label': 'Kilépés'},
       ];
@@ -415,6 +433,16 @@ class PalaApp {
           forceRestoreConsoleMode();
           _clearScreen();
           break;
+        case -3:
+          _clearScreen();
+          await PalaWebServer.runInteractive(client: _client!);
+          _clearScreen();
+          break;
+        case -4:
+          _clearScreen();
+          await runDesktop();
+          _clearScreen();
+          break;
         case 100:
           final confirm = Confirm(
             prompt: 'Biztos ki akarsz lépni?',
@@ -426,6 +454,84 @@ class PalaApp {
           }
           break;
       }
+    }
+  }
+
+  Future<void> runDesktop() async {
+    print('Pala Asztali Alkalmazás indítása...');
+
+    String repoRoot = Directory.current.path;
+    if (!Directory('$repoRoot/mobile').existsSync()) {
+      final scriptDir = File(Platform.script.toFilePath()).parent.parent.path;
+      if (Directory('$scriptDir/mobile').existsSync()) {
+        repoRoot = scriptDir;
+      }
+    }
+
+    if (Platform.isWindows) {
+      final releaseExe = File('$repoRoot/mobile/build/windows/x64/runner/Release/pala_mobile.exe');
+      final debugExe = File('$repoRoot/mobile/build/windows/x64/runner/Debug/pala_mobile.exe');
+
+      if (releaseExe.existsSync()) {
+        print('Asztali alkalmazás indítása: ${releaseExe.path}');
+        await Process.start(releaseExe.path, [], mode: ProcessStartMode.detached);
+        return;
+      } else if (debugExe.existsSync()) {
+        print('Asztali alkalmazás indítása: ${debugExe.path}');
+        await Process.start(debugExe.path, [], mode: ProcessStartMode.detached);
+        return;
+      }
+    } else if (Platform.isLinux) {
+      final linuxExe = File('$repoRoot/mobile/build/linux/x64/release/bundle/pala_mobile');
+      if (linuxExe.existsSync()) {
+        print('Asztali alkalmazás indítása: ${linuxExe.path}');
+        await Process.start(linuxExe.path, [], mode: ProcessStartMode.detached);
+        return;
+      }
+    } else if (Platform.isMacOS) {
+      final macApp = Directory('$repoRoot/mobile/build/macos/Build/Products/Release/pala_mobile.app');
+      if (macApp.existsSync()) {
+        print('Asztali alkalmazás indítása: ${macApp.path}');
+        await Process.start('open', [macApp.path], mode: ProcessStartMode.detached);
+        return;
+      }
+    }
+
+    final mobileDir = Directory('$repoRoot/mobile');
+    if (mobileDir.existsSync()) {
+      final target = Platform.isMacOS ? 'macos' : (Platform.isLinux ? 'linux' : 'windows');
+      print('Asztali alkalmazás indítása (flutter run -d $target)...');
+      await Process.start('flutter', ['run', '-d', target], workingDirectory: mobileDir.path, mode: ProcessStartMode.detached);
+      return;
+    }
+
+    print('Nem található a Pala Desktop futtatható állománya.');
+    print('Kérjük, fordítsd le a Flutter asztali alkalmazást a mobile/ mappában.');
+  }
+
+  Future<void> installStartMenuShortcut() async {
+    if (!Platform.isWindows) {
+      print('A Start menü parancsikon funkció csak Windows rendszeren érhető el.');
+      return;
+    }
+    String repoRoot = Directory.current.path;
+    if (!Directory('$repoRoot/mobile').existsSync()) {
+      final scriptDir = File(Platform.script.toFilePath()).parent.parent.path;
+      if (Directory('$scriptDir/mobile').existsSync()) {
+        repoRoot = scriptDir;
+      }
+    }
+    final script = File('$repoRoot/scripts/install_start_menu_shortcut.ps1');
+    if (script.existsSync()) {
+      final result = await Process.run('pwsh', ['-ExecutionPolicy', 'Bypass', '-File', script.path]);
+      if (result.exitCode != 0) {
+        final res2 = await Process.run('powershell', ['-ExecutionPolicy', 'Bypass', '-File', script.path]);
+        stdout.write(res2.stdout);
+      } else {
+        stdout.write(result.stdout);
+      }
+    } else {
+      print('Nem található a shortcut telepítő parancsfájl.');
     }
   }
 

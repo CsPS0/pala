@@ -165,7 +165,7 @@ class WebComposerServer {
   static void _openBrowser(String url) {
     try {
       if (Platform.isWindows) {
-        Process.run('explorer', [url]);
+        Process.run('powershell', ['-NoProfile', '-Command', 'Start-Process', '"$url"']);
       } else if (Platform.isLinux) {
         Process.run('xdg-open', [url]);
       } else if (Platform.isMacOS) {

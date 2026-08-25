@@ -18,6 +18,9 @@ void main(List<String> arguments) async {
     ..addOption('institute', abbr: 'i', help: 'Az intézmény kódja (pl. intezmeny123)')
     ..addOption('username', abbr: 'u', help: 'Felhasználónév (oktatási azonosító)')
     ..addOption('password', abbr: 'p', help: 'Jelszó')
+    ..addFlag('web', abbr: 'w', negatable: false, help: 'Pala grafikus Webes Felület (Web UI) indítása a böngészőben')
+    ..addFlag('desktop', abbr: 'g', negatable: false, help: 'Pala grafikus Asztali Alkalmazás (Desktop UI) indítása')
+    ..addFlag('install-shortcut', negatable: false, help: 'Windows Start menü parancsikon létrehozása a Pala Desktophoz')
     ..addFlag('daemon', abbr: 'd', negatable: false, help: 'Háttérfolyamatként futtatás értesítésekhez')
     ..addFlag('demo', abbr: 'm', negatable: false, help: 'Indítás beépített demó profillal (Teszt Elek - Offline tesztadatok)')
     ..addFlag('version', abbr: 'v', negatable: false, help: 'Verzióinformáció megjelenítése')
@@ -64,6 +67,25 @@ void main(List<String> arguments) async {
   }
 
   final app = PalaApp();
+
+  if (argResults['web']) {
+    if (argResults['demo']) {
+      await app.runDemoWeb();
+    } else {
+      await app.runWeb();
+    }
+    exit(0);
+  }
+
+  if (argResults['desktop']) {
+    await app.runDesktop();
+    exit(0);
+  }
+
+  if (argResults['install-shortcut']) {
+    await app.installStartMenuShortcut();
+    exit(0);
+  }
 
   if (argResults['daemon']) {
     await app.runDaemon();

@@ -1185,6 +1185,20 @@ class DemoData {
   static List<Absence> getAbsences() {
     final now = DateTime.now();
     return [
+      // Parental excused day (2 lessons)
+      Absence(
+        subject: 'Biológia',
+        date: now.subtract(const Duration(days: 22)),
+        status: 'Igazolt',
+        type: 'Szülői igazolás',
+      ),
+      Absence(
+        subject: 'Földrajz',
+        date: now.subtract(const Duration(days: 22)),
+        status: 'Igazolt',
+        type: 'Szülői igazolás',
+      ),
+      // Medical excused day (3 lessons)
       Absence(
         subject: 'Matematika',
         date: now.subtract(const Duration(days: 8)),
@@ -1203,6 +1217,7 @@ class DemoData {
         status: 'Igazolt',
         type: 'Orvosi igazolás',
       ),
+      // Delays
       Absence(
         subject: 'Testnevelés és egészségfejlesztés',
         date: now.subtract(const Duration(days: 3)),
@@ -1211,17 +1226,30 @@ class DemoData {
         delayMinutes: 10,
       ),
       Absence(
+        subject: 'Angol nyelv',
+        date: now.subtract(const Duration(days: 15)),
+        status: 'Igazolt',
+        type: 'Késés',
+        delayMinutes: 5,
+      ),
+      // Pending unexcused day ready for excuse letter generation
+      Absence(
         subject: 'Fizika',
         date: now.subtract(const Duration(days: 1)),
         status: 'Igazolandó',
         type: 'Hiányzás',
       ),
       Absence(
-        subject: 'Angol nyelv',
-        date: now.subtract(const Duration(days: 15)),
-        status: 'Igazolt',
-        type: 'Késés',
-        delayMinutes: 5,
+        subject: 'Kémia',
+        date: now.subtract(const Duration(days: 1)),
+        status: 'Igazolandó',
+        type: 'Hiányzás',
+      ),
+      Absence(
+        subject: 'Matematika',
+        date: now.subtract(const Duration(days: 1)),
+        status: 'Igazolandó',
+        type: 'Hiányzás',
       ),
     ];
   }

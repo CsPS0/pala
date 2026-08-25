@@ -9,10 +9,17 @@ extension PalaAppAbsencesView on PalaApp {
         
         final action = Select(
           prompt: 'Mulasztások',
-          options: ['Legutóbbi 10 mulasztás', 'Összes mulasztás', 'Veszélyzóna Kalkulátor', 'Vissza'],
+          options: [
+            'Legutóbbi 10 mulasztás',
+            'Összes mulasztás listázása',
+            'Szülői igazolás keretfigyelő',
+            'Szülői / Orvosi igazolás-kérvény készítése',
+            'Veszélyzóna Kalkulátor (250 órás határ)',
+            'Vissza'
+          ],
         ).interact();
   
-        if (action == 3) return;
+        if (action == 5) return;
         _clearScreen();
         
         final absences = await _client!.getAbsences();
@@ -23,34 +30,17 @@ extension PalaAppAbsencesView on PalaApp {
         }
 
         if (action == 2) {
-          print('\n--- Veszélyzóna Kalkulátor ---');
-          print('Kiszámoljuk, mennyire vagy közel a kritikus 250 órás (vagy 30%-os) határhoz.');
-          int totalAbsences = absences.length;
-          double percent = (totalAbsences / 250.0) * 100;
-          print('Összes mulasztott órád: \x1B[1;36m$totalAbsences / 250\x1B[0m (\x1B[1;33m${percent.toStringAsFixed(1)}%\x1B[0m)');
-          
-          if (totalAbsences >= 250) {
-            print('\x1B[1;31m[!] FIGYELEM: Átlépted a 250 órás határt! Osztályozóvizsgára kötelezhetnek!\x1B[0m');
-          } else if (totalAbsences >= 200) {
-            print('\x1B[1;31m[!] KÖZEL A HATÁR: Nagyon vigyázz, majdnem elérted a 250 órát!\x1B[0m');
-          } else if (totalAbsences >= 150) {
-            print('\x1B[1;33m[!] FIGYELMEZTETÉS: Kezd felgyűlni a hiányzásod.\x1B[0m');
-          } else {
-            print('\x1B[1;32m[OK] Biztonságos zónában vagy.\x1B[0m');
-          }
+          await _showParentalQuotaTracker(absences);
+          continue;
+        }
 
-          final Map<String, int> missedBySubject = {};
-          for (var a in absences) {
-            final s = AppState.instance.applyAlias(a.subject);
-            missedBySubject[s] = (missedBySubject[s] ?? 0) + 1;
-          }
-          print('\nTantárgyak szerinti mulasztások (Figyelj a 30%-os szabályra!):');
-          final sortedMissed = missedBySubject.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
-          for (var e in sortedMissed.take(5)) {
-            print(' - ${e.key}: \x1B[1;33m${e.value} óra\x1B[0m');
-          }
-          print('');
-          _pause();
+        if (action == 3) {
+          await _showAbsenceCertificateGenerator(absences);
+          continue;
+        }
+
+        if (action == 4) {
+          _showAbsenceDangerZone(absences);
           continue;
         }
 
@@ -554,6 +544,327 @@ extension PalaAppAbsencesView on PalaApp {
       print('$pSubj | $pAvg | $pTarget | $resultStr');
     }
     print('--------------------------------------------------------------------------------');
+    _pause();
+  }
+
+  void _showAbsenceDangerZone(List<Absence> absences) {
+    _clearScreen();
+    print('\n--- Veszélyzóna Kalkulátor ---');
+    print('Kiszámoljuk, mennyire vagy közel a kritikus 250 órás (vagy 30%-os) határhoz.');
+    int totalAbsences = absences.length;
+    double percent = (totalAbsences / 250.0) * 100;
+    print('Összes mulasztott órád: \x1B[1;36m$totalAbsences / 250\x1B[0m (\x1B[1;33m${percent.toStringAsFixed(1)}%\x1B[0m)');
+    
+    if (totalAbsences >= 250) {
+      print('\x1B[1;31m[!] FIGYELEM: Átlépted a 250 órás határt! Osztályozóvizsgára kötelezhetnek!\x1B[0m');
+    } else if (totalAbsences >= 200) {
+      print('\x1B[1;31m[!] KÖZEL A HATÁR: Nagyon vigyázz, majdnem elérted a 250 órát!\x1B[0m');
+    } else if (totalAbsences >= 150) {
+      print('\x1B[1;33m[!] FIGYELMEZTETÉS: Kezd felgyűlni a hiányzásod.\x1B[0m');
+    } else {
+      print('\x1B[1;32m[OK] Biztonságos zónában vagy.\x1B[0m');
+    }
+
+    final Map<String, int> missedBySubject = {};
+    for (var a in absences) {
+      final s = AppState.instance.applyAlias(a.subject);
+      missedBySubject[s] = (missedBySubject[s] ?? 0) + 1;
+    }
+    print('\nTantárgyak szerinti mulasztások (Figyelj a 30%-os szabályra!):');
+    final sortedMissed = missedBySubject.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    for (var e in sortedMissed.take(5)) {
+      print(' - ${e.key}: \x1B[1;33m${e.value} óra\x1B[0m');
+    }
+    print('');
+    _pause();
+  }
+
+  Future<void> _showParentalQuotaTracker(List<Absence> absences) async {
+    _clearScreen();
+    print('\n--- Szülői Igazolás Keretfigyelő ---');
+    
+    final quota = AppState.instance.parentalQuota;
+    
+    // Group absences by date where type or status indicates parental excuse
+    final Map<String, List<Absence>> parentalAbsencesByDate = {};
+    for (var a in absences) {
+      final t = (a.type ?? '').toLowerCase();
+      final s = a.status.toLowerCase();
+      
+      final isParental = t.contains('szülő') || t.contains('gondviselő') || 
+                         s.contains('szülő') || s.contains('gondviselő');
+                         
+      if (isParental) {
+        final dateStr = a.date?.toString().split(' ').first.split('T').first ?? 'Ismeretlen dátum';
+        parentalAbsencesByDate.putIfAbsent(dateStr, () => []);
+        parentalAbsencesByDate[dateStr]!.add(a);
+      }
+    }
+
+    final usedDays = parentalAbsencesByDate.keys.length;
+    final remainingDays = quota - usedDays;
+    int totalParentalLessons = 0;
+    for (var list in parentalAbsencesByDate.values) {
+      totalParentalLessons += list.length;
+    }
+
+    print('Iskolai szülői igazolási keret: \x1B[1;36m$quota nap / tanév\x1B[0m');
+    print('Felhasznált napok:              \x1B[1;33m$usedDays nap\x1B[0m ($totalParentalLessons tanítási óra)');
+    
+    if (remainingDays < 0) {
+      print('Hátralévő keret:                \x1B[1;31m${remainingDays.abs()} nappal TÚLLÉPVE!\x1B[0m');
+      print('\n\x1B[1;31m[!] FIGYELEM: Átlépted a szülői igazolások megengedett keretét!\x1B[0m');
+      print('Az iskola házirendje szerint a további hiányzásokhoz orvosi igazolás vagy igazgatói engedély szükséges.');
+    } else if (remainingDays == 0) {
+      print('Hátralévő keret:                \x1B[1;31m0 nap (Keret kimerült)\x1B[0m');
+      print('\n\x1B[1;33m[!] FIGYELMEZTETÉS: Minden szülői igazolási napodat felhasználtad!\x1B[0m');
+    } else if (remainingDays == 1) {
+      print('Hátralévő keret:                \x1B[1;33m1 nap\x1B[0m');
+      print('\n\x1B[1;33m[!] Már csak 1 igazolható napod maradt a tanévben.\x1B[0m');
+    } else {
+      print('Hátralévő keret:                \x1B[1;32m$remainingDays nap\x1B[0m');
+      print('\n\x1B[1;32m[OK] Rendelkezel még szabad szülői igazolási kerettel.\x1B[0m');
+    }
+
+    if (parentalAbsencesByDate.isNotEmpty) {
+      print('\n--- Felhasznált Szülői Igazolások Részletesen ---');
+      final sortedDates = parentalAbsencesByDate.keys.toList()..sort((a, b) => b.compareTo(a));
+      for (var date in sortedDates) {
+        final items = parentalAbsencesByDate[date]!;
+        final subjects = items.map((e) => AppState.instance.applyAlias(e.subject)).toSet().join(', ');
+        print(' - \x1B[1m$date\x1B[0m (${items.length} óra): $subjects');
+      }
+    } else {
+      print('\nMég nem használtál fel szülői igazolást ebben a tanévben.');
+    }
+
+    print('\n[K] Keret módosítása  |  [Enter] Vissza');
+    stdout.write('> ');
+    final input = stdin.readLineSync()?.trim().toLowerCase();
+    if (input == 'k') {
+      final newQuotaStr = Utf8Input(prompt: 'Új szülői igazolási keret (napok száma)').interact().trim();
+      final newQuota = int.tryParse(newQuotaStr);
+      if (newQuota != null && newQuota > 0 && newQuota <= 30) {
+        AppState.instance.setParentalQuota(newQuota);
+        print('\x1B[1;32m[OK] Szülői keret sikeresen beállítva: $newQuota nap.\x1B[0m');
+        _pause();
+      }
+    }
+  }
+
+  Future<void> _showAbsenceCertificateGenerator(List<Absence> absences) async {
+    _clearScreen();
+    print('\n--- Szülői / Orvosi Igazolás-kérvény Készítése ---');
+    print('Hivatalos mulasztási igazolás vagy kérvény generálása az osztályfőnöknek.\n');
+
+    // Filter unexcused or pending absences
+    final unexcused = absences.where((a) {
+      final s = a.status.toLowerCase();
+      final t = (a.type ?? '').toLowerCase();
+      return s == 'igazolando' || s == 'igazolandó' || s == 'igazolatlan' || t == 'igazolandó' || t == 'igazolatlan';
+    }).toList();
+
+    // Group unexcused by date
+    final Map<String, List<Absence>> unexcusedByDate = {};
+    for (var a in unexcused) {
+      final dateStr = a.date?.toString().split(' ').first.split('T').first ?? 'Ismeretlen dátum';
+      unexcusedByDate.putIfAbsent(dateStr, () => []);
+      unexcusedByDate[dateStr]!.add(a);
+    }
+
+    final modeOptions = <String>[];
+    if (unexcusedByDate.isNotEmpty) {
+      modeOptions.add('Igazolandó mulasztások kiválasztása a Krétából (${unexcusedByDate.length} nap érhető el)');
+    }
+    modeOptions.add('Egyéni dátumtartomány megadása');
+    modeOptions.add('Mégse');
+
+    final modeChoice = Select(
+      prompt: 'Válassz forrást az igazoláshoz',
+      options: modeOptions,
+    ).interact();
+
+    if (modeChoice == modeOptions.length - 1) return;
+
+    List<String> selectedDates = [];
+    int totalMissedHours = 0;
+    String missedDetails = '';
+
+    final isKretas = unexcusedByDate.isNotEmpty && modeChoice == 0;
+
+    if (isKretas) {
+      final sortedUnexcusedDates = unexcusedByDate.keys.toList()..sort((a, b) => b.compareTo(a));
+      final dateOptions = sortedUnexcusedDates.map((d) {
+        final items = unexcusedByDate[d]!;
+        final subjs = items.map((e) => AppState.instance.applyAlias(e.subject)).take(3).join(', ');
+        return '$d (${items.length} óra: $subjs${items.length > 3 ? '...' : ''})';
+      }).toList();
+
+      final dateIndex = Select(
+        prompt: 'Válaszd ki az igazolandó napot',
+        options: dateOptions,
+      ).interact();
+
+      final chosenDate = sortedUnexcusedDates[dateIndex];
+      selectedDates = [chosenDate];
+      final items = unexcusedByDate[chosenDate]!;
+      totalMissedHours = items.length;
+      missedDetails = items.map((e) => AppState.instance.applyAlias(e.subject)).toSet().join(', ');
+    } else {
+      final nowStr = DateTime.now().toString().split(' ').first;
+      final startDate = Utf8Input(prompt: 'Hiányzás kezdő dátuma (ÉÉÉÉ-HH-NN)', defaultValue: nowStr).interact().trim();
+      final endDate = Utf8Input(prompt: 'Hiányzás záró dátuma (ÉÉÉÉ-HH-NN)', defaultValue: startDate).interact().trim();
+      
+      if (startDate == endDate) {
+        selectedDates = [startDate];
+      } else {
+        selectedDates = [startDate, endDate];
+      }
+
+      final hoursStr = Utf8Input(prompt: 'Mulasztott tanítási órák száma', defaultValue: '6').interact().trim();
+      totalMissedHours = int.tryParse(hoursStr) ?? 6;
+      missedDetails = 'Egész napos távollét';
+    }
+
+    // Select reason
+    final reasonOptions = [
+      'Betegség / Rosszullét (Orvosi kezelés nélkül, szülői felelősségre)',
+      'Orvosi vizsgálat / Szakorvosi ellátás',
+      'Családi ok / Rendkívüli családi esemény',
+      'Hivatalos tanulmányi verseny / Iskolai rendezvény',
+      'Egyéni indoklás megadása',
+      'Mégse'
+    ];
+
+    final reasonChoice = Select(
+      prompt: 'Válaszd ki a hiányzás indokát',
+      options: reasonOptions,
+    ).interact();
+
+    if (reasonChoice == reasonOptions.length - 1) return;
+
+    String reasonText = reasonOptions[reasonChoice];
+    if (reasonChoice == 4) {
+      reasonText = Utf8Input(prompt: 'Add meg a pontos indoklást').interact().trim();
+      if (reasonText.isEmpty) reasonText = 'Családi ok';
+    }
+
+    // Get student details
+    final student = await _client!.getStudentData(silent: true);
+    final studentName = student?.name ?? 'Diák';
+    final instituteName = student?.institutionName ?? 'Oktatási Intézmény';
+    final defaultGuardian = (student?.guardians != null && student!.guardians.isNotEmpty)
+        ? (student.guardians.first['Nev'] ?? student.guardians.first['name'] ?? student.mothersName ?? 'Gondviselő')
+        : (student?.mothersName ?? 'Gondviselő');
+
+    final guardianName = Utf8Input(
+      prompt: 'Gondviselő / Szülő neve',
+      defaultValue: defaultGuardian.toString(),
+    ).interact().trim();
+
+    final dateRangeStr = selectedDates.length == 1
+        ? selectedDates.first
+        : '${selectedDates.first} - ${selectedDates.last}';
+
+    final todayStr = DateTime.now().toString().split(' ').first;
+
+    final documentText = '''
+================================================================================
+                          SZÜLŐI IGAZOLÁS / NYILATKOZAT
+================================================================================
+
+Címzett:
+  $instituteName
+  Tisztelt Osztályfőnök / Iskolavezetés
+
+Alulírott $guardianName, mint $studentName tanuló gondviselője, ezúton igazolom és kérem gyermekem távollétének igazolását.
+
+A mulasztás adatai:
+  - Időszak:      $dateRangeStr
+  - Órák száma:   $totalMissedHours tanítási óra
+  - Érintett:     $missedDetails
+  - Távollét oka: $reasonText
+
+Kérem a Tisztelt Osztályfőnököt, hogy a fent megjelölt időszakban történt mulasztást a hatályos házirend és szülői jogköröm alapján szíveskedjék IGAZOLTNAK tekinteni.
+
+Kelt: $todayStr
+
+
+Tisztelettel:
+
+
+_____________________________
+$guardianName
+(Gondviselő aláírása)
+================================================================================
+''';
+
+    _clearScreen();
+    print(documentText);
+
+    final action = Select(
+      prompt: 'Mit szeretnél tenni a dokumentummal?',
+      options: [
+        'Küldés az Osztályfőnöknek (Web / Terminál Üzenetküldővel)',
+        'Mentés fájlba (Asztal / Dokumentumok)',
+        'Mindkettő (Küldés és Mentés)',
+        'Mégse'
+      ],
+    ).interact();
+
+    if (action == 3) return;
+
+    if (action == 1 || action == 2) {
+      await _exportExcuseDocument(documentText, 'Pala_Szuloi_Igazolas_${selectedDates.first.replaceAll('-', '_')}');
+    }
+
+    if (action == 0 || action == 2) {
+      final teachers = await _client!.getTeachers();
+      if (teachers != null && teachers.isNotEmpty) {
+        print('\n\x1B[1;33m[+] Üzenetküldő megnyitása az igazolás elküldéséhez...\x1B[0m\n');
+        
+        final subject = 'Szülői igazolás ($dateRangeStr) - $studentName';
+
+        final result = await WebComposerServer.start(
+          teachers: teachers,
+          preselectedSubject: subject,
+          studentName: guardianName,
+        );
+
+        if (result != null) {
+          final success = await _client!.sendMessage(
+            subject: result.subject,
+            text: result.text,
+            recipientIds: result.recipientIds,
+            attachmentPaths: result.attachmentPaths,
+          );
+          if (success) {
+            print('\n\x1B[1;32m[OK] Az igazolás sikeresen elküldve a Kréta rendszeren keresztül!\x1B[0m\n');
+          } else {
+            print('\n\x1B[1;31m[HIBA] Nem sikerült elküldeni az igazolást.\x1B[0m\n');
+          }
+        }
+      } else {
+        print('\nNem sikerült lekérdezni a tanárok listáját az üzenetküldéshez.');
+      }
+      _pause();
+    }
+  }
+
+  Future<void> _exportExcuseDocument(String content, String defaultBaseName) async {
+    try {
+      final home = Platform.environment['USERPROFILE'] ?? Platform.environment['HOME'] ?? '.';
+      final desktop = Directory(p.join(home, 'Desktop'));
+      final targetDir = desktop.existsSync() ? desktop.path : home;
+      final targetFile = File(p.join(targetDir, '$defaultBaseName.txt'));
+
+      targetFile.writeAsBytesSync(const [239, 187, 191]); // UTF-8 BOM
+      targetFile.writeAsStringSync(content, mode: FileMode.write);
+      print('\n\x1B[1;32m[OK] Igazolás dokumentum sikeresen elmentve:\x1B[0m');
+      print('    \x1B[1;36m${targetFile.path}\x1B[0m\n');
+    } catch (e) {
+      print('\nHiba a dokumentum mentése során: $e');
+    }
     _pause();
   }
 }
