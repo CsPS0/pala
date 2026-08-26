@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pala // Vezérlőpult</title>
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="../icons/icon-48.png" alt="Pala" class="brand-logo">
+      <div>
+        <div class="brand-name">PALA</div>
+        <div class="brand-sub">Kréta Bővítmény</div>
+      </div>
+    </div>
+
+    <nav class="nav-menu">
+      <button class="nav-item active" data-tab="view-dashboard">Vezérlőpult</button>
+      <button class="nav-item" data-tab="view-timetable">Heti Órarend</button>
+      <button class="nav-item" data-tab="view-grades">Érdemjegyek & Átlag</button>
+      <button class="nav-item" data-tab="view-tasks">Feladatok & Dolgozatok</button>
+      <button class="nav-item" data-tab="view-absences">250h Veszélyzóna</button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div id="student-info" class="student-pill">
+        <strong id="student-name">Betöltés...</strong>
+        <span id="inst-name" style="font-size:0.7rem; color:var(--text-muted);">Pala Minta Gimnázium</span>
+      </div>
+      <button id="btn-reload" class="btn btn-secondary btn-block" style="margin-top:8px;">⟳ Frissítés</button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-body">
+    <!-- View 1: Dashboard -->
+    <div id="view-dashboard" class="view-panel active">
+      <header class="page-header">
+        <h1>Vezérlőpult</h1>
+        <span id="demo-indicator" class="badge badge-demo">Demó Mód (Teszt Elek)</span>
+      </header>
+
+      <!-- Stat Cards -->
+      <div class="stat-grid">
+        <div class="card stat-card">
+          <div class="stat-label">Tanulmányi Átlag</div>
+          <div id="dash-avg" class="stat-val orange">4.85</div>
+          <div class="stat-sub green">+0.12 múlt héthez képest</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-label">Mai Tanórák</div>
+          <div id="dash-classes" class="stat-val">6 óra</div>
+          <div class="stat-sub">3 befejezve • 3 hátra</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-label">Szülői Igazolás</div>
+          <div id="dash-parental" class="stat-val green">2 / 3 nap</div>
+          <div class="stat-sub">1 nap maradt ebben a félévben</div>
+        </div>
+      </div>
+
+      <!-- Active Class Banner -->
+      <div class="card hero-banner">
+        <div>
+          <div class="banner-tag">FOLYAMATBAN LÉVŐ TANÓRA</div>
+          <div id="dash-active-title" class="banner-title">Matematika • Terem: 204 (Kovács Péter)</div>
+          <div id="dash-active-desc" class="banner-desc">Hátra van még: 18 perc • 4. tanóra (10:00 - 10:45)</div>
+        </div>
+        <div class="banner-badge">Dolgozat csütörtökön</div>
+      </div>
+
+      <!-- Recent Grades Table -->
+      <div class="card">
+        <h2 style="font-size: 1rem; margin-bottom: 12px;">Legfrissebb Érdemjegyek</h2>
+        <div id="dash-grades-table" class="table-container">
+          <!-- Injected dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- View 2: Timetable -->
+    <div id="view-timetable" class="view-panel">
+      <header class="page-header">
+        <h1>Heti Órarend</h1>
+      </header>
+      <div id="weekly-timetable-grid" class="timetable-grid">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+
+    <!-- View 3: Grades -->
+    <div id="view-grades" class="view-panel">
+      <header class="page-header">
+        <h1>Érdemjegyek & Célátlag Számoló</h1>
+      </header>
+      <div id="all-grades-grid" class="grades-grid">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+
+    <!-- View 4: Tasks -->
+    <div id="view-tasks" class="view-panel">
+      <header class="page-header">
+        <h1>Feladatok & Dolgozatok</h1>
+      </header>
+      <div id="tasks-full-list" class="tasks-container">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+
+    <!-- View 5: Absences -->
+    <div id="view-absences" class="view-panel">
+      <header class="page-header">
+        <h1>250 Órás Veszélyzóna & Mulasztások</h1>
+      </header>
+      <div class="card" style="margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+          <span style="font-weight: 700; font-size: 0.9rem;">Összes mulasztott óra: <strong>14 óra</strong></span>
+          <span style="font-size: 0.8rem; color: var(--success); font-weight: 700;">Biztonságos zóna (5.6%)</span>
+        </div>
+        <div class="progress-bar-container" style="height: 10px;">
+          <div class="progress-bar-fill" style="width: 5.6%; background: var(--success);"></div>
+        </div>
+      </div>
+      <div id="absences-full-list" class="table-container">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+  </main>
+
+  <script src="../shared/kreta_api.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

@@ -20,7 +20,12 @@ void main(List<String> arguments) async {
     ..addOption('password', abbr: 'p', help: 'Jelszó')
     ..addFlag('web', abbr: 'w', negatable: false, help: 'Pala grafikus Webes Felület (Web UI) indítása a böngészőben')
     ..addFlag('desktop', abbr: 'g', negatable: false, help: 'Pala grafikus Asztali Alkalmazás (Desktop UI) indítása')
-    ..addFlag('install-shortcut', negatable: false, help: 'Windows Start menü parancsikon létrehozása a Pala Desktophoz')
+    ..addFlag('install-shortcut', negatable: false, help: 'Windows / Linux Start menü parancsikon létrehozása a Pala Desktophoz')
+    ..addFlag('remove-shortcut', negatable: false, help: 'Pala Start menü és asztali parancsikonok eltávolítása')
+    ..addFlag('add-path', negatable: false, help: 'Pala hozzáadása a felhasználói PATH környezeti változóhoz')
+    ..addFlag('remove-path', negatable: false, help: 'Pala eltávolítása a PATH környezeti változóból')
+    ..addFlag('clear-cache', negatable: false, help: 'Helyi gyorsítótár, hitelesítési tokenek és offline adatok törlése')
+    ..addFlag('uninstall', negatable: false, help: 'Interaktív komponens eltávolítás és rendszer-tisztítás')
     ..addFlag('daemon', abbr: 'd', negatable: false, help: 'Háttérfolyamatként futtatás értesítésekhez')
     ..addFlag('demo', abbr: 'm', negatable: false, help: 'Indítás beépített demó profillal (Teszt Elek - Offline tesztadatok)')
     ..addFlag('version', abbr: 'v', negatable: false, help: 'Verzióinformáció megjelenítése')
@@ -39,13 +44,13 @@ void main(List<String> arguments) async {
   if (argResults['completions'] != null) {
     final shell = argResults['completions'].toString().toLowerCase();
     if (shell == 'bash') {
-      print('complete -W "-i -u -p -d -m -v -h --institute --username --password --daemon --demo --version --help --completions" pala');
+      print('complete -W "-i -u -p -d -m -v -h --institute --username --password --daemon --demo --version --help --completions --install-shortcut --remove-shortcut --add-path --remove-path --clear-cache --uninstall" pala');
     } else if (shell == 'zsh') {
-      print('compdef _pala pala\n_pala() { _arguments "-i" "-u" "-p" "-d" "-m" "-v" "-h" "--institute" "--username" "--password" "--daemon" "--demo" "--version" "--help" "--completions" }');
+      print('compdef _pala pala\n_pala() { _arguments "-i" "-u" "-p" "-d" "-m" "-v" "-h" "--institute" "--username" "--password" "--daemon" "--demo" "--version" "--help" "--completions" "--install-shortcut" "--remove-shortcut" "--add-path" "--remove-path" "--clear-cache" "--uninstall" }');
     } else if (shell == 'fish') {
-      print('complete -c pala -s i -l institute\ncomplete -c pala -s u -l username\ncomplete -c pala -s p -l password\ncomplete -c pala -s d -l daemon\ncomplete -c pala -s m -l demo\ncomplete -c pala -s v -l version\ncomplete -c pala -s h -l help\ncomplete -c pala -l completions');
+      print('complete -c pala -s i -l institute\ncomplete -c pala -s u -l username\ncomplete -c pala -s p -l password\ncomplete -c pala -s d -l daemon\ncomplete -c pala -s m -l demo\ncomplete -c pala -s v -l version\ncomplete -c pala -s h -l help\ncomplete -c pala -l completions\ncomplete -c pala -l install-shortcut\ncomplete -c pala -l remove-shortcut\ncomplete -c pala -l add-path\ncomplete -c pala -l remove-path\ncomplete -c pala -l clear-cache\ncomplete -c pala -l uninstall');
     } else if (shell == 'powershell') {
-      print('Register-ArgumentCompleter -Native -CommandName pala -ScriptBlock { param(\$commandName, \$parameterName, \$wordToComplete, \$commandAst, \$fakeBoundParameters); @("-i", "-u", "-p", "-d", "-m", "-v", "-h", "--institute", "--username", "--password", "--daemon", "--demo", "--version", "--help", "--completions") | Where-Object { \$_ -like "\$wordToComplete*" } }');
+      print('Register-ArgumentCompleter -Native -CommandName pala -ScriptBlock { param(\$commandName, \$parameterName, \$wordToComplete, \$commandAst, \$fakeBoundParameters); @("-i", "-u", "-p", "-d", "-m", "-v", "-h", "--institute", "--username", "--password", "--daemon", "--demo", "--version", "--help", "--completions", "--install-shortcut", "--remove-shortcut", "--add-path", "--remove-path", "--clear-cache", "--uninstall") | Where-Object { \$_ -like "\$wordToComplete*" } }');
     } else {
       print('Ismeretlen shell. Támogatott: bash, zsh, fish, powershell');
     }
@@ -84,6 +89,31 @@ void main(List<String> arguments) async {
 
   if (argResults['install-shortcut']) {
     await app.installStartMenuShortcut();
+    exit(0);
+  }
+
+  if (argResults['remove-shortcut']) {
+    await app.removeStartMenuShortcut();
+    exit(0);
+  }
+
+  if (argResults['add-path']) {
+    await app.addToUserPath();
+    exit(0);
+  }
+
+  if (argResults['remove-path']) {
+    await app.removeFromUserPath();
+    exit(0);
+  }
+
+  if (argResults['clear-cache']) {
+    await app.clearCache();
+    exit(0);
+  }
+
+  if (argResults['uninstall']) {
+    await app.uninstallInteractive();
     exit(0);
   }
 

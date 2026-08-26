@@ -30,12 +30,24 @@ A főmenü "Beállítások" opciójában az alábbi funkciók érhetők el:
 - **Profilkezelés**: Váltás a mentett fiókok között.
 - **Háttér-értesítések**: Windows Feladatütemező integráció. A háttérben futva óránként és bejelentkezéskor ellenőrzi az új jegyeket, majd értesítést küld (`PalaDaemon`).
 
-## 4. Rendszer és Frissítések
-- **Konfigurációs Fájlok**: Az alkalmazás minden mentett adatot a `~/.config/pala/` (Windows-on `C:\Users\Felhasználónév\.config\pala\`) könyvtárban tárol.
-- **Csomagkezelők**: A Pala natívan támogatja a Windows (Scoop), macOS/Linux (Homebrew), Arch Linux (AUR) és Debian/Ubuntu (APT) csomagkezelőket, így a frissítések a rendszer saját eszközeivel automatizálhatók.
-- **Frissítések**: Az alkalmazás induláskor automatikusan ellenőrzi a GitHub-ot, és sárga szöveges üzenettel jelez, ha új verzió érhető el. A frissítés ezután a telepítés módjától függően (pl. `scoop update pala`, `brew upgrade pala`, `sudo apt update && sudo apt install pala` vagy `yay -Syu`) könnyedén elvégezhető.
+## 4. Komponensek, Rendszerintegráció & Eltávolítás
+A Pala teljes komponenskezelési támogatással rendelkezik a parancssorból és a grafikus beállításokból is:
+- **Asztali Alkalmazás indítása**: `pala --desktop` vagy `pala -g`
+- **Start menü parancsikon kezelése**:
+  - Létrehozás: `pala --install-shortcut`
+  - Eltávolítás: `pala --remove-shortcut`
+- **PATH környezeti változó kezelése**:
+  - Hozzáadás: `pala --add-path`
+  - Eltávolítás: `pala --remove-path`
+- **Helyi gyorsítótár és hitelesítési adatok törlése**: `pala --clear-cache`
+- **Interaktív eltávolító**: `pala --uninstall` (Választhatsz a parancsikonok, a PATH vagy a teljes program eltávolítása között)
 
-## 5. Hibaelhárítás
+## 5. Rendszer és Frissítések
+- **Konfigurációs Fájlok**: Az alkalmazás minden mentett adatot a `~/.config/pala/` (Windows-on `C:\Users\Felhasználónév\.config\pala\`) könyvtárban tárol.
+- **Csomagkezelők**: A Pala natívan támogatja a Windows (PowerShell / Scoop), macOS/Linux (Homebrew / Bash installer), Arch Linux (AUR) és Debian/Ubuntu (APT) csomagkezelőket.
+- **Frissítések**: Az alkalmazás induláskor automatikusan ellenőrzi a GitHub-ot, és sárga szöveges üzenettel jelez, ha új verzió érhető el. A frissítés ezután a telepítés módjától függően (pl. `scoop update pala`, `brew upgrade pala`, `sudo apt update && sudo apt install pala` vagy `irm https://raw.githubusercontent.com/CsPS0/pala/main/install.ps1 | iex`) könnyedén elvégezhető.
+
+## 6. Hibaelhárítás
 - **Hálózati vagy API hibák**: A Kréta szervereinek túlterheltsége vagy az API módosulása okozhatja. A program beépített védelemmel rendelkezik a leggyakoribb hibák ellen.
 - **Szövegbeviteli / Másolási hibák**: A bejelentkezési kód beillesztésekor a program automatikusan kezeli a vágólapot (beleértve a Linux/macOS "Bracketed Paste" funkcióját és a Windows terminál specifikumait is). Különleges terminál emulátorok esetén javasolt a jobb gombos beillesztés használata.
 - **Megjelenítési hibák**: Ékezet- és táblázatproblémák esetén javasolt a terminál (PowerShell/CMD) frissítése és a Pala legújabb verziójának használata.

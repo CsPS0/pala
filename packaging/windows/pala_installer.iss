@@ -19,11 +19,13 @@ DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 OutputDir=..\..\dist
 OutputBaseFilename=Pala-Setup
-SetupIconFile=..\..\mobile\windows\runner\resources\app_icon.ico
+SetupIconFile=..\..\app\windows\runner\resources\app_icon.ico
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
 DisableProgramGroupPage=yes
+PrivilegesRequired=lowest
+PrivilegesRequiredOverridesAllowed=dialog
 
 [Languages]
 Name: "hungarian"; MessagesFile: "compiler:Languages\Hungarian.isl"
@@ -45,7 +47,7 @@ Name: "addtopath"; Description: "Pala hozzáadása a PATH környezeti változóh
 
 [Files]
 ; Desktop GUI files
-Source: "..\..\mobile\build\windows\x64\runner\Release\*"; DestDir: "{app}\desktop"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: desktop
+Source: "..\..\app\build\windows\x64\runner\Release\*"; DestDir: "{app}\desktop"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: desktop
 ; Standalone CLI executable
 Source: "..\..\pala.exe"; DestDir: "{app}\bin"; DestName: "pala.exe"; Flags: ignoreversion; Components: cli
 ; Shortcut helper

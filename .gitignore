@@ -1,6 +1,9 @@
 .dart_tool/
 .packages
 build/
+app/build/
+app/.dart_tool/
+dist/
 doc/api/
 .env*
 *.dart.js
@@ -18,11 +21,22 @@ folio-cli
 folio-cli-linux
 folio-cli-macos
 
-*debug*.html
-*.csv
-scratch/
+# Flutter Ephemeral & Generated
+**/ephemeral/
+.flutter-plugins
+.flutter-plugins-dependencies
 
-docs/PUBLISHING_GUIDE.md
+# Security & Secrets
+*.key
+!public.key
+*.pem
+*.jks
+*.keystore
+*.pfx
+*auth*.json
+*token*.json
+*credentials*.json
+*.env*
 private.key
 
 # Agent Files
@@ -36,6 +50,10 @@ GEMINI.md
 bin/test_*.dart
 fix_encoding.dart
 student_data_search.txt
+scratch/
+docs/PUBLISHING_GUIDE.md
+*debug*.html
+*.csv
 
 # Node / Next.js
 node_modules/

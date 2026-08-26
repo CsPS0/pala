@@ -25,6 +25,7 @@ extension PalaAppSettingsView on PalaApp {
           {'type': 'action', 'id': -3, 'label': 'Git-alapú Jegy-történet (Export & Git)'},
           {'type': 'separator', 'label': '------------------'},
           {'type': 'action', 'id': 2, 'label': 'Háttér-értesítések beállítása'},
+          {'type': 'action', 'id': -9, 'label': 'Komponensek & Rendszerintegráció'},
           {'type': 'action', 'id': -6, 'label': 'Speciális'},
           {'type': 'separator', 'label': '------------------'},
           {'type': 'action', 'id': 7, 'label': 'Vissza'},
@@ -269,6 +270,10 @@ extension PalaAppSettingsView on PalaApp {
             }
           }
           _clearScreen();
+        } else if (action == -9) {
+          _clearScreen();
+          await _showComponentIntegrationSettings();
+          _clearScreen();
         } else if (action == -6) {
           _clearScreen();
           await _showSpecialSettings();
@@ -364,6 +369,70 @@ extension PalaAppSettingsView on PalaApp {
           print('\nHiba történt a frissítés ellenőrzése során: $e');
         }
         
+        _pause();
+      }
+    }
+  }
+
+  Future<void> _showComponentIntegrationSettings() async {
+    while (true) {
+      _clearScreen();
+      _showMainMenuBanner();
+      print('\n--- Komponensek & Rendszerintegráció ---');
+      print('Kezeld az asztali és terminálos komponenseket:\n');
+
+      final layout = [
+        {'type': 'action', 'id': 0, 'label': 'Start menü / Alkalmazásindító létrehozása'},
+        {'type': 'action', 'id': 1, 'label': 'Start menü / Asztali parancsikonok eltávolítása'},
+        {'type': 'action', 'id': 2, 'label': 'Pala hozzáadása a felhasználói PATH-hoz'},
+        {'type': 'action', 'id': 3, 'label': 'Pala eltávolítása a PATH-ból'},
+        {'type': 'action', 'id': 4, 'label': 'Helyi gyorsítótár és munkamenet ürítése'},
+        {'type': 'action', 'id': 5, 'label': 'Vissza'},
+      ];
+
+      List<String> options = [];
+      List<int> actionIds = [];
+
+      for (int i = 0; i < layout.length; i++) {
+        final item = layout[i];
+        options.add(item['label'] as String);
+        actionIds.add(item['id'] as int);
+      }
+
+      final selection = CustomMenu(
+        prompt: 'Rendszerintegráció',
+        options: options,
+        initialIndex: 0,
+      ).interact();
+
+      final action = actionIds[selection];
+
+      if (action == 5) return;
+
+      _clearScreen();
+      _showMainMenuBanner();
+
+      if (action == 0) {
+        print('\nStart menü / Asztali parancsikon létrehozása...');
+        await installStartMenuShortcut();
+        _pause();
+      } else if (action == 1) {
+        print('\nParancsikonok eltávolítása...');
+        await removeStartMenuShortcut();
+        _pause();
+      } else if (action == 2) {
+        print('\nHozzáadás a PATH környezeti változóhoz...');
+        await addToUserPath();
+        _pause();
+      } else if (action == 3) {
+        print('\nEltávolítás a PATH-ból...');
+        await removeFromUserPath();
+        _pause();
+      } else if (action == 4) {
+        final confirm = Confirm(prompt: 'Biztosan üríteni szeretnéd a helyi gyorsítótárat és tokeneket?', defaultValue: false).interact();
+        if (confirm) {
+          await clearCache();
+        }
         _pause();
       }
     }

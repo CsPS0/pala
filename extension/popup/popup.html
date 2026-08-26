@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pala</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="brand">
+      <img src="../icons/icon-32.png" alt="Pala" class="brand-icon">
+      <div>
+        <div class="brand-title">PALA</div>
+        <div id="student-name" class="brand-subtitle">Betöltés...</div>
+      </div>
+    </div>
+    <div id="status-badge" class="badge badge-demo">Demó</div>
+  </header>
+
+  <!-- Active Class Hero Card -->
+  <div id="active-class-card" class="active-card">
+    <div class="active-tag">FOLYAMATBAN LÉVŐ TANÓRA</div>
+    <div id="active-subject" class="active-subject">Matematika</div>
+    <div id="active-details" class="active-details">Terem: 204 • Kovács Péter</div>
+    <div class="progress-bar-container">
+      <div id="active-progress-bar" class="progress-bar-fill" style="width: 65%;"></div>
+    </div>
+    <div id="active-countdown" class="active-countdown">Hátra van még: 15 perc</div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="tab-today">Mai Órák</button>
+    <button class="tab-btn" data-tab="tab-grades">Jegyek</button>
+    <button class="tab-btn" data-tab="tab-tasks">Feladatok</button>
+  </div>
+
+  <!-- Content Panels -->
+  <main class="content">
+    <!-- Panel 1: Today's Schedule -->
+    <div id="tab-today" class="tab-panel active">
+      <div id="timetable-list" class="item-list">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+
+    <!-- Panel 2: Grades -->
+    <div id="tab-grades" class="tab-panel">
+      <div class="stat-summary">
+        <div>
+          <span class="stat-label">Tanulmányi Átlag:</span>
+          <span id="average-value" class="stat-value">4.78</span>
+        </div>
+        <span id="grade-count" class="badge">6 jegy</span>
+      </div>
+      <div id="grades-list" class="item-list">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+
+    <!-- Panel 3: Tasks & Homework -->
+    <div id="tab-tasks" class="tab-panel">
+      <div id="tasks-list" class="item-list">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+  </main>
+
+  <!-- Login Modal Overlay (When not authenticated and not demo) -->
+  <div id="login-modal" class="modal">
+    <div class="modal-content">
+      <img src="../icons/icon-48.png" alt="Pala" style="margin: 0 auto 12px auto; display: block;">
+      <h2 style="font-size: 1.1rem; text-align: center; margin-bottom: 4px;">Bejelentkezés</h2>
+      <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-bottom: 16px;">Közvetlen kapcsolat az e-Kréta szervereivel</p>
+      
+      <div class="input-group">
+        <label>Iskola kód (pl. klik039000):</label>
+        <input type="text" id="login-institute" placeholder="klik039000">
+      </div>
+      <div class="input-group">
+        <label>Felhasználónév (OM vagy oktatási azonosító):</label>
+        <input type="text" id="login-username" placeholder="72458912345">
+      </div>
+      <div class="input-group">
+        <label>Jelszó:</label>
+        <input type="password" id="login-password" placeholder="••••••••">
+      </div>
+
+      <div id="login-error" class="login-error"></div>
+
+      <button id="btn-login-submit" class="btn btn-primary btn-block">Bejelentkezés</button>
+      <button id="btn-demo-mode" class="btn btn-secondary btn-block" style="margin-top: 8px;">Kipróbálás Demó Módban (Teszt Elek)</button>
+    </div>
+  </div>
+
+  <!-- Footer Actions -->
+  <footer class="footer">
+    <button id="btn-open-dashboard" class="btn btn-secondary btn-sm">Teljes Vezérlőpult</button>
+    <div style="display: flex; gap: 6px;">
+      <button id="btn-refresh" class="btn btn-icon" title="Frissítés">⟳</button>
+      <button id="btn-account-switch" class="btn btn-icon" title="Fiók / Beállítások">⚙</button>
+    </div>
+  </footer>
+
+  <script src="../shared/kreta_api.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

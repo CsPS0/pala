@@ -1,4 +1,7 @@
-# Pala
+<h1 align="left">
+<img src="pala.svg" alt="Pala icon" width="30px" style="vertical-align: middle;">
+<span style="vertical-align: middle;">Pala</span>
+</h1>
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Release](https://img.shields.io/github/v/release/CsPS0/pala)](https://github.com/CsPS0/pala/releases)
 [![Build Status](https://github.com/CsPS0/pala/actions/workflows/release.yml/badge.svg)](https://github.com/CsPS0/pala/actions)
@@ -15,20 +18,25 @@ A **Pala** egy interaktív terminálos felhasználói felület (TUI) a Kréta e-
 
 ## Telepítés
 
-- Egyszerűen: szerezz egy előre megépített futtatható programot [innétről](https://github.com/CsPS0/pala/releases/latest). Ubuntu/Debian/Mint felhasználók számára külön `.deb` telepítőfájl is elérhető!
+### 1. Windows Gyors Telepítés
+- **Grafikus telepítő (.exe)**: Töltsd le a [Pala-Setup.exe](https://github.com/CsPS0/pala/releases/latest) fájlt (egyéni komponensválasztóval: Desktop GUI + CLI / TUI + PATH integráció).
+- **PowerShell 1-soros**:
+  ```powershell
+  irm https://raw.githubusercontent.com/CsPS0/pala/main/install.ps1 | iex
+  ```
+- **Scoop**:
+  ```powershell
+  scoop bucket add pala https://github.com/CsPS0/pala-bucket
+  scoop install pala
+  ```
 
-Ha esetleg nem elérhető a platformodra ([tudasd ezt velünk](https://github.com/CsPS0/pala/issues/new)), vagy más csomagkezelőt használsz:
+### 2. Linux & macOS Gyors Telepítés
+- **Interaktív 1-soros telepítő (Bash)**:
+  ```bash
+  curl -fsSL https://raw.githubusercontent.com/CsPS0/pala/main/install.sh | bash
+  ```
 
-   <details>
-   <summary>Linux bináris kézi futtatása</summary>
-
-> ```bash
-> wget https://github.com/CsPS0/pala/releases/latest/download/pala-linux
-> chmod +x pala-linux
-> ./pala-linux
-> ```
-
-   </details>
+Ha manuálisan szeretnéd telepíteni vagy saját csomagkezelőt használsz:
 
    <details>
    <summary>Debian / Ubuntu / Linux Mint (APT)</summary>
@@ -50,12 +58,6 @@ Ha esetleg nem elérhető a platformodra ([tudasd ezt velünk](https://github.co
 > ```bash
 > yay -S pala-bin
 > ```
-> Ha nincs AUR helper (pl. `yay`) a gépeden:
-> ```bash
-> git clone https://aur.archlinux.org/pala-bin.git
-> cd pala-bin
-> makepkg -si
-> ```
 
    </details>
 
@@ -70,68 +72,59 @@ Ha esetleg nem elérhető a platformodra ([tudasd ezt velünk](https://github.co
    </details>
 
    <details>
-   <summary>Windows (Scoop)</summary>
-
-> ```bash
-> scoop bucket add pala https://github.com/CsPS0/pala
-> scoop install pala
-> ```
-
-   </details>
-
-   <details>
-   <summary>Univerzális telepítő szkript (Linux / macOS)</summary>
-
-> ```bash
-> curl -fsSL https://raw.githubusercontent.com/CsPS0/pala/main/install.sh | bash
-> ```
-
-   </details>
-
-   <details>
    <summary>Forráskódból történő fordítás</summary>
 
-> [Dart SDK](https://dart.dev/get-dart) szükséges.
+> [Dart SDK](https://dart.dev/get-dart) és [Flutter SDK](https://flutter.dev) szükséges.
 > ```bash
 > git clone https://github.com/CsPS0/pala.git
 > cd pala
 > dart pub get
 > dart compile exe bin/pala.dart -o pala
-> ./pala
+> cd app && flutter build windows  # vagy linux / macos
 > ```
 
    </details>
 
 ## Használat
-Ha valamelyik fenti csomagkezelővel telepítetted, az alkalmazást bárhonnan indíthatod a terminálból az alábbi paranccsal:
+A telepítés után a Pala közvetlenül indítható terminálból és a Start menüből:
 ```bash
 pala
 ```
-**Gyors parancsok és argumentumok:**
-- `pala dash` : Azonnali belépés az Élő Dashboard (TUI) nézetbe.
-- `pala --demo` : Indítás beépített demó/teszt profillal (**Teszt Elek** - offline adatok Kréta nélkül).
-- `pala --daemon` : Háttérfolyamat indítása az értesítésekhez.
-- `pala -i <intezmenykod> -u <felhasznalonev> -p <jelszo>` : Gyors belépés paraméterekkel.
-- `pala --help` : Részletes súgó megjelenítése.
+
+**Fő parancsok és kapcsolók:**
+- `pala` : Interaktív terminálos TUI felület indítása.
+- `pala --desktop` vagy `pala -g` : Pala Asztali Grafikus Alkalmazás (Desktop GUI) indítása.
+- `pala dash` : Közvetlen belépés az Élő Dashboard nézetbe.
+- `pala --demo` : Indítás beépített demó profillal (**Teszt Elek** - offline tesztadatok).
+- `pala --daemon` : Háttérfolyamat indítása értesítésekhez.
+
+**Komponens kezelés és rendszerintegráció:**
+- `pala --install-shortcut` : Start menü és asztali parancsikon létrehozása.
+- `pala --remove-shortcut` : Start menü és asztali parancsikonok eltávolítása.
+- `pala --add-path` : Pala hozzáadása a felhasználói PATH környezeti változóhoz.
+- `pala --remove-path` : Pala eltávolítása a PATH-ból.
+- `pala --clear-cache` : Helyi gyorsítótár és hitelesítési adatok törlése.
+- `pala --uninstall` : Interaktív komponens eltávolítás és rendszer-tisztítás.
 
 ## Dokumentáció
-- [USER.md](docs/USER.md): Felhasználói útmutató.
+- [USER.md](docs/USER.md): Felhasználói útmutató és funkciók részletezése.
 - [DEV.md](docs/DEV.md): Fejlesztői és architektúrális dokumentáció.
 - [CONTRIBUTING.md](CONTRIBUTING.md): Irányelvek hozzájárulóknak.
 - [DATA_SECURITY.md](docs/DATA_SECURITY.md): Adatkezelés és biztonsági tájékoztató.
 
-## Elismerések, alternatívák, hasonló appok, dokumentáció
+## Elismerések & Közösségi Projektek
 
-Minden használatba vett Dart csomagnak köszönet, [itt](./pubspec.yaml) találhatóak.
-Kréta dokumentáció: <https://nzx.hu/kreta-api/>
-Rengeteg dolgot tartalmazó dokumentáció: <https://docs.zan1456.dev/>
+Minden használatba vett nyílt forráskódú csomagnak köszönet.
 
-### Működő alternatívák
-- [Firka](https://github.com/QwIT-Development/firka) & [firka-legacy](https://github.com/QwIT-Development/app-legacy)
+### Aktív és kapcsolódó projektek:
+- [Firka](https://github.com/QwIT-Development/firka)
+- [app-legacy (refilc)](https://github.com/QwIT-Development/app-legacy)
+- [firka-extension](https://github.com/QwIT-Development/firka-extension)
 - [Folio](https://github.com/Zan1456/folio)
-- [rsfilc](https://github.com/jarjk/rsfilc) (Rust alapú Filc Terminál)
+- [folio-extension](https://github.com/Zan1456/folio-extension)
+- [RozsdásFilc (rsfilc)](https://github.com/jarjk/rsfilc)
+- [Toll](https://github.com/doomhyena/toll)
 
-### Archivált projektek
-- [Szivacs Napló](https://github.com/boapps/Szivacs-Naplo)
-- [Filc](https://github.com/filc)
-- [reFilc](https://github.com/Monke14/refilc)
+### Archivált és korábbi projektek:
+- [Filc](https://github.com/filc/filc)
+- [Szivacs-Naplo](https://github.com/boapps/Szivacs-Naplo)
