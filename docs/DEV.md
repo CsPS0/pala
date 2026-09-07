@@ -24,6 +24,14 @@ Fő modulok:
 - **utils/win32_console.dart**: Windows-specifikus Win32 API FFI hívásokat tartalmazó segédfájl. A `forceRestoreConsoleMode()` közvetlen kernel-szintű konzol módosításokkal állítja vissza a billentyűzet-echo-t (`ENABLE_ECHO_INPUT`) és letiltja a `0x0200` (virtual terminal input) módot a backspace-törlés helyes működéséhez.
 - **utils/chart_generator.dart**: ANSI alapú terminál grafikon-generátor. A `generateLineChart` dinamikus y-tengely skálázást végez az input adathatárvonalak alapján, így kiküszöböli a lapos GPA grafikonokat.
 - **utils/ics_exporter.dart**: RFC 5545 iCalendar kompatibilis naptárexportáló.
+- **web/pala_web_server.dart** és **web/pala_web_html.dart**: Beágyazott HTTP szerver és HTML renderelés a `--desktop` mód böngésző-alapú nézeteihez.
+
+## Kiegészítő Komponensek
+
+A `lib/` melletti fő platform-specifikus komponensek:
+- **app/**: Flutter Desktop Alkalmazás (Windows/macOS/Linux GUI, `pala --desktop`). Nézetek a `lib/views/` alatt (login, dashboard, grades, absences, timetable, tasks, wrapped, stats, compose_message, settings), állapotkezelés a `lib/state/app_model.dart`-ban.
+- **extension/**: Manifest V3 böngésző kiterjesztés (Chrome/Brave/Edge). `shared/kreta_api.js` a közös API/OAuth2 réteg, `background/service_worker.js` a token silent-refresh és háttérszinkron, `popup/` és `dashboard/` a felhasználói felületek.
+- **website/**: Next.js alapú marketing weboldal (`website/src`), Vercel-re deployolva (`vercel.json`, `public/.htaccess` biztonsági fejlécekkel).
 
 ## Tesztelés
 A fejlesztés során az alábbi ellenőrzéseket javasolt lefolytatni minden commit előtt:
