@@ -175,6 +175,15 @@ export default function DocsPage() {
       keywords: ["android", "apk", "universal", "arm64", "armv7", "32-bit", "x86_64", "emulátor", "bluestacks", "nox", "wsa", "telefon", "mobil"]
     },
     {
+      id: "inst-android-termux",
+      pageId: "installation",
+      tabId: "android",
+      title: "Android Termux telepítés (TUI, root nélkül)",
+      category: "Kezdő Lépések / Telepítés",
+      description: "pkg install dart, git clone és dart run — a Pala TUI futtatása Termux terminál-emulátorban APK nélkül.",
+      keywords: ["termux", "pkg install", "dart", "tui", "terminál", "android", "root nélkül"]
+    },
+    {
       id: "inst-ios",
       pageId: "installation",
       tabId: "ios",
@@ -1132,6 +1141,26 @@ export default function DocsPage() {
                       <div className="text-[#8c8c94]">2. Válaszd az <strong>Alkalmazásinfó (i)</strong> lehetőséget</div>
                       <div className="text-[#ff8800]">3. <strong>Tárhely és gyorsítótár</strong> &gt; Kattints a <strong>„Tárhely törlése”</strong> gombra</div>
                       <div className="text-[#ff453a] font-semibold">4. Nyomj az <strong>Eltávolítás (Uninstall)</strong> gombra</div>
+                    </div>
+                  </div>
+
+                  {/* Step 6: Termux alternative */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start border-t border-[#28282d] pt-6">
+                    <div className="lg:col-span-5 space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-black text-[#0a84ff]">[ 06 ]</span>
+                        <h3 className="text-sm font-bold text-[#f3f3f6]">Alternatíva: Termux (TUI, root nélkül)</h3>
+                      </div>
+                      <p className="text-xs text-[#8c8c94] leading-relaxed">
+                        Aki a terminálos (TUI) verziót szeretné APK helyett, a <a href="https://termux.dev/" target="_blank" rel="noopener noreferrer" className="text-[#ff8800] underline">Termux</a> terminál-emulátorban is futtathatja a Palát — nincs szükség APK-ra vagy root jogosultságra. Dedikált <code className="text-[#ff8800] font-mono">pkg install pala</code> csomag még nincs, de a Dart elérhető Termux csomagként.
+                      </p>
+                    </div>
+                    <div className="lg:col-span-7 bg-[#151518] border border-[#28282d] rounded-2xl p-4 space-y-1.5 text-xs">
+                      <pre className="text-[#8c8c94] font-mono text-[11px] leading-relaxed whitespace-pre-wrap">{`pkg update && pkg install dart git -y
+git clone https://github.com/CsPS0/pala.git
+cd pala
+dart pub get
+dart run bin/pala.dart`}</pre>
                     </div>
                   </div>
                 </div>

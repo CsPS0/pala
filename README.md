@@ -96,6 +96,26 @@ Ha manuálisan szeretnéd telepíteni vagy saját csomagkezelőt használsz:
 
    </details>
 
+### 3. Android (Termux)
+
+A Pala TUI natívan fut Android alatt is a [Termux](https://termux.dev/) terminál-emulátorban — nincs szükség APK-ra vagy root jogosultságra. Egyelőre nincs kész `pkg install pala` csomag, de a Dart maga elérhető Termux csomagként, így a Pala forráskódból egy perc alatt futtatható:
+
+```bash
+pkg update && pkg install dart git -y
+git clone https://github.com/CsPS0/pala.git
+cd pala
+dart pub get
+dart run bin/pala.dart
+```
+
+Gyorsabb, natívan fordított futtatáshoz (nem kötelező, de ajánlott):
+```bash
+dart compile exe bin/pala.dart -o pala
+./pala
+```
+
+*Megjegyzés: a natív Android alkalmazás (APK) és egy dedikált Termux csomag (`pkg install pala`) még nem érhető el — ez a jelenlegi legegyszerűbb módja a Pala futtatásának Android eszközön.*
+
 ## Használat
 A telepítés után a Pala közvetlenül indítható terminálból és a Start menüből:
 ```bash
