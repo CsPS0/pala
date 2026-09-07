@@ -50,11 +50,11 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
                   Expanded(
                     child: Text(
                       msg.subject.isNotEmpty ? msg.subject : 'Üzenet',
-                      style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700),
+                      style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700),
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close, size: 20),
+                    icon: Icon(Icons.close, size: 20),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
@@ -62,7 +62,7 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
               const SizedBox(height: 6),
               Text(
                 'Feladó: ${msg.senderName} • ${msg.sentDate != null ? DateFormat('yyyy.MM.dd HH:mm').format(msg.sentDate!) : "-"}',
-                style: const TextStyle(color: PalaTheme.textMuted, fontSize: 12),
+                style: TextStyle(color: PalaTheme.textMuted, fontSize: 12),
               ),
               const SizedBox(height: 16),
               Container(
@@ -75,7 +75,7 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
                 ),
                 child: Text(
                   msg.text.isNotEmpty ? msg.text : 'Nincs szöveges tartalom.',
-                  style: const TextStyle(color: PalaTheme.text, fontSize: 13, height: 1.5),
+                  style: TextStyle(color: PalaTheme.text, fontSize: 13, height: 1.5),
                 ),
               ),
               const SizedBox(height: 16),
@@ -92,15 +92,15 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
                           initialSubject: 'Re: ${msg.subject}',
                         );
                       },
-                      icon: const Icon(Icons.reply, size: 16),
-                      label: const Text('Válasz a tanárnak'),
+                      icon: Icon(Icons.reply, size: 16),
+                      label: Text('Válasz a tanárnak'),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Bezárás'),
+                      child: Text('Bezárás'),
                     ),
                   ),
                 ],
@@ -127,7 +127,7 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
             indicatorColor: primary,
             labelColor: primary,
             unselectedLabelColor: PalaTheme.textMuted,
-            labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+            labelStyle: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
             tabs: const [
               Tab(text: 'Házi Feladatok'),
               Tab(text: 'Dolgozatok'),
@@ -144,7 +144,7 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
             onRefresh: widget.appModel.refreshAll,
             color: primary,
             child: widget.appModel.homework.isEmpty
-                ? const Center(child: Text('Nincsenek aktív házi feladatok.', style: TextStyle(color: PalaTheme.textMuted)))
+                ? Center(child: Text('Nincsenek aktív házi feladatok.', style: TextStyle(color: PalaTheme.textMuted)))
                 : ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     itemCount: widget.appModel.homework.length,
@@ -159,7 +159,7 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
                           color: PalaTheme.card,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
-                            side: const BorderSide(color: PalaTheme.border),
+                            side: BorderSide(color: PalaTheme.border),
                           ),
                           child: CheckboxListTile(
                             value: isDone,
@@ -190,7 +190,7 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
                                 const SizedBox(height: 4),
                                 Text(
                                   'Határidő: ${h.deadline != null ? DateFormat('yyyy.MM.dd').format(h.deadline!) : "-"}',
-                                  style: const TextStyle(color: PalaTheme.warning, fontSize: 11, fontWeight: FontWeight.w600),
+                                  style: TextStyle(color: PalaTheme.warning, fontSize: 11, fontWeight: FontWeight.w600),
                                 ),
                               ],
                             ),
@@ -206,7 +206,7 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
             onRefresh: widget.appModel.refreshAll,
             color: primary,
             child: widget.appModel.exams.isEmpty
-                ? const Center(child: Text('Nincsenek bejelentett dolgozatok.', style: TextStyle(color: PalaTheme.textMuted)))
+                ? Center(child: Text('Nincsenek bejelentett dolgozatok.', style: TextStyle(color: PalaTheme.textMuted)))
                 : ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     itemCount: widget.appModel.exams.length,
@@ -241,17 +241,17 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
                                 children: [
                                   Text(
                                     widget.appModel.getDisplaySubject(e.subject),
-                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14),
+                                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14),
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
                                     e.theme != null && e.theme!.isNotEmpty ? e.theme! : 'Téma nincs megadva',
-                                    style: const TextStyle(color: PalaTheme.textMuted, fontSize: 12),
+                                    style: TextStyle(color: PalaTheme.textMuted, fontSize: 12),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     'Dátum: ${e.date != null ? DateFormat('yyyy.MM.dd').format(e.date!) : "-"}',
-                                    style: const TextStyle(color: PalaTheme.textMuted, fontSize: 11),
+                                    style: TextStyle(color: PalaTheme.textMuted, fontSize: 11),
                                   ),
                                 ],
                               ),
@@ -292,7 +292,7 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
+                          children: [
                             Text(
                               'Kréta Üzenetküldés',
                               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Colors.white),
@@ -310,8 +310,8 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         ),
-                        icon: const Icon(Icons.edit, size: 14),
-                        label: const Text('Új Üzenet', style: TextStyle(fontSize: 12)),
+                        icon: Icon(Icons.edit, size: 14),
+                        label: Text('Új Üzenet', style: TextStyle(fontSize: 12)),
                       ),
                     ],
                   ),
@@ -322,7 +322,7 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
                   Container(
                     padding: const EdgeInsets.all(32),
                     alignment: Alignment.center,
-                    child: const Text('Nincsenek beérkezett üzenetek.', style: TextStyle(color: PalaTheme.textMuted)),
+                    child: Text('Nincsenek beérkezett üzenetek.', style: TextStyle(color: PalaTheme.textMuted)),
                   )
                 else
                   ...widget.appModel.messages.map((m) {
@@ -332,18 +332,18 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
                         color: PalaTheme.card,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
-                          side: const BorderSide(color: PalaTheme.border),
+                          side: BorderSide(color: PalaTheme.border),
                         ),
                         child: ListTile(
                           title: Text(
                             m.subject.isNotEmpty ? m.subject : '(Nincs tárgy)',
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14),
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14),
                           ),
                           subtitle: Text(
                             '${m.senderName} • ${m.sentDate != null ? DateFormat('yyyy.MM.dd').format(m.sentDate!) : "-"}',
-                            style: const TextStyle(color: PalaTheme.textMuted, fontSize: 12),
+                            style: TextStyle(color: PalaTheme.textMuted, fontSize: 12),
                           ),
-                          trailing: const Icon(Icons.chevron_right, size: 20, color: PalaTheme.textMuted),
+                          trailing: Icon(Icons.chevron_right, size: 20, color: PalaTheme.textMuted),
                           onTap: () => _openMessageDetails(m),
                         ),
                       ),

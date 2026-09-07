@@ -113,9 +113,9 @@ export default function DocsPage() {
     }
   };
 
-  // Lock body scroll when search modal is open
+  // Lock body scroll when search modal or mobile drawer is open
   useEffect(() => {
-    if (searchModalOpen) {
+    if (searchModalOpen || mobileMenuOpen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -123,7 +123,7 @@ export default function DocsPage() {
     return () => {
       document.body.style.overflow = "";
     };
-  }, [searchModalOpen]);
+  }, [searchModalOpen, mobileMenuOpen]);
 
   // Intercept Ctrl+K / Cmd+K and Escape globally
   useEffect(() => {
@@ -212,17 +212,17 @@ export default function DocsPage() {
     },
     {
       id: "compatibility",
-      pageId: "compatibility",
+      pageId: "installation",
       title: "Kompatibilitás és Rendszerkövetelmények",
-      category: "Kezdő Lépések",
+      category: "Kezdő Lépések / Telepítés",
       description: "Támogatott operációs rendszerek, böngészők és iskolatípusok (általános, gimnázium, technikum).",
       keywords: ["kompatibilitás", "rendszerkövetelmény", "windows", "android", "mac", "gimnázium", "technikum"]
     },
     {
       id: "upgrade",
-      pageId: "upgrade-guide",
+      pageId: "installation",
       title: "Frissítési Útmutató",
-      category: "Kezdő Lépések",
+      category: "Kezdő Lépések / Telepítés",
       description: "Verziókövetés, adatmegőrzés és frissítés végrehajtása minden rendszeren.",
       keywords: ["frissítés", "upgrade", "update", "új verzió", "adatmegőrzés"]
     },
@@ -230,25 +230,89 @@ export default function DocsPage() {
       id: "hasznalat",
       pageId: "hasznalat",
       title: "Használat & CLI Kapcsolók",
-      category: "Funkciók",
+      category: "Kezdő Lépések",
       description: "Kréta bejelentkezés, OM azonosító, --demo mód, --clear-cache és naptár export.",
       keywords: ["használat", "bejelentkezés", "om azonosító", "felhasználónév", "jelszó", "cli", "--demo", "--clear-cache", "--json", "--export-ics"]
-    },
-    {
-      id: "gyorsbillentyuk",
-      pageId: "gyorsbillentyuk",
-      title: "Gyorsbillentyűk (Keybindings)",
-      category: "Funkciók",
-      description: "TUI navigáció: 1/d órarend, 2/g jegyek, 3/c célátlag szimulátor, 4/a hiányzások, w wrapped, r sync, q kilépés.",
-      keywords: ["gyorsbillentyűk", "keybind", "billentyűzet", "1", "2", "3", "4", "d", "g", "c", "a", "w", "r", "q", "esc", "tab"]
     },
     {
       id: "files-configs",
       pageId: "files-configs",
       title: "Fájlok és Konfigurációk (Files & Configs)",
-      category: "Funkciók",
+      category: "Kezdő Lépések",
       description: "Elérési utak (AppData, XDG, Library), config.json mezők és manuális szerkesztés.",
       keywords: ["fájlok", "config", "json", "appdata", "xdg", "cache.db", "konfiguráció", "szerkesztés", "notepad", "nano"]
+    },
+    {
+      id: "gyorsbillentyuk",
+      pageId: "gyorsbillentyuk",
+      title: "Gyorsbillentyűk (Keybindings)",
+      category: "Kezdő Lépések",
+      description: "TUI navigáció: 1/d órarend, 2/g jegyek, 3/c célátlag szimulátor, 4/a hiányzások, w wrapped, r sync, q kilépés.",
+      keywords: ["gyorsbillentyűk", "keybind", "billentyűzet", "1", "2", "3", "4", "d", "g", "c", "a", "w", "r", "q", "esc", "tab"]
+    },
+    {
+      id: "platform-osszehasonlitas",
+      pageId: "platformvalasztas",
+      title: "Melyiket válasszam? (Platform Összehasonlítás)",
+      category: "Változatok / Platform Összehasonlítás",
+      description: "TUI, Desktop (Flutter), Mobile és Böngésző Kiterjesztés előnyei és hátrányai egy táblázatban.",
+      keywords: ["melyiket válasszam", "összehasonlítás", "platform", "flutter", "tui vagy desktop", "melyik verzió", "előnyök", "hátrányok"]
+    },
+    {
+      id: "tui-overview",
+      pageId: "tui",
+      title: "Pala TUI (Terminálos Felület)",
+      category: "Változatok / TUI",
+      description: "Erőforrás-takarékos parancssoros Kréta kliens, billentyűzet-vezérlés, témák és TUI dashboard.",
+      keywords: ["tui", "terminál", "cli", "parancssor", "pala dash", "ascii", "linux", "macos", "powershell"]
+    },
+    {
+      id: "desktop-overview",
+      pageId: "desktop",
+      title: "Pala Desktop (Grafikus Alkalmazás)",
+      category: "Változatok / Desktop App",
+      description: "Flutter alapú asztali alkalmazás heti mátrixszal, diagramokkal, átlagtrendekkel és bizonyítvány tervezővel.",
+      keywords: ["desktop", "asztali", "gui", "windows", "flutter", "linux", "macos", "grafikus"]
+    },
+    {
+      id: "mobile-overview",
+      pageId: "mobile",
+      title: "Pala Mobile (Mobil Alkalmazás)",
+      category: "Változatok / Mobile App",
+      description: "Android APK és iOS webapp, érintés-optimalizált felület, zero ads, offline mód.",
+      keywords: ["mobile", "mobil", "android", "apk", "ios", "iphone", "érintőképernyő", "pwa"]
+    },
+    {
+      id: "extension-overview",
+      pageId: "extension",
+      title: "Böngésző Kiterjesztés (Extension)",
+      category: "Változatok / Böngésző Kiterjesztés",
+      description: "Chrome, Brave, Edge böngészőbővítmény mini popup gyorsnézettel és teljes vezérlőpulttal.",
+      keywords: ["extension", "bővítmény", "kiterjesztés", "chrome", "brave", "edge", "popup", "dashboard"]
+    },
+    {
+      id: "extension-session",
+      pageId: "extension",
+      title: "Kréta Munkamenet & 40-60 perces Időkorlát",
+      category: "Változatok / Böngésző Kiterjesztés",
+      description: "Hogyan kezeli a Pala az OAuth2 Access és Refresh tokeneket, és miért nem jelentkeztet ki 40-60 perc után.",
+      keywords: ["munkamenet", "időkorlát", "token", "refresh token", "40 perc", "60 perc", "lejárás", "automatikus frissítés", "offline cache"]
+    },
+    {
+      id: "extension-profile-api",
+      pageId: "extension",
+      title: "Profilom & Kréta API Korlátozások",
+      category: "Változatok / Böngésző Kiterjesztés",
+      description: "Miért hiányoznak banki és okmány adatok a Kréta mobil API-ból, globális szerkesztő és 1-kattintásos beolvasás.",
+      keywords: ["profilom", "kréta api korlátozás", "nincs rögzítve", "bankszámla", "adóazonosító", "taj", "diákigazolvány", "adatok beolvasása"]
+    },
+    {
+      id: "extension-popup-settings",
+      pageId: "extension",
+      title: "Popup Testreszabása",
+      category: "Változatok / Böngésző Kiterjesztés",
+      description: "Alapértelmezett kezdőlap, kompakt nézet, hero kártya, átlagsáv és jegykorlátok beállítása a popupban és dashboardon.",
+      keywords: ["popup testreszabása", "kompakt nézet", "hero card", "átlag sáv", "max jegyek", "beállítások", "gyorsnézet"]
     },
     {
       id: "security",
@@ -325,17 +389,20 @@ export default function DocsPage() {
     {
       category: "Kezdő Lépések",
       items: [
-        { id: "installation", label: "Telepítés & Beállítás", icon: Download, kicker: "GETTING STARTED / INSTALLATION" },
-        { id: "compatibility", label: "Kompatibilitás", icon: Layers, kicker: "GETTING STARTED / COMPATIBILITY" },
-        { id: "upgrade-guide", label: "Frissítési Útmutató", icon: RefreshCw, kicker: "GETTING STARTED / UPGRADE" },
+        { id: "installation", label: "Telepítés & Beállítás", icon: Download, kicker: "KEZDŐ LÉPÉSEK / TELEPÍTÉS & BEÁLLÍTÁS" },
+        { id: "hasznalat", label: "Használat", icon: Play, kicker: "KEZDŐ LÉPÉSEK / HASZNÁLAT" },
+        { id: "files-configs", label: "Fájlok & Konfigurációk", icon: FolderTree, kicker: "KEZDŐ LÉPÉSEK / FÁJLOK & KONFIGURÁCIÓK" },
+        { id: "gyorsbillentyuk", label: "Gyorsbillentyűk", icon: Keyboard, kicker: "KEZDŐ LÉPÉSEK / GYORSBILLENTYŰK" },
       ],
     },
     {
-      category: "Funkciók",
+      category: "Változatok",
       items: [
-        { id: "hasznalat", label: "Használat", icon: Play, kicker: "FUNKCIÓK / HASZNÁLAT" },
-        { id: "gyorsbillentyuk", label: "Gyorsbillentyűk", icon: Keyboard, kicker: "FUNKCIÓK / GYORSBILLENTYŰK" },
-        { id: "files-configs", label: "Fájlok & Konfigurációk", icon: FolderTree, kicker: "FUNKCIÓK / FÁJLOK & KONFIGURÁCIÓK" },
+        { id: "platformvalasztas", label: "Melyiket válasszam?", icon: Layers, kicker: "VÁLTOZATOK / PLATFORM ÖSSZEHASONLÍTÁS" },
+        { id: "tui", label: "TUI", icon: Terminal, kicker: "VÁLTOZATOK / TUI" },
+        { id: "desktop", label: "Desktop App", icon: Monitor, kicker: "VÁLTOZATOK / DESKTOP APP" },
+        { id: "mobile", label: "Mobile App", icon: Smartphone, kicker: "VÁLTOZATOK / MOBILE APP" },
+        { id: "extension", label: "Böngésző Kiterjesztés", icon: Globe, kicker: "VÁLTOZATOK / BÖNGÉSZŐ KITERJESZTÉS" },
       ],
     },
     {
@@ -369,7 +436,7 @@ export default function DocsPage() {
           role="dialog"
           aria-modal="true"
           aria-label="Dokumentáció Kereső"
-          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-start justify-center p-4 sm:p-6 pt-16 sm:pt-24 animate-fadeIn"
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-start justify-center p-3 sm:p-6 pt-6 sm:pt-24 animate-fadeIn"
           onClick={() => setSearchModalOpen(false)}
         >
           <div
@@ -463,12 +530,18 @@ export default function DocsPage() {
 
             {/* Modal Footer Keybind Hints */}
             <div className="p-3 border-t border-[#28282d] bg-[#111114] text-[11px] font-mono text-[#8c8c94] flex items-center justify-between">
-              <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-3">
                 <span><kbd className="bg-[#1b1b1f] px-1.5 py-0.5 rounded text-[#f3f3f6]">↑↓</kbd> Navigáció</span>
                 <span><kbd className="bg-[#1b1b1f] px-1.5 py-0.5 rounded text-[#f3f3f6]">↵</kbd> Megnyitás</span>
                 <span><kbd className="bg-[#1b1b1f] px-1.5 py-0.5 rounded text-[#f3f3f6]">ESC</kbd> Bezárás</span>
               </div>
-              <span className="text-[#5f5f67]">Pala Dokumentáció Kereső</span>
+              <span className="text-[#5f5f67] text-[10px] sm:text-[11px]">Pala Kereső</span>
+              <button
+                onClick={() => setSearchModalOpen(false)}
+                className="sm:hidden text-xs text-[#ff8800] font-bold px-2 py-1 bg-[#1b1b1f] rounded"
+              >
+                Bezárás
+              </button>
             </div>
           </div>
         </div>
@@ -627,7 +700,7 @@ export default function DocsPage() {
             <div className="space-y-8 animate-fadeIn min-w-0 w-full">
               <div>
                 <span className="text-[11px] font-mono font-bold tracking-widest text-[#ff8800] uppercase block mb-1">
-                  GETTING STARTED / INSTALLATION
+                  KEZDŐ LÉPÉSEK / TELEPÍTÉS & BEÁLLÍTÁS
                 </span>
                 <h1 className="text-2xl sm:text-4xl font-black text-[#f3f3f6] tracking-tight mb-3">
                   Telepítés és Beállítás
@@ -713,7 +786,7 @@ export default function DocsPage() {
                             {copiedKey === "win-ps1" ? <Check size={13} className="text-[#30d158]" /> : <Copy size={13} />}
                           </button>
                         </div>
-                        <div className="p-3.5 font-mono text-xs text-[#ff8800]">
+                        <div className="p-3.5 font-mono text-xs text-[#ff8800] overflow-x-auto">
                           irm https://raw.githubusercontent.com/CsPS0/pala/main/install.ps1 | iex
                         </div>
                       </div>
@@ -729,7 +802,7 @@ export default function DocsPage() {
                             {copiedKey === "win-scoop" ? <Check size={13} className="text-[#30d158]" /> : <Copy size={13} />}
                           </button>
                         </div>
-                        <div className="p-3.5 font-mono text-xs text-[#ff8800] space-y-1">
+                        <div className="p-3.5 font-mono text-xs text-[#ff8800] space-y-1 overflow-x-auto">
                           <div>scoop bucket add pala https://github.com/CsPS0/pala-bucket</div>
                           <div>scoop install pala</div>
                         </div>
@@ -745,7 +818,7 @@ export default function DocsPage() {
                         <h3 className="text-sm font-bold text-[#f3f3f6]">Telepítés & SmartScreen engedélyezés</h3>
                       </div>
                       <p className="text-xs text-[#8c8c94] leading-relaxed">
-                        Futtasd a letöltött exe fájlt vagy szkriptet. Ha a Windows SmartScreen figyelmeztetést ad (*„A Windows védelmet biztosított...”*), kattints a <strong>„További információ”</strong>, majd a <strong>„Futtatás mindenképpen”</strong> gombra.
+                        Futtasd a letöltött exe fájlt vagy szkriptet. Ha a Windows SmartScreen figyelmeztetést ad, kattints a <strong>„További információ”</strong>, majd a <strong>„Futtatás mindenképpen”</strong> gombra.
                       </p>
                     </div>
                     <div className="lg:col-span-7 bg-[#151518] border border-[#28282d] rounded-2xl overflow-hidden">
@@ -760,39 +833,69 @@ export default function DocsPage() {
                     </div>
                   </div>
 
-                  {/* Step 3: Launch */}
+                  {/* Step 3: Windows Compatibility */}
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
                     <div className="lg:col-span-5 space-y-1.5">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-xs font-black text-[#ff8800]">[ 03 ]</span>
-                        <h3 className="text-sm font-bold text-[#f3f3f6]">Indítás & Használat</h3>
+                        <h3 className="text-sm font-bold text-[#f3f3f6]">Kompatibilitás & Rendszerkövetelmények</h3>
                       </div>
                       <p className="text-xs text-[#8c8c94] leading-relaxed">
-                        Indítsd a Start menüből a <strong>Pala Desktop</strong> ikonnal vagy a parancssorból a <code className="text-[#ff8800] font-mono">pala</code> paranccsal.
+                        Támogatott Windows kiadások, processzorok és futtatási környezet.
                       </p>
                     </div>
-                    <div className="lg:col-span-7 bg-[#151518] border border-[#28282d] rounded-2xl overflow-hidden">
-                      <div className="px-3.5 py-2 bg-[#0e0e11] border-b border-[#28282d] text-[11px] font-mono text-[#8c8c94] flex items-center justify-between">
-                        <span>PowerShell / Terminal Parancsok</span>
-                        <button
-                          onClick={() => handleCopy("pala", "win-launch")}
-                          className="hover:text-[#f3f3f6] transition-colors"
-                        >
-                          {copiedKey === "win-launch" ? <Check size={13} className="text-[#30d158]" /> : <Copy size={13} />}
-                        </button>
+                    <div className="lg:col-span-7 bg-[#1b1b1f] border border-[#28282d] rounded-2xl p-4 space-y-3 text-xs text-[#8c8c94]">
+                      <div className="flex items-center justify-between border-b border-[#28282d] pb-2">
+                        <span className="text-[#f3f3f6] font-semibold">Támogatott Rendszerek:</span>
+                        <span className="text-[#ff8800] font-mono">Windows 10 (1809+) és Windows 11</span>
                       </div>
-                      <div className="p-3.5 font-mono text-xs text-[#ff8800] space-y-1">
-                        <div>pala <span className="text-[#5f5f67]"># Terminálos TUI indítása</span></div>
-                        <div>pala --desktop <span className="text-[#5f5f67]"># Asztali GUI indítása</span></div>
+                      <div className="flex items-center justify-between border-b border-[#28282d] pb-2">
+                        <span className="text-[#f3f3f6] font-semibold">Processzor Architektúra:</span>
+                        <span>64-bit (x64) és natív ARM64 (Surface Pro / Snapdragon)</span>
+                      </div>
+                      <div className="flex items-center justify-between border-b border-[#28282d] pb-2">
+                        <span className="text-[#f3f3f6] font-semibold">Terminál Környezet (TUI):</span>
+                        <span>Windows Terminal vagy PowerShell 5.1+ (automatikus UTF-8 kódolás)</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[#f3f3f6] font-semibold">Lemezterület:</span>
+                        <span>~180 MB szabad hely a Desktop és TUI csomaghoz</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Step 4: Integrated Windows Component Management & Uninstallation */}
+                  {/* Step 4: Windows Update Guide */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                    <div className="lg:col-span-5 space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-black text-[#30d158]">[ 04 ]</span>
+                        <h3 className="text-sm font-bold text-[#30d158]">Automatikus Verziókövetés & Frissítés</h3>
+                      </div>
+                      <p className="text-xs text-[#8c8c94] leading-relaxed">
+                        Hogyan frissíthetsz újabb Pala verzióra anélkül, hogy elveszítenéd a beállításaidat vagy a mentett órarendedet.
+                      </p>
+                    </div>
+                    <div className="lg:col-span-7 bg-[#151518] border border-[#28282d] rounded-2xl p-4 space-y-2.5 text-xs text-[#8c8c94]">
+                      <div className="p-3 bg-[#1b1b1f] rounded-xl border border-[#28282d]">
+                        <strong className="text-[#f3f3f6] block mb-1">Telepítő .exe felülírás (Ajánlott):</strong>
+                        Egyszerűen töltsd le és futtasd az új <code className="text-[#ff8800] font-mono">Pala-Setup.exe</code> fájlt. A telepítő felülírja a korábbi programfájlokat, miközben a bejelentkezési adataid és a helyi adatbázisod (<code className="text-[#ff8800] font-mono">%APPDATA%\pala</code>) 100%-ban érintetlenek maradnak.
+                      </div>
+                      <div className="p-3 bg-[#1b1b1f] rounded-xl border border-[#28282d]">
+                        <strong className="text-[#f3f3f6] block mb-1">Scoop csomagkezelő frissítés:</strong>
+                        <div className="font-mono text-[#ff8800]">scoop update pala</div>
+                      </div>
+                      <div className="p-3 bg-[#1b1b1f] rounded-xl border border-[#28282d]">
+                        <strong className="text-[#f3f3f6] block mb-1">PowerShell 1-soros frissítő:</strong>
+                        <div className="font-mono text-[#ff8800]">irm https://raw.githubusercontent.com/CsPS0/pala/main/install.ps1 | iex</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step 5: Integrated Windows Component Management & Uninstallation */}
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start border-t border-[#28282d] pt-6">
                     <div className="lg:col-span-5 space-y-1.5">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-black text-[#ff453a]">[ 04 ]</span>
+                        <span className="font-mono text-xs font-black text-[#ff453a]">[ 05 ]</span>
                         <h3 className="text-sm font-bold text-[#ff453a] flex items-center gap-1.5">
                           <Trash2 size={14} />
                           <span>Komponens Kezelés & Eltávolítás</span>
@@ -952,11 +1055,64 @@ export default function DocsPage() {
                     </div>
                   </div>
 
-                  {/* Step 3: Integrated Android Uninstallation */}
+                  {/* Step 3: Android Compatibility */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                    <div className="lg:col-span-5 space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-black text-[#ff8800]">[ 03 ]</span>
+                        <h3 className="text-sm font-bold text-[#f3f3f6]">Kompatibilitás & Rendszerkövetelmények</h3>
+                      </div>
+                      <p className="text-xs text-[#8c8c94] leading-relaxed">
+                        Támogatott Android verziók, processzorok és Google Szolgáltatások nélküli futtatás.
+                      </p>
+                    </div>
+                    <div className="lg:col-span-7 bg-[#1b1b1f] border border-[#28282d] rounded-2xl p-4 space-y-3 text-xs text-[#8c8c94]">
+                      <div className="flex items-center justify-between border-b border-[#28282d] pb-2">
+                        <span className="text-[#f3f3f6] font-semibold">Minimális Android Verzió:</span>
+                        <span className="text-[#30d158] font-mono">Android 7.0 (Nougat, API 24) vagy újabb</span>
+                      </div>
+                      <div className="flex items-center justify-between border-b border-[#28282d] pb-2">
+                        <span className="text-[#f3f3f6] font-semibold">Támogatott Eszközök:</span>
+                        <span>Samsung, Xiaomi, Redmi, Google Pixel, Honor, OnePlus, Huawei, táblagépek</span>
+                      </div>
+                      <div className="flex items-center justify-between border-b border-[#28282d] pb-2">
+                        <span className="text-[#f3f3f6] font-semibold">Google Play Szolgáltatások:</span>
+                        <span className="text-[#30d158]">Nem szükséges (microG és deGoogled rendszereken is fut)</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[#f3f3f6] font-semibold">Emulátor Támogatás:</span>
+                        <span>BlueStacks 5, LDPlayer, NoxPlayer, Windows Subsystem for Android (WSA)</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step 4: Android Update Guide */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                    <div className="lg:col-span-5 space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-black text-[#30d158]">[ 04 ]</span>
+                        <h3 className="text-sm font-bold text-[#30d158]">Automatikus Verziókövetés & Frissítés</h3>
+                      </div>
+                      <p className="text-xs text-[#8c8c94] leading-relaxed">
+                        Hogyan frissíthetsz újabb APK-ra a mentett órarend és bejelentkezés megtartásával.
+                      </p>
+                    </div>
+                    <div className="lg:col-span-7 bg-[#151518] border border-[#28282d] rounded-2xl p-4 space-y-2.5 text-xs text-[#8c8c94]">
+                      <div className="p-3 bg-[#1b1b1f] rounded-xl border border-[#28282d]">
+                        <strong className="text-[#f3f3f6] block mb-1">Közvetlen APK Frissítés:</strong>
+                        Töltsd le az újabb verziójú APK-t, nyisd meg a telefonodon, és a felugró ablakban koppints a <strong>„Frissítés” (Update)</strong> gombra.
+                      </div>
+                      <div className="p-3 bg-[#1b1b1f] rounded-xl border border-[#28282d] text-[#30d158]">
+                        <strong>Nem szükséges a korábbi verzió törlése:</strong> az Android automatikusan frissíti az alkalmazást, a bejelentkezési munkameneted és a mentett offline adatok változatlanok maradnak.
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step 5: Integrated Android Uninstallation */}
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start border-t border-[#28282d] pt-6">
                     <div className="lg:col-span-5 space-y-1.5">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-black text-[#ff453a]">[ 03 ]</span>
+                        <span className="font-mono text-xs font-black text-[#ff453a]">[ 05 ]</span>
                         <h3 className="text-sm font-bold text-[#ff453a] flex items-center gap-1.5">
                           <Trash2 size={14} />
                           <span>Eltávolítás & Tárhely Törlése</span>
@@ -1028,11 +1184,65 @@ export default function DocsPage() {
                     </div>
                   </div>
 
-                  {/* Step 2: Integrated iOS Uninstallation */}
+                  {/* Step 2: iOS Compatibility */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                    <div className="lg:col-span-5 space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-black text-[#ff8800]">[ 02 ]</span>
+                        <h3 className="text-sm font-bold text-[#f3f3f6]">Kompatibilitás & Rendszerkövetelmények</h3>
+                      </div>
+                      <p className="text-xs text-[#8c8c94] leading-relaxed">
+                        Támogatott iOS verziók és készülékek iPhone és iPad rendszereken.
+                      </p>
+                    </div>
+                    <div className="lg:col-span-7 bg-[#1b1b1f] border border-[#28282d] rounded-2xl p-4 space-y-3 text-xs text-[#8c8c94]">
+                      <div className="flex items-center justify-between border-b border-[#28282d] pb-2">
+                        <span className="text-[#f3f3f6] font-semibold">Támogatott Rendszerek:</span>
+                        <span className="text-[#ff8800] font-mono">iOS 14.0+ és iPadOS 14.0 vagy újabb</span>
+                      </div>
+                      <div className="flex items-center justify-between border-b border-[#28282d] pb-2">
+                        <span className="text-[#f3f3f6] font-semibold">Támogatott Eszközök:</span>
+                        <span>iPhone 6s-től iPhone 16 Pro Max-ig, iPad Air, iPad Pro, iPad mini</span>
+                      </div>
+                      <div className="flex items-center justify-between border-b border-[#28282d] pb-2">
+                        <span className="text-[#f3f3f6] font-semibold">Böngésző:</span>
+                        <span>Safari (a teljes PWA és WebPush értesítés támogatáshoz)</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[#f3f3f6] font-semibold">Sideloading Eszközök:</span>
+                        <span>AltStore, SideStore, Sideloadly, TrollStore (Jailbreak nem szükséges)</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step 3: iOS Update Guide */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                    <div className="lg:col-span-5 space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-black text-[#30d158]">[ 03 ]</span>
+                        <h3 className="text-sm font-bold text-[#30d158]">Automatikus Verziókövetés & Frissítés</h3>
+                      </div>
+                      <p className="text-xs text-[#8c8c94] leading-relaxed">
+                        Hogyan frissül az iOS verzió Sideloading vagy Safari PWA módban.
+                      </p>
+                    </div>
+                    <div className="lg:col-span-7 bg-[#151518] border border-[#28282d] rounded-2xl p-4 space-y-2.5 text-xs text-[#8c8c94]">
+                      <div className="p-3 bg-[#1b1b1f] rounded-xl border border-[#28282d]">
+                        <strong className="text-[#f3f3f6] block mb-1">Safari PWA (Főképernyőhöz adott app):</strong>
+                        A webes felület a háttérben automatikusan letölti a legújabb kódot és komponenseket internetkapcsolat esetén. Nincs szükség kézi frissítésre.
+                      </div>
+                      <div className="p-3 bg-[#1b1b1f] rounded-xl border border-[#28282d]">
+                        <strong className="text-[#f3f3f6] block mb-1">Sideloading (.ipa):</strong>
+                        Töltsd le az új kiadásból származó .ipa fájlt, és telepítsd felül az AltStore vagy Sideloadly alkalmazásban a korábbi verzió törlése nélkül.
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step 4: Integrated iOS Uninstallation */}
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start border-t border-[#28282d] pt-6">
                     <div className="lg:col-span-5 space-y-1.5">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-black text-[#ff453a]">[ 02 ]</span>
+                        <span className="font-mono text-xs font-black text-[#ff453a]">[ 04 ]</span>
                         <h3 className="text-sm font-bold text-[#ff453a] flex items-center gap-1.5">
                           <Trash2 size={14} />
                           <span>Eltávolítás iOS alatt</span>
@@ -1083,7 +1293,7 @@ export default function DocsPage() {
                             {copiedKey === "linux-script" ? <Check size={13} className="text-[#30d158]" /> : <Copy size={13} />}
                           </button>
                         </div>
-                        <div className="p-3.5 font-mono text-xs text-[#ff8800]">
+                        <div className="p-3.5 font-mono text-xs text-[#ff8800] overflow-x-auto">
                           curl -fsSL https://raw.githubusercontent.com/CsPS0/pala/main/install.sh | bash
                         </div>
                       </div>
@@ -1099,7 +1309,7 @@ export default function DocsPage() {
                             {copiedKey === "linux-apt" ? <Check size={13} className="text-[#30d158]" /> : <Copy size={13} />}
                           </button>
                         </div>
-                        <div className="p-3.5 font-mono text-xs text-[#ff8800] space-y-1">
+                        <div className="p-3.5 font-mono text-xs text-[#ff8800] space-y-1 overflow-x-auto">
                           <div className="text-[#8c8c94]"># GPG kulcs és csomagtár hozzáadása:</div>
                           <div>curl -fsSL https://apt.pala.hu/gpg.key | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/pala.gpg</div>
                           <div>echo &apos;deb [signed-by=/etc/apt/trusted.gpg.d/pala.gpg] https://apt.pala.hu stable main&apos; | sudo tee /etc/apt/sources.list.d/pala.list</div>
@@ -1119,7 +1329,7 @@ export default function DocsPage() {
                             {copiedKey === "linux-aur" ? <Check size={13} className="text-[#30d158]" /> : <Copy size={13} />}
                           </button>
                         </div>
-                        <div className="p-3.5 font-mono text-xs text-[#ff8800] space-y-1">
+                        <div className="p-3.5 font-mono text-xs text-[#ff8800] space-y-1 overflow-x-auto">
                           <div>yay -S pala-bin <span className="text-[#5f5f67]"># vagy: paru -S pala-bin</span></div>
                         </div>
                       </div>
@@ -1147,17 +1357,75 @@ export default function DocsPage() {
                           {copiedKey === "linux-run" ? <Check size={13} className="text-[#30d158]" /> : <Copy size={13} />}
                         </button>
                       </div>
-                      <div className="p-3.5 font-mono text-xs text-[#ff8800]">
+                      <div className="p-3.5 font-mono text-xs text-[#ff8800] overflow-x-auto">
                         pala <span className="text-[#5f5f67]"># Kréta TUI felület indítása</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Step 3: Integrated Linux Uninstallation */}
+                  {/* Step 3: Linux Compatibility */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                    <div className="lg:col-span-5 space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-black text-[#ff8800]">[ 03 ]</span>
+                        <h3 className="text-sm font-bold text-[#f3f3f6]">Kompatibilitás & Rendszerkövetelmények</h3>
+                      </div>
+                      <p className="text-xs text-[#8c8c94] leading-relaxed">
+                        Támogatott Linux disztribúciók, glibc verziók és terminál emulátorok.
+                      </p>
+                    </div>
+                    <div className="lg:col-span-7 bg-[#1b1b1f] border border-[#28282d] rounded-2xl p-4 space-y-3 text-xs text-[#8c8c94]">
+                      <div className="flex items-center justify-between border-b border-[#28282d] pb-2">
+                        <span className="text-[#f3f3f6] font-semibold">Támogatott Disztribúciók:</span>
+                        <span className="text-[#ff8800] font-mono">Ubuntu 20.04+, Debian 11+, Arch Linux, Fedora 36+, openSUSE</span>
+                      </div>
+                      <div className="flex items-center justify-between border-b border-[#28282d] pb-2">
+                        <span className="text-[#f3f3f6] font-semibold">Rendszer Könyvtárak:</span>
+                        <span>glibc 2.31 vagy újabb, libsecret (kulcstároláshoz)</span>
+                      </div>
+                      <div className="flex items-center justify-between border-b border-[#28282d] pb-2">
+                        <span className="text-[#f3f3f6] font-semibold">Ajánlott Terminál (TUI):</span>
+                        <span>Alacritty, Kitty, WezTerm, GNOME Terminal, Konsole (UTF-8 támogatással)</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[#f3f3f6] font-semibold">Architektúrák:</span>
+                        <span>x86_64 (amd64) és aarch64 (ARM64 Raspberry Pi 4/5 / Asahi)</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step 4: Linux Update Guide */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                    <div className="lg:col-span-5 space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-black text-[#30d158]">[ 04 ]</span>
+                        <h3 className="text-sm font-bold text-[#30d158]">Automatikus Verziókövetés & Frissítés</h3>
+                      </div>
+                      <p className="text-xs text-[#8c8c94] leading-relaxed">
+                        Csomagkezelő alapú vagy szkriptes frissítés a profiladatok megőrzésével (~/.config/pala).
+                      </p>
+                    </div>
+                    <div className="lg:col-span-7 bg-[#151518] border border-[#28282d] rounded-2xl p-4 space-y-2.5 text-xs text-[#8c8c94]">
+                      <div className="p-3 bg-[#1b1b1f] rounded-xl border border-[#28282d]">
+                        <strong className="text-[#f3f3f6] block mb-1">Debian / Ubuntu (APT csomagtár):</strong>
+                        <div className="font-mono text-[#ff8800]">sudo apt update && sudo apt upgrade pala</div>
+                      </div>
+                      <div className="p-3 bg-[#1b1b1f] rounded-xl border border-[#28282d]">
+                        <strong className="text-[#f3f3f6] block mb-1">Arch Linux (AUR csomagkezelő):</strong>
+                        <div className="font-mono text-[#ff8800]">yay -Syu pala-bin <span className="text-[#5f5f67]"># vagy paru -Syu</span></div>
+                      </div>
+                      <div className="p-3 bg-[#1b1b1f] rounded-xl border border-[#28282d]">
+                        <strong className="text-[#f3f3f6] block mb-1">Univerzális Shell Script újrafuttatása:</strong>
+                        <div className="font-mono text-[#ff8800]">curl -fsSL https://raw.githubusercontent.com/CsPS0/pala/main/install.sh | bash</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step 5: Integrated Linux Uninstallation */}
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start border-t border-[#28282d] pt-6">
                     <div className="lg:col-span-5 space-y-1.5">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-black text-[#ff453a]">[ 03 ]</span>
+                        <span className="font-mono text-xs font-black text-[#ff453a]">[ 05 ]</span>
                         <h3 className="text-sm font-bold text-[#ff453a] flex items-center gap-1.5">
                           <Trash2 size={14} />
                           <span>Eltávolítás Linux alatt</span>
@@ -1217,17 +1485,71 @@ export default function DocsPage() {
                           {copiedKey === "mac-cmd" ? <Check size={13} className="text-[#30d158]" /> : <Copy size={13} />}
                         </button>
                       </div>
-                      <div className="p-3.5 font-mono text-xs text-[#ff8800]">
+                      <div className="p-3.5 font-mono text-xs text-[#ff8800] overflow-x-auto">
                         brew install CsPS0/pala/pala
                       </div>
                     </div>
                   </div>
 
-                  {/* Step 2: Integrated macOS Uninstallation */}
+                  {/* Step 2: macOS Compatibility */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                    <div className="lg:col-span-5 space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-black text-[#ff8800]">[ 02 ]</span>
+                        <h3 className="text-sm font-bold text-[#f3f3f6]">Kompatibilitás & Rendszerkövetelmények</h3>
+                      </div>
+                      <p className="text-xs text-[#8c8c94] leading-relaxed">
+                        Támogatott macOS verziók és Apple Silicon / Intel processzorok.
+                      </p>
+                    </div>
+                    <div className="lg:col-span-7 bg-[#1b1b1f] border border-[#28282d] rounded-2xl p-4 space-y-3 text-xs text-[#8c8c94]">
+                      <div className="flex items-center justify-between border-b border-[#28282d] pb-2">
+                        <span className="text-[#f3f3f6] font-semibold">Támogatott macOS Verziók:</span>
+                        <span className="text-[#0a84ff] font-mono">macOS 11.0 (Big Sur) vagy újabb</span>
+                      </div>
+                      <div className="flex items-center justify-between border-b border-[#28282d] pb-2">
+                        <span className="text-[#f3f3f6] font-semibold">Processzor Architektúrák:</span>
+                        <span>Natív Apple Silicon (M1, M2, M3, M4) és Intel 64-bit Core processzorok</span>
+                      </div>
+                      <div className="flex items-center justify-between border-b border-[#28282d] pb-2">
+                        <span className="text-[#f3f3f6] font-semibold">Terminál Környezet:</span>
+                        <span>macOS Terminal, iTerm2, Warp (zsh alapértelmezett)</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[#f3f3f6] font-semibold">Adattárolás & Kulcstár:</span>
+                        <span className="font-mono text-[#ff8800]">~/Library/Application Support/pala</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step 3: macOS Update Guide */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                    <div className="lg:col-span-5 space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-black text-[#30d158]">[ 03 ]</span>
+                        <h3 className="text-sm font-bold text-[#30d158]">Automatikus Verziókövetés & Frissítés</h3>
+                      </div>
+                      <p className="text-xs text-[#8c8c94] leading-relaxed">
+                        Homebrew vagy DMG alapú frissítés az adatok megőrzésével.
+                      </p>
+                    </div>
+                    <div className="lg:col-span-7 bg-[#151518] border border-[#28282d] rounded-2xl p-4 space-y-2.5 text-xs text-[#8c8c94]">
+                      <div className="p-3 bg-[#1b1b1f] rounded-xl border border-[#28282d]">
+                        <strong className="text-[#f3f3f6] block mb-1">Homebrew frissítés:</strong>
+                        <div className="font-mono text-[#ff8800]">brew update && brew upgrade pala</div>
+                      </div>
+                      <div className="p-3 bg-[#1b1b1f] rounded-xl border border-[#28282d]">
+                        <strong className="text-[#f3f3f6] block mb-1">DMG csomag felülírás:</strong>
+                        Töltsd le a legújabb <code className="text-[#ff8800] font-mono">Pala-macOS.dmg</code> fájlt, nyisd meg, és húzd a Pala ikont az Applications (Alkalmazások) mappába felülírással.
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step 4: Integrated macOS Uninstallation */}
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start border-t border-[#28282d] pt-6">
                     <div className="lg:col-span-5 space-y-1.5">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-black text-[#ff453a]">[ 02 ]</span>
+                        <span className="font-mono text-xs font-black text-[#ff453a]">[ 04 ]</span>
                         <h3 className="text-sm font-bold text-[#ff453a] flex items-center gap-1.5">
                           <Trash2 size={14} />
                           <span>Eltávolítás macOS alatt</span>
@@ -1241,15 +1563,15 @@ export default function DocsPage() {
                       <div className="px-3.5 py-2 bg-[#0e0e11] border-b border-[#28282d] text-[11px] font-mono text-[#8c8c94] flex items-center justify-between">
                         <span>Terminal (zsh)</span>
                         <button
-                          onClick={() => handleCopy("brew uninstall pala; rm -rf ~/Library/Application\ Support/pala", "mac-uninst")}
+                          onClick={() => handleCopy("brew uninstall pala; rm -rf ~/Library/Application Support/pala", "mac-uninst")}
                           className="hover:text-[#f3f3f6] transition-colors"
                         >
                           {copiedKey === "mac-uninst" ? <Check size={13} className="text-[#30d158]" /> : <Copy size={13} />}
                         </button>
                       </div>
-                      <div className="p-3.5 font-mono text-xs text-[#ff453a] space-y-1">
+                      <div className="p-3.5 font-mono text-xs text-[#ff453a] space-y-1 overflow-x-auto">
                         <div>brew uninstall pala</div>
-                        <div>rm -rf ~/Library/Application\ Support/pala</div>
+                        <div>rm -rf ~/Library/Application Support/pala</div>
                       </div>
                     </div>
                   </div>
@@ -1274,18 +1596,92 @@ export default function DocsPage() {
                         Töltsd le a <code className="text-[#ff8800] font-mono">pala-extension.zip</code> fájlt, majd töltsd be a böngésződ bővítménykezelőjében.
                       </p>
                     </div>
-                    <div className="lg:col-span-7 bg-[#151518] border border-[#28282d] rounded-2xl p-4 space-y-2 text-xs text-[#8c8c94]">
-                      <div className="text-[#f3f3f6] font-semibold">1. Nyisd meg: chrome://extensions/ vagy edge://extensions/</div>
-                      <div className="text-[#ff8800] font-semibold">2. Kapcsold be a jobb felső sarokban a Fejlesztői módot</div>
-                      <div className="text-[#30d158] font-semibold">3. Kattints a „Kicsomagolt betöltése” (Load unpacked) gombra</div>
+                    <div className="lg:col-span-7 space-y-3">
+                      <div className="bg-[#1b1b1f] border border-[#28282d] rounded-2xl p-4 flex items-center justify-between">
+                        <div>
+                          <div className="text-xs font-bold text-[#f3f3f6]">Pala Bővítmény Letöltése (.zip)</div>
+                          <div className="text-[11px] text-[#5f5f67]">Manifest V3 • Chromium (Chrome, Brave, Edge)</div>
+                        </div>
+                        <a
+                          href={release.assets.extensionZip}
+                          className="inline-flex items-center gap-1.5 bg-[#ff8800] hover:bg-[#ffa033] text-black font-extrabold text-xs px-4 py-2 rounded-xl transition-all shadow-[0_0_15px_rgba(255,136,0,0.2)]"
+                        >
+                          <Download size={13} />
+                          <span>Letöltés</span>
+                        </a>
+                      </div>
+
+                      <div className="bg-[#151518] border border-[#28282d] rounded-2xl p-4 space-y-2 text-xs text-[#8c8c94]">
+                        <div className="text-[#f3f3f6] font-semibold">1. Csomagold ki a letöltött zip fájlt egy tetszőleges mappába</div>
+                        <div className="text-[#8c8c94]">2. Nyisd meg a böngésződben: <code className="text-[#ff8800] font-mono">chrome://extensions/</code> vagy <code className="text-[#ff8800] font-mono">edge://extensions/</code></div>
+                        <div className="text-[#ff8800] font-semibold">3. Kapcsold be a jobb felső sarokban a Fejlesztői módot (Developer mode)</div>
+                        <div className="text-[#30d158] font-semibold">4. Kattints a „Kicsomagolt betöltése” (Load unpacked) gombra, és válaszd ki a mappát</div>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Step 2: Extension Uninstallation */}
+                  {/* Step 2: Extension Compatibility */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                    <div className="lg:col-span-5 space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-black text-[#ff8800]">[ 02 ]</span>
+                        <h3 className="text-sm font-bold text-[#f3f3f6]">Kompatibilitás & Rendszerkövetelmények</h3>
+                      </div>
+                      <p className="text-xs text-[#8c8c94] leading-relaxed">
+                        Támogatott böngészők és Manifest V3 kompatibilitás.
+                      </p>
+                    </div>
+                    <div className="lg:col-span-7 bg-[#1b1b1f] border border-[#28282d] rounded-2xl p-4 space-y-3 text-xs text-[#8c8c94]">
+                      <div className="flex items-center justify-between border-b border-[#28282d] pb-2">
+                        <span className="text-[#f3f3f6] font-semibold">Támogatott Böngészők:</span>
+                        <span className="text-[#0a84ff]">Google Chrome 88+, Microsoft Edge 88+, Brave, Opera, Vivaldi, Arc</span>
+                      </div>
+                      <div className="flex items-center justify-between border-b border-[#28282d] pb-2">
+                        <span className="text-[#f3f3f6] font-semibold">Bővítmény Architektúra:</span>
+                        <span className="text-[#ff8800] font-mono">Manifest V3 (Service Worker háttérfolyamat)</span>
+                      </div>
+                      <div className="flex items-center justify-between border-b border-[#28282d] pb-2">
+                        <span className="text-[#f3f3f6] font-semibold">Engedélyek:</span>
+                        <span>Kizárólag a Kréta domainek (*.e-kreta.hu) és helyi böngésző-tárhely (storage)</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[#f3f3f6] font-semibold">Adatvédelem:</span>
+                        <span className="text-[#30d158]">Teljesen helyi tárolás, nulla külső követő szerver</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step 3: Extension Update Guide */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                    <div className="lg:col-span-5 space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-black text-[#30d158]">[ 03 ]</span>
+                        <h3 className="text-sm font-bold text-[#30d158]">Automatikus Verziókövetés & Frissítés</h3>
+                      </div>
+                      <p className="text-xs text-[#8c8c94] leading-relaxed">
+                        A kicsomagolt bővítmény frissítése az újabb verzióra a bejelentkezési adatok megőrzésével.
+                      </p>
+                    </div>
+                    <div className="lg:col-span-7 bg-[#151518] border border-[#28282d] rounded-2xl p-4 space-y-2.5 text-xs text-[#8c8c94]">
+                      <div className="p-3 bg-[#1b1b1f] rounded-xl border border-[#28282d]">
+                        <strong className="text-[#f3f3f6] block mb-1">1. Új ZIP letöltése és kicsomagolása:</strong>
+                        Töltsd le az új <code className="text-[#ff8800] font-mono">pala-extension.zip</code> fájlt, és másold be az új fájlokat a korábban kicsomagolt mappába (felülírással).
+                      </div>
+                      <div className="p-3 bg-[#1b1b1f] rounded-xl border border-[#28282d]">
+                        <strong className="text-[#f3f3f6] block mb-1">2. Újratöltés a böngészőben:</strong>
+                        Nyisd meg a <code className="text-[#ff8800] font-mono">chrome://extensions/</code> oldalt, és a Pala kártyáján kattints a <strong>Frissítés (körkörös nyíl)</strong> ikonra.
+                      </div>
+                      <div className="text-[#30d158] text-[11px]">
+                        A bejelentkezési munkameneted és a testreszabott popup beállításaid a böngésző belső tárhelyében (<code className="font-mono">chrome.storage.local</code>) automatikusan megmaradnak.
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step 4: Extension Uninstallation */}
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start border-t border-[#28282d] pt-6">
                     <div className="lg:col-span-5 space-y-1.5">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-black text-[#ff453a]">[ 02 ]</span>
+                        <span className="font-mono text-xs font-black text-[#ff453a]">[ 04 ]</span>
                         <h3 className="text-sm font-bold text-[#ff453a] flex items-center gap-1.5">
                           <Trash2 size={14} />
                           <span>Bővítmény Eltávolítása</span>
@@ -1305,124 +1701,12 @@ export default function DocsPage() {
             </div>
           )}
 
-          {/* ================= PAGE: COMPATIBILITY ================= */}
-          {activePage === "compatibility" && (
-            <div className="space-y-8 animate-fadeIn">
-              <div>
-                <span className="text-[11px] font-mono font-bold tracking-widest text-[#ff8800] uppercase block mb-1">
-                  GETTING STARTED / COMPATIBILITY
-                </span>
-                <h1 className="text-3xl sm:text-4xl font-black text-[#f3f3f6] tracking-tight mb-3">
-                  Kompatibilitás és Rendszerkövetelmények
-                </h1>
-                <p className="text-sm text-[#8c8c94] leading-relaxed max-w-2xl">
-                  A Pala célja a lehető legszélesebb körű elérhetőség régebbi és legújabb eszközökön egyaránt.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-[#1b1b1f] border border-[#28282d] p-5 rounded-2xl space-y-2">
-                  <div className="flex items-center gap-2 text-[#f3f3f6] font-bold text-sm">
-                    <Monitor size={16} className="text-[#ff8800]" />
-                    <span>Asztali Rendszerek</span>
-                  </div>
-                  <ul className="text-xs text-[#8c8c94] space-y-1.5 list-disc pl-4">
-                    <li><strong className="text-[#f3f3f6]">Windows</strong>: Windows 10 (1809+) és Windows 11 (64-bit / ARM64)</li>
-                    <li><strong className="text-[#f3f3f6]">Linux</strong>: Ubuntu 20.04+, Debian 11+, Arch, Fedora, openSUSE</li>
-                    <li><strong className="text-[#f3f3f6]">macOS</strong>: macOS 11.0 (Big Sur) vagy újabb (Apple Silicon & Intel)</li>
-                  </ul>
-                </div>
-
-                <div className="bg-[#1b1b1f] border border-[#28282d] p-5 rounded-2xl space-y-2">
-                  <div className="flex items-center gap-2 text-[#f3f3f6] font-bold text-sm">
-                    <Smartphone size={16} className="text-[#30d158]" />
-                    <span>Mobil Rendszerek</span>
-                  </div>
-                  <ul className="text-xs text-[#8c8c94] space-y-1.5 list-disc pl-4">
-                    <li><strong className="text-[#f3f3f6]">Android</strong>: Android 7.0 (Nougat) vagy újabb (ARM64, ARMv7, x86)</li>
-                    <li><strong className="text-[#f3f3f6]">iOS / iPadOS</strong>: iOS 14.0 vagy újabb</li>
-                  </ul>
-                </div>
-
-                <div className="bg-[#1b1b1f] border border-[#28282d] p-5 rounded-2xl space-y-2">
-                  <div className="flex items-center gap-2 text-[#f3f3f6] font-bold text-sm">
-                    <Globe size={16} className="text-[#0a84ff]" />
-                    <span>Böngészők</span>
-                  </div>
-                  <ul className="text-xs text-[#8c8c94] space-y-1.5 list-disc pl-4">
-                    <li>Google Chrome 88+</li>
-                    <li>Microsoft Edge 88+</li>
-                    <li>Mozilla Firefox 109+</li>
-                    <li>Brave, Opera, Vivaldi</li>
-                  </ul>
-                </div>
-
-                <div className="bg-[#1b1b1f] border border-[#28282d] p-5 rounded-2xl space-y-2">
-                  <div className="flex items-center gap-2 text-[#f3f3f6] font-bold text-sm">
-                    <BookOpen size={16} className="text-[#ff8800]" />
-                    <span>Támogatott Iskolatípusok</span>
-                  </div>
-                  <ul className="text-xs text-[#8c8c94] space-y-1.5 list-disc pl-4">
-                    <li>Általános iskola & Gimnázium</li>
-                    <li>Technikum & Szakgimnázium</li>
-                    <li>Szakképző iskola & Kollégium</li>
-                    <li>Művészeti és zeneiskola</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ================= PAGE: UPGRADE GUIDE ================= */}
-          {activePage === "upgrade-guide" && (
-            <div className="space-y-8 animate-fadeIn">
-              <div>
-                <span className="text-[11px] font-mono font-bold tracking-widest text-[#ff8800] uppercase block mb-1">
-                  GETTING STARTED / UPGRADE
-                </span>
-                <h1 className="text-3xl sm:text-4xl font-black text-[#f3f3f6] tracking-tight mb-3">
-                  Frissítési Útmutató
-                </h1>
-                <p className="text-sm text-[#8c8c94] leading-relaxed max-w-2xl">
-                  Hogyan frissíthetsz a legújabb Pala verzióra anélkül, hogy elveszítenéd a beállításaidat vagy a mentett órarendedet.
-                </p>
-              </div>
-
-              <div className="space-y-6">
-                <div className="bg-[#1b1b1f] border border-[#28282d] p-5 rounded-2xl space-y-3">
-                  <h3 className="text-sm font-bold text-[#f3f3f6] flex items-center gap-2">
-                    <RefreshCw size={16} className="text-[#ff8800]" />
-                    <span>Automatikus verziókövetés & Frissítés:</span>
-                  </h3>
-                  <div className="space-y-3 text-xs text-[#8c8c94]">
-                    <div className="p-3 bg-[#151518] rounded-xl border border-[#28282d]">
-                      <strong className="text-[#f3f3f6] block mb-1">Windows (.exe):</strong>
-                      Egyszerűen töltsd le és futtasd az új <code className="text-[#ff8800] font-mono">Pala-Setup.exe</code> fájlt. A telepítő felülírja a binárist, de megőrzi a profilodat.
-                    </div>
-                    <div className="p-3 bg-[#151518] rounded-xl border border-[#28282d]">
-                      <strong className="text-[#f3f3f6] block mb-1">Scoop (Windows):</strong>
-                      <code className="text-[#ff8800] font-mono">scoop update pala</code>
-                    </div>
-                    <div className="p-3 bg-[#151518] rounded-xl border border-[#28282d]">
-                      <strong className="text-[#f3f3f6] block mb-1">Linux (Script / APT / AUR):</strong>
-                      Futtasd az adott csomagkezelő frissítő parancsát: <code className="text-[#ff8800] font-mono">sudo apt update &amp;&amp; sudo apt upgrade pala</code> vagy <code className="text-[#ff8800] font-mono">yay -Syu pala-bin</code>
-                    </div>
-                    <div className="p-3 bg-[#151518] rounded-xl border border-[#28282d]">
-                      <strong className="text-[#f3f3f6] block mb-1">Android APK:</strong>
-                      Töltsd le az új APK-t és nyomj a <strong>Frissítés (Update)</strong> gombra. Nem szükséges a korábbi verzió törlése, az adataid megmaradnak.
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* ================= PAGE: HASZNALAT ================= */}
           {activePage === "hasznalat" && (
             <div className="space-y-8 animate-fadeIn">
               <div>
                 <span className="text-[11px] font-mono font-bold tracking-widest text-[#ff8800] uppercase block mb-1">
-                  FUNKCIÓK / HASZNÁLAT
+                  KEZDŐ LÉPÉSEK / HASZNÁLAT
                 </span>
                 <h1 className="text-3xl sm:text-4xl font-black text-[#f3f3f6] tracking-tight mb-3">
                   Használat és Kezelési Útmutató
@@ -1486,103 +1770,12 @@ export default function DocsPage() {
             </div>
           )}
 
-          {/* ================= PAGE: GYORSBILLENTYUK ================= */}
-          {activePage === "gyorsbillentyuk" && (
-            <div className="space-y-8 animate-fadeIn">
-              <div>
-                <span className="text-[11px] font-mono font-bold tracking-widest text-[#ff8800] uppercase block mb-1">
-                  FUNKCIÓK / GYORSBILLENTYŰK
-                </span>
-                <h1 className="text-3xl sm:text-4xl font-black text-[#f3f3f6] tracking-tight mb-3">
-                  Gyorsbillentyűk (Keybindings)
-                </h1>
-                <p className="text-sm text-[#8c8c94] leading-relaxed max-w-2xl">
-                  A billentyűzettel villámgyorsan elérheted a Pala összes nézetét és műveletét egér használata nélkül is.
-                </p>
-              </div>
-
-              {/* Keybinds Table Card */}
-              <div className="bg-[#1b1b1f] border border-[#28282d] p-6 rounded-2xl space-y-4">
-                <div className="flex items-center gap-2 text-sm font-bold text-[#f3f3f6]">
-                  <Keyboard size={16} className="text-[#ff8800]" />
-                  <span>Navigációs és Kezelési Gyorsbillentyűk</span>
-                </div>
-
-                <div className="border border-[#28282d] rounded-xl overflow-hidden divide-y divide-[#28282d] text-xs">
-                  <div className="p-3.5 bg-[#151518] flex items-center justify-between">
-                    <div>
-                      <strong className="text-[#f3f3f6] block">Vezérlőpult & Élő Órarend</strong>
-                      <span className="text-[11px] text-[#8c8c94]">Mai órák, hátralévő idő és termek megjelenítése</span>
-                    </div>
-                    <kbd className="bg-[#0e0e11] border border-[#28282d] px-2.5 py-1 rounded text-[#ff8800] font-mono font-bold">1 vagy d</kbd>
-                  </div>
-
-                  <div className="p-3.5 bg-[#151518] flex items-center justify-between">
-                    <div>
-                      <strong className="text-[#f3f3f6] block">Jegyek & Tantárgyi Átlagok</strong>
-                      <span className="text-[11px] text-[#8c8c94]">Minden beírt jegy, súlyozás és tantárgyi lista</span>
-                    </div>
-                    <kbd className="bg-[#0e0e11] border border-[#28282d] px-2.5 py-1 rounded text-[#ff8800] font-mono font-bold">2 vagy g</kbd>
-                  </div>
-
-                  <div className="p-3.5 bg-[#151518] flex items-center justify-between">
-                    <div>
-                      <strong className="text-[#f3f3f6] block">Célátlag & Szellem Jegy Kalkulátor</strong>
-                      <span className="text-[11px] text-[#8c8c94]">Virtuális jegyek szimulálása a kívánt átlag eléréséhez</span>
-                    </div>
-                    <kbd className="bg-[#0e0e11] border border-[#28282d] px-2.5 py-1 rounded text-[#ff8800] font-mono font-bold">3 vagy c</kbd>
-                  </div>
-
-                  <div className="p-3.5 bg-[#151518] flex items-center justify-between">
-                    <div>
-                      <strong className="text-[#f3f3f6] block">250 Órás Veszélyzóna Figyelő</strong>
-                      <span className="text-[11px] text-[#8c8c94]">Hiányzások és igazolások összesítése</span>
-                    </div>
-                    <kbd className="bg-[#0e0e11] border border-[#28282d] px-2.5 py-1 rounded text-[#ff8800] font-mono font-bold">4 vagy a</kbd>
-                  </div>
-
-                  <div className="p-3.5 bg-[#151518] flex items-center justify-between">
-                    <div>
-                      <strong className="text-[#f3f3f6] block">Pala Wrapped (Éves Összefoglaló)</strong>
-                      <span className="text-[11px] text-[#8c8c94]">Tanulmányi statisztikák és infografika</span>
-                    </div>
-                    <kbd className="bg-[#0e0e11] border border-[#28282d] px-2.5 py-1 rounded text-[#ff8800] font-mono font-bold">w</kbd>
-                  </div>
-
-                  <div className="p-3.5 bg-[#151518] flex items-center justify-between">
-                    <div>
-                      <strong className="text-[#f3f3f6] block">Adatok Frissítése (Kréta Sync)</strong>
-                      <span className="text-[11px] text-[#8c8c94]">Azonnali lekérdezés a szerverről</span>
-                    </div>
-                    <kbd className="bg-[#0e0e11] border border-[#28282d] px-2.5 py-1 rounded text-[#30d158] font-mono font-bold">r</kbd>
-                  </div>
-
-                  <div className="p-3.5 bg-[#151518] flex items-center justify-between">
-                    <div>
-                      <strong className="text-[#f3f3f6] block">Panelek közötti váltás</strong>
-                      <span className="text-[11px] text-[#8c8c94]">Fókusz mozgatása az órarend és jegyoszlopok között</span>
-                    </div>
-                    <kbd className="bg-[#0e0e11] border border-[#28282d] px-2.5 py-1 rounded text-[#f3f3f6] font-mono font-bold">Tab / Shift+Tab</kbd>
-                  </div>
-
-                  <div className="p-3.5 bg-[#151518] flex items-center justify-between">
-                    <div>
-                      <strong className="text-[#f3f3f6] block">Kilépés a programból</strong>
-                      <span className="text-[11px] text-[#8c8c94]">Tiszta leállás</span>
-                    </div>
-                    <kbd className="bg-[#0e0e11] border border-[#28282d] px-2.5 py-1 rounded text-[#ff453a] font-mono font-bold">q vagy Esc</kbd>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* ================= PAGE: FILES & CONFIGS ================= */}
           {activePage === "files-configs" && (
             <div className="space-y-8 animate-fadeIn">
               <div>
                 <span className="text-[11px] font-mono font-bold tracking-widest text-[#ff8800] uppercase block mb-1">
-                  FUNKCIÓK / FÁJLOK & KONFIGURÁCIÓK
+                  KEZDŐ LÉPÉSEK / FÁJLOK & KONFIGURÁCIÓK
                 </span>
                 <h1 className="text-3xl sm:text-4xl font-black text-[#f3f3f6] tracking-tight mb-3">
                   Fájlok és Konfigurációk (Files & Configs)
@@ -1609,20 +1802,20 @@ export default function DocsPage() {
                     <span className="text-[10px] font-mono text-[#5f5f67]">%APPDATA%\pala</span>
                   </div>
                   <div className="text-xs text-[#8c8c94] space-y-1.5 font-mono">
-                    <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
+                    <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d] break-all">
                       <span className="text-[#5f5f67]">Konfiguráció: </span>
                       <span className="text-[#ff8800]">%APPDATA%\pala\config.json</span>
                     </div>
-                    <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
+                    <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d] break-all">
                       <span className="text-[#5f5f67]">Offline SQLite Adatbázis: </span>
                       <span className="text-[#ff8800]">%LOCALAPPDATA%\pala\cache.db</span>
                     </div>
                   </div>
                   <div className="text-xs text-[#8c8c94]">
                     <strong>Manuális szerkesztés PowerShellből:</strong>
-                    <div className="mt-1.5 p-2.5 bg-[#0e0e11] rounded-xl border border-[#28282d] font-mono text-[#ff8800] flex items-center justify-between">
-                      <span>notepad $env:APPDATA\pala\config.json</span>
-                      <button onClick={() => handleCopy("notepad $env:APPDATA\\pala\\config.json", "cfg-win")} className="hover:text-white">
+                    <div className="mt-1.5 p-2.5 bg-[#0e0e11] rounded-xl border border-[#28282d] font-mono text-[#ff8800] flex items-center justify-between gap-2">
+                      <span className="truncate text-[11px] sm:text-xs">notepad $env:APPDATA\pala\config.json</span>
+                      <button onClick={() => handleCopy("notepad $env:APPDATA\\pala\\config.json", "cfg-win")} className="hover:text-white shrink-0 p-1">
                         {copiedKey === "cfg-win" ? <Check size={13} className="text-[#30d158]" /> : <Copy size={13} />}
                       </button>
                     </div>
@@ -1639,20 +1832,20 @@ export default function DocsPage() {
                     <span className="text-[10px] font-mono text-[#5f5f67]">~/.config/pala</span>
                   </div>
                   <div className="text-xs text-[#8c8c94] space-y-1.5 font-mono">
-                    <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
+                    <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d] break-all">
                       <span className="text-[#5f5f67]">Konfiguráció: </span>
                       <span className="text-[#ff8800]">~/.config/pala/config.json</span>
                     </div>
-                    <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
+                    <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d] break-all">
                       <span className="text-[#5f5f67]">Offline Adatbázis: </span>
                       <span className="text-[#ff8800]">~/.local/share/pala/cache.db</span>
                     </div>
                   </div>
                   <div className="text-xs text-[#8c8c94]">
                     <strong>Manuális szerkesztés terminálban:</strong>
-                    <div className="mt-1.5 p-2.5 bg-[#0e0e11] rounded-xl border border-[#28282d] font-mono text-[#ff8800] flex items-center justify-between">
-                      <span>nano ~/.config/pala/config.json</span>
-                      <button onClick={() => handleCopy("nano ~/.config/pala/config.json", "cfg-lin")} className="hover:text-white">
+                    <div className="mt-1.5 p-2.5 bg-[#0e0e11] rounded-xl border border-[#28282d] font-mono text-[#ff8800] flex items-center justify-between gap-2">
+                      <span className="truncate text-[11px] sm:text-xs">nano ~/.config/pala/config.json</span>
+                      <button onClick={() => handleCopy("nano ~/.config/pala/config.json", "cfg-lin")} className="hover:text-white shrink-0 p-1">
                         {copiedKey === "cfg-lin" ? <Check size={13} className="text-[#30d158]" /> : <Copy size={13} />}
                       </button>
                     </div>
@@ -1669,20 +1862,20 @@ export default function DocsPage() {
                     <span className="text-[10px] font-mono text-[#5f5f67]">~/Library/Application Support/pala</span>
                   </div>
                   <div className="text-xs text-[#8c8c94] space-y-1.5 font-mono">
-                    <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
+                    <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d] break-all">
                       <span className="text-[#5f5f67]">Konfiguráció: </span>
                       <span className="text-[#ff8800]">~/Library/Application Support/pala/config.json</span>
                     </div>
-                    <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
+                    <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d] break-all">
                       <span className="text-[#5f5f67]">Gyorsítótár: </span>
                       <span className="text-[#ff8800]">~/Library/Caches/pala/cache.db</span>
                     </div>
                   </div>
                   <div className="text-xs text-[#8c8c94]">
                     <strong>Megnyitás TextEditben:</strong>
-                    <div className="mt-1.5 p-2.5 bg-[#0e0e11] rounded-xl border border-[#28282d] font-mono text-[#ff8800] flex items-center justify-between">
-                      <span>open -a TextEdit ~/Library/Application\ Support/pala/config.json</span>
-                      <button onClick={() => handleCopy("open -a TextEdit ~/Library/Application\\ Support/pala/config.json", "cfg-mac")} className="hover:text-white">
+                    <div className="mt-1.5 p-2.5 bg-[#0e0e11] rounded-xl border border-[#28282d] font-mono text-[#ff8800] flex items-center justify-between gap-2">
+                      <span className="truncate text-[11px] sm:text-xs">open -a TextEdit ~/Library/Application\ Support/pala/config.json</span>
+                      <button onClick={() => handleCopy("open -a TextEdit ~/Library/Application\\ Support/pala/config.json", "cfg-mac")} className="hover:text-white shrink-0 p-1">
                         {copiedKey === "cfg-mac" ? <Check size={13} className="text-[#30d158]" /> : <Copy size={13} />}
                       </button>
                     </div>
@@ -1716,12 +1909,653 @@ export default function DocsPage() {
             </div>
           )}
 
+          {/* ================= PAGE: GYORSBILLENTYUK ================= */}
+          {activePage === "gyorsbillentyuk" && (
+            <div className="space-y-8 animate-fadeIn">
+              <div>
+                <span className="text-[11px] font-mono font-bold tracking-widest text-[#ff8800] uppercase block mb-1">
+                  KEZDŐ LÉPÉSEK / GYORSBILLENTYŰK
+                </span>
+                <h1 className="text-3xl sm:text-4xl font-black text-[#f3f3f6] tracking-tight mb-3">
+                  Gyorsbillentyűk (Keybindings)
+                </h1>
+                <p className="text-sm text-[#8c8c94] leading-relaxed max-w-2xl">
+                  A billentyűzettel villámgyorsan elérheted a Pala összes nézetét és műveletét egér használata nélkül is.
+                </p>
+              </div>
+
+              {/* Keybinds Table Card */}
+              <div className="bg-[#1b1b1f] border border-[#28282d] p-6 rounded-2xl space-y-4">
+                <div className="flex items-center gap-2 text-sm font-bold text-[#f3f3f6]">
+                  <Keyboard size={16} className="text-[#ff8800]" />
+                  <span>Navigációs és Kezelési Gyorsbillentyűk</span>
+                </div>
+
+                <div className="border border-[#28282d] rounded-xl overflow-hidden divide-y divide-[#28282d] text-xs">
+                  <div className="p-3.5 bg-[#151518] flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <strong className="text-[#f3f3f6] block">Navigáció a menüpontok között</strong>
+                      <span className="text-[11px] text-[#8c8c94]">Vim / Hyprland stílusú billentyűk vagy kurzornyilak</span>
+                    </div>
+                    <kbd className="bg-[#0e0e11] border border-[#28282d] px-2.5 py-1 rounded text-[#ff8800] font-mono font-bold shrink-0">j / k vagy ↑ / ↓</kbd>
+                  </div>
+
+                  <div className="p-3.5 bg-[#151518] flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <strong className="text-[#f3f3f6] block">Azonnali számbillentyűs választás</strong>
+                      <span className="text-[11px] text-[#8c8c94]">A menüpont melletti sorszám leütése azonnal megnyitja a nézetet</span>
+                    </div>
+                    <kbd className="bg-[#0e0e11] border border-[#28282d] px-2.5 py-1 rounded text-[#ff8800] font-mono font-bold shrink-0">1 .. 9, 0</kbd>
+                  </div>
+
+                  <div className="p-3.5 bg-[#151518] flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <strong className="text-[#f3f3f6] block">Kiválasztás / Almenü megnyitása</strong>
+                      <span className="text-[11px] text-[#8c8c94]">A kijelölt elem elindítása</span>
+                    </div>
+                    <kbd className="bg-[#0e0e11] border border-[#28282d] px-2.5 py-1 rounded text-[#30d158] font-mono font-bold shrink-0">Enter</kbd>
+                  </div>
+
+                  <div className="p-3.5 bg-[#151518] flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <strong className="text-[#f3f3f6] block">Oldallapozás hosszú táblázatokban</strong>
+                      <span className="text-[11px] text-[#8c8c94]">Jegyek és órák lapozása Vim stílusban vagy nyilakkal</span>
+                    </div>
+                    <kbd className="bg-[#0e0e11] border border-[#28282d] px-2.5 py-1 rounded text-[#ff8800] font-mono font-bold shrink-0">h / l vagy ← / →</kbd>
+                  </div>
+
+                  <div className="p-3.5 bg-[#151518] flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <strong className="text-[#f3f3f6] block">Dashboard (Élő nézet) ugrás</strong>
+                      <span className="text-[11px] text-[#8c8c94]">Valós idejű órarendi visszaszámláló közvetlen megnyitása</span>
+                    </div>
+                    <kbd className="bg-[#0e0e11] border border-[#28282d] px-2.5 py-1 rounded text-[#ff8800] font-mono font-bold shrink-0">d</kbd>
+                  </div>
+
+                  <div className="p-3.5 bg-[#151518] flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <strong className="text-[#f3f3f6] block">Pala Wrapped (Éves Összefoglaló)</strong>
+                      <span className="text-[11px] text-[#8c8c94]">Tanulmányi statisztikák és infografika</span>
+                    </div>
+                    <kbd className="bg-[#0e0e11] border border-[#28282d] px-2.5 py-1 rounded text-[#ff8800] font-mono font-bold shrink-0">w</kbd>
+                  </div>
+
+                  <div className="p-3.5 bg-[#151518] flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <strong className="text-[#f3f3f6] block">Globális Kereső</strong>
+                      <span className="text-[11px] text-[#8c8c94]">Keresés jegyek, tanárok és témák között Vim stílusban</span>
+                    </div>
+                    <kbd className="bg-[#0e0e11] border border-[#28282d] px-2.5 py-1 rounded text-[#ff8800] font-mono font-bold shrink-0">/</kbd>
+                  </div>
+
+                  <div className="p-3.5 bg-[#151518] flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <strong className="text-[#f3f3f6] block">Visszalépés / Kilépés</strong>
+                      <span className="text-[11px] text-[#8c8c94]">Bármely almenüből visszatérés vagy tiszta kilépés</span>
+                    </div>
+                    <kbd className="bg-[#0e0e11] border border-[#28282d] px-2.5 py-1 rounded text-[#ff453a] font-mono font-bold shrink-0">q vagy Esc</kbd>
+                  </div>
+
+                  <div className="p-3.5 bg-[#151518] flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <strong className="text-[#f3f3f6] block">Weboldal Dokumentáció Kereső</strong>
+                      <span className="text-[11px] text-[#8c8c94]">A docs weboldalon bárhonnan megnyitható parancskereső</span>
+                    </div>
+                    <kbd className="bg-[#0e0e11] border border-[#28282d] px-2.5 py-1 rounded text-[#0a84ff] font-mono font-bold shrink-0">Ctrl + K / Cmd + K</kbd>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+                    {/* ================= PAGE: PLATFORM ÖSSZEHASONLÍTÁS ================= */}
+          {activePage === "platformvalasztas" && (
+            <div className="space-y-8 animate-fadeIn">
+              <div>
+                <span className="text-[11px] font-mono font-bold tracking-widest text-[#ff8800] uppercase block mb-1">
+                  VÁLTOZATOK / PLATFORM ÖSSZEHASONLÍTÁS
+                </span>
+                <h1 className="text-3xl sm:text-4xl font-black text-[#f3f3f6] tracking-tight mb-3">
+                  Melyik Pala verziót válasszam?
+                </h1>
+                <p className="text-sm text-[#8c8c94] leading-relaxed max-w-2xl">
+                  A Pala négy önálló felületen érhető el, amelyek ugyanazt a titkosított, helyi adattárolást és Kréta-kapcsolatot használják, de eltérő
+                  célra és fejlettségi szinten állnak. Az alábbi táblázat és a platformonkénti előnyök/hátrányok segítenek eldönteni, melyik illik hozzád.
+                </p>
+              </div>
+
+              {/* Quick comparison table */}
+              <div className="bg-[#1b1b1f] border border-[#28282d] rounded-2xl overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left border-collapse min-w-[640px]">
+                    <thead>
+                      <tr className="bg-[#151518] text-[#8c8c94] uppercase text-[10px] tracking-wider">
+                        <th className="p-3 font-bold">Szempont</th>
+                        <th className="p-3 font-bold text-[#ff8800]">TUI</th>
+                        <th className="p-3 font-bold text-[#30d158]">Desktop (Flutter)</th>
+                        <th className="p-3 font-bold text-[#0a84ff]">Mobile (Flutter)</th>
+                        <th className="p-3 font-bold text-[#bf5af2]">Böngésző Kiterjesztés</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-[#8c8c94]">
+                      <tr className="border-t border-[#28282d]">
+                        <td className="p-3 font-semibold text-[#f3f3f6]">Erőforrásigény</td>
+                        <td className="p-3">~15–20 MB RAM</td>
+                        <td className="p-3">~120–180 MB RAM</td>
+                        <td className="p-3">Natív mobil szint</td>
+                        <td className="p-3">Böngésző tab szint</td>
+                      </tr>
+                      <tr className="border-t border-[#28282d]">
+                        <td className="p-3 font-semibold text-[#f3f3f6]">Telepítés</td>
+                        <td className="p-3">Egyetlen bináris</td>
+                        <td className="p-3">Telepítő / bundle</td>
+                        <td className="p-3">APK / (fejlesztés alatt)</td>
+                        <td className="p-3">Nulla telepítés</td>
+                      </tr>
+                      <tr className="border-t border-[#28282d]">
+                        <td className="p-3 font-semibold text-[#f3f3f6]">Vizualizációk</td>
+                        <td className="p-3">ANSI grafikonok</td>
+                        <td className="p-3">Teljes grafikus UI</td>
+                        <td className="p-3">Teljes grafikus UI</td>
+                        <td className="p-3">Teljes grafikus UI</td>
+                      </tr>
+                      <tr className="border-t border-[#28282d]">
+                        <td className="p-3 font-semibold text-[#f3f3f6]">Offline mód</td>
+                        <td className="p-3"><CheckCircle2 size={14} className="text-[#30d158]" /></td>
+                        <td className="p-3"><CheckCircle2 size={14} className="text-[#30d158]" /></td>
+                        <td className="p-3"><CheckCircle2 size={14} className="text-[#30d158]" /></td>
+                        <td className="p-3"><CheckCircle2 size={14} className="text-[#30d158]" /></td>
+                      </tr>
+                      <tr className="border-t border-[#28282d]">
+                        <td className="p-3 font-semibold text-[#f3f3f6]">Háttér-értesítés (új jegy)</td>
+                        <td className="p-3"><CheckCircle2 size={14} className="text-[#30d158]" /> <span className="text-[10px]">(daemon)</span></td>
+                        <td className="p-3"><AlertTriangle size={14} className="text-[#ffd60a]" /> <span className="text-[10px]">fejlesztés alatt</span></td>
+                        <td className="p-3"><AlertTriangle size={14} className="text-[#ffd60a]" /> <span className="text-[10px]">fejlesztés alatt</span></td>
+                        <td className="p-3">Csak nyitott böngésző mellett</td>
+                      </tr>
+                      <tr className="border-t border-[#28282d]">
+                        <td className="p-3 font-semibold text-[#f3f3f6]">Git-alapú jegytörténet export</td>
+                        <td className="p-3"><CheckCircle2 size={14} className="text-[#30d158]" /></td>
+                        <td className="p-3"><AlertTriangle size={14} className="text-[#ffd60a]" /> <span className="text-[10px]">még nincs</span></td>
+                        <td className="p-3">—</td>
+                        <td className="p-3">—</td>
+                      </tr>
+                      <tr className="border-t border-[#28282d]">
+                        <td className="p-3 font-semibold text-[#f3f3f6]">Több mentett profil kezelése</td>
+                        <td className="p-3"><CheckCircle2 size={14} className="text-[#30d158]" /></td>
+                        <td className="p-3"><AlertTriangle size={14} className="text-[#ffd60a]" /> <span className="text-[10px]">még nincs</span></td>
+                        <td className="p-3"><AlertTriangle size={14} className="text-[#ffd60a]" /> <span className="text-[10px]">még nincs</span></td>
+                        <td className="p-3"><CheckCircle2 size={14} className="text-[#30d158]" /></td>
+                      </tr>
+                      <tr className="border-t border-[#28282d]">
+                        <td className="p-3 font-semibold text-[#f3f3f6]">Fejlettségi szint</td>
+                        <td className="p-3 text-[#30d158] font-bold">Stabil, teljes funkciókészlet</td>
+                        <td className="p-3 text-[#ffd60a] font-bold">Aktív fejlesztés alatt</td>
+                        <td className="p-3 text-[#ffd60a] font-bold">Korai fejlesztési fázis</td>
+                        <td className="p-3 text-[#30d158] font-bold">Stabil, teljes funkciókészlet</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Honest maturity callout */}
+              <div className="bg-[#ffd60a]/10 border border-[#ffd60a]/30 rounded-2xl p-4 flex gap-3">
+                <Info size={18} className="text-[#ffd60a] shrink-0 mt-0.5" />
+                <p className="text-xs text-[#8c8c94] leading-relaxed">
+                  <strong className="text-[#f3f3f6]">Miért nem egyenlő még minden platform tudása?</strong> A Desktop és Mobile alkalmazás közös Flutter
+                  kódbázisra épül, és ugyanazt a hálózati/titkosítási réteget használja, mint a TUI — de a felhasználói felületet nulláról építjük újra
+                  minden nézethez, ezért egyes régebb óta létező TUI-funkciók (pl. Git-alapú jegytörténet export, heti jegy-hőtérkép, több profil közötti
+                  gyors váltás, automatikus háttér-értesítés) még nincsenek átportolva. Ezek folyamatosan kerülnek át — addig is a TUI és a Böngésző
+                  Kiterjesztés számít a legteljesebb, leginkább kiforrott verziónak.
+                </p>
+              </div>
+
+              {/* Pros/cons cards, 2x2 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* TUI */}
+                <div className="bg-[#1b1b1f] border border-[#28282d] rounded-2xl p-5 space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-bold text-[#ff8800]">
+                    <Terminal size={16} />
+                    <span>TUI (Terminál)</span>
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><CheckCircle2 size={13} className="text-[#30d158] shrink-0 mt-0.5" /><span>Villámgyors indulás, ~15–20 MB memória, egyetlen önálló bináris — nincs futásidejű keret.</span></div>
+                    <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><CheckCircle2 size={13} className="text-[#30d158] shrink-0 mt-0.5" /><span>Minden funkció itt jelenik meg elsőként: kalkulátorok, exportok, Git-történet, háttér-daemon.</span></div>
+                    <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><CheckCircle2 size={13} className="text-[#30d158] shrink-0 mt-0.5" /><span>SSH-n keresztül is használható távoli szerverről vagy régi gépről.</span></div>
+                    <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><AlertTriangle size={13} className="text-[#ffd60a] shrink-0 mt-0.5" /><span>Nincs érintőképernyő-támogatás, billentyűzet-vezérelt — kezdőknek meredekebb tanulási görbe.</span></div>
+                    <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><AlertTriangle size={13} className="text-[#ffd60a] shrink-0 mt-0.5" /><span>ANSI grafikonok, nem valódi interaktív diagramok.</span></div>
+                  </div>
+                </div>
+
+                {/* Desktop */}
+                <div className="bg-[#1b1b1f] border border-[#28282d] rounded-2xl p-5 space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-bold text-[#30d158]">
+                    <Monitor size={16} />
+                    <span>Desktop (Windows / macOS / Linux)</span>
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><CheckCircle2 size={13} className="text-[#30d158] shrink-0 mt-0.5" /><span>Egy kódbázis mind az 5 célplatformra (Windows, macOS, Linux, Android, iOS) — konzisztens fejlesztés és karbantartás.</span></div>
+                    <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><CheckCircle2 size={13} className="text-[#30d158] shrink-0 mt-0.5" /><span>Igazi grafikus vizualizációk, interaktív diagramok, egérrel/érintéssel kényelmesen kezelhető felület.</span></div>
+                    <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><CheckCircle2 size={13} className="text-[#30d158] shrink-0 mt-0.5" /><span>A háttérben ugyanazt a Kréta-klienst használja, mint a TUI — nincs duplikált, eltérően viselkedő hálózati logika.</span></div>
+                    <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><AlertTriangle size={13} className="text-[#ffd60a] shrink-0 mt-0.5" /><span>Nagyobb telepítő méret és memóriaigény (~120–180 MB) a TUI-hoz képest.</span></div>
+                    <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><AlertTriangle size={13} className="text-[#ffd60a] shrink-0 mt-0.5" /><span>Néhány TUI-funkció (Git-export, heti hőtérkép, profilváltás, automatikus értesítés) még fejlesztés alatt.</span></div>
+                  </div>
+                </div>
+
+                {/* Mobile */}
+                <div className="bg-[#1b1b1f] border border-[#28282d] rounded-2xl p-5 space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-bold text-[#0a84ff]">
+                    <Smartphone size={16} />
+                    <span>Mobile (Android / iOS)</span>
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><CheckCircle2 size={13} className="text-[#30d158] shrink-0 mt-0.5" /><span>Natív érintéses élmény, zsebméretű, 100% reklám- és nyomkövetés-mentes.</span></div>
+                    <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><CheckCircle2 size={13} className="text-[#30d158] shrink-0 mt-0.5" /><span>Android: közvetlen APK letöltés, telepítés áruházi engedélyek nélkül is.</span></div>
+                    <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><AlertTriangle size={13} className="text-[#ffd60a] shrink-0 mt-0.5" /><span>A natív Flutter iOS build fejlesztés alatt áll; hivatalos App Store / TestFlight terjesztéshez Apple Developer Program tagság (kb. 99 USD/év) és Mac gép szükséges — addig a Safari-alapú webapp (PWA) vagy sideloading (AltStore/SideStore) az elérési út.</span></div>
+                    <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><AlertTriangle size={13} className="text-[#ffd60a] shrink-0 mt-0.5" /><span>Háttérben futó automatikus értesítés (új jegy figyelése) mobilon még nem elérhető — ez platformonként (Android WorkManager, iOS Background App Refresh) külön megoldást igényel.</span></div>
+                  </div>
+                </div>
+
+                {/* Extension */}
+                <div className="bg-[#1b1b1f] border border-[#28282d] rounded-2xl p-5 space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-bold text-[#bf5af2]">
+                    <Globe size={16} />
+                    <span>Böngésző Kiterjesztés</span>
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><CheckCircle2 size={13} className="text-[#30d158] shrink-0 mt-0.5" /><span>Nulla telepítés (nincs .exe/.apk), azonnal használható a böngésző eszköztárból.</span></div>
+                    <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><CheckCircle2 size={13} className="text-[#30d158] shrink-0 mt-0.5" /><span>Csendes token-megújítás oldja fel a hivatalos Kréta weboldal 40–60 perces időkorlátját.</span></div>
+                    <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><CheckCircle2 size={13} className="text-[#30d158] shrink-0 mt-0.5" /><span>Mini popup gyorsnézet + teljes vezérlőpult, 429-kezeléssel és cache-first tartalékkal terhelés esetén.</span></div>
+                    <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><AlertTriangle size={13} className="text-[#ffd60a] shrink-0 mt-0.5" /><span>Csak Chromium-alapú böngészőkben (Chrome, Edge, Brave) — Firefox Manifest V3 támogatás korlátozott.</span></div>
+                    <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><AlertTriangle size={13} className="text-[#ffd60a] shrink-0 mt-0.5" /><span>Nincs értesítés, amíg a böngésző zárva van, és nincs asztali parancsikon-szintű gyors elérés.</span></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recommendation strip */}
+              <div className="bg-[#151518] border border-[#28282d] rounded-2xl p-5">
+                <div className="flex items-center gap-2 text-sm font-bold text-[#f3f3f6] mb-3">
+                  <Zap size={16} className="text-[#ff8800]" />
+                  <span>Gyors ajánlás</span>
+                </div>
+                <ul className="space-y-1.5 text-xs text-[#8c8c94]">
+                  <li><strong className="text-[#f3f3f6]">Ha gyors, teljes funkciós élményt akarsz és nem zavar a terminál:</strong> TUI.</li>
+                  <li><strong className="text-[#f3f3f6]">Ha csak gyorsan bele akarsz nézni a jegyeidbe böngészőből, telepítés nélkül:</strong> Böngésző Kiterjesztés.</li>
+                  <li><strong className="text-[#f3f3f6]">Ha grafikus felületet szeretnél asztali gépen, és elfogadod, hogy pár TUI-funkció még hiányzik:</strong> Desktop App.</li>
+                  <li><strong className="text-[#f3f3f6]">Ha telefonon/tableten szeretnéd használni:</strong> Mobile App (Android APK ma is elérhető, iOS natív build fejlesztés alatt).</li>
+                </ul>
+              </div>
+            </div>
+          )}
+
+                    {/* ================= PAGE: TUI ================= */}
+          {activePage === "tui" && (
+            <div className="space-y-8 animate-fadeIn">
+              <div>
+                <span className="text-[11px] font-mono font-bold tracking-widest text-[#ff8800] uppercase block mb-1">
+                  VÁLTOZATOK / TUI
+                </span>
+                <h1 className="text-3xl sm:text-4xl font-black text-[#f3f3f6] tracking-tight mb-3">
+                  Pala TUI (Terminálos Felület)
+                </h1>
+                <p className="text-sm text-[#8c8c94] leading-relaxed max-w-2xl">
+                  Erőforrás-takarékos, villámgyors parancssoros Kréta felület Linuxra, macOS-re és Windows Terminálra, mindössze 15–20 MB memóriahasználattal.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-[#1b1b1f] border border-[#28282d] p-5 rounded-2xl space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-bold text-[#ff8800]">
+                    <Terminal size={16} />
+                    <span>Fő parancsok és elérés</span>
+                  </div>
+                  <div className="space-y-2 text-xs text-[#8c8c94]">
+                    <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
+                      <code className="text-[#ff8800] font-mono font-bold block mb-0.5">pala</code>
+                      <span>Főmenü indítása: órarend, jegyek, hiányzások, kalkulátorok és kereső.</span>
+                    </div>
+                    <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
+                      <code className="text-[#ff8800] font-mono font-bold block mb-0.5">pala dash</code>
+                      <span>Közvetlen belépés az élő visszaszámláló és mai teendők nézetbe.</span>
+                    </div>
+                    <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
+                      <code className="text-[#ff8800] font-mono font-bold block mb-0.5">pala --demo</code>
+                      <span>Beépített Teszt Elek demó profil betöltése (internetkapcsolat nélkül).</span>
+                    </div>
+                    <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
+                      <code className="text-[#ff8800] font-mono font-bold block mb-0.5">pala --daemon</code>
+                      <span>Háttérfolyamat indítása Windows / Linux értesítésekhez.</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-[#1b1b1f] border border-[#28282d] p-5 rounded-2xl space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-bold text-[#30d158]">
+                    <Sliders size={16} />
+                    <span>Témák & Rendszerintegráció</span>
+                  </div>
+                  <div className="space-y-2 text-xs text-[#8c8c94]">
+                    <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
+                      <strong className="text-[#f3f3f6] block mb-0.5">4 Beépített Színtéma:</strong>
+                      <span>Classic Blue, Neon Matrix zöld, Midnight Pink és Amber borostyán választható témák.</span>
+                    </div>
+                    <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
+                      <strong className="text-[#f3f3f6] block mb-0.5">Automatikus UTF-8 & FFI:</strong>
+                      <span>Kényszerített UTF-8 kódolás a magyar ékezetes karakterek és táblázatok hibátlan megjelenítéséhez.</span>
+                    </div>
+                    <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
+                      <strong className="text-[#f3f3f6] block mb-0.5">Rendszer parancsok:</strong>
+                      <code className="text-[#ff8800] font-mono text-[11px] block mt-1">pala --install-shortcut</code>
+                      <code className="text-[#ff8800] font-mono text-[11px] block">pala --add-path | pala --uninstall</code>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ================= PAGE: DESKTOP ================= */}
+          {activePage === "desktop" && (
+            <div className="space-y-8 animate-fadeIn">
+              <div>
+                <span className="text-[11px] font-mono font-bold tracking-widest text-[#ff8800] uppercase block mb-1">
+                  VÁLTOZATOK / DESKTOP APP
+                </span>
+                <h1 className="text-3xl sm:text-4xl font-black text-[#f3f3f6] tracking-tight mb-3">
+                  Pala Desktop (Grafikus Asztali Alkalmazás)
+                </h1>
+                <p className="text-sm text-[#8c8c94] leading-relaxed max-w-2xl">
+                  Modern, nagyképernyős grafikus felület Windows 10/11, macOS és Linux rendszerekre, teljes Flutter grafikus motorral és gazdag vizualizációkkal.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-[#1b1b1f] border border-[#28282d] p-5 rounded-2xl space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-bold text-[#ff8800]">
+                    <Monitor size={16} />
+                    <span>Nagyképernyős Vizualizációk</span>
+                  </div>
+                  <ul className="space-y-2 text-xs text-[#8c8c94]">
+                    <li className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
+                      <strong className="text-[#f3f3f6] block mb-0.5">7 Napos Órarend Mátrix:</strong>
+                      Heti órarend áttekintés teremjelöléssel, elmaradó órákkal és tanári helyettesítésekkel.
+                    </li>
+                    <li className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
+                      <strong className="text-[#f3f3f6] block mb-0.5">Tantárgyi Átlagok & Trendek:</strong>
+                      Súlyozott tantárgyi átlagok heti trendvonalakkal és érdemjegy-eloszlási diagramokkal.
+                    </li>
+                    <li className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
+                      <strong className="text-[#f3f3f6] block mb-0.5">Pala Wrapped:</strong>
+                      Éves diákstatisztika és összefoglaló, 9:16 formátumú megosztható kép exporttal.
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="bg-[#1b1b1f] border border-[#28282d] p-5 rounded-2xl space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-bold text-[#30d158]">
+                    <Calculator size={16} />
+                    <span>Kalkulátorok & Ügyintézés</span>
+                  </div>
+                  <ul className="space-y-2 text-xs text-[#8c8c94]">
+                    <li className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
+                      <strong className="text-[#f3f3f6] block mb-0.5">Szellem Jegy & Bizonyítvány Tervező:</strong>
+                      Hipotetikus jegyek bevitele és célátlag kalkulátor: kiszámolja, hány darab 5-ös kell a javításhoz.
+                    </li>
+                    <li className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
+                      <strong className="text-[#f3f3f6] block mb-0.5">250 Órás Veszélyzóna & Szülői Keret:</strong>
+                      Precíz hiányzásmérő a 250 órás törvényi limithez, szülői napok számlálója és kérvénysablon.
+                    </li>
+                    <li className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
+                      <strong className="text-[#f3f3f6] block mb-0.5">Közvetlen Tanári Üzenetküldés:</strong>
+                      Levélírás a beépített tantárgyi tanári névsorból melléklet-kezeléssel és letöltéssel.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ================= PAGE: MOBILE ================= */}
+          {activePage === "mobile" && (
+            <div className="space-y-8 animate-fadeIn">
+              <div>
+                <span className="text-[11px] font-mono font-bold tracking-widest text-[#ff8800] uppercase block mb-1">
+                  VÁLTOZATOK / MOBILE APP
+                </span>
+                <h1 className="text-3xl sm:text-4xl font-black text-[#f3f3f6] tracking-tight mb-3">
+                  Pala Mobile (Mobil Alkalmazás)
+                </h1>
+                <p className="text-sm text-[#8c8c94] leading-relaxed max-w-2xl">
+                  Letisztult, villámgyors és 100% reklámmentes zsebméretű Kréta alkalmazás Android és iOS eszközökre.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-[#1b1b1f] border border-[#28282d] p-5 rounded-2xl space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-bold text-[#30d158]">
+                    <Smartphone size={16} />
+                    <span>Platformok & Telepítés</span>
+                  </div>
+                  <ul className="space-y-2 text-xs text-[#8c8c94]">
+                    <li className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
+                      <strong className="text-[#f3f3f6] block mb-0.5">Android Közvetlen APK:</strong>
+                      Letölthető és egy kattintással telepíthető önálló APK (ARM64, ARMv7, x86_64 vagy univerzális).
+                    </li>
+                    <li className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
+                      <strong className="text-[#f3f3f6] block mb-0.5">iOS / iPadOS Támogatás:</strong>
+                      Safari böngészőből kezdőképernyőhöz adható (PWA) teljes képernyős élmény vagy Sideloading.
+                    </li>
+                    <li className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
+                      <strong className="text-[#f3f3f6] block mb-0.5">100% Offline Adatelérés:</strong>
+                      Gyenge iskolai térerő vagy szerverkarbantartás esetén is azonnal megtekinthetők a mentett órák és jegyek.
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="bg-[#1b1b1f] border border-[#28282d] p-5 rounded-2xl space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-bold text-[#ff8800]">
+                    <Sparkles size={16} />
+                    <span>Mobil-specifikus Funkciók</span>
+                  </div>
+                  <ul className="space-y-2 text-xs text-[#8c8c94]">
+                    <li className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
+                      <strong className="text-[#f3f3f6] block mb-0.5">Egykezes Érintéses Navigáció:</strong>
+                      Alsó fül-sáv, kényelmes kártyás megjelenítés és gesztus-alapú lapozás.
+                    </li>
+                    <li className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
+                      <strong className="text-[#f3f3f6] block mb-0.5">Zéró Reklám & Zéró Nyomkövetés:</strong>
+                      A hivatalos vagy egyéb alternatív appokkal szemben teljesen reklámmentes, nulla analitikával.
+                    </li>
+                    <li className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
+                      <strong className="text-[#f3f3f6] block mb-0.5">9:16 Story Megosztás:</strong>
+                      Év végi Pala Wrapped összefoglaló generálása, közvetlen megosztással Instagram és Facebook történetekbe.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
+{/* ================= PAGE: BÖNGÉSZŐ KITERJESZTÉS (EXTENSION) ================= */}
+          {activePage === "extension" && (
+            <div className="space-y-8 animate-fadeIn">
+              <div>
+                <span className="text-[11px] font-mono font-bold tracking-widest text-[#ff8800] uppercase block mb-1">
+                  VÁLTOZATOK / BÖNGÉSZŐ KITERJESZTÉS
+                </span>
+                <h1 className="text-3xl sm:text-4xl font-black text-[#f3f3f6] tracking-tight mb-3">
+                  Pala Böngésző Kiterjesztés
+                </h1>
+                <p className="text-sm text-[#8c8c94] leading-relaxed max-w-2xl">
+                  A Pala modern, Manifest V3 alapú kiterjesztése közvetlenül a böngésződben (Chrome, Brave, Edge) teszi elérhetővé a Kréta összes funkcióját és elemzését.
+                </p>
+              </div>
+
+              {/* Architecture Overview */}
+              <div className="bg-[#1b1b1f] border border-[#28282d] p-6 rounded-2xl space-y-4">
+                <div className="flex items-center gap-2 text-sm font-bold text-[#f3f3f6]">
+                  <Globe size={16} className="text-[#ff8800]" />
+                  <span>Kétfelületű Kialakítás: Gyorsnézet és Teljes Vezérlőpult</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                  <div className="p-4 bg-[#151518] border border-[#28282d] rounded-xl space-y-2">
+                    <strong className="text-[#ff8800] block text-sm">1. Mini Gyorsnézet (Popup)</strong>
+                    <p className="text-[#8c8c94] leading-relaxed">
+                      Egyetlen kattintással előugró ablak az eszköztárból. Valós idejű óra-visszaszámláló, a mai tanórák listája, a legfrissebb érdemjegyek és a közelgő dolgozatok/házi feladatok gyors áttekintése.
+                    </p>
+                  </div>
+                  <div className="p-4 bg-[#151518] border border-[#28282d] rounded-xl space-y-2">
+                    <strong className="text-[#30d158] block text-sm">2. Teljes Vezérlőpult (Dashboard)</strong>
+                    <p className="text-[#8c8c94] leading-relaxed">
+                      Külön böngészőlapon megnyíló, nagyképernyős vezérlőközpont: 7 napos órarend mátrix, tantárgyi súlyozott átlagok, Szellem-jegy kalkulátor, Bizonyítvány tervező, 250 órás hiányzáskeret, üzenetkezelő és a részletes Tanulói Profil.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 40-60 min session limit & silent token refresh */}
+              <div className="bg-[#1b1b1f] border border-[#28282d] p-6 rounded-2xl space-y-4">
+                <div className="flex items-center gap-2 text-sm font-bold text-[#f3f3f6]">
+                  <Clock size={16} className="text-[#0a84ff]" />
+                  <span>Kréta Munkamenet és az Időkorlát (40–60 perc) Kezelése</span>
+                </div>
+
+                <div className="text-xs text-[#8c8c94] space-y-3 leading-relaxed">
+                  <p>
+                    <strong className="text-[#f3f3f6]">Miért jelentkeztet ki a hivatalos Kréta weboldal?</strong><br />
+                    A webes Kréta felület (<code className="text-[#ff8800] font-mono">*.e-kreta.hu</code>) hagyományos szerveroldali munkamenet-sütiket (ASP.NET cookies) használ. Ha a felhasználó 20–30 percig inaktív, a munkamenet lejár, és a rendszer a bejelentkezési oldalra irányít.
+                  </p>
+
+                  <div className="p-4 bg-[#151518] border border-[#28282d] rounded-xl space-y-2">
+                    <strong className="text-[#f3f3f6] block">Hogyan oldja meg ezt a Pala Kiterjesztés? (OAuth2 + Refresh Token)</strong>
+                    <p>
+                      A Pala nem ideiglenes webes sütiket használ, hanem a Kréta hivatalos Identity Provider (<code className="text-[#ff8800] font-mono">idp.e-kreta.hu</code>) OAuth2 gateway-én keresztül hitelesít:
+                    </p>
+                    <ul className="list-disc pl-5 space-y-1 text-[#8c8c94]">
+                      <li><strong className="text-[#f3f3f6]">Access Token (20–60 perc):</strong> Rövid élettartamú JWT token a napi API lekérésekhez.</li>
+                      <li><strong className="text-[#f3f3f6]">Refresh Token (30–90 nap):</strong> Hosszú élettartamú, titkosított megújítási token.</li>
+                    </ul>
+                  </div>
+
+                  <div className="p-4 bg-[#151518] border border-[#30d158]/30 rounded-xl space-y-2">
+                    <strong className="text-[#30d158] block">Észrevétlen Automatikus Megújítás (Silent Refresh)</strong>
+                    <p>
+                      A háttérben futó kiterjesztés minden egyes hálózati művelet (órarend lekérés, popup megnyitás, üzenetküldés, háttérszinkron) előtt ellenőrzi a token lejárati idejét (<code className="text-[#ff8800] font-mono">expires_at</code>). Ha a token 2 percen belül lejárna, a Pala a háttérben észrevétlenül új tokent kér a Kréta IDP-től a refresh token segítségével.
+                    </p>
+                    <p className="text-[#30d158] font-semibold">
+                      Ennek köszönhetően a felhasználó sosem kerül kijelentkeztetésre a 40–60 perces limit miatt: a munkamenet hetekig, hónapokig folyamatosan aktív marad.
+                    </p>
+                  </div>
+
+                  <div className="p-4 bg-[#151518] border border-[#28282d] rounded-xl space-y-1">
+                    <strong className="text-[#f3f3f6] block">Offline és Karbantartási Védelem</strong>
+                    <p>
+                      Ha a Kréta szerverei leállnak vagy karbantartás alatt állnak, a Pala automatikusan a helyi gyorsítótárban (<code className="text-[#ff8800] font-mono">pala_cached_data</code>) tárolt adatokból építi fel a felületet. A jegyeid, óráid és adataid sosem tűnnek el.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Profile & Kreta API limits */}
+              <div className="bg-[#1b1b1f] border border-[#28282d] p-6 rounded-2xl space-y-4">
+                <div className="flex items-center gap-2 text-sm font-bold text-[#f3f3f6]">
+                  <AlertTriangle size={16} className="text-[#ff8800]" />
+                  <span>Profilom: Kréta API Korlátozások & Globális Szerkesztő</span>
+                </div>
+
+                <div className="text-xs text-[#8c8c94] space-y-3 leading-relaxed">
+                  <p>
+                    <strong className="text-[#f3f3f6]">Miért látod bizonyos adatoknál a „Nincs rögzítve” állapotot?</strong><br />
+                    A hivatalos Kréta mobil API gateway adatvédelmi és 2FA biztonsági okokból a <code className="text-[#ff8800] font-mono">TanuloAdatlap</code> végponton nem adja át a diák bankszámla adatait (bankszámlaszám, bank neve, számlatulajdonos), sem a hivatalos okmányait (adóazonosító jel, TAJ-szám, diákigazolvány adatok). Ezeket a Kréta csak a kétfaktoros hitelesítésű webes e-Ügyintézés felületén jeleníti meg.
+                  </p>
+
+                  <div className="p-4 bg-[#151518] border border-[#28282d] rounded-xl space-y-2">
+                    <strong className="text-[#ff8800] block">A Nagy [!] Figyelmeztető Ikon a Profilomban</strong>
+                    <p>
+                      A Profilom nézet jobb felső sarkában elhelyezett nagy felkiáltójel gomb és a kiemelt értesítési sáv azonnal tájékoztat erről a korlátozásról, tisztázva, hogy az adatok nem vesztek el, csupán a mobil API nem szolgáltatja ki őket.
+                    </p>
+                  </div>
+
+                  <div className="p-4 bg-[#151518] border border-[#28282d] rounded-xl space-y-2">
+                    <strong className="text-[#30d158] block">Globális Profil Szerkesztő (Teljes Profil Testreszabása)</strong>
+                    <p>
+                      A fejlécben található <strong>„Profil Szerkesztése”</strong> gombbal megnyitható az egységes szerkesztő felület, ahol mind a 4 fő kategória manuálisan kitölthető és szerkeszthető:
+                    </p>
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li><strong className="text-[#f3f3f6]">Személyes Adatok:</strong> Név, születési név, OM azonosító, születési hely és idő, anyja leánykori neve, lakcím.</li>
+                      <li><strong className="text-[#f3f3f6]">Intézmény & Elérhetőségek:</strong> Iskola neve és azonosító kódja, osztály/évfolyam, email, telefonszám.</li>
+                      <li><strong className="text-[#f3f3f6]">Bankszámla Adatok:</strong> Bankszámlaszám, számlavezető bank, tulajdonos neve és típusa (szakképzési ösztöndíjhoz és juttatásokhoz).</li>
+                      <li><strong className="text-[#f3f3f6]">Hivatalos Okmányok:</strong> Adóazonosító jel, TAJ-szám, igazolvány adatok és diákigazolvány száma.</li>
+                    </ul>
+                  </div>
+
+                  <div className="p-4 bg-[#151518] border border-[#ff8800]/30 rounded-xl space-y-2">
+                    <strong className="text-[#ff8800] block">1-Kattintásos Automatikus Beolvasás Nyitott Kréta Lapról</strong>
+                    <p>
+                      Ha a böngésződben meg van nyitva a hivatalos Kréta webes lapod (ahol a banki és okmány adatok látszanak), elegendő az <strong>„Adatok automatikus beolvasása nyitott Kréta lapról”</strong> gombra kattintani. A kiterjesztés automatikusan felismeri a bankszámla formátumot, az adóazonosítót, a TAJ-számot, az OM azonosítót és a személyes adatokat, és azonnal betölti őket a szerkesztőbe.
+                    </p>
+                    <p>
+                      A mentett adatok kizárólag a te böngésződ helyi tárhelyében (<code className="text-[#ff8800] font-mono">chrome.storage.local.pala_student_extra</code>) tárolódnak, és a <strong>„Kréta adatok visszaállítása”</strong> gombbal bármikor visszaállíthatók a gyári állapotra.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Popup customization */}
+              <div className="bg-[#1b1b1f] border border-[#28282d] p-6 rounded-2xl space-y-4">
+                <div className="flex items-center gap-2 text-sm font-bold text-[#f3f3f6]">
+                  <Sliders size={16} className="text-[#ffd60a]" />
+                  <span>Popup Testreszabása (Gyorsnézet Beállítások)</span>
+                </div>
+
+                <div className="text-xs text-[#8c8c94] space-y-3 leading-relaxed">
+                  <p>
+                    A mini felugró ablak (Popup) megjelenése és működése teljes mértékben testreszabható a saját igényeid szerint:
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="p-3.5 bg-[#151518] border border-[#28282d] rounded-xl space-y-1">
+                      <strong className="text-[#f3f3f6] block">Alapértelmezett kezdőlap</strong>
+                      <span className="text-[11px]">Kiválaszthatod, hogy a felugró ablak a Mai Órák, a Jegyek vagy a Feladatok füllel nyíljon meg.</span>
+                    </div>
+                    <div className="p-3.5 bg-[#151518] border border-[#28282d] rounded-xl space-y-1">
+                      <strong className="text-[#f3f3f6] block">Aktuális óra kártya (Hero Card)</strong>
+                      <span className="text-[11px]">Kikapcsolható a felső hero kártya, így a napi órarend azonnal a teljes magasságot kihasználja.</span>
+                    </div>
+                    <div className="p-3.5 bg-[#151518] border border-[#28282d] rounded-xl space-y-1">
+                      <strong className="text-[#f3f3f6] block">Kompakt lista nézet</strong>
+                      <span className="text-[11px]">Sűrűbb, kisebb margójú listák a több adat görgetés nélküli megjelenítéséhez.</span>
+                    </div>
+                    <div className="p-3.5 bg-[#151518] border border-[#28282d] rounded-xl space-y-1">
+                      <strong className="text-[#f3f3f6] block">Tanulmányi átlag sáv</strong>
+                      <span className="text-[11px]">A Jegyek fül tetején lévő súlyozott átlagjelző sáv megjelenítése vagy elrejtése.</span>
+                    </div>
+                    <div className="p-3.5 bg-[#151518] border border-[#28282d] rounded-xl space-y-1">
+                      <strong className="text-[#f3f3f6] block">Megjelenített jegyek száma</strong>
+                      <span className="text-[11px]">Korlátozható a listázott legfrissebb jegyek száma (3, 5, 10, 25 vagy összes).</span>
+                    </div>
+                    <div className="p-3.5 bg-[#151518] border border-[#28282d] rounded-xl space-y-1">
+                      <strong className="text-[#f3f3f6] block">Megjelenített feladatok száma</strong>
+                      <span className="text-[11px]">Korlátozható a közelgő házi feladatok és dolgozatok száma (3, 5, 10 vagy összes).</span>
+                    </div>
+                  </div>
+
+                  <p>
+                    <strong className="text-[#f3f3f6]">Kétoldali elérés és szinkronizáció:</strong><br />
+                    Ezek a beállítások elérhetők mind a <strong>Popup láblécében lévő fogaskerék ikonra</strong> kattintva, mind a nagyképernyős <strong>Dashboard Beállítások</strong> menüpontjában lévő „Popup Testreszabása” kártyán. A módosítások a <code className="text-[#ff8800] font-mono">pala_popup_settings</code> tárolón keresztül valós időben szinkronizálódnak.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* ================= PAGE: SECURITY ================= */}
           {activePage === "security" && (
             <div className="space-y-8 animate-fadeIn">
               <div>
                 <span className="text-[11px] font-mono font-bold tracking-widest text-[#ff8800] uppercase block mb-1">
-                  SECURITY & ARCHITECTURE
+                  BIZTONSÁG & ARCHITEKTÚRA / TITKOSÍTÁS
                 </span>
                 <h1 className="text-3xl sm:text-4xl font-black text-[#f3f3f6] tracking-tight mb-3">
                   Biztonság és Adatvédelem
@@ -1793,7 +2627,7 @@ export default function DocsPage() {
                     </div>
                   </div>
 
-                  <div className="text-xs text-[#8c8c94] space-y-2 leading-relaxed pl-8">
+                  <div className="text-xs text-[#8c8c94] space-y-2 leading-relaxed mt-2 sm:pl-8">
                     <p>
                       A böngészők biztonsági szabályai (CORS házirend) miatt egy tisztán weboldalas Kréta kliens csak úgy működhetne, ha a weboldal üzemeltetője egy <strong>központi proxy / backend szervert</strong> futtatna, amelyen minden kérés átfut.
                     </p>
@@ -1812,7 +2646,7 @@ export default function DocsPage() {
                     <Lock size={16} className="text-[#30d158]" />
                     <span>Biztonságos a jelszavam megadása a Palában?</span>
                   </div>
-                  <p className="text-xs text-[#8c8c94] leading-relaxed pl-6">
+                  <p className="text-xs text-[#8c8c94] leading-relaxed mt-2 sm:pl-6">
                     Igen. A bejelentkezés közvetlenül a Kréta hivatalos <code className="text-[#ff8800] font-mono">idp.e-kreta.hu</code> OAuth2 végpontjával történik TLS 1.3 titkosított kapcsolaton keresztül. A Pala a jelszavadat soha nem tárolja egyszerű szövegként, kizárólag a kapott munkamenet-tokent őrzi meg a helyi gépeden titkosított formában.
                   </p>
                 </div>
@@ -1823,7 +2657,7 @@ export default function DocsPage() {
                     <AlertTriangle size={16} className="text-[#ffd60a]" />
                     <span>Miért jelez a Windows SmartScreen vagy az Android Play Protect?</span>
                   </div>
-                  <p className="text-xs text-[#8c8c94] leading-relaxed pl-6">
+                  <p className="text-xs text-[#8c8c94] leading-relaxed mt-2 sm:pl-6">
                     A Pala egy nonprofit, közösségi nyílt forráskódú projekt, így nem rendelkezik évi többszázezer forintos Microsoft/Google EV digitális aláíró tanúsítvánnyal. A forráskód 100%-ban nyilvános és ellenőrizhető a GitHubon. Windows alatt kattints a <strong>„További információ”</strong> &gt; <strong>„Futtatás mindenképpen”</strong> gombra.
                   </p>
                 </div>
@@ -1834,7 +2668,7 @@ export default function DocsPage() {
                     <HelpCircle size={16} className="text-[#0a84ff]" />
                     <span>Mit tegyek, ha nem sikerül bejelentkeznem?</span>
                   </div>
-                  <p className="text-xs text-[#8c8c94] leading-relaxed pl-6">
+                  <p className="text-xs text-[#8c8c94] leading-relaxed mt-2 sm:pl-6">
                     1. Ellenőrizd, hogy az intézménykódot (pl. <code className="text-[#ff8800] font-mono">klik039000</code>) pontosan adtad-e meg.<br />
                     2. Ha a hivatalos Kréta szerverek karbantartás miatt leálltak, a Pala felajánlja az offline módot vagy a <code className="text-[#ff8800] font-mono">pala --demo</code> tesztmódot.
                   </p>

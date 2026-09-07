@@ -13,7 +13,7 @@ export function Security() {
       icon: Lock,
       title: "AES-256 Helyi Titkosítás",
       description:
-        "A bejelentkezési adatok és munkamenet-tokenek kizárólag a saját eszközödön, titkosított kulcstárban kerülnek eltárolásra.",
+        "A munkamenet-tokenek a parancssori kliensben és a böngészőbővítményben AES-256 titkosítással, kizárólag a saját eszközödön kerülnek eltárolásra. A mobil/asztali alkalmazás nem menti a bejelentkezési adataidat munkamenetek között.",
     },
     {
       icon: EyeOff,

@@ -2,44 +2,19 @@ import 'state/app_state.dart';
 import 'package:interact/interact.dart';
 
 class PalaTheme {
-  // Available theme options
-  static const String themeOrange = 'orange';
-  static const String themeBlue = 'blue';
-  static const String themeGreen = 'green';
-  static const String themePink = 'pink';
+  // Dark/light mode ('dark' is the default and the only mode Pala shipped
+  // with before; 'light' swaps the muted/dim color for one that stays
+  // legible on a light terminal background).
+  static const String modeDark = 'dark';
+  static const String modeLight = 'light';
 
-  // Helper to get the currently selected theme
-  static String get _current => AppState.instance.theme;
+  static String get _mode => AppState.instance.themeMode;
+  static bool get isLight => _mode == modeLight;
 
-  // Primary color (used for selected menu items, primary headers, etc.)
-  static String get primary {
-    switch (_current) {
-      case themeGreen:
-        return '\x1B[32m'; // Green
-      case themePink:
-        return '\x1B[35m'; // Magenta/Pink
-      case themeBlue:
-        return '\x1B[36m'; // Cyan/Blue
-      case themeOrange:
-      default:
-        return '\x1B[38;5;208m'; // Vibrant Orange / Amber
-    }
-  }
-
-  // Primary bold color
-  static String get primaryBold {
-    switch (_current) {
-      case themeGreen:
-        return '\x1B[1;32m';
-      case themePink:
-        return '\x1B[1;35m';
-      case themeBlue:
-        return '\x1B[1;36m';
-      case themeOrange:
-      default:
-        return '\x1B[1;38;5;208m';
-    }
-  }
+  // Single fixed accent color (Pala Amber). Kept as a constant everywhere
+  // rather than user-selectable, per platform-wide accent removal.
+  static const String primary = '\x1B[38;5;208m';
+  static const String primaryBold = '\x1B[1;38;5;208m';
 
   // Common colors
   static const String reset = '\x1B[0m';
@@ -47,8 +22,12 @@ class PalaTheme {
   static const String success = '\x1B[32m';
   static const String warning = '\x1B[33m';
   static const String error = '\x1B[31m';
-  static const String muted = '\x1B[90m';
-  
+
+  // Bright-black (\x1B[90m) is a dim gray that reads fine on a dark
+  // terminal background but is nearly invisible on a light one; light mode
+  // swaps it for a dim variant of the default foreground instead.
+  static String get muted => isLight ? '\x1B[2;30m' : '\x1B[90m';
+
   // Custom prefix for menu and prompts
   static String get promptPrefix => '$primary?$reset';
   static String get arrowPrefix => '$primary>$reset';
@@ -56,14 +35,14 @@ class PalaTheme {
   static void configureInteractTheme() {
     Theme.defaultTheme = Theme(
       inputPrefix: '$primary?$reset ',
-      inputSuffix: ' \x1B[90m>\x1B[0m',
+      inputSuffix: ' $muted>$reset',
       successPrefix: '\x1B[32m[OK]\x1B[0m ',
-      successSuffix: ' \x1B[90m·\x1B[0m',
+      successSuffix: ' $muted·$reset',
       errorPrefix: '\x1B[31m[HIBA]\x1B[0m ',
       hiddenPrefix: '****',
       messageStyle: (x) => '\x1B[1m$x\x1B[0m',
       errorStyle: (x) => '\x1B[31m$x\x1B[0m',
-      hintStyle: (x) => '\x1B[90m($x)\x1B[0m',
+      hintStyle: (x) => '$muted($x)$reset',
       valueStyle: (x) => '$primary$x$reset',
       defaultStyle: (x) => '$primary$x$reset',
       activeItemPrefix: '$primary>$reset',

@@ -27,7 +27,7 @@ class KretaAPI {
         '&client_id=$clientId'
         '&state=pala_student_mobile';
     if (instituteCode != null) {
-      return '$base&acr_values=institute_code:$instituteCode';
+      return '$base&institute_code=$instituteCode&acr_values=institute_code:$instituteCode';
     }
     return base;
   }

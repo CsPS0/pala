@@ -6,7 +6,7 @@ class AppState {
   static final AppState instance = AppState._internal();
   
   bool isOffline = false;
-  String theme = 'orange';
+  String themeMode = 'dark';
   bool showAsciiBanner = true;
   int parentalQuota = 5;
 
@@ -138,8 +138,12 @@ class AppState {
 
   void loadTheme() {
     final state = getAppState();
-    if (state.containsKey('theme')) {
-      theme = state['theme'];
+    if (state.containsKey('themeMode')) {
+      themeMode = state['themeMode'];
+    } else if (state.containsKey('theme')) {
+      // Legacy accent-picker field from older Pala versions; migrate to a
+      // dark/light mode instead of trying to preserve the old accent name.
+      themeMode = 'dark';
     }
     if (state.containsKey('showAsciiBanner')) {
       showAsciiBanner = state['showAsciiBanner'] == true;
@@ -156,10 +160,10 @@ class AppState {
     saveAppState(state);
   }
 
-  void saveTheme(String newTheme) {
-    theme = newTheme;
+  void saveTheme(String newThemeMode) {
+    themeMode = newThemeMode;
     final state = getAppState();
-    state['theme'] = theme;
+    state['themeMode'] = themeMode;
     saveAppState(state);
   }
 

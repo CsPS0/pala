@@ -44,18 +44,18 @@ class _AbsencesViewState extends State<AbsencesView> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Veszélyzóna Kalkulátor',
                     style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close, size: 20),
+                    icon: Icon(Icons.close, size: 20),
                     onPressed: () => Navigator.pop(ctx),
                   ),
                 ],
               ),
               const SizedBox(height: 6),
-              const Text(
+              Text(
                 'A jogszabály szerint 250 mulasztott óra felett, vagy egy tantárgyból 30% hiányzás esetén osztályozó vizsga rendelhető el.',
                 style: TextStyle(color: PalaTheme.textMuted, fontSize: 12),
               ),
@@ -77,7 +77,7 @@ class _AbsencesViewState extends State<AbsencesView> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Éves 250 Órás Limit', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                        Text('Éves 250 Órás Limit', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
                         Text(
                           '$totalMissed / 250 óra',
                           style: TextStyle(
@@ -115,13 +115,13 @@ class _AbsencesViewState extends State<AbsencesView> {
               ),
 
               const SizedBox(height: 16),
-              const Text('Tantárgyi bontás:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white)),
+              Text('Tantárgyi bontás:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white)),
               const SizedBox(height: 8),
 
               ConstrainedBox(
                 constraints: const BoxConstraints(maxHeight: 180),
                 child: bySubject.isEmpty
-                    ? const Text('Nincsenek tantárgyi hiányzások.', style: TextStyle(color: PalaTheme.textMuted, fontSize: 12))
+                    ? Text('Nincsenek tantárgyi hiányzások.', style: TextStyle(color: PalaTheme.textMuted, fontSize: 12))
                     : ListView(
                         shrinkWrap: true,
                         children: bySubject.entries.map((e) {
@@ -131,7 +131,7 @@ class _AbsencesViewState extends State<AbsencesView> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Expanded(child: Text(e.key, style: const TextStyle(fontSize: 13))),
+                                Expanded(child: Text(e.key, style: TextStyle(fontSize: 13))),
                                 Text(
                                   '${e.value} óra',
                                   style: TextStyle(
@@ -150,7 +150,7 @@ class _AbsencesViewState extends State<AbsencesView> {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('Rendben'),
+                child: Text('Rendben'),
               ),
             ],
           ),
@@ -189,18 +189,18 @@ class _AbsencesViewState extends State<AbsencesView> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         'Igazolás-kérvény Készítő',
                         style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close, size: 20),
+                        icon: Icon(Icons.close, size: 20),
                         onPressed: () => Navigator.pop(ctx),
                       ),
                     ],
                   ),
                   const SizedBox(height: 4),
-                  const Text('Generálj hivatalos szülői igazoló szöveget egyetlen kattintással:', style: TextStyle(color: PalaTheme.textMuted, fontSize: 12)),
+                  Text('Generálj hivatalos szülői igazoló szöveget egyetlen kattintással:', style: TextStyle(color: PalaTheme.textMuted, fontSize: 12)),
                   const SizedBox(height: 14),
 
                   // Reason Dropdown
@@ -216,7 +216,7 @@ class _AbsencesViewState extends State<AbsencesView> {
                         value: selectedReason,
                         isExpanded: true,
                         dropdownColor: PalaTheme.card,
-                        items: ['Betegség', 'Családi ok', 'Hivatalos ügy'].map((r) => DropdownMenuItem(value: r, child: Text(r, style: const TextStyle(fontSize: 13)))).toList(),
+                        items: ['Betegség', 'Családi ok', 'Hivatalos ügy'].map((r) => DropdownMenuItem(value: r, child: Text(r, style: TextStyle(fontSize: 13)))).toList(),
                         onChanged: (val) {
                           if (val != null) setModalState(() => selectedReason = val);
                         },
@@ -236,7 +236,7 @@ class _AbsencesViewState extends State<AbsencesView> {
                     ),
                     child: Text(
                       generatedText,
-                      style: const TextStyle(color: PalaTheme.text, fontSize: 12, height: 1.4),
+                      style: TextStyle(color: PalaTheme.text, fontSize: 12, height: 1.4),
                     ),
                   ),
 
@@ -249,8 +249,8 @@ class _AbsencesViewState extends State<AbsencesView> {
                         const SnackBar(content: Text('Igazolás szövege kimásolva a vágólapra!')),
                       );
                     },
-                    icon: const Icon(Icons.copy, size: 16),
-                    label: const Text('Másolás a vágólapra'),
+                    icon: Icon(Icons.copy, size: 16),
+                    label: Text('Másolás a vágólapra'),
                   ),
                 ],
               ),
@@ -304,8 +304,8 @@ class _AbsencesViewState extends State<AbsencesView> {
         onPressed: _openExcuseGeneratorModal,
         backgroundColor: primary,
         foregroundColor: Colors.black,
-        icon: const Icon(Icons.note_add_outlined, size: 18),
-        label: const Text('Igazolás Írása', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
+        icon: Icon(Icons.note_add_outlined, size: 18),
+        label: Text('Igazolás Írása', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
       ),
       body: RefreshIndicator(
         onRefresh: widget.appModel.refreshAll,
@@ -349,7 +349,7 @@ class _AbsencesViewState extends State<AbsencesView> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Szülői Keretfigyelő', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                      Text('Szülői Keretfigyelő', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
                       Text(
                         '${widget.appModel.usedParentalDays} / ${widget.appModel.parentalQuota} nap felhasznált',
                         style: TextStyle(
@@ -378,7 +378,7 @@ class _AbsencesViewState extends State<AbsencesView> {
                     children: [
                       Text(
                         '250 órás határ: ${widget.appModel.totalMissedHours} óra',
-                        style: const TextStyle(fontSize: 11, color: PalaTheme.textMuted),
+                        style: TextStyle(fontSize: 11, color: PalaTheme.textMuted),
                       ),
                       GestureDetector(
                         onTap: _openDangerZoneModal,
@@ -420,7 +420,7 @@ class _AbsencesViewState extends State<AbsencesView> {
               Container(
                 padding: const EdgeInsets.all(32),
                 alignment: Alignment.center,
-                child: const Text('Nincsenek a feltételnek megfelelő mulasztások.', style: TextStyle(color: PalaTheme.textMuted)),
+                child: Text('Nincsenek a feltételnek megfelelő mulasztások.', style: TextStyle(color: PalaTheme.textMuted)),
               )
             else
               ...filteredAbsences.map((a) {
@@ -461,12 +461,12 @@ class _AbsencesViewState extends State<AbsencesView> {
                           children: [
                             Text(
                               widget.appModel.getDisplaySubject(a.subject),
-                              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: Colors.white),
+                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: Colors.white),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               '${a.date != null ? DateFormat('yyyy.MM.dd').format(a.date!) : "-"}${a.type != null && a.type!.isNotEmpty ? " • ${a.type}" : ""}',
-                              style: const TextStyle(fontSize: 11, color: PalaTheme.textMuted),
+                              style: TextStyle(fontSize: 11, color: PalaTheme.textMuted),
                             ),
                           ],
                         ),
@@ -508,7 +508,7 @@ class _AbsencesViewState extends State<AbsencesView> {
         children: [
           Text(value, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: color)),
           const SizedBox(height: 2),
-          Text(label, style: const TextStyle(fontSize: 9, color: PalaTheme.textMuted), textAlign: TextAlign.center),
+          Text(label, style: TextStyle(fontSize: 9, color: PalaTheme.textMuted), textAlign: TextAlign.center),
         ],
       ),
     );

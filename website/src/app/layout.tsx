@@ -22,7 +22,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://pala.hu"),
+  metadataBase: new URL("https://pala-app.hu"),
   title: {
     default: "Pala — A Modern, Nyílt Forráskódú Kréta Kliens",
     template: "%s | Pala",
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     title: "Pala — A Modern, Nyílt Forráskódú Kréta Kliens",
     description:
       "Kezeld a jegyeidet, órarendedet, mulasztásaidat és dolgozataidat asztali gépen, mobilon, böngészőben és terminálban — 100% ingyenes, reklámmentes és nyílt forráskódú.",
-    url: "https://pala.hu",
+    url: "https://pala-app.hu",
     siteName: "Pala Kréta Kliens",
     locale: "hu_HU",
     type: "website",

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:pala/api/client.dart';
 import '../state/app_model.dart';
 import '../theme/pala_theme.dart';
@@ -60,6 +61,19 @@ class _LoginViewState extends State<LoginView> {
     });
   }
 
+  Future<void> _pasteInto(TextEditingController controller) async {
+    try {
+      final data = await Clipboard.getData(Clipboard.kTextPlain);
+      if (data?.text != null && data!.text!.isNotEmpty) {
+        final text = data.text!.replaceAll(RegExp(r'[\r\n]+'), '');
+        setState(() {
+          controller.text = text;
+          controller.selection = TextSelection.collapsed(offset: text.length);
+        });
+      }
+    } catch (_) {}
+  }
+
   Future<void> _handleLogin() async {
     final inst = _instituteController.text.trim();
     final user = _usernameController.text.trim();
@@ -114,7 +128,7 @@ class _LoginViewState extends State<LoginView> {
                         ),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Text(
+                      child: Text(
                         'PALA',
                         style: TextStyle(
                           color: Colors.black,
@@ -137,7 +151,7 @@ class _LoginViewState extends State<LoginView> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Center(
+                  Center(
                     child: Text(
                       'Jelentkezz be az e-napló fiókodba',
                       style: TextStyle(color: PalaTheme.textMuted, fontSize: 13),
@@ -157,7 +171,7 @@ class _LoginViewState extends State<LoginView> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         // School search input
-                        const Text(
+                        Text(
                           'Intézmény Kereső',
                           style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: PalaTheme.textMuted),
                         ),
@@ -172,7 +186,7 @@ class _LoginViewState extends State<LoginView> {
                                     padding: EdgeInsets.all(12),
                                     child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
                                   )
-                                : const Icon(Icons.search, size: 20),
+                                : Icon(Icons.search, size: 20),
                           ),
                         ),
 
@@ -183,22 +197,21 @@ class _LoginViewState extends State<LoginView> {
                             constraints: const BoxConstraints(maxHeight: 160),
                             child: Material(
                               color: PalaTheme.sidebar,
-                              borderRadius: BorderRadius.circular(8),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                side: const BorderSide(color: PalaTheme.border),
+                                side: BorderSide(color: PalaTheme.border),
                               ),
                               child: ListView.separated(
                                 shrinkWrap: true,
                                 itemCount: _schoolSuggestions.length,
-                                separatorBuilder: (context, index) => const Divider(height: 1),
+                                separatorBuilder: (context, index) => Divider(height: 1),
                                 itemBuilder: (context, idx) {
                                   final code = _schoolSuggestions.keys.elementAt(idx);
                                   final name = _schoolSuggestions[code]!;
                                   return ListTile(
                                     dense: true,
-                                    title: Text(name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                                    subtitle: Text(code, style: const TextStyle(fontSize: 11, color: PalaTheme.textMuted)),
+                                    title: Text(name, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                                    subtitle: Text(code, style: TextStyle(fontSize: 11, color: PalaTheme.textMuted)),
                                     onTap: () {
                                       setState(() {
                                         _instituteController.text = code;
@@ -214,46 +227,145 @@ class _LoginViewState extends State<LoginView> {
                         ],
 
                         const SizedBox(height: 16),
-                        const Text(
-                          'Intézmény Azonosító (Kréta kód)',
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: PalaTheme.textMuted),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Intézmény Azonosító (Kréta kód)',
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: PalaTheme.textMuted),
+                            ),
+                            InkWell(
+                              onTap: () => _pasteInto(_instituteController),
+                              borderRadius: BorderRadius.circular(4),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.content_paste_outlined, size: 13, color: primary),
+                                    const SizedBox(width: 4),
+                                    Text('Beillesztés', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: primary)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 6),
-                        TextField(
-                          controller: _instituteController,
-                          decoration: const InputDecoration(
-                            hintText: 'pl. klik123456',
+                        CallbackShortcuts(
+                          bindings: {
+                            const SingleActivator(LogicalKeyboardKey.keyV, control: true): () => _pasteInto(_instituteController),
+                          },
+                          child: TextField(
+                            controller: _instituteController,
+                            enableInteractiveSelection: true,
+                            contextMenuBuilder: (context, editableTextState) => AdaptiveTextSelectionToolbar.editableText(editableTextState: editableTextState),
+                            decoration: InputDecoration(
+                              hintText: 'pl. klik123456',
+                              suffixIcon: IconButton(
+                                tooltip: 'Beillesztés vágólapról',
+                                icon: Icon(Icons.content_paste_outlined, size: 18),
+                                onPressed: () => _pasteInto(_instituteController),
+                              ),
+                            ),
                           ),
                         ),
 
                         const SizedBox(height: 16),
-                        const Text(
-                          'Felhasználónév (Oktatási Azonosító)',
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: PalaTheme.textMuted),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Felhasználónév (Oktatási Azonosító)',
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: PalaTheme.textMuted),
+                            ),
+                            InkWell(
+                              onTap: () => _pasteInto(_usernameController),
+                              borderRadius: BorderRadius.circular(4),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.content_paste_outlined, size: 13, color: primary),
+                                    const SizedBox(width: 4),
+                                    Text('Beillesztés', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: primary)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 6),
-                        TextField(
-                          controller: _usernameController,
-                          keyboardType: TextInputType.text,
-                          decoration: const InputDecoration(
-                            hintText: '7xxxxxxxxxx vagy felhasználónév',
+                        CallbackShortcuts(
+                          bindings: {
+                            const SingleActivator(LogicalKeyboardKey.keyV, control: true): () => _pasteInto(_usernameController),
+                          },
+                          child: TextField(
+                            controller: _usernameController,
+                            keyboardType: TextInputType.text,
+                            enableInteractiveSelection: true,
+                            contextMenuBuilder: (context, editableTextState) => AdaptiveTextSelectionToolbar.editableText(editableTextState: editableTextState),
+                            decoration: InputDecoration(
+                              hintText: '7xxxxxxxxxx vagy felhasználónév',
+                              suffixIcon: IconButton(
+                                tooltip: 'Beillesztés vágólapról',
+                                icon: Icon(Icons.content_paste_outlined, size: 18),
+                                onPressed: () => _pasteInto(_usernameController),
+                              ),
+                            ),
                           ),
                         ),
 
                         const SizedBox(height: 16),
-                        const Text(
-                          'Jelszó',
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: PalaTheme.textMuted),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Jelszó',
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: PalaTheme.textMuted),
+                            ),
+                            InkWell(
+                              onTap: () => _pasteInto(_passwordController),
+                              borderRadius: BorderRadius.circular(4),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.content_paste_outlined, size: 13, color: primary),
+                                    const SizedBox(width: 4),
+                                    Text('Beillesztés', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: primary)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 6),
-                        TextField(
-                          controller: _passwordController,
-                          obscureText: _obscurePassword,
-                          decoration: InputDecoration(
-                            hintText: '••••••••',
-                            suffixIcon: IconButton(
-                              icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, size: 20),
-                              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                        CallbackShortcuts(
+                          bindings: {
+                            const SingleActivator(LogicalKeyboardKey.keyV, control: true): () => _pasteInto(_passwordController),
+                          },
+                          child: TextField(
+                            controller: _passwordController,
+                            obscureText: _obscurePassword,
+                            enableInteractiveSelection: true,
+                            contextMenuBuilder: (context, editableTextState) => AdaptiveTextSelectionToolbar.editableText(editableTextState: editableTextState),
+                            decoration: InputDecoration(
+                              hintText: '••••••••',
+                              suffixIcon: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    tooltip: 'Beillesztés vágólapról',
+                                    icon: Icon(Icons.content_paste_outlined, size: 18),
+                                    onPressed: () => _pasteInto(_passwordController),
+                                  ),
+                                  IconButton(
+                                    tooltip: _obscurePassword ? 'Megjelenítés' : 'Elrejtés',
+                                    icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, size: 20),
+                                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -269,7 +381,7 @@ class _LoginViewState extends State<LoginView> {
                                     height: 20,
                                     child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
                                   )
-                                : const Text('Bejelentkezés'),
+                                : Text('Bejelentkezés'),
                           ),
                         ),
                       ],
@@ -283,12 +395,12 @@ class _LoginViewState extends State<LoginView> {
                     onPressed: widget.appModel.isLoading ? null : () => widget.appModel.loginDemo(),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      side: const BorderSide(color: PalaTheme.border),
+                      side: BorderSide(color: PalaTheme.border),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       foregroundColor: PalaTheme.text,
                     ),
-                    icon: const Icon(Icons.play_arrow_outlined, size: 18),
-                    label: const Text(
+                    icon: Icon(Icons.play_arrow_outlined, size: 18),
+                    label: Text(
                       'Belépés Teszt Elek demó fiókkal',
                       style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                     ),

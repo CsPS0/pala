@@ -3,9 +3,12 @@
   --sidebar: #151518;
   --card: #1b1b1f;
   --card-hover: #222227;
+  --card-alt: #18181c;
   --border: #28282d;
+  --border-focus: #ff8800;
   --primary: #ff8800;
   --primary-hover: #ffa033;
+  --primary-rgb: 255, 136, 0;
   --text: #f3f3f6;
   --text-muted: #8c8c94;
   --text-subtle: #5f5f67;
@@ -13,8 +16,26 @@
   --warning: #ffd60a;
   --danger: #ff453a;
   --info: #0a84ff;
-  --radius: 12px;
-  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --purple: #bf5af2;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Light mode: toggled via document.documentElement.dataset.theme = "light".
+   Accent (--primary) and semantic colors (success/warning/danger/info/purple)
+   stay the same in both modes; only surface/text colors change. */
+:root[data-theme="light"] {
+  --bg: #f5f5f7;
+  --sidebar: #ffffff;
+  --card: #ffffff;
+  --card-hover: #f0f0f2;
+  --card-alt: #f7f7f9;
+  --border: #e0e0e3;
+  --text: #1c1c1e;
+  --text-muted: #6e6e76;
+  --text-subtle: #9a9aa0;
 }
 
 * {
@@ -251,6 +272,19 @@ body {
 .grade-3 { background: rgba(255, 214, 10, 0.2); color: var(--warning); border: 1px solid rgba(255, 214, 10, 0.4); }
 .grade-2 { background: rgba(255, 136, 0, 0.2); color: var(--primary); border: 1px solid rgba(255, 136, 0, 0.4); }
 .grade-1 { background: rgba(255, 69, 58, 0.2); color: var(--danger); border: 1px solid rgba(255, 69, 58, 0.4); }
+.grade-badge.grade-percent {
+  min-width: 36px; width: auto; padding: 0 5px; font-size: 0.72rem;
+  background: rgba(10, 132, 255, 0.2); color: var(--info); border: 1px solid rgba(10, 132, 255, 0.4);
+}
+.grade-badge.grade-nem-irt {
+  min-width: 50px; width: auto; padding: 0 4px; font-size: 0.62rem;
+  background: rgba(255, 69, 58, 0.15); color: var(--danger); border: 1px solid rgba(255, 69, 58, 0.4);
+}
+.grade-badge.grade-text, .grade-badge.grade-unknown {
+  min-width: 30px; width: auto; padding: 0 4px; font-size: 0.65rem;
+  background: rgba(255, 255, 255, 0.08); color: var(--text-muted); border: 1px solid var(--border);
+}
+
 
 .stat-summary {
   display: flex;
@@ -320,3 +354,111 @@ body {
 }
 .input-group input:focus { border-color: var(--primary); }
 .login-error { font-size: 0.7rem; color: var(--danger); margin-bottom: 8px; display: none; }
+
+/* Filter Chips */
+.filter-chips-row {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 2px 0 6px 0;
+}
+.filter-chips-row::-webkit-scrollbar { display: none; }
+.chip-btn {
+  background: var(--sidebar);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.chip-btn:hover { background: var(--card-hover); color: var(--text); }
+.chip-btn.active { background: var(--primary); color: #000; border-color: var(--primary); }
+
+/* Maintenance UI */
+.maintenance-banner {
+  background: rgba(255, 214, 10, 0.12);
+  border: 1px solid rgba(255, 214, 10, 0.35);
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+}
+.badge-maintenance {
+  background: rgba(255, 214, 10, 0.2);
+  color: var(--warning);
+  border-color: rgba(255, 214, 10, 0.4);
+}
+
+/* School Autocomplete Dropdown */
+.school-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 180px;
+  overflow-y: auto;
+  background: #1e1e24;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  z-index: 1000;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+.school-item {
+  padding: 8px 10px;
+  font-size: 0.75rem;
+  line-height: 1.3;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s ease;
+  text-align: left;
+}
+.school-item:last-child {
+  border-bottom: none;
+}
+.school-item:hover {
+  background: rgba(255, 136, 0, 0.15);
+  color: var(--primary);
+}
+
+/* Compact Density Mode */
+body.compact-mode .header {
+  padding: 8px 14px;
+}
+body.compact-mode .active-card {
+  padding: 8px 12px;
+  margin: 6px 12px 2px 12px;
+}
+body.compact-mode .active-subject {
+  font-size: 0.92rem;
+}
+body.compact-mode .tab-bar {
+  padding: 4px 12px 2px 12px;
+}
+body.compact-mode .tab-btn {
+  padding: 4px 0;
+  font-size: 0.72rem;
+}
+body.compact-mode .content {
+  padding: 4px 12px 8px 12px;
+}
+body.compact-mode .item-card {
+  padding: 6px 10px;
+  margin-bottom: 5px;
+}
+body.compact-mode .item-title {
+  font-size: 0.78rem;
+}
+body.compact-mode .item-sub {
+  font-size: 0.68rem;
+}
+body.compact-mode .footer {
+  padding: 6px 12px;
+}
+
+/* Expanded content when hero card is hidden */
+body.hero-hidden .content {
+  max-height: 380px;
+}

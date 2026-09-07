@@ -12,6 +12,7 @@ export function Roadmap() {
         "Natív asztali felület (Windows, Linux, macOS)",
         "Reszponzív mobil felület (Android & iOS)",
         "Interaktív terminálos TUI kliens (Scoop, Homebrew, APT)",
+        "Manifest V3 böngészőbővítmény (Chrome, Brave, Edge) popup gyorsnézettel és heti vezérlőpulttal",
         "Élő órarendi visszaszámláló & szünetjelző",
         "Célátlag & Szellem jegy kalkulátor",
         "250 órás hiányzásfigyelő & szülői igazolás generátor",
@@ -26,7 +27,7 @@ export function Roadmap() {
       badgeClass: "bg-[#ff8800]/10 text-[#ff8800] border-[#ff8800]/30",
       icon: Clock,
       items: [
-        "Böngésző-értesítések új jegyek beírásakor",
+        "Intelligens tanulmányi előrejelzés és heti elemzés",
         "Interaktív házi feladat határidő naptár widget",
         "Továbbfejlesztett vizsga- és dolgozattervező modul",
         "Testreszabható témaszínek és betűtípusok",
@@ -58,7 +59,7 @@ export function Roadmap() {
         {sections.map((sec) => {
           const IconComp = sec.icon;
           return (
-            <div key={sec.title} className="bg-[#1b1b1f] border border-[#28282d] p-7 rounded-3xl flex flex-col justify-between">
+            <div key={sec.title} className="bg-[#1b1b1f] border border-[#28282d] p-5 sm:p-7 rounded-2xl sm:rounded-3xl flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <div>

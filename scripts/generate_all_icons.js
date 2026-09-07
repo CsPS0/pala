@@ -4,21 +4,25 @@ const fs = require('fs');
 const path = require('path');
 
 const repoRoot = path.resolve(__dirname, '..');
-const svgPath = path.join(repoRoot, 'pala_icon.svg');
+const iconsDir = path.join(repoRoot, 'assets', 'icons');
+const svgPath = path.join(iconsDir, 'pala_icon.svg');
 
 async function main() {
   console.log('Rendering all Pala platform icons with transparent corners from:', svgPath);
+  if (!fs.existsSync(iconsDir)) {
+    fs.mkdirSync(iconsDir, { recursive: true });
+  }
   const svgBuffer = fs.readFileSync(svgPath);
 
-  const out1024 = path.join(repoRoot, 'pala_icon_1024.png');
-  const out512 = path.join(repoRoot, 'pala_icon_512.png');
-  const out256 = path.join(repoRoot, 'pala_icon_256.png');
-  const out192 = path.join(repoRoot, 'pala_icon_192.png');
-  const out128 = path.join(repoRoot, 'pala_icon_128.png');
-  const out64 = path.join(repoRoot, 'pala_icon_64.png');
-  const out48 = path.join(repoRoot, 'pala_icon_48.png');
-  const out32 = path.join(repoRoot, 'pala_icon_32.png');
-  const out16 = path.join(repoRoot, 'pala_icon_16.png');
+  const out1024 = path.join(iconsDir, 'pala_icon_1024.png');
+  const out512 = path.join(iconsDir, 'pala_icon_512.png');
+  const out256 = path.join(iconsDir, 'pala_icon_256.png');
+  const out192 = path.join(iconsDir, 'pala_icon_192.png');
+  const out128 = path.join(iconsDir, 'pala_icon_128.png');
+  const out64 = path.join(iconsDir, 'pala_icon_64.png');
+  const out48 = path.join(iconsDir, 'pala_icon_48.png');
+  const out32 = path.join(iconsDir, 'pala_icon_32.png');
+  const out16 = path.join(iconsDir, 'pala_icon_16.png');
 
   // Helper to render SVG directly to transparent PNG
   async function renderSvgToPng(width, height, dest) {
@@ -43,7 +47,7 @@ async function main() {
 
   // 2. Generate Multi-Resolution ICO with transparent alpha corners
   const icoBuf = await pngToIco([out16, out32, out48, out64, out128, out256]);
-  const rootIco = path.join(repoRoot, 'pala_icon.ico');
+  const rootIco = path.join(iconsDir, 'pala_icon.ico');
   fs.writeFileSync(rootIco, icoBuf);
 
   const winIco = path.join(repoRoot, 'app', 'windows', 'runner', 'resources', 'app_icon.ico');

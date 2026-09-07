@@ -1,4 +1,4 @@
-# pala_mobile
+# palapp
 
 A new Flutter project.
 

@@ -58,7 +58,7 @@ export function Features() {
           return (
             <div
               key={idx}
-              className="bg-[#1b1b1f] border border-[#28282d] hover:border-[#ff8800] p-7 rounded-3xl transition-all hover:-translate-y-1 hover:bg-[#222227] group"
+              className="bg-[#1b1b1f] border border-[#28282d] hover:border-[#ff8800] p-5 sm:p-7 rounded-2xl sm:rounded-3xl transition-all hover:-translate-y-1 hover:bg-[#222227] group"
             >
               <div className="w-12 h-12 rounded-2xl bg-[#ff8800]/10 text-[#ff8800] border border-[#ff8800]/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
                 <IconComp size={22} />

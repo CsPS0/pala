@@ -3,9 +3,12 @@
   --sidebar: #151518;
   --card: #1b1b1f;
   --card-hover: #222227;
+  --card-alt: #18181c;
   --border: #28282d;
+  --border-focus: #ff8800;
   --primary: #ff8800;
   --primary-hover: #ffa033;
+  --primary-rgb: 255, 136, 0;
   --text: #f3f3f6;
   --text-muted: #8c8c94;
   --text-subtle: #5f5f67;
@@ -13,8 +16,26 @@
   --warning: #ffd60a;
   --danger: #ff453a;
   --info: #0a84ff;
-  --radius: 14px;
-  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --purple: #bf5af2;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Light mode: toggled via document.documentElement.dataset.theme = "light".
+   Accent (--primary) and semantic colors (success/warning/danger/info/purple)
+   stay the same in both modes; only surface/text colors change. */
+:root[data-theme="light"] {
+  --bg: #f5f5f7;
+  --sidebar: #ffffff;
+  --card: #ffffff;
+  --card-hover: #f0f0f2;
+  --card-alt: #f7f7f9;
+  --border: #e0e0e3;
+  --text: #1c1c1e;
+  --text-muted: #6e6e76;
+  --text-subtle: #9a9aa0;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); }
@@ -27,14 +48,28 @@ body {
   overflow: hidden;
 }
 
+/* SVG Icon styles (matches the desktop/web app's sidebar icons) */
+.icon {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+  stroke: currentColor;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+.icon-sm { width: 14px; height: 14px; }
+.icon-lg { width: 22px; height: 22px; }
+
 /* Sidebar */
 .sidebar {
-  width: 250px;
+  width: 270px;
   background: var(--sidebar);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  padding: 20px 16px;
+  padding: 0 16px 20px;
   flex-shrink: 0;
 }
 
@@ -42,8 +77,9 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 24px;
-  padding-left: 4px;
+  margin: 0 -16px 20px;
+  padding: 22px 20px;
+  border-bottom: 1px solid var(--border);
 }
 .brand-logo { width: 36px; height: 36px; border-radius: 9px; }
 .brand-name { font-size: 1.1rem; font-weight: 900; letter-spacing: 0.5px; }
@@ -51,19 +87,22 @@ body {
 
 .nav-menu { display: flex; flex-direction: column; gap: 6px; flex: 1; }
 .nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   background: transparent;
   border: 1px solid transparent;
   color: var(--text-muted);
   font-size: 0.85rem;
   font-weight: 700;
   padding: 10px 14px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   text-align: left;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: var(--transition);
 }
 .nav-item:hover { background: var(--card); color: var(--text); }
-.nav-item.active { background: var(--card); color: var(--primary); border-color: rgba(255, 136, 0, 0.3); }
+.nav-item.active { background: var(--card); color: var(--primary); border-color: rgba(var(--primary-rgb), 0.3); }
 
 .sidebar-footer { border-top: 1px solid var(--border); padding-top: 14px; }
 .student-pill { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
@@ -90,6 +129,15 @@ body {
 
 .badge { font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 6px; border: 1px solid var(--border); }
 .badge-demo { background: rgba(255, 136, 0, 0.12); color: var(--primary); border-color: rgba(255, 136, 0, 0.3); }
+.badge-maintenance { background: rgba(255, 214, 10, 0.15); color: var(--warning); border-color: rgba(255, 214, 10, 0.4); }
+
+.dash-maintenance-banner {
+  background: rgba(255, 214, 10, 0.12);
+  border: 1px solid rgba(255, 214, 10, 0.35);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+}
+
 
 /* Cards & Layout */
 .card {
@@ -135,6 +183,19 @@ body {
 .grade-3 { background: rgba(255, 214, 10, 0.2); color: var(--warning); border: 1px solid rgba(255, 214, 10, 0.4); }
 .grade-2 { background: rgba(255, 136, 0, 0.2); color: var(--primary); border: 1px solid rgba(255, 136, 0, 0.4); }
 .grade-1 { background: rgba(255, 69, 58, 0.2); color: var(--danger); border: 1px solid rgba(255, 69, 58, 0.4); }
+.grade-badge.grade-percent {
+  min-width: 44px; width: auto; padding: 0 6px; font-size: 0.78rem;
+  background: rgba(10, 132, 255, 0.2); color: var(--info); border: 1px solid rgba(10, 132, 255, 0.4);
+}
+.grade-badge.grade-nem-irt {
+  min-width: 58px; width: auto; padding: 0 6px; font-size: 0.68rem;
+  background: rgba(255, 69, 58, 0.15); color: var(--danger); border: 1px solid rgba(255, 69, 58, 0.4);
+}
+.grade-badge.grade-text, .grade-badge.grade-unknown {
+  min-width: 36px; width: auto; padding: 0 6px; font-size: 0.7rem;
+  background: rgba(255, 255, 255, 0.08); color: var(--text-muted); border: 1px solid var(--border);
+}
+
 
 .timetable-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
 .timetable-day-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
@@ -148,3 +209,128 @@ body {
 .btn-block { width: 100%; }
 .progress-bar-container { background: rgba(255,255,255,0.06); border-radius: 6px; overflow: hidden; }
 .progress-bar-fill { height: 100%; border-radius: 6px; }
+
+/* Filter Chips & Subject Cards */
+.filter-chips-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 0 8px 0;
+}
+.filter-chips-row::-webkit-scrollbar { height: 4px; }
+.filter-chips-row::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.chip-btn {
+  background: var(--sidebar);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.chip-btn:hover { background: var(--card-hover); color: var(--text); }
+.chip-btn.active { background: var(--primary); color: #000; border-color: var(--primary); }
+
+.subject-mini-card {
+  background: var(--sidebar);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.subject-mini-card:hover { border-color: rgba(255,136,0,0.4); transform: translateY(-2px); }
+
+.grades-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+/* Messages UI */
+.message-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  transition: all 0.15s ease;
+}
+.message-card:hover {
+  background: var(--card-hover);
+}
+.message-type-dicseret {
+  background: rgba(48, 209, 88, 0.15);
+  color: var(--success);
+  border-color: rgba(48, 209, 88, 0.35);
+}
+.message-type-figyelmeztetes {
+  background: rgba(255, 69, 58, 0.15);
+  color: var(--danger);
+  border-color: rgba(255, 69, 58, 0.35);
+}
+.message-type-hirdetmeny {
+  background: rgba(10, 132, 255, 0.15);
+  color: var(--info);
+  border-color: rgba(10, 132, 255, 0.35);
+}
+.message-type-default {
+  background: rgba(255, 136, 0, 0.15);
+  color: var(--primary);
+  border-color: rgba(255, 136, 0, 0.35);
+}
+
+/* Modals */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.modal-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
+}
+
+/* School Autocomplete Dropdown */
+.school-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  z-index: 1000;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+.school-item {
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s ease;
+  text-align: left;
+}
+.school-item:last-child {
+  border-bottom: none;
+}
+.school-item:hover {
+  background: rgba(255, 136, 0, 0.15);
+  color: var(--primary);
+}

@@ -14,7 +14,7 @@ extension PalaAppSettingsView on PalaApp {
           {'type': 'separator', 'label': '------------------'},
           {'type': 'action', 'id': 3, 'label': 'Főmenü testreszabása'},
           {'type': 'action', 'id': -2, 'label': 'Tanár/Tantárgy átnevezése (Aliasok)'},
-          {'type': 'action', 'id': -4, 'label': 'Színséma / Téma választása'},
+          {'type': 'action', 'id': -4, 'label': 'Sötét / Világos mód'},
           {'type': 'action', 'id': -5, 'label': 'Főmenü ASCII Banner ki/be'},
           {'type': 'action', 'id': -7, 'label': 'Szülői igazolás keret (Jelenleg: ${AppState.instance.parentalQuota} nap)'},
           {'type': 'separator', 'label': '--- Webes Felület Beállításai ---'},
@@ -195,20 +195,20 @@ extension PalaAppSettingsView on PalaApp {
           _clearScreen();
         } else if (action == -4) {
           _clearScreen();
-          print('\n--- Színséma / Téma választása ---');
-          final themes = ['Pala Amber (Narancs - Alapértelmezett)', 'Classic Blue (Cián)', 'Neon Matrix (Zöld)', 'Midnight Pink (Rózsaszín/Lila)'];
-          final themeValues = ['orange', 'blue', 'green', 'pink'];
-          
-          final currentIdx = themeValues.indexOf(AppState.instance.theme);
+          print('\n--- Sötét / Világos mód ---');
+          final modes = ['Sötét mód (Alapértelmezett)', 'Világos mód'];
+          final modeValues = [PalaTheme.modeDark, PalaTheme.modeLight];
+
+          final currentIdx = modeValues.indexOf(AppState.instance.themeMode);
           final choice = Select(
-            prompt: 'Válassz egy témát (Jelenlegi: ${themes[currentIdx >= 0 ? currentIdx : 0]}):',
-            options: [...themes, 'Mégse'],
+            prompt: 'Válassz megjelenítési módot (Jelenlegi: ${modes[currentIdx >= 0 ? currentIdx : 0]}):',
+            options: [...modes, 'Mégse'],
           ).interact();
-          
-          if (choice < themes.length) {
-            AppState.instance.setTheme(themeValues[choice]);
+
+          if (choice < modes.length) {
+            AppState.instance.setTheme(modeValues[choice]);
             PalaTheme.configureInteractTheme();
-            print('\nTéma sikeresen átállítva!');
+            print('\nMegjelenítési mód sikeresen átállítva!');
             _pause();
           }
           _clearScreen();
@@ -438,6 +438,97 @@ extension PalaAppSettingsView on PalaApp {
     }
   }
 
+  /// Lets the user pick the "original" name to alias from a live-fetched
+  /// dropdown instead of typing it exactly. Teachers come from getTeachers()
+  /// (the messaging directory), not from grades, so a teacher who hasn't
+  /// graded the student yet still shows up. Subjects come from group
+  /// averages, which covers the full curriculum, not just graded subjects.
+  Future<String?> _pickAliasOriginal() async {
+    final category = Select(
+      prompt: 'Mit szeretnél átnevezni?',
+      options: ['Tantárgy', 'Tanár', 'Egyéb (kézi megadás)'],
+    ).interact();
+
+    if (category == 2) {
+      final manual = Utf8Input(prompt: 'Eredeti név (pontosan!):').interact();
+      return manual.isEmpty ? null : manual;
+    }
+
+    if (_client == null) {
+      print('\nNincs élő kapcsolat, kézi megadás szükséges.');
+      final manual = Utf8Input(prompt: 'Eredeti név (pontosan!):').interact();
+      _pause();
+      return manual.isEmpty ? null : manual;
+    }
+
+    List<String> names = [];
+    try {
+      if (category == 0) {
+        print('\nTantárgyak betöltése...');
+        final averages = await _client!.getGroupAverages() ?? [];
+        names = averages
+            .map((a) {
+              if (a is! Map) return null;
+              final tantargy = a['Tantargy'];
+              if (tantargy is! Map) return null;
+              return tantargy['Nev']?.toString();
+            })
+            .whereType<String>()
+            .where((n) => n.isNotEmpty)
+            .toSet()
+            .toList();
+      } else {
+        print('\nTanárok betöltése...');
+        // getTeachers() is an e-Ügyintézés endpoint that can come back empty
+        // for some real accounts, so also pull teacher names straight out of
+        // the timetable (same reliable gateway grades/timetable already use)
+        // and merge the two sources.
+        final now = DateTime.now();
+        final midnight = DateTime(now.year, now.month, now.day);
+        final startOfWeek = midnight.subtract(Duration(days: now.weekday - 1));
+        final endOfNextWeek = startOfWeek.add(const Duration(days: 13, hours: 23, minutes: 59, seconds: 59));
+        final results = await Future.wait([
+          _client!.getTeachers(),
+          _client!.getTimetable(startOfWeek, endOfNextWeek),
+        ]);
+        final teachers = (results[0] as List<Map<String, dynamic>>?) ?? [];
+        final timetable = (results[1] as List<TimetableEntry>?) ?? [];
+        final nameSet = <String>{};
+        for (final t in teachers) {
+          final n = (t['nev'] ?? t['name'] ?? t['Nev'])?.toString();
+          if (n != null && n.isNotEmpty) nameSet.add(n);
+        }
+        for (final entry in timetable) {
+          if (entry.teacher != null && entry.teacher!.isNotEmpty) nameSet.add(entry.teacher!);
+          if (entry.substituteTeacher != null && entry.substituteTeacher!.isNotEmpty) {
+            nameSet.add(entry.substituteTeacher!);
+          }
+        }
+        names = nameSet.toList();
+      }
+    } catch (e) {
+      PalaLogger.debug('Failed to load alias name list: $e');
+    }
+    names.sort();
+
+    if (names.isEmpty) {
+      print('\nNem sikerült betölteni a listát, kézi megadás szükséges.');
+      final manual = Utf8Input(prompt: 'Eredeti név (pontosan!):').interact();
+      _pause();
+      return manual.isEmpty ? null : manual;
+    }
+
+    final options = [...names, 'Egyéb (kézi megadás)', 'Mégse'];
+    final picked = Select(prompt: 'Válaszd ki az eredeti nevet', options: options).interact();
+
+    if (picked == options.length - 1) return null;
+    if (picked == options.length - 2) {
+      final manual = Utf8Input(prompt: 'Eredeti név (pontosan!):').interact();
+      return manual.isEmpty ? null : manual;
+    }
+    return names[picked];
+  }
+
   Future<void> _manageAliases() async {
     while (true) {
       _clearScreen();
@@ -456,12 +547,12 @@ extension PalaAppSettingsView on PalaApp {
       options.add('Vissza');
 
       final choice = Select(prompt: 'Tanár/Tantárgy átnevezése (Aliasok)', options: options).interact();
-      
+
       if (choice == options.length - 1) return;
 
       if (choice == 0) {
-        final original = Utf8Input(prompt: 'Eredeti név (pontosan!):').interact();
-        if (original.isEmpty) continue;
+        final original = await _pickAliasOriginal();
+        if (original == null || original.isEmpty) continue;
         final alias = Utf8Input(prompt: 'Új név (Alias):').interact();
         if (alias.isNotEmpty) {
           AppState.instance.setAlias(original, alias);

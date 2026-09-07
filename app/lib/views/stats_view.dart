@@ -74,7 +74,7 @@ class _StatsViewState extends State<StatsView> with SingleTickerProviderStateMix
             indicatorColor: primary,
             labelColor: primary,
             unselectedLabelColor: PalaTheme.textMuted,
-            labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+            labelStyle: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
             tabs: const [
               Tab(text: 'Tantárgyi Átlagok'),
               Tab(text: 'Célátlag'),
@@ -107,7 +107,7 @@ class _StatsViewState extends State<StatsView> with SingleTickerProviderStateMix
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Tanulmányi Összesített Átlag', style: TextStyle(color: PalaTheme.textMuted, fontSize: 12)),
+                          Text('Tanulmányi Összesített Átlag', style: TextStyle(color: PalaTheme.textMuted, fontSize: 12)),
                           const SizedBox(height: 4),
                           Text(
                             widget.appModel.overallGpa > 0 ? widget.appModel.overallGpa.toStringAsFixed(2) : '--',
@@ -131,7 +131,7 @@ class _StatsViewState extends State<StatsView> with SingleTickerProviderStateMix
                 const SizedBox(height: 16),
 
                 if (subAvgs.isEmpty)
-                  const Center(child: Text('Nincsenek elérhető tantárgyi jegyek.', style: TextStyle(color: PalaTheme.textMuted)))
+                  Center(child: Text('Nincsenek elérhető tantárgyi jegyek.', style: TextStyle(color: PalaTheme.textMuted)))
                 else
                   ...subAvgs.entries.map((e) {
                     final subName = e.key;
@@ -157,7 +157,7 @@ class _StatsViewState extends State<StatsView> with SingleTickerProviderStateMix
                               Expanded(
                                 child: Text(
                                   subName,
-                                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: Colors.white),
+                                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: Colors.white),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -176,11 +176,11 @@ class _StatsViewState extends State<StatsView> with SingleTickerProviderStateMix
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('$gradeCount jegy rögzítve', style: const TextStyle(color: PalaTheme.textMuted, fontSize: 11)),
+                              Text('$gradeCount jegy rögzítve', style: TextStyle(color: PalaTheme.textMuted, fontSize: 11)),
                               if (classAvg != null)
                                 Row(
                                   children: [
-                                    Text('Osztály: ${classAvg.toStringAsFixed(2)}', style: const TextStyle(color: PalaTheme.textMuted, fontSize: 11)),
+                                    Text('Osztály: ${classAvg.toStringAsFixed(2)}', style: TextStyle(color: PalaTheme.textMuted, fontSize: 11)),
                                     if (diff != null) ...[
                                       const SizedBox(width: 4),
                                       Text(
@@ -228,13 +228,13 @@ class _StatsViewState extends State<StatsView> with SingleTickerProviderStateMix
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Célátlag Számítás', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: Colors.white)),
+                    Text('Célátlag Számítás', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: Colors.white)),
                     const SizedBox(height: 4),
-                    const Text('Számold ki, hány darab 5-ös kell a kívánt átlag eléréséhez!', style: TextStyle(color: PalaTheme.textMuted, fontSize: 12)),
+                    Text('Számold ki, hány darab 5-ös kell a kívánt átlag eléréséhez!', style: TextStyle(color: PalaTheme.textMuted, fontSize: 12)),
                     const SizedBox(height: 16),
 
                     // Subject Dropdown
-                    const Text('Tantárgy', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: PalaTheme.textMuted)),
+                    Text('Tantárgy', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: PalaTheme.textMuted)),
                     const SizedBox(height: 6),
                     if (subAvgs.isNotEmpty)
                       Container(
@@ -249,7 +249,7 @@ class _StatsViewState extends State<StatsView> with SingleTickerProviderStateMix
                             value: _targetSubject ?? subAvgs.keys.first,
                             isExpanded: true,
                             dropdownColor: PalaTheme.card,
-                            items: subAvgs.keys.map((s) => DropdownMenuItem(value: s, child: Text(s, style: const TextStyle(fontSize: 13)))).toList(),
+                            items: subAvgs.keys.map((s) => DropdownMenuItem(value: s, child: Text(s, style: TextStyle(fontSize: 13)))).toList(),
                             onChanged: (val) {
                               if (val != null) setState(() => _targetSubject = val);
                             },
@@ -263,7 +263,7 @@ class _StatsViewState extends State<StatsView> with SingleTickerProviderStateMix
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Kívánt célátlag:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: PalaTheme.textMuted)),
+                        Text('Kívánt célátlag:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: PalaTheme.textMuted)),
                         Text(_targetAverage.toStringAsFixed(2), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: primary)),
                       ],
                     ),
@@ -279,7 +279,7 @@ class _StatsViewState extends State<StatsView> with SingleTickerProviderStateMix
                     const SizedBox(height: 8),
 
                     // Weight Choice
-                    const Text('Tervezett jegy súlya (%):', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: PalaTheme.textMuted)),
+                    Text('Tervezett jegy súlya (%):', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: PalaTheme.textMuted)),
                     const SizedBox(height: 6),
                     Row(
                       children: [100, 200, 50].map((w) {
@@ -327,19 +327,19 @@ class _StatsViewState extends State<StatsView> with SingleTickerProviderStateMix
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text('Jelenlegi átlagod:', style: TextStyle(color: PalaTheme.textMuted, fontSize: 13)),
-                              Text(curAvg.toStringAsFixed(2), style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: Colors.white)),
+                              Text('Jelenlegi átlagod:', style: TextStyle(color: PalaTheme.textMuted, fontSize: 13)),
+                              Text(curAvg.toStringAsFixed(2), style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: Colors.white)),
                             ],
                           ),
-                          const Divider(height: 20),
+                          Divider(height: 20),
                           if (curAvg >= _targetAverage)
-                            const Text(
+                            Text(
                               'Már elérted a célátlagot ebből a tantárgyból!',
                               style: TextStyle(color: PalaTheme.success, fontWeight: FontWeight.w800, fontSize: 15),
                               textAlign: TextAlign.center,
                             )
                           else if (needed >= 50)
-                            const Text(
+                            Text(
                               'A célátlag túl magas a jelenlegi jegyekhez képest.',
                               style: TextStyle(color: PalaTheme.danger, fontWeight: FontWeight.w700, fontSize: 14),
                               textAlign: TextAlign.center,
@@ -355,7 +355,7 @@ class _StatsViewState extends State<StatsView> with SingleTickerProviderStateMix
                                 const SizedBox(height: 4),
                                 Text(
                                   'a(z) ${_targetAverage.toStringAsFixed(2)} eléréséhez!',
-                                  style: const TextStyle(color: PalaTheme.textMuted, fontSize: 13),
+                                  style: TextStyle(color: PalaTheme.textMuted, fontSize: 13),
                                 ),
                               ],
                             ),
@@ -384,10 +384,10 @@ class _StatsViewState extends State<StatsView> with SingleTickerProviderStateMix
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Tervezett Bizonyítvány Átlag', style: TextStyle(color: PalaTheme.textMuted, fontSize: 12)),
+                        Text('Tervezett Bizonyítvány Átlag', style: TextStyle(color: PalaTheme.textMuted, fontSize: 12)),
                         Builder(
                           builder: (context) {
-                            if (_plannedGrades.isEmpty) return const Text('--');
+                            if (_plannedGrades.isEmpty) return Text('--');
                             final sum = _plannedGrades.values.fold(0, (a, b) => a + b);
                             final plannedGpa = sum / _plannedGrades.length;
                             return Text(
@@ -399,7 +399,7 @@ class _StatsViewState extends State<StatsView> with SingleTickerProviderStateMix
                       ],
                     ),
                     const SizedBox(height: 6),
-                    const Text('Állítsd be a várható félévi vagy év végi jegyed minden tárgyhoz:', style: TextStyle(color: PalaTheme.textMuted, fontSize: 11)),
+                    Text('Állítsd be a várható félévi vagy év végi jegyed minden tárgyhoz:', style: TextStyle(color: PalaTheme.textMuted, fontSize: 11)),
                   ],
                 ),
               ),
@@ -425,8 +425,8 @@ class _StatsViewState extends State<StatsView> with SingleTickerProviderStateMix
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(sub, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Colors.white)),
-                            Text('Jelenleg: ${curAvg.toStringAsFixed(2)}', style: const TextStyle(fontSize: 11, color: PalaTheme.textMuted)),
+                            Text(sub, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Colors.white)),
+                            Text('Jelenleg: ${curAvg.toStringAsFixed(2)}', style: TextStyle(fontSize: 11, color: PalaTheme.textMuted)),
                           ],
                         ),
                       ),

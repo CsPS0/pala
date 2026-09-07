@@ -25,9 +25,15 @@
   "permissions": [
     "storage",
     "alarms",
-    "notifications"
+    "notifications",
+    "tabs",
+    "webNavigation"
   ],
   "host_permissions": [
-    "https://*.e-kreta.hu/*"
-  ]
+    "https://*.e-kreta.hu/*",
+    "https://mobil.e-kreta.hu/*"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; base-uri 'self'; frame-ancestors 'none';"
+  }
 }

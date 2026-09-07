@@ -1,20 +1,31 @@
 <h1 align="left">
-<img src="pala.svg" alt="Pala icon" width="30px" style="vertical-align: middle;">
+<img src="assets/icons/pala.svg" alt="Pala icon" width="30px" style="vertical-align: middle;">
 <span style="vertical-align: middle;">Pala</span>
 </h1>
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/github/license/CsPS0/pala?color=yellow)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/CsPS0/pala)](https://github.com/CsPS0/pala/releases)
-[![Build Status](https://github.com/CsPS0/pala/actions/workflows/release.yml/badge.svg)](https://github.com/CsPS0/pala/actions)
+[![Build Status](https://github.com/CsPS0/pala/actions/workflows/release.yml/badge.svg?branch=v1.2.3)](https://github.com/CsPS0/pala/actions)
 
 A **Pala** egy interaktív terminálos felhasználói felület (TUI) a Kréta e-napló rendszerhez. Az iOS alkalmazás OAuth2 hitelesítési folyamatait szimulálva közvetlen, gyors és látványos terminálos hozzáférést biztosít a diákok adatlapjához, jegyeihez, órarendjéhez és hiányzásaihoz.
 
+
 ## Főbb funkciók
 - **Élő Dashboard (TUI felület)**
+- **Böngésző Kiterjesztés (Chrome, Brave, Edge)**: Mini popup gyorsnézet visszaszámlálóval, heti mátrix vezérlőpulttal, Globális Profil Szerkesztővel és automatikus Kréta lap szinkronnal.
 - **Pala Wrapped (Éves statisztika)**
 - **Bizonyítvány Tervező & Szellem Jegyek**
 - **Jegy-trendek & Átlagok**
 - **Globális Haladó Kereső**
 - *...és még több!*
+
+## Böngésző Kiterjesztés (Browser Extension)
+
+A Pala elérhető modern Chromium böngészőbővítményként is (Manifest V3) Chrome, Brave és Edge böngészőkhöz (`extension/` mappa):
+- **Mini Gyorsnézet (Popup)**: 1 kattintásos eszközsori ablak mai órarenddel, hátralévő idővel és testreszabható kezdőlappal.
+- **Teljes Vezérlőpult (Dashboard)**: Heti órarend mátrix, tantárgyi átlagok, Szellem-jegy kalkulátor, Bizonyítvány tervező, 250 órás hiányzáskeret, üzenetküldő és Profilom.
+- **Kréta Munkamenet Védelem**: A hivatalos weboldal 40-60 perces időkorlátját a háttérben futó automatikus OAuth2 token frissítés (Silent Refresh) oldja fel.
+- **Globális Profil Szerkesztő & API Korlátozás Kezelés**: A Kréta mobil API által nem szolgáltatott banki és okmány adatok manuális kezelése és 1-kattintásos beolvasása nyitott Kréta lapról.
+- **Popup Testreszabása**: Megjelenítési sűrűség, alapértelmezett fül és kártyakorlátok beállítása közvetlenül a popupból vagy a vezérlőpultról.
 
 ## Telepítés
 
@@ -128,3 +139,12 @@ Minden használatba vett nyílt forráskódú csomagnak köszönet.
 ### Archivált és korábbi projektek:
 - [Filc](https://github.com/filc/filc)
 - [Szivacs-Naplo](https://github.com/boapps/Szivacs-Naplo)
+
+### Licenc-megjegyzés
+
+A fent felsorolt projektek egy része eltérő licenc alatt áll (pl. GPL). A Pala kódja
+a nyilvánosan dokumentált e-Kréta API alapján, ezen projektektől függetlenül,
+önállóan lett megírva — kód nem került átvételre egyikből sem. A felsorolás
+kizárólag inspirációs forrásként és a hasonló célú projektek elismeréseként
+szerepel. A Pala forráskódja a repóban található [LICENSE](LICENSE) (MIT) fájl
+alatt érhető el.

@@ -149,6 +149,9 @@ class PalaApp {
   }
 
   void _showMainMenuBanner() {
+    if (_client != null && _client!.isMaintenanceMode) {
+      print('\x1B[1;33m  [!] KARBANTARTÁS: A Kréta szervere jelenleg nem elérhető (HTTP ${_client!.maintenanceStatusCode}). A korábban mentett (gyorsítótárazott) adatokat látod.\x1B[0m\n');
+    }
     if (!AppState.instance.showAsciiBanner) return;
     
     final color = PalaTheme.primary;
@@ -289,28 +292,29 @@ class PalaApp {
 
       final layout = [
         {'type': 'separator', 'label': '------------------'},
-        {'type': 'action', 'id': 10, 'label': 'Pala Wrapped (Év végi összefoglaló)'},
+        {'type': 'action', 'id': 10, 'label': 'Pala Wrapped (Év végi összefoglaló)', 'key': 'w'},
         {'type': 'action', 'id': 0, 'label': 'Tanulói adatlap'},
-        {'type': 'action', 'id': 2, 'label': 'Órarend'},
+        {'type': 'action', 'id': 2, 'label': 'Órarend', 'key': 'o'},
         {'type': 'separator', 'label': '------------------'},
-        {'type': 'action', 'id': 1, 'label': 'Legutóbbi jegyek'},
-        {'type': 'action', 'id': 4, 'label': 'Tantárgyi átlagok'},
+        {'type': 'action', 'id': 1, 'label': 'Legutóbbi jegyek', 'key': 'g'},
+        {'type': 'action', 'id': 4, 'label': 'Tantárgyi átlagok', 'key': 'a'},
         {'type': 'separator', 'label': '------------------'},
-        {'type': 'action', 'id': 3, 'label': 'Mulasztások'},
+        {'type': 'action', 'id': 3, 'label': 'Mulasztások', 'key': 'm'},
         {'type': 'action', 'id': 5, 'label': 'Számonkérések'},
         {'type': 'action', 'id': 6, 'label': 'Házi feladatok'},
         {'type': 'action', 'id': 7, 'label': 'Üzenetek'},
         {'type': 'separator', 'label': '------------------'},
-        {'type': 'action', 'id': 8, 'label': 'Keresés'},
-        {'type': 'action', 'id': -2, 'label': 'Dashboard (Élő nézet)'},
+        {'type': 'action', 'id': 8, 'label': 'Keresés', 'key': '/'},
+        {'type': 'action', 'id': -2, 'label': 'Dashboard (Élő nézet)', 'key': 'd'},
         {'type': 'action', 'id': -3, 'label': 'Pala Webes felület (Web UI)'},
         {'type': 'action', 'id': -4, 'label': 'Pala Asztali Alkalmazás (Desktop UI)'},
-        {'type': 'action', 'id': 9, 'label': 'Beállítások'},
-        {'type': 'action', 'id': 100, 'label': 'Kilépés'},
+        {'type': 'action', 'id': 9, 'label': 'Beállítások', 'key': 'b'},
+        {'type': 'action', 'id': 100, 'label': 'Kilépés', 'key': 'q'},
       ];
 
       List<String> displayOptions = [];
       List<int> actionIds = [];
+      Map<String, int> menuShortcuts = {};
 
       for (var item in layout) {
         if (item['type'] == 'separator') {
@@ -319,8 +323,13 @@ class PalaApp {
         } else {
           final id = item['id'] as int;
           if (!hiddenItems.contains(id) || id == 9 || id == 100) {
+            final optIndex = displayOptions.length;
             displayOptions.add(item['label'] as String);
             actionIds.add(id);
+
+            if (item.containsKey('key')) {
+              menuShortcuts[(item['key'] as String).toLowerCase()] = optIndex;
+            }
           }
         }
       }
@@ -333,8 +342,10 @@ class PalaApp {
       }
 
       final promptText = isDemo 
-          ? 'Pala Főmenü \x1B[1;33m[DEMÓ: Teszt Elek]\x1B[0m' 
-          : (AppState.instance.isOffline ? 'Pala Főmenü \x1B[1;31m[OFFLINE MÓD]\x1B[0m' : 'Pala Főmenü');
+          ? 'Pala Főmenü \x1B[1;33m[DEMÓ: Teszt Elek]\x1B[0m \x1B[90m(↑/↓ vagy j/k, [1-9], q: kilépés)\x1B[0m' 
+          : (AppState.instance.isOffline 
+              ? 'Pala Főmenü \x1B[1;31m[OFFLINE MÓD]\x1B[0m \x1B[90m(↑/↓ vagy j/k, [1-9], q: kilépés)\x1B[0m' 
+              : 'Pala Főmenü \x1B[90m(↑/↓ vagy j/k, [1-9], q: kilépés)\x1B[0m');
 
       if (_lastMainMenuIndex >= displayOptions.length) {
         _lastMainMenuIndex = 0;
@@ -345,6 +356,7 @@ class PalaApp {
         options: displayOptions,
         unselectableIndices: unselectable,
         initialIndex: _lastMainMenuIndex,
+        shortcuts: menuShortcuts,
       ).interact();
 
       _lastMainMenuIndex = selection;
@@ -471,51 +483,35 @@ class PalaApp {
     final appFolder = Directory('$repoRoot/app').existsSync() ? 'app' : 'mobile';
 
     if (Platform.isWindows) {
-      final releaseExe = File('$repoRoot/$appFolder/build/windows/x64/runner/Release/pala_app.exe');
-      final legacyReleaseExe = File('$repoRoot/$appFolder/build/windows/x64/runner/Release/pala_mobile.exe');
-      final debugExe = File('$repoRoot/$appFolder/build/windows/x64/runner/Debug/pala_app.exe');
-      final legacyDebugExe = File('$repoRoot/$appFolder/build/windows/x64/runner/Debug/pala_mobile.exe');
-
-      if (releaseExe.existsSync()) {
-        print('Asztali alkalmazás indítása: ${releaseExe.path}');
-        await Process.start(releaseExe.path, [], mode: ProcessStartMode.detached);
-        return;
-      } else if (legacyReleaseExe.existsSync()) {
-        print('Asztali alkalmazás indítása: ${legacyReleaseExe.path}');
-        await Process.start(legacyReleaseExe.path, [], mode: ProcessStartMode.detached);
-        return;
-      } else if (debugExe.existsSync()) {
-        print('Asztali alkalmazás indítása: ${debugExe.path}');
-        await Process.start(debugExe.path, [], mode: ProcessStartMode.detached);
-        return;
-      } else if (legacyDebugExe.existsSync()) {
-        print('Asztali alkalmazás indítása: ${legacyDebugExe.path}');
-        await Process.start(legacyDebugExe.path, [], mode: ProcessStartMode.detached);
-        return;
+      // palapp is the current name; pala_app/pala_mobile are kept as
+      // fallbacks so an already-built binary from before the rename still launches.
+      for (final buildType in ['Release', 'Debug']) {
+        for (final exeName in ['palapp.exe', 'pala_app.exe', 'pala_mobile.exe']) {
+          final exe = File('$repoRoot/$appFolder/build/windows/x64/runner/$buildType/$exeName');
+          if (exe.existsSync()) {
+            print('Asztali alkalmazás indítása: ${exe.path}');
+            await Process.start(exe.path, [], mode: ProcessStartMode.detached);
+            return;
+          }
+        }
       }
     } else if (Platform.isLinux) {
-      final linuxExe = File('$repoRoot/$appFolder/build/linux/x64/release/bundle/pala_app');
-      final legacyLinuxExe = File('$repoRoot/$appFolder/build/linux/x64/release/bundle/pala_mobile');
-      if (linuxExe.existsSync()) {
-        print('Asztali alkalmazás indítása: ${linuxExe.path}');
-        await Process.start(linuxExe.path, [], mode: ProcessStartMode.detached);
-        return;
-      } else if (legacyLinuxExe.existsSync()) {
-        print('Asztali alkalmazás indítása: ${legacyLinuxExe.path}');
-        await Process.start(legacyLinuxExe.path, [], mode: ProcessStartMode.detached);
-        return;
+      for (final binName in ['palapp', 'pala_app', 'pala_mobile']) {
+        final exe = File('$repoRoot/$appFolder/build/linux/x64/release/bundle/$binName');
+        if (exe.existsSync()) {
+          print('Asztali alkalmazás indítása: ${exe.path}');
+          await Process.start(exe.path, [], mode: ProcessStartMode.detached);
+          return;
+        }
       }
     } else if (Platform.isMacOS) {
-      final macApp = Directory('$repoRoot/$appFolder/build/macos/Build/Products/Release/pala_app.app');
-      final legacyMacApp = Directory('$repoRoot/$appFolder/build/macos/Build/Products/Release/pala_mobile.app');
-      if (macApp.existsSync()) {
-        print('Asztali alkalmazás indítása: ${macApp.path}');
-        await Process.start('open', [macApp.path], mode: ProcessStartMode.detached);
-        return;
-      } else if (legacyMacApp.existsSync()) {
-        print('Asztali alkalmazás indítása: ${legacyMacApp.path}');
-        await Process.start('open', [legacyMacApp.path], mode: ProcessStartMode.detached);
-        return;
+      for (final appName in ['palapp.app', 'pala_app.app', 'pala_mobile.app']) {
+        final macApp = Directory('$repoRoot/$appFolder/build/macos/Build/Products/Release/$appName');
+        if (macApp.existsSync()) {
+          print('Asztali alkalmazás indítása: ${macApp.path}');
+          await Process.start('open', [macApp.path], mode: ProcessStartMode.detached);
+          return;
+        }
       }
     }
 

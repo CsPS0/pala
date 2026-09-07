@@ -52,3 +52,35 @@ A Pala teljes komponenskezelési támogatással rendelkezik a parancssorból és
 - **Szövegbeviteli / Másolási hibák**: A bejelentkezési kód beillesztésekor a program automatikusan kezeli a vágólapot (beleértve a Linux/macOS "Bracketed Paste" funkcióját és a Windows terminál specifikumait is). Különleges terminál emulátorok esetén javasolt a jobb gombos beillesztés használata.
 - **Megjelenítési hibák**: Ékezet- és táblázatproblémák esetén javasolt a terminál (PowerShell/CMD) frissítése és a Pala legújabb verziójának használata.
 - **Lefagyás**: Ha régebbi verziót használsz, Windows terminál esetén előfordulhatott eseménykezelési hiba (befagyott beviteli mező). Ezt a legújabb verziókban javítottuk a platform-specifikus I/O szétválasztásával. Ilyenkor frissíts a legújabb verzióra.
+
+## 7. Pala Böngésző Kiterjesztés (Browser Extension)
+
+A Pala böngésző kiterjesztése (Manifest V3) a Chromium alapú böngészőkben (Google Chrome, Brave, Microsoft Edge) nyújt közvetlen, villámgyors hozzáférést a Kréta rendszeréhez.
+
+### 7.1. Felépítés: Mini Gyorsnézet és Teljes Vezérlőpult
+- **Mini Gyorsnézet (Popup)**: Az eszköztáron található Pala ikonra kattintva azonnal megjelenik az aktuális/következő tanóra, a visszaszámlálás a szünetre/órára, a mai órarend, a legfrissebb jegyek és a közelgő feladatok/dolgozatok.
+- **Teljes Vezérlőpult (Dashboard)**: Külön böngészőlapon futó vezérlőközpont heti órarendi mátrixszal, jegyeloszlási statisztikákkal, tantárgyi súlyozott átlagokkal, Szellem-jegy kalkulátorral, Bizonyítvány tervezővel, 250 órás hiányzáskerettel, üzenetkezelővel és a teljes profilom felülettel.
+
+### 7.2. Kréta Munkamenet és az Időkorlát (40–60 perc) Kezelése
+- **A hivatalos weboldal limitje**: A webes Kréta felület (`*.e-kreta.hu`) 20–30 perc tétlenség után automatikusan kijelentkezteti a felhasználót a szerveroldali ASP.NET sütik lejárata miatt.
+- **OAuth2 és Refresh Token architektúra**: A Pala a Kréta hivatalos Identity Provider (`idp.e-kreta.hu`) gateway-én keresztül hitelesít, ahol a bejelentkezéskor egy 20–60 perces `access_token`-t és egy 30–90 napos `refresh_token`-t kap.
+- **Észrevétlen háttér-megújítás (Silent Refresh)**: A kiterjesztés (`KretaApi.ensureValidToken`) minden API kérés és háttérszinkron előtt ellenőrzi a token érvényességét. Ha a token 2 percen belül lejárna, a kiterjesztés a háttérben automatikusan megújítja azt a refresh token használatával. Ennek köszönhetően a felhasználó sosem kerül kijelentkeztetésre a 40–60 perces limit miatt.
+- **401 Unauthorized Automatikus Helyreállítás**: Ha a szerver váratlanul érvénytelenítené a tokent, a kiterjesztés azonnal észleli a hibát, lefut a megújítás, és a kérés automatikusan megismétlődik.
+- **Offline gyorsítótár védelem**: Hálózati hiba vagy Kréta szerverkarbantartás esetén a `pala_cached_data` révén minden korábbi jegy, órarend és adat offline is azonnal megtekinthető.
+
+### 7.3. Tanulói Profil & Kréta API Korlátozások (Hiányzó Adatok Kezelése)
+- **Miért jelenik meg a "Nincs rögzítve" felirat?**: A hivatalos Kréta mobil API gateway adatvédelmi és 2FA biztonsági korlátozások miatt a `TanuloAdatlap` végponton nem adja át a tanuló bankszámla adatait (bankszámlaszám, bank neve, számlatulajdonos), sem a hivatalos okmányait (adóazonosító jel, TAJ-szám, diákigazolvány adatok). Ezek a Kréta rendszerében kizárólag a kétfaktoros webes felületen érhetők el.
+- **Nagy [!] Figyelmeztető Ikon & Értesítő sáv**: A Profilom nézet jobb felső sarkában kihelyezett nagy felkiáltójel gomb és az információs banner azonnal tájékoztat erről az API korlátozásról.
+- **Globális Profil Szerkesztő (Teljes Profil Testreszabása)**: A fejlécben lévő "Profil Szerkesztése" gombra kattintva mind a 4 fő kategória (Személyes Adatok, Intézmény & Elérhetőségek, Bankszámla Adatok, Hivatalos Okmányok) manuálisan kitölthető és szerkeszthető.
+- **1-Kattintásos Automatikus Beolvasás**: Ha a böngészőben nyitva van a hivatalos Kréta felület, az "Adatok automatikus beolvasása nyitott Kréta lapról" gomb azonnal végigpásztázza a lapot, felismeri a bankszámlaszámot, banknevet, adószámot, TAJ-t, OM kódot, és automatikusan beemeli az adatokat.
+- **Gyári Adatok Visszaállítása**: Bármikor 1 kattintással törölhetők a manuális felülbírálások, visszaállítva az eredeti Kréta szerver által küldött állapotot.
+
+### 7.4. Popup Testreszabása
+- A felugró mini ablak működése és sűrűsége testreszabható:
+  - Alapértelmezett nyitó fül (Mai órák, Jegyek, Feladatok).
+  - Aktuális óra Hero card elrejtése / felfedése.
+  - Kompakt, sűrűbb lista elrendezés.
+  - Tanulmányi átlagsáv ki/bekapcsolása.
+  - Megjelenített jegyek és feladatok maximális száma.
+- Elérhető mind a Popup láblécében lévő fogaskerék gombbal, mind a Dashboard Beállítások oldalán, valós idejű szinkronizációval (`pala_popup_settings`).
+

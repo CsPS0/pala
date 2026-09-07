@@ -72,7 +72,7 @@ extension PalaAppTimetableView on PalaApp {
               if (lesson.isCancelled) {
                 subjectColored = '\x1B[31m$sub [ELMARADT]\x1B[0m';
               } else if (lesson.substituteTeacher != null && lesson.substituteTeacher!.isNotEmpty) {
-                subjectColored = '\x1B[36;4m$sub\x1B[0m \x1B[36m(Helyettes tanár: ${lesson.substituteTeacher})\x1B[0m';
+                subjectColored = '\x1B[36;4m$sub\x1B[0m \x1B[36m(Helyettes tanár: ${AppState.instance.applyAlias(lesson.substituteTeacher!)})\x1B[0m';
               } else {
                 subjectColored = '\x1B[1m$sub\x1B[0m';
               }
@@ -82,7 +82,7 @@ extension PalaAppTimetableView on PalaApp {
                 details += ' [Terem: ${lesson.room}]';
               }
               if (lesson.teacher != null && lesson.teacher!.isNotEmpty && (lesson.substituteTeacher == null || lesson.substituteTeacher!.isEmpty)) {
-                details += ' [Tanár: ${lesson.teacher}]';
+                details += ' [Tanár: ${AppState.instance.applyAlias(lesson.teacher!)}]';
               }
               
               String extraInfo = '';

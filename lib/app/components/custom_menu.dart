@@ -19,6 +19,7 @@ class CustomMenu extends Component<int> {
     required this.options,
     this.unselectableIndices = const [],
     this.initialIndex = 0,
+    this.shortcuts,
   }) : theme = Theme.defaultTheme;
 
   final Theme theme;
@@ -26,6 +27,7 @@ class CustomMenu extends Component<int> {
   final int initialIndex;
   final List<String> options;
   final List<int> unselectableIndices;
+  final Map<String, int>? shortcuts;
 
   @override
   _CustomMenuState createState() => _CustomMenuState();
@@ -70,6 +72,7 @@ class _CustomMenuState extends State<CustomMenu> {
     final width = stdout.hasTerminal ? stdout.terminalColumns : 80;
     final maxLen = max(10, width - 6);
 
+    int selectableCount = 0;
     for (var i = 0; i < component.options.length; i++) {
       var option = component.options[i];
       if (!component.unselectableIndices.contains(i)) {
@@ -81,14 +84,34 @@ class _CustomMenuState extends State<CustomMenu> {
         // Dim the separator without prefix
         final sepMaxLen = max(10, width - 4);
         line.write('  \x1B[90m${_truncate(option, sepMaxLen)}\x1B[0m');
-      } else if (i == index) {
-        line.write(component.theme.activeItemPrefix);
-        line.write(' ');
-        line.write(component.theme.activeItemStyle(option));
       } else {
-        line.write(component.theme.inactiveItemPrefix);
-        line.write(' ');
-        line.write(component.theme.inactiveItemStyle(option));
+        selectableCount++;
+        String badge = '';
+        if (component.shortcuts != null) {
+          for (final entry in component.shortcuts!.entries) {
+            if (entry.value == i) {
+              badge = '\x1B[90m[${entry.key}]\x1B[0m ';
+              break;
+            }
+          }
+        }
+        if (badge.isEmpty && selectableCount <= 9) {
+          badge = '\x1B[90m[$selectableCount]\x1B[0m ';
+        } else if (badge.isEmpty && selectableCount == 10) {
+          badge = '\x1B[90m[0]\x1B[0m ';
+        }
+
+        if (i == index) {
+          line.write(component.theme.activeItemPrefix);
+          line.write(' ');
+          if (badge.isNotEmpty) line.write(badge);
+          line.write(component.theme.activeItemStyle(option));
+        } else {
+          line.write(component.theme.inactiveItemPrefix);
+          line.write(' ');
+          if (badge.isNotEmpty) line.write(badge);
+          line.write(component.theme.inactiveItemStyle(option));
+        }
       }
       context.writeln(line.toString());
     }
@@ -99,22 +122,67 @@ class _CustomMenuState extends State<CustomMenu> {
     while (true) {
       final key = context.readKey();
 
+      // Explicit custom shortcuts (e.g. 'd', 'w', '/', 'q')
+      if (component.shortcuts != null && key.char.isNotEmpty) {
+        final charLower = key.char.toLowerCase();
+        if (component.shortcuts!.containsKey(charLower)) {
+          final target = component.shortcuts![charLower]!;
+          if (!component.unselectableIndices.contains(target)) {
+            index = target;
+            return target;
+          }
+        }
+      }
+
+      // Quick numbers: '1'-'9', '0'
+      if (key.char.isNotEmpty && RegExp(r'^[0-9]$').hasMatch(key.char)) {
+        final digit = int.parse(key.char);
+        final targetSelectable = digit == 0 ? 9 : digit - 1;
+        int currentSelectable = 0;
+        for (int i = 0; i < component.options.length; i++) {
+          if (!component.unselectableIndices.contains(i)) {
+            if (currentSelectable == targetSelectable) {
+              index = i;
+              return i;
+            }
+            currentSelectable++;
+          }
+        }
+      }
+
+      // Vim navigation: 'k' or Up Arrow
+      if (key.char == 'k' || key.controlChar == ControlCharacter.arrowUp) {
+        setState(() {
+          do {
+            index = (index - 1) % component.options.length;
+            if (index < 0) index += component.options.length;
+          } while (component.unselectableIndices.contains(index));
+        });
+        continue;
+      }
+
+      // Vim navigation: 'j' or Down Arrow
+      if (key.char == 'j' || key.controlChar == ControlCharacter.arrowDown) {
+        setState(() {
+          do {
+            index = (index + 1) % component.options.length;
+          } while (component.unselectableIndices.contains(index));
+        });
+        continue;
+      }
+
+      // 'q' or 'Q' or Esc: if not handled by explicit shortcuts, find 'Kilépés' or 'Vissza'
+      if (key.char == 'q' || key.char == 'Q' || key.controlChar == ControlCharacter.escape) {
+        for (int i = component.options.length - 1; i >= 0; i--) {
+          final optLower = component.options[i].toLowerCase();
+          if (optLower.contains('kilépés') || optLower.contains('vissza') || optLower == 'exit') {
+            index = i;
+            return i;
+          }
+        }
+      }
+
       switch (key.controlChar) {
-        case ControlCharacter.arrowUp:
-          setState(() {
-            do {
-              index = (index - 1) % component.options.length;
-              if (index < 0) index += component.options.length;
-            } while (component.unselectableIndices.contains(index));
-          });
-          break;
-        case ControlCharacter.arrowDown:
-          setState(() {
-            do {
-              index = (index + 1) % component.options.length;
-            } while (component.unselectableIndices.contains(index));
-          });
-          break;
         case ControlCharacter.enter:
           if (!component.unselectableIndices.contains(index)) {
             return index;
@@ -194,10 +262,10 @@ class _PaginatedMenuState extends State<PaginatedMenu> {
     
     final width = stdout.hasTerminal ? stdout.terminalColumns : 80;
     
-    var header = '  ${prevColor}◀ Előző (Bal nyíl)${'\x1B[0m'}  |  ${nextColor}Következő (Jobb nyíl) ▶${'\x1B[0m'}  (Oldal: ${currentPage + 1} / $totalPages)';
+    var header = '  ${prevColor}◀ Előző (h / Bal nyíl)${'\x1B[0m'}  |  ${nextColor}Következő (l / Jobb nyíl) ▶${'\x1B[0m'}  (Oldal: ${currentPage + 1} / $totalPages) \x1B[90m[q: Vissza]\x1B[0m';
     final headerClean = header.replaceAll(RegExp(r'\x1B\[[0-9;]*[a-zA-Z]'), '');
     if (headerClean.length > width) {
-      header = '  ${prevColor}◀ Előző${'\x1B[0m'} | ${nextColor}Következő ▶${'\x1B[0m'} (${currentPage + 1}/$totalPages)';
+      header = '  ${prevColor}◀ Előző${'\x1B[0m'} | ${nextColor}Következő ▶${'\x1B[0m'} (${currentPage + 1}/$totalPages) \x1B[90m[q]\x1B[0m';
     }
     context.writeln(header);
     
@@ -215,27 +283,33 @@ class _PaginatedMenuState extends State<PaginatedMenu> {
       final option = _truncate(component.allOptions[i], maxLen);
       final localIndex = i - startIndex;
       final line = StringBuffer();
+      final badge = localIndex < 9 ? '\x1B[90m[${localIndex + 1}]\x1B[0m ' : (localIndex == 9 ? '\x1B[90m[0]\x1B[0m ' : '    ');
       
       if (localIndex == index) {
         line.write(component.theme.activeItemPrefix);
         line.write(' ');
+        line.write(badge);
         line.write(component.theme.activeItemStyle(option));
       } else {
         line.write(component.theme.inactiveItemPrefix);
         line.write(' ');
+        line.write(badge);
         line.write(component.theme.inactiveItemStyle(option));
       }
       context.writeln(line.toString());
     }
 
     final line = StringBuffer();
+    final backBadge = '\x1B[90m[q]\x1B[0m ';
     if (index == pageItemsCount) {
       line.write(component.theme.activeItemPrefix);
       line.write(' ');
+      line.write(backBadge);
       line.write(component.theme.activeItemStyle('Vissza'));
     } else {
       line.write(component.theme.inactiveItemPrefix);
       line.write(' ');
+      line.write(backBadge);
       line.write(component.theme.inactiveItemStyle('Vissza'));
     }
     context.writeln(line.toString());
@@ -251,35 +325,61 @@ class _PaginatedMenuState extends State<PaginatedMenu> {
       final pageItemsCount = endIndex - startIndex;
       final totalSelectable = pageItemsCount + 1;
 
+      // Vim movement: 'k' or Up Arrow
+      if (key.char == 'k' || key.controlChar == ControlCharacter.arrowUp) {
+        setState(() {
+          index = (index - 1) % totalSelectable;
+          if (index < 0) index += totalSelectable;
+        });
+        continue;
+      }
+
+      // Vim movement: 'j' or Down Arrow
+      if (key.char == 'j' || key.controlChar == ControlCharacter.arrowDown) {
+        setState(() {
+          index = (index + 1) % totalSelectable;
+        });
+        continue;
+      }
+
+      // Left / Previous page: 'h' or '[' or Left Arrow
+      if (key.char == 'h' || key.char == '[' || key.controlChar == ControlCharacter.arrowLeft) {
+        if (currentPage > 0) {
+          setState(() {
+            currentPage--;
+            index = 0;
+          });
+        }
+        continue;
+      }
+
+      // Right / Next page: 'l' or ']' or Right Arrow
+      if (key.char == 'l' || key.char == ']' || key.controlChar == ControlCharacter.arrowRight) {
+        final nextStartIndex = (currentPage + 1) * component.pageSize;
+        if (nextStartIndex < component.allOptions.length) {
+          setState(() {
+            currentPage++;
+            index = 0;
+          });
+        }
+        continue;
+      }
+
+      // 'q' or 'Q' or Esc -> return -1 (Back / Vissza)
+      if (key.char == 'q' || key.char == 'Q' || key.controlChar == ControlCharacter.escape) {
+        return -1;
+      }
+
+      // Quick numbers: '1'-'9', '0' selects item on current page
+      if (key.char.isNotEmpty && RegExp(r'^[0-9]$').hasMatch(key.char)) {
+        final digit = int.parse(key.char);
+        final targetLocal = digit == 0 ? 9 : digit - 1;
+        if (targetLocal < pageItemsCount) {
+          return currentPage * component.pageSize + targetLocal;
+        }
+      }
+
       switch (key.controlChar) {
-        case ControlCharacter.arrowUp:
-          setState(() {
-            index = (index - 1) % totalSelectable;
-            if (index < 0) index += totalSelectable;
-          });
-          break;
-        case ControlCharacter.arrowDown:
-          setState(() {
-            index = (index + 1) % totalSelectable;
-          });
-          break;
-        case ControlCharacter.arrowLeft:
-          if (currentPage > 0) {
-            setState(() {
-              currentPage--;
-              index = 0;
-            });
-          }
-          break;
-        case ControlCharacter.arrowRight:
-          final nextStartIndex = (currentPage + 1) * component.pageSize;
-          if (nextStartIndex < component.allOptions.length) {
-            setState(() {
-              currentPage++;
-              index = 0;
-            });
-          }
-          break;
         case ControlCharacter.enter:
           if (index == pageItemsCount) {
             return -1;

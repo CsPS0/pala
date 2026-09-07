@@ -3,7 +3,7 @@
 #define MyAppVersion "1.2.3"
 #define MyAppPublisher "CsPS0"
 #define MyAppURL "https://github.com/CsPS0/pala"
-#define MyAppExeName "pala_mobile.exe"
+#define MyAppExeName "palapp.exe"
 #define MyCliExeName "pala.exe"
 
 [Setup]

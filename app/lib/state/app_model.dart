@@ -10,6 +10,7 @@ import 'package:pala/models/message.dart';
 import 'package:pala/models/student.dart';
 import 'package:pala/models/timetable_entry.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../theme/pala_theme.dart';
 
 class AppModel extends ChangeNotifier {
   KretaClient? _client;
@@ -17,7 +18,7 @@ class AppModel extends ChangeNotifier {
   bool _isAuthenticated = false;
   bool _isLoading = false;
   String? _errorMessage;
-  String _themeAccent = 'orange';
+  bool _isDarkMode = true;
 
   Student? _student;
   List<Grade> _grades = [];
@@ -37,10 +38,12 @@ class AppModel extends ChangeNotifier {
   // Getters
   KretaClient? get client => _client;
   bool get isDemo => _isDemo;
+  bool get isMaintenanceMode => _client?.isMaintenanceMode ?? false;
+  int? get maintenanceStatusCode => _client?.maintenanceStatusCode;
   bool get isAuthenticated => _isAuthenticated;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
-  String get themeAccent => _themeAccent;
+  bool get isDarkMode => _isDarkMode;
 
   Student? get student => _student;
   List<Grade> get grades => _grades;
@@ -63,7 +66,8 @@ class AppModel extends ChangeNotifier {
 
   Future<void> _initStorage() async {
     final prefs = await SharedPreferences.getInstance();
-    _themeAccent = prefs.getString('pala_mobile_accent') ?? 'orange';
+    _isDarkMode = prefs.getBool('pala_dark_mode') ?? true;
+    PalaTheme.isLight = !_isDarkMode;
     _parentalQuota = prefs.getInt('pala_parental_quota') ?? 5;
     
     final aliasStr = prefs.getString('pala_aliases');
@@ -260,11 +264,12 @@ class AppModel extends ChangeNotifier {
     await prefs.setStringList('pala_completed_hw', _completedHomework.toList());
   }
 
-  Future<void> setThemeAccent(String accent) async {
-    _themeAccent = accent;
+  Future<void> setDarkMode(bool isDark) async {
+    _isDarkMode = isDark;
+    PalaTheme.isLight = !isDark;
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('pala_mobile_accent', accent);
+    await prefs.setBool('pala_dark_mode', isDark);
   }
 
   Future<void> setParentalQuota(int quota) async {
@@ -341,7 +346,7 @@ class AppModel extends ChangeNotifier {
     for (final item in _groupAverages) {
       if (item is Map) {
         final sub = item['Tantargy']?['Nev']?.toString();
-        final rawVal = item['OsztalyCsoportAtlag'] ?? item['Atlag'] ?? item['Ertek'];
+        final rawVal = item['OsztalyAtlag'] ?? item['Atlag'] ?? item['Ertek'];
         if (sub != null && rawVal != null) {
           final val = double.tryParse(rawVal.toString().replaceAll(',', '.')) ?? 0.0;
           if (val > 0) map[getDisplaySubject(sub)] = val;

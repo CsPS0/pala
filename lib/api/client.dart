@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 import 'api.dart';
@@ -7,14 +9,63 @@ import '../models/models.dart';
 import '../app/state/app_state.dart';
 import '../utils/logger.dart';
 
+/// Caps concurrent live requests and adds a small jitter before each one,
+/// so bursts like the dashboard/wrapped views' `Future.wait([...])` don't
+/// fire many simultaneous requests at once (a pattern real mobile apps
+/// never produce, and one Kréta's anti-abuse systems can flag).
+class _RequestGate {
+  static const int _maxConcurrent = 3;
+  final _rng = Random();
+  int _active = 0;
+  final List<Completer<void>> _queue = [];
+
+  Future<T> run<T>(Future<T> Function() task) async {
+    if (_active >= _maxConcurrent) {
+      final completer = Completer<void>();
+      _queue.add(completer);
+      await completer.future;
+    }
+    _active++;
+    try {
+      await Future.delayed(Duration(milliseconds: 50 + _rng.nextInt(150)));
+      return await task();
+    } finally {
+      _active--;
+      if (_queue.isNotEmpty) {
+        _queue.removeAt(0).complete();
+      }
+    }
+  }
+}
+
 class KretaClient {
   String? accessToken;
   String? refreshToken;
   String instituteCode;
   Future<void> Function()? onTokenRefreshed;
   Future<bool>? _activeRefreshFuture;
+  DateTime? _backoffUntil;
+  static final _RequestGate _gate = _RequestGate();
+
+  /// True while the Kréta servers are responding with 502/503/504, i.e. a
+  /// central outage/maintenance window rather than a per-request error.
+  /// Views can check this to show a dedicated maintenance banner instead of
+  /// a generic error, matching the browser extension's maintenance UX.
+  bool isMaintenanceMode = false;
+  int? maintenanceStatusCode;
+  DateTime? maintenanceDetectedAt;
 
   KretaClient({required this.instituteCode});
+
+  static int? _parseRetryAfterSeconds(String? header) {
+    if (header == null) return null;
+    return int.tryParse(header.trim());
+  }
+
+  dynamic _cacheFallback(String url) {
+    if (Platform.environment['NO_CACHE'] == '1') return null;
+    return _loadCacheForUrl(url);
+  }
 
   static Future<Map<String, String>> searchSchools(String query) async {
     if (query.length < 3) return {};
@@ -369,6 +420,13 @@ class KretaClient {
       return null;
     }
 
+    if (_backoffUntil != null && DateTime.now().isBefore(_backoffUntil!)) {
+      if (!silent) {
+        print('\n[\x1B[33mLimit\x1B[0m] Túl sok kérés érkezett a Kréta szerver felé, gyorsítótár használata...');
+      }
+      return _cacheFallback(url);
+    }
+
     if (accessToken == null) {
       throw Exception('Nincs bejelentkezve (hiányzó accessToken).');
     }
@@ -378,8 +436,9 @@ class KretaClient {
     const maxRetries = 3;
     for (int attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        final response = await http.get(Uri.parse(url), headers: headers);
+        final response = await _gate.run(() => http.get(Uri.parse(url), headers: headers));
         if (response.statusCode == 200) {
+          isMaintenanceMode = false;
           final data = jsonDecode(utf8.decode(response.bodyBytes));
           if (Platform.environment['NO_CACHE'] != '1') {
             _saveCacheForUrl(url, data);
@@ -397,14 +456,31 @@ class KretaClient {
             if (!silent) {
               print('Hiba az API lekérdezés során ($url): 401 - Bejelentkezési munkamenet lejárt.');
             }
-            break;
+            return _cacheFallback(url);
           }
+        } else if (response.statusCode == 429) {
+          final retrySeconds = _parseRetryAfterSeconds(response.headers['retry-after']) ?? 60;
+          _backoffUntil = DateTime.now().add(Duration(seconds: retrySeconds));
+          PalaLogger.debug('Received 429 for $url. Backing off for ${retrySeconds}s.');
+          if (!silent) {
+            print('\n[\x1B[33mLimit\x1B[0m] A Kréta szerver túl sok kérést jelzett, $retrySeconds mp szünet, gyorsítótár használata...');
+          }
+          return _cacheFallback(url);
+        } else if (response.statusCode >= 502 && response.statusCode <= 504) {
+          isMaintenanceMode = true;
+          maintenanceStatusCode = response.statusCode;
+          maintenanceDetectedAt = DateTime.now();
+          PalaLogger.debug('Maintenance detected ($url): HTTP ${response.statusCode}.');
+          if (!silent) {
+            print('\n[\x1B[33mKARBANTARTÁS\x1B[0m] A Kréta rendszer jelenleg karbantartás alatt áll (HTTP ${response.statusCode}), gyorsítótár használata...');
+          }
+          return _cacheFallback(url);
         } else {
           if (!silent) {
             print('Hiba az API lekérdezés során ($url): ${response.statusCode} - ${response.body}');
           }
           PalaLogger.debug('API error ($url): ${response.statusCode} (attempt $attempt/$maxRetries)');
-          break;
+          return _cacheFallback(url);
         }
       } catch (e) {
         PalaLogger.debug('Network error ($url): $e (attempt $attempt/$maxRetries)');
@@ -417,16 +493,15 @@ class KretaClient {
         if (!silent) {
           print('\n[\x1B[33mOFFLINE MÓD\x1B[0m] Hálózat vagy szerver hiba, próbálkozás a gyorsítótárból...');
         }
-        if (Platform.environment['NO_CACHE'] == '1') return null;
-        final cachedData = _loadCacheForUrl(url);
+        final cachedData = _cacheFallback(url);
         if (cachedData != null) {
           return cachedData;
         }
-        print('Sajnos nincs elmentett adat ehhez a lekérdezéshez.');
+        if (!silent) print('Sajnos nincs elmentett adat ehhez a lekérdezéshez.');
         return null;
       }
     }
-    return null;
+    return _cacheFallback(url);
   }
 
   Future<bool> downloadAttachment(int id, String fileName) async {

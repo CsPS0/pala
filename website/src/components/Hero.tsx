@@ -96,8 +96,8 @@ export function Hero() {
 
       {/* Subtitle */}
       <p className="text-sm sm:text-base md:text-lg text-[#8c8c94] max-w-2xl mx-auto leading-relaxed mb-8 sm:mb-10">
-        Egy helyen az órarended, a jegyeid, a mulasztásaid és a tanári üzeneteid. Asztali alkalmazásként, mobilon és
-        terminálban is elérhető, teljesen ingyenesen és nyílt forráskóddal.
+        Egy helyen az órarended, a jegyeid, a mulasztásaid és a tanári üzeneteid. Asztali alkalmazásként,
+        böngészőbővítményként, mobilon és terminálban is elérhető, teljesen ingyenesen és nyílt forráskóddal.
       </p>
 
       {/* CTA Buttons */}
@@ -305,7 +305,7 @@ export function Hero() {
           className="w-full flex justify-center animate-fadeIn py-2"
         >
           {/* Smartphone Frame */}
-          <div className="w-full max-w-[330px] sm:max-w-[350px] bg-[#111114] border-[4px] border-[#28282d] rounded-[38px] shadow-2xl p-4 overflow-hidden text-left relative">
+          <div className="w-full max-w-[310px] sm:max-w-[350px] bg-[#111114] border-[3px] sm:border-[4px] border-[#28282d] rounded-[32px] sm:rounded-[38px] shadow-2xl p-3.5 sm:p-4 overflow-hidden text-left relative">
             {/* Dynamic Island / Notch */}
             <div className="w-24 h-4 bg-black rounded-full mx-auto mb-2 flex items-center justify-end px-2">
               <div className="w-2 h-2 rounded-full bg-[#1b1b1f]" />

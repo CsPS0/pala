@@ -583,29 +583,6 @@ class PalaWebHtml {
     .pill-orange { background-color: rgba(var(--primary-rgb), 0.2); color: var(--primary); }
     .pill-gray { background-color: rgba(255, 255, 255, 0.1); color: var(--text-muted); }
 
-    /* Theme color picker pills */
-    .color-swatch-group {
-      display: flex;
-      gap: 12px;
-      margin-top: 8px;
-    }
-    .color-swatch {
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      cursor: pointer;
-      border: 2px solid transparent;
-      transition: var(--transition);
-      position: relative;
-    }
-    .color-swatch:hover {
-      transform: scale(1.1);
-    }
-    .color-swatch.active {
-      border-color: #fff;
-      box-shadow: 0 0 10px currentColor;
-    }
-
     /* TUI Settings lock overlay */
     .tui-locked-wrapper {
       position: relative;
@@ -1102,19 +1079,6 @@ class PalaWebHtml {
         </h2>
 
         <div class="grid-cards">
-          <!-- Web Theme & Color Palette -->
-          <div class="card">
-            <h3 style="font-size: 1rem; color: #fff; margin-bottom: 8px;">Kiemelő Színválasztó</h3>
-            <p style="font-size: 0.83rem; color: var(--text-muted); margin-bottom: 14px;">
-              Válassz a modern Pala színtémák közül a webes felülethez:
-            </p>
-            <div class="color-swatch-group">
-              <div class="color-swatch active" style="background-color: #ff8800;" onclick="setWebAccentColor('orange', '#ff8800', '255, 136, 0')" title="Pala Narancs"></div>
-              <div class="color-swatch" style="background-color: #0a84ff;" onclick="setWebAccentColor('blue', '#0a84ff', '10, 132, 255')" title="Kréta Kék"></div>
-              <div class="color-swatch" style="background-color: #30d158;" onclick="setWebAccentColor('emerald', '#30d158', '48, 209, 88')" title="Smaragd Zöld"></div>
-              <div class="color-swatch" style="background-color: #bf5af2;" onclick="setWebAccentColor('purple', '#bf5af2', '191, 90, 242')" title="Királyi Lila"></div>
-            </div>
-          </div>
 
           <!-- Account & Web Session -->
           <div class="card">
@@ -1401,28 +1365,6 @@ class PalaWebHtml {
     let isTuiSettingsUnlocked = false;
     let schoolSearchDebounce = null;
 
-    // Load saved accent theme from LocalStorage
-    (function initAccentTheme() {
-      const savedTheme = localStorage.getItem('pala_web_accent');
-      if (savedTheme) {
-        try {
-          const t = JSON.parse(savedTheme);
-          setWebAccentColor(t.name, t.hex, t.rgb, false);
-        } catch (_) {}
-      }
-    })();
-
-    function setWebAccentColor(name, hex, rgb, save = true) {
-      document.documentElement.style.setProperty('--primary', hex);
-      document.documentElement.style.setProperty('--primary-rgb', rgb);
-      document.querySelectorAll('.color-swatch').forEach(el => el.classList.remove('active'));
-      const activeEl = document.querySelector(`.color-swatch[onclick*="\${name}"]`);
-      if (activeEl) activeEl.classList.add('active');
-      if (save) {
-        localStorage.setItem('pala_web_accent', JSON.stringify({ name, hex, rgb }));
-        showToast('Színtéma sikeresen alkalmazva: ' + name);
-      }
-    }
 
     // Toggle TUI Settings lock
     function toggleTuiSettingsLock() {

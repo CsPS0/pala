@@ -35,7 +35,7 @@ class PalaMobileApp extends StatelessWidget {
         return MaterialApp(
           title: 'Pala',
           debugShowCheckedModeBanner: false,
-          theme: PalaTheme.getDarkTheme(accent: appModel.themeAccent),
+          theme: appModel.isDarkMode ? PalaTheme.getDarkTheme() : PalaTheme.getLightTheme(),
           home: appModel.isAuthenticated
               ? MainNavigationScreen(appModel: appModel)
               : LoginView(appModel: appModel),
@@ -124,6 +124,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   child: Column(
                     children: [
                       _buildDesktopHeader(primary),
+                      _buildMaintenanceBanner(),
                       Expanded(
                         child: screens[_currentIndex.clamp(0, screens.length - 1)],
                       ),
@@ -192,7 +193,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               ),
             ],
           ),
-          body: mobileScreens[mobileIndex],
+          body: Column(
+            children: [
+              _buildMaintenanceBanner(),
+              Expanded(child: mobileScreens[mobileIndex]),
+            ],
+          ),
           bottomNavigationBar: BottomNavigationBar(
             currentIndex: mobileIndex,
             onTap: (index) => setState(() => _currentIndex = index),
@@ -229,6 +235,32 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     );
   }
 
+  Widget _buildMaintenanceBanner() {
+    if (!widget.appModel.isMaintenanceMode) return const SizedBox.shrink();
+    final status = widget.appModel.maintenanceStatusCode;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      color: PalaTheme.warning.withValues(alpha: 0.15),
+      child: Row(
+        children: [
+          const Icon(Icons.warning_amber_rounded, color: PalaTheme.warning, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'A Kréta rendszer jelenleg karbantartás alatt áll${status != null ? ' (HTTP $status)' : ''}. Korábban mentett adatokat látsz.',
+              style: const TextStyle(color: PalaTheme.warning, fontSize: 12, fontWeight: FontWeight.w700),
+            ),
+          ),
+          TextButton(
+            onPressed: widget.appModel.isLoading ? null : () => widget.appModel.refreshAll(),
+            child: const Text('Újrapróbálás', style: TextStyle(color: PalaTheme.warning, fontWeight: FontWeight.w800, fontSize: 12)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildDesktopSidebar(Color primary) {
     final student = widget.appModel.student;
     final studentName = student?.name ?? (widget.appModel.isDemo ? 'Teszt Elek' : 'Tanuló');
@@ -246,7 +278,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
     return Container(
       width: 250,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: PalaTheme.sidebar,
         border: Border(right: BorderSide(color: PalaTheme.border)),
       ),
@@ -275,7 +307,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 14, letterSpacing: 1.5),
                 ),
                 const Spacer(),
-                const Text(
+                Text(
                   'v1.2',
                   style: TextStyle(color: PalaTheme.textMuted, fontSize: 11, fontWeight: FontWeight.w600),
                 ),
@@ -316,7 +348,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       const SizedBox(height: 2),
                       Text(
                         schoolName,
-                        style: const TextStyle(color: PalaTheme.textMuted, fontSize: 11),
+                        style: TextStyle(color: PalaTheme.textMuted, fontSize: 11),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -328,7 +360,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           ),
 
           const SizedBox(height: 10),
-          const Divider(height: 1, color: PalaTheme.border),
+          Divider(height: 1, color: PalaTheme.border),
           const SizedBox(height: 10),
 
           // Navigation Links
@@ -390,9 +422,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             ),
           ),
 
-          const Divider(height: 1, color: PalaTheme.border),
+          Divider(height: 1, color: PalaTheme.border),
 
-          // Sidebar Footer: Wrapped, Theme picker, Logout
+          // Sidebar Footer: Wrapped, dark/light toggle, Logout
           Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
@@ -423,29 +455,15 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
                 const SizedBox(height: 10),
 
-                // Theme accent dots
+                // Dark / light mode toggle
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Színtéma:', style: TextStyle(color: PalaTheme.textMuted, fontSize: 11, fontWeight: FontWeight.w600)),
-                    Row(
-                      children: ['orange', 'blue', 'emerald', 'purple'].map((acc) {
-                        final isSel = widget.appModel.themeAccent == acc;
-                        final color = PalaTheme.getAccentColor(acc);
-                        return GestureDetector(
-                          onTap: () => widget.appModel.setThemeAccent(acc),
-                          child: Container(
-                            margin: const EdgeInsets.only(left: 6),
-                            width: 16,
-                            height: 16,
-                            decoration: BoxDecoration(
-                              color: color,
-                              shape: BoxShape.circle,
-                              border: isSel ? Border.all(color: Colors.white, width: 2) : null,
-                            ),
-                          ),
-                        );
-                      }).toList(),
+                    Text('Sötét mód:', style: TextStyle(color: PalaTheme.textMuted, fontSize: 11, fontWeight: FontWeight.w600)),
+                    Switch(
+                      value: widget.appModel.isDarkMode,
+                      activeTrackColor: PalaTheme.accent,
+                      onChanged: (val) => widget.appModel.setDarkMode(val),
                     ),
                   ],
                 ),
@@ -484,7 +502,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     return Container(
       height: 64,
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: PalaTheme.sidebar,
         border: Border(bottom: BorderSide(color: PalaTheme.border)),
       ),
@@ -503,7 +521,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               const SizedBox(height: 2),
               Text(
                 subtitle,
-                style: const TextStyle(fontSize: 11, color: PalaTheme.textMuted),
+                style: TextStyle(fontSize: 11, color: PalaTheme.textMuted),
               ),
             ],
           ),
@@ -516,7 +534,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 color: PalaTheme.card,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
-                  side: const BorderSide(color: PalaTheme.border),
+                  side: BorderSide(color: PalaTheme.border),
                 ),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(8),
@@ -524,9 +542,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                     child: Row(
-                      children: const [
+                      children: [
                         Icon(Icons.search, size: 16, color: PalaTheme.textMuted),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         Text('Gyorskereső...', style: TextStyle(color: PalaTheme.textMuted, fontSize: 12)),
                       ],
                     ),
@@ -546,7 +564,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.access_time, size: 14, color: PalaTheme.textMuted),
+                    Icon(Icons.access_time, size: 14, color: PalaTheme.textMuted),
                     const SizedBox(width: 6),
                     Text('$dateStr  •  $timeStr', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
                   ],

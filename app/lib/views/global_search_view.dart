@@ -124,10 +124,10 @@ class _GlobalSearchViewState extends State<GlobalSearchView> {
                 onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
                   hintText: 'Globális keresés tantárgy, tanár, téma alapján...',
-                  prefixIcon: const Icon(Icons.search, size: 20),
+                  prefixIcon: Icon(Icons.search, size: 20),
                   suffixIcon: q.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear, size: 18),
+                          icon: Icon(Icons.clear, size: 18),
                           onPressed: () => setState(() => _queryController.clear()),
                         )
                       : null,
@@ -141,7 +141,7 @@ class _GlobalSearchViewState extends State<GlobalSearchView> {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     '$totalCount találat erre: "$q"',
-                    style: const TextStyle(color: PalaTheme.textMuted, fontSize: 12, fontWeight: FontWeight.w600),
+                    style: TextStyle(color: PalaTheme.textMuted, fontSize: 12, fontWeight: FontWeight.w600),
                   ),
                 ),
 
@@ -156,7 +156,7 @@ class _GlobalSearchViewState extends State<GlobalSearchView> {
                         ),
                       )
                     : (totalCount == 0
-                        ? const Center(
+                        ? Center(
                             child: Text('Nincs találat a megadott keresésre.', style: TextStyle(color: PalaTheme.textMuted)),
                           )
                         : ListView(
@@ -175,7 +175,7 @@ class _GlobalSearchViewState extends State<GlobalSearchView> {
                                 _buildCategoryHeader('Órarendi Órák (${matchLessons.length})', const Color(0xFFFF8800)),
                                 ...matchLessons.map((l) => _buildResultTile(
                                       title: '${l.lessonNumber}. óra: ${widget.appModel.getDisplaySubject(l.subject)}',
-                                      subtitle: 'Terem: ${l.room ?? "N/A"} • ${l.teacher ?? ""}',
+                                      subtitle: 'Terem: ${l.room ?? "N/A"} • ${l.teacher != null ? widget.appModel.getDisplaySubject(l.teacher!) : ""}',
                                       icon: Icons.calendar_today_outlined,
                                       iconColor: const Color(0xFFFF8800),
                                     )),
@@ -258,9 +258,9 @@ class _GlobalSearchViewState extends State<GlobalSearchView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Colors.white), maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(title, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Colors.white), maxLines: 1, overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 2),
-                Text(subtitle, style: const TextStyle(fontSize: 11, color: PalaTheme.textMuted), maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(subtitle, style: TextStyle(fontSize: 11, color: PalaTheme.textMuted), maxLines: 1, overflow: TextOverflow.ellipsis),
               ],
             ),
           ),

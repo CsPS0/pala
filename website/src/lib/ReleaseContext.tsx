@@ -21,6 +21,7 @@ export interface ReleaseAssetMap {
   linuxAppImage: string;
   macDmg: string;
   macZip: string;
+  extensionZip: string;
 }
 
 export interface ReleaseInfo {
@@ -54,6 +55,7 @@ export const DEFAULT_ASSETS: ReleaseAssetMap = {
   linuxAppImage: `https://github.com/${GITHUB_REPO}/releases/latest/download/Pala-x86_64.AppImage`,
   macDmg: `https://github.com/${GITHUB_REPO}/releases/latest/download/Pala-macOS.dmg`,
   macZip: `https://github.com/${GITHUB_REPO}/releases/latest/download/pala-macos.zip`,
+  extensionZip: `https://github.com/${GITHUB_REPO}/releases/latest/download/pala-extension.zip`,
 };
 
 function parseAssetUrls(assets: GitHubAsset[]): ReleaseAssetMap {
@@ -64,6 +66,7 @@ function parseAssetUrls(assets: GitHubAsset[]): ReleaseAssetMap {
     const name = a.name.toLowerCase();
     const url = a.browser_download_url;
     if (name.endsWith(".exe")) map.windowsExe = url;
+    else if ((name.includes("extension") || name.includes("bovitmeny")) && name.endsWith(".zip")) map.extensionZip = url;
     else if (name.includes("win") && name.endsWith(".zip")) map.windowsZip = url;
     else if (name.endsWith(".apk")) {
       if (name.includes("arm64") || name.includes("v8a")) map.androidArm64 = url;

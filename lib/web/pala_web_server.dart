@@ -169,7 +169,7 @@ class PalaWebServer {
         'parentalQuota': AppState.instance.parentalQuota,
         'aliases': AppState.instance.getAliases(),
         'showAsciiBanner': AppState.instance.showAsciiBanner,
-        'theme': AppState.instance.theme,
+        'themeMode': AppState.instance.themeMode,
       });
     } else if (request.method == 'POST' && path == '/api/settings') {
       try {
@@ -182,8 +182,8 @@ class PalaWebServer {
         if (data.containsKey('showAsciiBanner')) {
           AppState.instance.setShowAsciiBanner(data['showAsciiBanner'] == true);
         }
-        if (data.containsKey('theme')) {
-          AppState.instance.setTheme(data['theme'].toString());
+        if (data.containsKey('themeMode')) {
+          AppState.instance.setTheme(data['themeMode'].toString());
         }
         _sendJson(request, {'success': true});
       } catch (e) {

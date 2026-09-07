@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pala/models/timetable_entry.dart';
+import 'package:pala/utils/ics_exporter.dart';
 import '../state/app_model.dart';
 import '../theme/pala_theme.dart';
 
@@ -16,6 +19,7 @@ class TimetableView extends StatefulWidget {
 class _TimetableViewState extends State<TimetableView> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final List<String> _days = ['Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek'];
+  bool _isMatrixView = false;
 
   @override
   void initState() {
@@ -45,6 +49,32 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
     return '';
   }
 
+  Future<void> _exportIcs() async {
+    try {
+      final ics = IcsExporter.generate(widget.appModel.timetable, widget.appModel.exams);
+      final home = Platform.environment['USERPROFILE'] ?? Platform.environment['HOME'] ?? '.';
+      final downloadsPath = '$home${Platform.pathSeparator}Downloads';
+      final downloadsDir = Directory(downloadsPath);
+      final outDir = downloadsDir.existsSync() ? downloadsDir.path : (await getApplicationDocumentsDirectory()).path;
+      final file = File('$outDir${Platform.pathSeparator}pala_timetable.ics');
+      await file.writeAsString(ics);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Órarend sikeresen elmentve (.ics): ${file.path}'),
+            backgroundColor: PalaTheme.success,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Hiba az exportálás során: $e'), backgroundColor: PalaTheme.danger),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -68,7 +98,7 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                       children: [
                         IconButton(
                           tooltip: 'Előző hét',
-                          icon: const Icon(Icons.chevron_left, size: 22),
+                          icon: Icon(Icons.chevron_left, size: 22),
                           onPressed: () => widget.appModel.setWeekOffset(widget.appModel.weekOffset - 1),
                         ),
                         TextButton(
@@ -86,28 +116,89 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                         ),
                         IconButton(
                           tooltip: 'Következő hét',
-                          icon: const Icon(Icons.chevron_right, size: 22),
+                          icon: Icon(Icons.chevron_right, size: 22),
                           onPressed: () => widget.appModel.setWeekOffset(widget.appModel.weekOffset + 1),
                         ),
                       ],
                     ),
-                    if (isDesktop)
-                      Text(
-                        '${widget.appModel.timetable.length} tanóra rögzítve erre a hétre',
-                        style: const TextStyle(color: PalaTheme.textMuted, fontSize: 12, fontWeight: FontWeight.w600),
-                      ),
+                    Row(
+                      children: [
+                        if (isDesktop) ...[
+                          Container(
+                            margin: const EdgeInsets.only(right: 10),
+                            decoration: BoxDecoration(
+                              color: PalaTheme.card,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: PalaTheme.border),
+                            ),
+                            child: Row(
+                              children: [
+                                InkWell(
+                                  onTap: () => setState(() => _isMatrixView = false),
+                                  borderRadius: const BorderRadius.horizontal(left: Radius.circular(7)),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: !_isMatrixView ? primary.withValues(alpha: 0.18) : Colors.transparent,
+                                      borderRadius: const BorderRadius.horizontal(left: Radius.circular(7)),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.view_column_outlined, size: 14, color: !_isMatrixView ? primary : PalaTheme.textMuted),
+                                        const SizedBox(width: 4),
+                                        Text('Oszlopok', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: !_isMatrixView ? primary : PalaTheme.textMuted)),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                InkWell(
+                                  onTap: () => setState(() => _isMatrixView = true),
+                                  borderRadius: const BorderRadius.horizontal(right: Radius.circular(7)),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: _isMatrixView ? primary.withValues(alpha: 0.18) : Colors.transparent,
+                                      borderRadius: const BorderRadius.horizontal(right: Radius.circular(7)),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.grid_view_outlined, size: 14, color: _isMatrixView ? primary : PalaTheme.textMuted),
+                                        const SizedBox(width: 4),
+                                        Text('Órarendi Rács', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: _isMatrixView ? primary : PalaTheme.textMuted)),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: primary,
+                            side: BorderSide(color: primary.withValues(alpha: 0.4)),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                          onPressed: _exportIcs,
+                          icon: Icon(Icons.calendar_month_outlined, size: 15),
+                          label: Text(isDesktop ? 'Naptár (.ics)' : '.ics', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
 
               if (isDesktop) ...[
-                // Desktop: 5-column side-by-side weekly grid
                 Expanded(
-                  child: RefreshIndicator(
-                    onRefresh: widget.appModel.refreshAll,
-                    color: primary,
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
+                  child: _isMatrixView
+                      ? _buildMatrixGrid(primary)
+                      : RefreshIndicator(
+                          onRefresh: widget.appModel.refreshAll,
+                          color: primary,
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: List.generate(5, (dayIdx) {
@@ -195,7 +286,7 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                     indicatorColor: primary,
                     labelColor: primary,
                     unselectedLabelColor: PalaTheme.textMuted,
-                    labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                    labelStyle: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
                     tabs: _days.map((d) => Tab(text: d)).toList(),
                   ),
                 ),
@@ -215,7 +306,7 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                               const SizedBox(height: 12),
                               Text(
                                 'Nincsenek órák erre a napra (${_days[idx]}).',
-                                style: const TextStyle(color: PalaTheme.textMuted, fontSize: 13),
+                                style: TextStyle(color: PalaTheme.textMuted, fontSize: 13),
                               ),
                             ],
                           ),
@@ -311,8 +402,8 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                 if (l.teacher != null && l.teacher!.isNotEmpty && !compact) ...[
                   const SizedBox(height: 2),
                   Text(
-                    l.teacher!,
-                    style: const TextStyle(color: PalaTheme.textMuted, fontSize: 11),
+                    widget.appModel.getDisplaySubject(l.teacher!),
+                    style: TextStyle(color: PalaTheme.textMuted, fontSize: 11),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -329,7 +420,7 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                 color: PalaTheme.danger.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(4),
               ),
-              child: const Text('Elmarad', style: TextStyle(color: PalaTheme.danger, fontSize: 10, fontWeight: FontWeight.w700)),
+              child: Text('Elmarad', style: TextStyle(color: PalaTheme.danger, fontSize: 10, fontWeight: FontWeight.w700)),
             )
           else if (isNow)
             Container(
@@ -340,6 +431,172 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
               ),
               child: Text('Most', style: TextStyle(color: primary, fontSize: 10, fontWeight: FontWeight.w700)),
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMatrixGrid(Color primary) {
+    final hasWeekend = widget.appModel.timetable.any((l) => l.startTime != null && l.startTime!.weekday >= 6);
+    final days = hasWeekend 
+        ? ['Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek', 'Szombat', 'Vasárnap']
+        : ['Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek'];
+    
+    int maxSlot = 7;
+    for (var l in widget.appModel.timetable) {
+      if (l.lessonNumber < 20 && l.lessonNumber > maxSlot) {
+        maxSlot = l.lessonNumber;
+      }
+    }
+    final slots = List.generate(maxSlot, (i) => i + 1);
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 60,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                alignment: Alignment.center,
+                child: Text('Óra', style: TextStyle(color: PalaTheme.textMuted, fontSize: 12, fontWeight: FontWeight.w800)),
+              ),
+              ...List.generate(days.length, (dayIdx) {
+                final isToday = DateTime.now().weekday == (dayIdx + 1) && widget.appModel.weekOffset == 0;
+                return Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                    margin: const EdgeInsets.symmetric(horizontal: 2),
+                    decoration: BoxDecoration(
+                      color: isToday ? primary.withValues(alpha: 0.15) : PalaTheme.sidebar,
+                      borderRadius: BorderRadius.circular(8),
+                      border: isToday ? Border.all(color: primary.withValues(alpha: 0.4)) : null,
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      days[dayIdx],
+                      style: TextStyle(
+                        color: isToday ? primary : Colors.white,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
+          const SizedBox(height: 6),
+          ...slots.map((slot) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Row(
+                children: [
+                  Container(
+                    width: 60,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: PalaTheme.card,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: PalaTheme.border),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      '$slot.',
+                      style: TextStyle(color: PalaTheme.textMuted, fontSize: 13, fontWeight: FontWeight.w900),
+                    ),
+                  ),
+                  ...List.generate(days.length, (dayIdx) {
+                    final targetWeekday = dayIdx + 1;
+                    final lesson = widget.appModel.timetable.cast<TimetableEntry?>().firstWhere(
+                      (l) => l != null && l.startTime != null && l.startTime!.weekday == targetWeekday && l.lessonNumber == slot,
+                      orElse: () => null,
+                    );
+
+                    if (lesson == null) {
+                      return Expanded(
+                        child: Container(
+                          height: 64,
+                          margin: const EdgeInsets.symmetric(horizontal: 2),
+                          decoration: BoxDecoration(
+                            color: PalaTheme.card.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: PalaTheme.border.withValues(alpha: 0.3)),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text('—', style: TextStyle(color: Colors.white10, fontSize: 12)),
+                        ),
+                      );
+                    }
+
+                    final isCancelled = lesson.isCancelled;
+                    final subTeacher = lesson.substituteTeacher;
+                    final displaySubject = widget.appModel.getDisplaySubject(lesson.subject);
+
+                    return Expanded(
+                      child: Container(
+                        height: 64,
+                        margin: const EdgeInsets.symmetric(horizontal: 2),
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: isCancelled 
+                              ? PalaTheme.danger.withValues(alpha: 0.08) 
+                              : (subTeacher != null ? PalaTheme.warning.withValues(alpha: 0.08) : PalaTheme.card),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isCancelled 
+                                ? PalaTheme.danger.withValues(alpha: 0.4) 
+                                : (subTeacher != null ? PalaTheme.warning.withValues(alpha: 0.4) : PalaTheme.border),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              displaySubject,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: isCancelled ? PalaTheme.danger : Colors.white,
+                                decoration: isCancelled ? TextDecoration.lineThrough : null,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    lesson.room ?? (lesson.teacher != null ? widget.appModel.getDisplaySubject(lesson.teacher!) : ''),
+                                    style: TextStyle(fontSize: 9, color: PalaTheme.textMuted),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                if (subTeacher != null)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+                                    decoration: BoxDecoration(
+                                      color: PalaTheme.warning.withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(3),
+                                    ),
+                                    child: Text('Hely.', style: TextStyle(fontSize: 8, color: PalaTheme.warning, fontWeight: FontWeight.bold)),
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+                ],
+              ),
+            );
+          }),
         ],
       ),
     );

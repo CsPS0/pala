@@ -229,6 +229,9 @@ if ($InstallDesktop) {
     Write-Host "[+] Pala Desktop telepitese..." -ForegroundColor Yellow
     $LocalDesktopExe = "$RepoRoot\app\build\windows\x64\runner\Release\pala.exe"
     if (-not (Test-Path $LocalDesktopExe)) {
+        $LocalDesktopExe = "$RepoRoot\app\build\windows\x64\runner\Release\palapp.exe"
+    }
+    if (-not (Test-Path $LocalDesktopExe)) {
         $LocalDesktopExe = "$RepoRoot\app\build\windows\x64\runner\Release\pala_mobile.exe"
     }
     if (-not (Test-Path $LocalDesktopExe)) {

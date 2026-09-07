@@ -4,6 +4,27 @@ extension PalaAppWrappedView on PalaApp {
   Future<void> _showPalaWrapped() async {
     if (!await _ensureClientReady()) return;
 
+    final now = DateTime.now();
+    final isSummer = (now.month == 6 && now.day >= 14) || 
+                     (now.month == 7) || 
+                     (now.month == 8) || 
+                     (now.month == 9 && now.day <= 30);
+
+    if (!isSummer && !isDemo) {
+      _clearScreen();
+      print('\n\x1B[1;33m─────────────────────────────────────────────────────────────\x1B[0m');
+      print('\x1B[1;36m  PALA WRAPPED — Nyári Szüneti Tanévzáró\x1B[0m');
+      print('\x1B[1;33m─────────────────────────────────────────────────────────────\x1B[0m\n');
+      print('A Pala Wrapped tanévzáró összefoglaló kizárólag a nyári szünetben érhető el');
+      print('\x1B[1m(június 14. és szeptember 30. között)\x1B[0m, amikor az adott tanév minden');
+      print('érdemjegye és mulasztása hivatalosan lezárult.\n');
+      print('A tanév közben a Statisztikák és Jegyek menüpontban követheted az átlagaidat.');
+      print('\x1B[90m(Tipp: A "pala --demo" módban bármikor megtekinthető a teszt előnézet!)\x1B[0m\n');
+      print('Nyomj Enter-t a visszatéréshez a főmenübe...');
+      stdin.readLineSync();
+      return;
+    }
+
     _clearScreen();
     print('${PalaTheme.primaryBold}Adatok kinyerése a Pala Wrapped-hez...${PalaTheme.reset}');
 
@@ -13,14 +34,17 @@ extension PalaAppWrappedView on PalaApp {
     final homeworkFuture = _client!.getHomework();
     final examsFuture = _client!.getExams();
     final messagesFuture = _client!.getMessages();
+    final studentFuture = _client!.getStudentData(silent: true);
 
-    final results = await Future.wait([gradesFuture, averagesFuture, absencesFuture, homeworkFuture, examsFuture, messagesFuture]);
+    final results = await Future.wait([gradesFuture, averagesFuture, absencesFuture, homeworkFuture, examsFuture, messagesFuture, studentFuture]);
     final List<Grade> grades = results[0] as List<Grade>? ?? [];
-    final List<dynamic> averages = results[1] ?? [];
+    final List<dynamic> averages = (results[1] as List<dynamic>?) ?? [];
     final List<Absence> absences = results[2] as List<Absence>? ?? [];
     final List<Homework> homeworks = results[3] as List<Homework>? ?? [];
     final List<Exam> exams = results[4] as List<Exam>? ?? [];
     final List<Message> messages = results[5] as List<Message>? ?? [];
+    final Student? student = results[6] as Student?;
+    final studentName = student?.name ?? 'Tanuló';
 
     if (grades.isEmpty) {
       print('Sajnos nincsenek adataid az összefoglalóhoz.');
@@ -199,11 +223,15 @@ extension PalaAppWrappedView on PalaApp {
 
     _clearScreen();
 
+    const totalSlides = 6;
+    int slideIndex = 0;
+
     // Helper for slides
     Future<void> showSlide(String title, List<String> content, {String color = '\x1B[32m'}) async {
+      slideIndex++;
       _clearScreen();
       print('$color════════════════════════════════════════════════════════════════════\x1B[0m');
-      print('$color  $title\x1B[0m');
+      print('$color  $title\x1B[0m  \x1B[90m($slideIndex/$totalSlides)\x1B[0m');
       print('$color════════════════════════════════════════════════════════════════════\x1B[0m\n');
       for (var line in content) {
         print(line);
@@ -211,6 +239,22 @@ extension PalaAppWrappedView on PalaApp {
       }
       print('\n\x1B[90m(Nyomj Enter-t a folytatáshoz...)\x1B[0m');
       stdin.readLineSync();
+    }
+
+    // Animated count-up reveal for a single headline number, Wrapped-style.
+    Future<void> animateNumber(int target, {String prefix = '', String suffix = '', String color = '\x1B[1;33m'}) async {
+      if (target <= 0) {
+        print('$prefix$color$target${PalaTheme.reset}$suffix');
+        return;
+      }
+      final steps = target.clamp(1, 24);
+      final stepDelay = Duration(milliseconds: (900 / steps).round().clamp(15, 200));
+      for (int i = 1; i <= steps; i++) {
+        final value = (target * i / steps).round();
+        stdout.write('\r$prefix$color$value${PalaTheme.reset}$suffix   ');
+        await Future.delayed(stepDelay);
+      }
+      stdout.write('\r$prefix$color$target${PalaTheme.reset}$suffix   \n');
     }
 
     // Intro
@@ -221,6 +265,16 @@ extension PalaAppWrappedView on PalaApp {
     print('Készen állsz, hogy megnézd a tanéved összefoglalóját?');
     print('Dőlj hátra, és nézzük meg, mit alkottál idén!');
     print('\n\x1B[90m(Nyomj Enter-t a kezdéshez...)\x1B[0m');
+    stdin.readLineSync();
+
+    // Hero reveal: an animated count-up on the single biggest number of the
+    // year, before diving into the slide-by-slide breakdown.
+    _clearScreen();
+    print('\x1B[1;36m════════════════════════════════════════════\x1B[0m\n');
+    print('Idén ennyi jegyet szereztél:\n');
+    await animateNumber(totalGrades, suffix: ' db jegy', color: PalaTheme.primaryBold);
+    await Future.delayed(const Duration(milliseconds: 500));
+    print('\n\x1B[90m(Nyomj Enter-t a folytatáshoz...)\x1B[0m');
     stdin.readLineSync();
 
     // Slide 1: General
@@ -271,7 +325,7 @@ extension PalaAppWrappedView on PalaApp {
       'A hét napjai közül leginkább a(z) \x1B[1;32m$bestWeekdayStr\x1B[0m volt a te napod,',
       'amikor összesen \x1B[1;33m$maxFivesOnWeekday darab ötöst\x1B[0m zsebeltél be a tanévben!',
       '',
-      topTeacherCount > 0 ? 'A legtöbb jegyet \x1B[1;36m$topTeacher\x1B[0m tanárodtól kaptad,' : 'Nem sikerült beazonosítani, ki osztotta a legtöbb jegyet,',
+      topTeacherCount > 0 ? 'A legtöbb jegyet \x1B[1;36m${AppState.instance.applyAlias(topTeacher)}\x1B[0m tanárodtól kaptad,' : 'Nem sikerült beazonosítani, ki osztotta a legtöbb jegyet,',
       topTeacherCount > 0 ? 'aki összesen \x1B[1;35m$topTeacherCount alkalommal\x1B[0m értékelt téged.' : 'de biztosan mindenki sokat dolgozott veled!'
     ], color: '\x1B[36m');
 
@@ -290,7 +344,7 @@ extension PalaAppWrappedView on PalaApp {
       : 'És egyetlen egyszer sem késtél el! Mindig pontos voltál!';
       
     String topSenderStr = topSenderCount > 0
-      ? 'A legtöbb üzenetet \x1B[1;36m$topSender\x1B[0m küldte neked ($topSenderCount alkalommal).'
+      ? 'A legtöbb üzenetet \x1B[1;36m${AppState.instance.applyAlias(topSender)}\x1B[0m küldte neked ($topSenderCount alkalommal).'
       : 'Senki sem spamelte a postaládádat.';
 
     await showSlide('Túlélési Stratégiák', [
@@ -304,6 +358,63 @@ extension PalaAppWrappedView on PalaApp {
       messages.isNotEmpty ? 'Ezen kívül kaptál \x1B[1;33m${messages.length}\x1B[0m üzenetet a Krétában.' : 'Csendes év volt, egyetlen üzenetet sem kaptál a Krétában!',
       topSenderStr
     ], color: '\x1B[31m');
+
+    // Final recap card: a bordered ASCII summary of the year, mirroring the
+    // GUI's shareable story card, plus an option to export it as plain text.
+    String padCenter(String s, int width) {
+      if (s.length >= width) return s.substring(0, width);
+      final left = ((width - s.length) / 2).floor();
+      final right = width - s.length - left;
+      return ' ' * left + s + ' ' * right;
+    }
+
+    String stripAnsi(String s) => s.replaceAll(RegExp(r'\x1B\[[0-9;]*m'), '');
+
+    const cardWidth = 58;
+    final cardLines = <String>[
+      padCenter('PALA WRAPPED', cardWidth),
+      padCenter(studentName, cardWidth),
+      '',
+      padCenter('Ev vegi atlag: ${overallAvg.toStringAsFixed(2)}', cardWidth),
+      '',
+      padCenter('Osszes jegy: $totalGrades ($total5s db 5-os)', cardWidth),
+      padCenter('Legjobb targy: ${AppState.instance.applyAlias(bestSubj)} (${bestAvg.toStringAsFixed(2)})', cardWidth),
+      padCenter('Csucsho: $bestMonthStr', cardWidth),
+      padCenter('Hianyzott ora: $totalHours', cardWidth),
+      '',
+      padCenter('#PalaWrapped', cardWidth),
+    ];
+
+    _clearScreen();
+    print(PalaTheme.primaryBold);
+    print('╔${'═' * (cardWidth + 2)}╗');
+    for (final line in cardLines) {
+      print('║ ${line.padRight(cardWidth)} ║');
+    }
+    print('╚${'═' * (cardWidth + 2)}╝');
+    print(PalaTheme.reset);
+
+    print('\n\x1B[90m(Nyomj Enter-t a folytatáshoz, vagy "e"-t az összefoglaló szövegként való mentéséhez...)\x1B[0m');
+    final choice = stdin.readLineSync()?.trim().toLowerCase();
+    if (choice == 'e') {
+      try {
+        final home = Platform.environment['USERPROFILE'] ?? Platform.environment['HOME'] ?? '.';
+        final downloadsDir = Directory('$home${Platform.pathSeparator}Downloads');
+        final outDir = downloadsDir.existsSync() ? downloadsDir.path : home;
+        final targetPath = '$outDir${Platform.pathSeparator}Pala_Wrapped_${now.year}.txt';
+        final buffer = StringBuffer();
+        buffer.writeln('PALA WRAPPED — $studentName');
+        buffer.writeln('=' * 40);
+        for (final line in cardLines) {
+          buffer.writeln(stripAnsi(line).trim());
+        }
+        await File(targetPath).writeAsString(buffer.toString());
+        print('\n\x1B[1;32m[OK] Elmentve: $targetPath\x1B[0m');
+      } catch (e) {
+        print('\n\x1B[1;31mHiba a mentés során: $e\x1B[0m');
+      }
+      _pause();
+    }
 
     // Outro
     _clearScreen();

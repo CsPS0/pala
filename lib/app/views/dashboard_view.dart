@@ -70,7 +70,11 @@ extension PalaAppDashboardView on PalaApp {
 
       // Header
       print('\x1B[1;36mPala Élő Dashboard\x1B[0m - Frissítve: ${DateTime.now().toString().split('.')[0]}');
-      print('Nyomj \x1B[33mq\x1B[0m-t a kilépéshez a főmenübe.\n');
+      print('Nyomj \x1B[33mq\x1B[0m-t a kilépéshez a főmenübe.');
+      if (_client != null && _client!.isMaintenanceMode) {
+        print('\x1B[1;33m[!] KARBANTARTÁS: A Kréta szervere jelenleg nem elérhető (HTTP ${_client!.maintenanceStatusCode}). Gyorsítótárazott adatok.\x1B[0m');
+      }
+      print('');
 
       // Countdown Widget
       String countdownWidget = '';

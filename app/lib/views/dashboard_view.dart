@@ -173,7 +173,7 @@ class _DashboardViewState extends State<DashboardView> {
                     color: primary,
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: const Text(
+                  child: Text(
                     'FOLYAMATBAN',
                     style: TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.w900),
                   ),
@@ -181,7 +181,7 @@ class _DashboardViewState extends State<DashboardView> {
                 const SizedBox(width: 8),
                 Text(
                   'Terem: ${currentLesson.room != null && currentLesson.room!.isNotEmpty ? currentLesson.room : "N/A"}',
-                  style: const TextStyle(fontSize: 12, color: PalaTheme.textMuted),
+                  style: TextStyle(fontSize: 12, color: PalaTheme.textMuted),
                 ),
               ],
             ),
@@ -193,7 +193,7 @@ class _DashboardViewState extends State<DashboardView> {
             const SizedBox(height: 4),
             Text(
               'Hátra van még: ${currentLesson.endTime!.difference(now).inMinutes} perc',
-              style: const TextStyle(color: PalaTheme.textMuted, fontSize: 13),
+              style: TextStyle(color: PalaTheme.textMuted, fontSize: 13),
             ),
             const SizedBox(height: 10),
             ClipRRect(
@@ -214,7 +214,7 @@ class _DashboardViewState extends State<DashboardView> {
                     color: PalaTheme.warning.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: const Text(
+                  child: Text(
                     'KÖVETKEZŐ ÓRA',
                     style: TextStyle(color: PalaTheme.warning, fontSize: 10, fontWeight: FontWeight.w900),
                   ),
@@ -222,7 +222,7 @@ class _DashboardViewState extends State<DashboardView> {
                 const SizedBox(width: 8),
                 Text(
                   'Terem: ${nextLesson.room != null && nextLesson.room!.isNotEmpty ? nextLesson.room : "N/A"}',
-                  style: const TextStyle(fontSize: 12, color: PalaTheme.textMuted),
+                  style: TextStyle(fontSize: 12, color: PalaTheme.textMuted),
                 ),
               ],
             ),
@@ -234,25 +234,25 @@ class _DashboardViewState extends State<DashboardView> {
             const SizedBox(height: 4),
             Text(
               'Kezdődik ${nextLesson.startTime!.difference(now).inMinutes} perc múlva (${DateFormat('HH:mm').format(nextLesson.startTime!)})',
-              style: const TextStyle(color: PalaTheme.textMuted, fontSize: 13),
+              style: TextStyle(color: PalaTheme.textMuted, fontSize: 13),
             ),
           ] else if (todayLessons.isNotEmpty) ...[
-            const Text(
+            Text(
               'A mai tanítási nap véget ért!',
               style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 4),
-            const Text(
+            Text(
               'Szép estét és jó pihenést a holnapi napra!',
               style: TextStyle(color: PalaTheme.textMuted, fontSize: 13),
             ),
           ] else ...[
-            const Text(
+            Text(
               'Ma nincsenek óráid!',
               style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 4),
-            const Text(
+            Text(
               'Jó pihenést a mai napra!',
               style: TextStyle(color: PalaTheme.textMuted, fontSize: 13),
             ),
@@ -358,13 +358,13 @@ class _DashboardViewState extends State<DashboardView> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Mai Órarend',
                 style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700),
               ),
               Text(
                 DateFormat('yyyy. MMMM d., EEEE', 'hu').format(DateTime.now()),
-                style: const TextStyle(color: PalaTheme.textMuted, fontSize: 11),
+                style: TextStyle(color: PalaTheme.textMuted, fontSize: 11),
               ),
             ],
           ),
@@ -374,7 +374,7 @@ class _DashboardViewState extends State<DashboardView> {
             Container(
               padding: const EdgeInsets.all(24),
               alignment: Alignment.center,
-              child: const Text('Mára nincs beütemezett tanítási óra.', style: TextStyle(color: PalaTheme.textMuted)),
+              child: Text('Mára nincs beütemezett tanítási óra.', style: TextStyle(color: PalaTheme.textMuted)),
             )
           else
             ...todayLessons.map((l) {
@@ -425,7 +425,7 @@ class _DashboardViewState extends State<DashboardView> {
                           ),
                           Text(
                             '${startTime != null ? DateFormat('HH:mm').format(startTime) : "-"} - ${endTime != null ? DateFormat('HH:mm').format(endTime) : "-"} • Terem: ${l.room != null && l.room!.isNotEmpty ? l.room : "N/A"}',
-                            style: const TextStyle(color: PalaTheme.textMuted, fontSize: 10),
+                            style: TextStyle(color: PalaTheme.textMuted, fontSize: 10),
                           ),
                         ],
                       ),
@@ -437,7 +437,7 @@ class _DashboardViewState extends State<DashboardView> {
                           color: PalaTheme.danger.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Text('Elmarad', style: TextStyle(color: PalaTheme.danger, fontSize: 9, fontWeight: FontWeight.w700)),
+                        child: Text('Elmarad', style: TextStyle(color: PalaTheme.danger, fontSize: 9, fontWeight: FontWeight.w700)),
                       )
                     else if (isNow)
                       Container(
@@ -471,10 +471,10 @@ class _DashboardViewState extends State<DashboardView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Közelgő Dolgozatok & Legutóbbi Jegyek', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
+          Text('Közelgő Dolgozatok & Legutóbbi Jegyek', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
           const SizedBox(height: 10),
           if (upcomingExams.isEmpty && recentGrades.isEmpty)
-            const Text('Nincsenek aktív bejegyzések.', style: TextStyle(color: PalaTheme.textMuted, fontSize: 12))
+            Text('Nincsenek aktív bejegyzések.', style: TextStyle(color: PalaTheme.textMuted, fontSize: 12))
           else ...[
             ...upcomingExams.map((e) => Padding(
                   padding: const EdgeInsets.only(bottom: 6),
@@ -484,7 +484,7 @@ class _DashboardViewState extends State<DashboardView> {
                       Expanded(
                         child: Text(
                           '${e.mode.isNotEmpty ? e.mode : "Dolgozat"}: ${widget.appModel.getDisplaySubject(e.subject)}',
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -497,7 +497,7 @@ class _DashboardViewState extends State<DashboardView> {
                   ),
                 )),
             if (recentGrades.isNotEmpty) ...[
-              const Divider(height: 14),
+              Divider(height: 14),
               ...recentGrades.map((g) => Padding(
                     padding: const EdgeInsets.only(bottom: 6),
                     child: Row(
@@ -506,7 +506,7 @@ class _DashboardViewState extends State<DashboardView> {
                         Expanded(
                           child: Text(
                             '${widget.appModel.getDisplaySubject(g.subject)}: ${g.theme ?? g.type ?? ""}',
-                            style: const TextStyle(fontSize: 12, color: PalaTheme.textMuted),
+                            style: TextStyle(fontSize: 12, color: PalaTheme.textMuted),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -567,7 +567,7 @@ class _DashboardViewState extends State<DashboardView> {
         color: PalaTheme.card,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: PalaTheme.border),
+          side: BorderSide(color: PalaTheme.border),
         ),
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
@@ -581,7 +581,7 @@ class _DashboardViewState extends State<DashboardView> {
                 const SizedBox(width: 6),
                 Text(
                   label,
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white),
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white),
                 ),
               ],
             ),
@@ -602,7 +602,7 @@ class _DashboardViewState extends State<DashboardView> {
       color: PalaTheme.card,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: PalaTheme.border),
+        side: BorderSide(color: PalaTheme.border),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
@@ -615,7 +615,7 @@ class _DashboardViewState extends State<DashboardView> {
             children: [
               Text(
                 title,
-                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: PalaTheme.textMuted),
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: PalaTheme.textMuted),
               ),
               Text(
                 value,
@@ -623,7 +623,7 @@ class _DashboardViewState extends State<DashboardView> {
               ),
               Text(
                 subtitle,
-                style: const TextStyle(fontSize: 10, color: PalaTheme.textMuted),
+                style: TextStyle(fontSize: 10, color: PalaTheme.textMuted),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),

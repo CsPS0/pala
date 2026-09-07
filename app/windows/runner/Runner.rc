@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "hu.pala" "\0"
-            VALUE "FileDescription", "pala_mobile" "\0"
+            VALUE "FileDescription", "palapp" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "pala_mobile" "\0"
+            VALUE "InternalName", "palapp" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 hu.pala. All rights reserved." "\0"
-            VALUE "OriginalFilename", "pala_mobile.exe" "\0"
-            VALUE "ProductName", "pala_mobile" "\0"
+            VALUE "OriginalFilename", "palapp.exe" "\0"
+            VALUE "ProductName", "palapp" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

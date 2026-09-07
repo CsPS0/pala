@@ -156,12 +156,12 @@ class _ComposeMessageModalState extends State<ComposeMessageModal> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Új Üzenet Küldése Tanárnak',
                 style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700),
               ),
               IconButton(
-                icon: const Icon(Icons.close, size: 20),
+                icon: Icon(Icons.close, size: 20),
                 onPressed: () => Navigator.pop(context),
               ),
             ],
@@ -169,7 +169,7 @@ class _ComposeMessageModalState extends State<ComposeMessageModal> {
           const SizedBox(height: 14),
 
           // Recipient Dropdown / Input
-          const Text('Címzett Tanár kiválasztása', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: PalaTheme.textMuted)),
+          Text('Címzett Tanár kiválasztása', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: PalaTheme.textMuted)),
           const SizedBox(height: 6),
           if (allTeachers.isNotEmpty) ...[
             Container(
@@ -184,14 +184,14 @@ class _ComposeMessageModalState extends State<ComposeMessageModal> {
                   value: allTeachers.contains(_recipientController.text) ? _recipientController.text : null,
                   hint: Text(
                     _recipientController.text.isNotEmpty ? _recipientController.text : 'Válassz tanárt a listából...',
-                    style: const TextStyle(fontSize: 13, color: Colors.white70),
+                    style: TextStyle(fontSize: 13, color: Colors.white70),
                   ),
                   isExpanded: true,
                   dropdownColor: PalaTheme.card,
                   items: allTeachers.map((name) {
                     return DropdownMenuItem<String>(
                       value: name,
-                      child: Text(name, style: const TextStyle(fontSize: 13)),
+                      child: Text(name, style: TextStyle(fontSize: 13)),
                     );
                   }).toList(),
                   onChanged: (val) {
@@ -210,7 +210,7 @@ class _ComposeMessageModalState extends State<ComposeMessageModal> {
           const SizedBox(height: 12),
 
           // Subject
-          const Text('Tárgy', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: PalaTheme.textMuted)),
+          Text('Tárgy', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: PalaTheme.textMuted)),
           const SizedBox(height: 6),
           TextField(
             controller: _subjectController,
@@ -220,7 +220,7 @@ class _ComposeMessageModalState extends State<ComposeMessageModal> {
           const SizedBox(height: 12),
 
           // Message Body
-          const Text('Üzenet szövege', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: PalaTheme.textMuted)),
+          Text('Üzenet szövege', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: PalaTheme.textMuted)),
           const SizedBox(height: 6),
           TextField(
             controller: _messageController,
@@ -234,7 +234,7 @@ class _ComposeMessageModalState extends State<ComposeMessageModal> {
             onPressed: _isSending ? null : _send,
             icon: _isSending
                 ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
-                : const Icon(Icons.send, size: 16),
+                : Icon(Icons.send, size: 16),
             label: Text(_isSending ? 'Küldés folyamatban...' : 'Üzenet Elküldése'),
           ),
         ],

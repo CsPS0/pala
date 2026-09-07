@@ -45,3 +45,17 @@ rm -rf ~/.config/pala
 ```
 
 A mappa törlésével minden tárolt profilod, titkosított tokened és offline gyorsítótárad (cache) azonnal és véglegesen törlődik. A program következő indításakor úgy fog viselkedni, mintha most telepítetted volna először.
+
+## 4. Böngésző Kiterjesztés: Munkamenet, Tokenek és Adatbiztonság
+
+A Pala böngésző kiterjesztése (Manifest V3) a TUI-hoz hasonlóan szigorúan a kliensoldali biztonságra és a felhasználói adatvédelemre épül:
+
+### Token Élettartam és Munkamenet Kezelés (40–60 perces limit feloldása)
+- **OAuth2 Tokenek**: A bejelentkezéskor a kiterjesztés közvetlenül a hivatalos `idp.e-kreta.hu` szervertől kapja meg a hitelesítést. Két tokent kap: egy rövid élettartamú `access_token`-t (20–60 perc) és egy hosszú élettartamú `refresh_token`-t (30–90 nap).
+- **Silent Token Refresh (Észrevétlen Megújítás)**: A webes Kréta felülettel ellentétben (ahol 20-30 perc inaktivitás után a munkamenet sütik lejárnak), a kiterjesztés automatikusan és észrevétlenül megújítja az access tokent a háttérben, még mielőtt az lejárna. A felhasználó aktív munkáját a 40–60 perces limit soha nem szakítja meg.
+- **Offline Gyorsítótár Védelem**: A korábban letöltött adatok a `chrome.storage.local` izolált tárhelyében tárolódnak. Kréta leálláskor az adatok offline módban azonnal elérhetők.
+
+### Kréta API Adatvédelmi Korlátozások és Kiegészítő Adatok
+- **Miért hiányoznak bizonyos adatok?**: A hivatalos Kréta mobil gateway adatvédelmi okokból a `TanuloAdatlap` végponton nem adja ki a diák bankszámla adatait (bankszámlaszám, bank neve) és okmányait (adóazonosító, TAJ, diákigazolvány adatok).
+- **Helyi és Manuális Adattárolás (`pala_student_extra`)**: A kiterjesztés Globális Profil Szerkesztőjében megadott vagy a nyitott Kréta lapról automatikusan beolvasott kiegészítő adatok kizárólag a böngésződ helyi, elszeparált tárhelyében (`chrome.storage.local.pala_student_extra`) tárolódnak. Ezeket az adatokat a Pala soha nem küldi el semmilyen külső szerverre, és a "Kréta adatok visszaállítása" gombbal azonnal törölhetők.
+

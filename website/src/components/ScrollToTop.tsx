@@ -63,7 +63,7 @@ export function ScrollToTop() {
     <button
       onClick={scrollToTop}
       aria-label="Vissza az oldal tetejére"
-      className={`fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-40 w-13 h-13 sm:w-15 sm:h-15 rounded-full bg-[#ff8800] hover:bg-[#ffa033] text-black shadow-[0_0_25px_rgba(255,136,0,0.45)] hover:shadow-[0_0_40px_rgba(255,136,0,0.65)] flex items-center justify-center transition-all duration-300 cursor-pointer group hover:-translate-y-1 active:scale-95 ${
+      className={`fixed bottom-5 right-5 sm:bottom-8 sm:right-8 z-40 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#ff8800] hover:bg-[#ffa033] text-black shadow-[0_0_25px_rgba(255,136,0,0.45)] hover:shadow-[0_0_40px_rgba(255,136,0,0.65)] flex items-center justify-center transition-all duration-300 cursor-pointer group hover:-translate-y-1 active:scale-95 ${
         isScrolling ? "animate-pulse scale-105 shadow-[0_0_45px_rgba(255,136,0,0.8)]" : ""
       } ${
         isVisible ? "opacity-100 scale-100 pointer-events-auto" : "opacity-0 scale-75 pointer-events-none"
