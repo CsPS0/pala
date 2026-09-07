@@ -7,7 +7,7 @@ Az alkalmazás kizárólag a Dart ökoszisztémára épít, Flutter függősége
 
 Kiemelt függőségek:
 1. interact: Interaktív terminál-felületek (menük, bevitel, maszkolás) kezelése.
-2. http: Kommunikáció a Kréta IDP és V3 (Ellenőrző) API-kkal.
+2. http: Kommunikáció a Kréta IDP és V3 (Ellenőrző) API-kkal. A `KRETA_API_KEY` konstans (`lib/api/api.dart`, `extension/shared/kreta_api.js`) a hivatalos Kréta mobilalkalmazás publikus API-kulcsa, amelyet minden nyílt forráskódú Kréta-kliens (rsfilc, Firka stb.) ugyanígy használ — nem egyedi titok, ezért szándékosan van a forráskódban.
 3. args: Parancssori argumentumok feldolgozása.
 
 Fő modulok:

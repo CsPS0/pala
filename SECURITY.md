@@ -8,7 +8,7 @@ A biztonsági javítások kizárólag a legfrissebb kiadásokra érhetők el:
 
 | Verzió | Támogatott |
 | :--- | :--- |
-| Legfrissebb (v2.x) | Igen |
+| Legfrissebb kiadás ([Releases](https://github.com/CsPS0/pala/releases)) | Igen |
 | Régebbi verziók | Nem |
 
 ## Sebezhetőség Bejelentése (Reporting a Vulnerability)

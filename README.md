@@ -122,6 +122,8 @@ pala
 - [DEV.md](docs/DEV.md): Fejlesztői és architektúrális dokumentáció.
 - [CONTRIBUTING.md](CONTRIBUTING.md): Irányelvek hozzájárulóknak.
 - [DATA_SECURITY.md](docs/DATA_SECURITY.md): Adatkezelés és biztonsági tájékoztató.
+- [PRIVACY_POLICY.md](docs/PRIVACY_POLICY.md): Adatvédelmi szabályzat (böngésző-kiterjesztés áruházi közzétételéhez).
+- [CHANGELOG.md](CHANGELOG.md): Kiadási napló.
 
 ## AI-asszisztensek és a `CLAUDE.md`
 

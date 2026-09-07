@@ -202,14 +202,24 @@ jobs:
           content = re.sub(r'pkgver=.*', f'pkgver={version}', content)
           content = re.sub(r'pkgrel=.*', 'pkgrel=1', content)
           content = re.sub(r'sha256sums=\(\'.*?\'\)', f"sha256sums=('{lin_hash}')", content)
-          
+
           with open(aur_path, 'w', encoding='utf-8') as f:
+              f.write(content)
+
+          # 4. Update Windows installer version (Inno Setup)
+          iss_path = 'packaging/windows/pala_installer.iss'
+          with open(iss_path, 'r', encoding='utf-8') as f:
+              content = f.read()
+
+          content = re.sub(r'#define MyAppVersion ".*?"', f'#define MyAppVersion "{version}"', content)
+
+          with open(iss_path, 'w', encoding='utf-8') as f:
               f.write(content)
           EOF
           
           # Configure Git and Push
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add bucket/pala.json Formula/pala.rb packaging/PKGBUILD
+          git add bucket/pala.json Formula/pala.rb packaging/PKGBUILD packaging/windows/pala_installer.iss
           git commit -m "chore: auto-update scoop, homebrew, and aur manifests to v$VERSION [skip ci]"
           git push origin HEAD:main

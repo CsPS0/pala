@@ -19,9 +19,9 @@ Az adatok a számítógépeden, az operációs rendszered felhasználói mappáj
 *   **Linux / macOS:** `~/.config/pala` (A home könyvtárban)
 
 ### Titkosítás (Encryption at Rest)
-A tokeneket és profiladatokat tartalmazó konfigurációs fájl (`auth.json`) egy erős, iparági szabványnak megfelelő **AES-256-GCM** titkosítással van levédve. 
-A titkosítási kulcsot a Pala automatikusan generálja a számítógéped egyedi hardver- és szoftverjellemzőiből (gépnév, OS, felhasználónév).
-*A gyakorlatban ez azt jelenti, hogy ha egy kártékony program vagy egy hacker lemásolná a gépedről a `.config/pala` mappát, egy másik gépen vagy felhasználói fiókban teljesen esélytelen lesz visszafejtenie és kiolvasnia a Kréta tokenjeidet.*
+A tokeneket és profiladatokat tartalmazó konfigurációs fájl (`auth.json`) egy erős, iparági szabványnak megfelelő **AES-256-GCM** titkosítással van levédve.
+A titkosítási kulcsot a Pala az első induláskor véletlenszerűen generálja (kriptográfiailag biztonságos véletlenszám-generátorral), és egy külön, csak az adott telepítéshez tartozó kulcsfájlban (`.pala_keyfile`) tárolja a `.config/pala` mappában.
+*A gyakorlatban ez azt jelenti, hogy ha egy kártékony program vagy egy hacker lemásolná a gépedről a `.config/pala` mappát, a kulcsfájl nélkül (vagy másik gépen/felhasználói fiókban) esélytelen lesz visszafejtenie és kiolvasnia a Kréta tokenjeidet.*
 
 ### Hálózati Biztonság
 A Pala **kizárólag** a Kréta hivatalos szervereivel kommunikál, szigorúan titkosított HTTPS/TLS csatornán keresztül. A program nem használ semmilyen saját vagy külső (third-party) analitikai szervert, adatbázist vagy felhőt. Az adataid soha nem hagyják el a gépedet más irányba, csak a Kréta felé.

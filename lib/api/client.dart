@@ -164,7 +164,13 @@ class KretaClient {
       
       String redirectUrl1 = "";
       if (res2.statusCode == 302) {
-        redirectUrl1 = res2.headers['location']!;
+        final location = res2.headers['location'];
+        if (location == null) {
+          print('A Kréta nem küldött átirányítási címet a bejelentkezés után (a bejelentkezési oldal szerkezete megváltozhatott).');
+          client.close();
+          return false;
+        }
+        redirectUrl1 = location;
       } else if (res2.statusCode == 200) {
         final html = await res2.stream.bytesToString();
         final btnMatch = RegExp(r'href="(/connect/authorize/callback[^"]+)"').firstMatch(html);
@@ -189,9 +195,9 @@ class KretaClient {
       
       String finalRedirect = "";
       if (res3.statusCode == 302 || res3.statusCode == 301) {
-        finalRedirect = res3.headers['location'] ?? res3.request!.url.toString();
+        finalRedirect = res3.headers['location'] ?? res3.request?.url.toString() ?? '';
       } else {
-        finalRedirect = res3.request!.url.toString();
+        finalRedirect = res3.request?.url.toString() ?? '';
         if (!finalRedirect.contains('code=')) {
           final html = await res3.stream.bytesToString();
           final btnMatch = RegExp(r'href="(/connect/authorize/callback[^"]+)"').firstMatch(html);
