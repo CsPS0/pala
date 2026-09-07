@@ -133,7 +133,6 @@ A repó gyökerében található egy [CLAUDE.md](CLAUDE.md) fájl, amely projekt
   - **Context7 MCP** — friss Flutter/Dart/Next.js csomagdokumentáció lekérdezéséhez a (potenciálisan elavult) tanult tudás helyett.
   - **Dart MCP** (`dart mcp-server`) — Dart/Flutter elemzéshez, hot reload/restart-hoz nyers `dart` parancsok helyett.
   - Ha egy MCP nem elérhető vagy kifogyott a kerete, az asszisztens essen vissza a beépített fájlkezelő/szerkesztő eszközökre — ne akadjon el emiatt.
-- Az `rsfilc` és `folioweb` mappák kizárólag referenciaként szolgálnak: ezeket az AI (és emberi hozzájáruló) sem módosíthatja, kódot nem szabad belőlük szó szerint átvenni.
 - Commit és push csak explicit felhasználói jóváhagyással történjen, soha automatikusan.
 
 ## Elismerések & Közösségi Projektek
