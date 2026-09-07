@@ -178,10 +178,10 @@ export default function DocsPage() {
       id: "inst-ios",
       pageId: "installation",
       tabId: "ios",
-      title: "Telepítés iOS eszközökre",
+      title: "iOS (iPhone/iPad) — még nem elérhető",
       category: "Kezdő Lépések / Telepítés",
-      description: "Sideloading AltStore/SideStore segítségével, IPA telepítés és Safari Főképernyőhöz adás.",
-      keywords: ["ios", "iphone", "ipad", "ipa", "altstore", "sidestore", "trollstore", "sideload", "safari", "pwa"]
+      description: "Miért nincs még iOS/iPhone verzió: Safari CORS-korlátok és az Apple fejlesztői díj. Hamarosan érkezik.",
+      keywords: ["ios", "iphone", "ipad", "hamarosan", "nem elérhető", "cors", "apple developer", "safari", "pwa"]
     },
     {
       id: "inst-linux",
@@ -279,8 +279,8 @@ export default function DocsPage() {
       pageId: "mobile",
       title: "Pala Mobile (Mobil Alkalmazás)",
       category: "Változatok / Mobile App",
-      description: "Android APK és iOS webapp, érintés-optimalizált felület, zero ads, offline mód.",
-      keywords: ["mobile", "mobil", "android", "apk", "ios", "iphone", "érintőképernyő", "pwa"]
+      description: "Android APK, érintés-optimalizált felület, zero ads, offline mód. iOS/iPhone hamarosan.",
+      keywords: ["mobile", "mobil", "android", "apk", "ios", "iphone", "hamarosan", "érintőképernyő"]
     },
     {
       id: "extension-overview",
@@ -734,6 +734,11 @@ export default function DocsPage() {
                           Ajánlott
                         </span>
                       )}
+                      {tab.id === "ios" && (
+                        <span className="text-[9px] bg-[#ff8800]/15 text-[#ff8800] border border-[#ff8800]/30 px-1.5 py-0.2 rounded font-mono font-black">
+                          Hamarosan
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -1132,130 +1137,29 @@ export default function DocsPage() {
                 </div>
               )}
 
-              {/* ================= TAB 3: IOS (iPhone & iPad) ================= */}
+              {/* ================= TAB 3: IOS (iPhone & iPad) — not available yet ================= */}
               {installTab === "ios" && (
-                <div className="space-y-8">
-                  <p className="text-xs text-[#8c8c94]">
-                    Telepítés iPhone és iPad készülékekre Sideloading (AltStore, SideStore, TrollStore) módszerrel vagy Safari Főképernyőhöz adással.
-                  </p>
-
-                  {/* Step 1: Methods */}
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-                    <div className="lg:col-span-5 space-y-1.5">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-black text-[#ff8800]">[ 01 ]</span>
-                        <h3 className="text-sm font-bold text-[#f3f3f6]">Telepítési módszer kiválasztása</h3>
-                      </div>
-                      <p className="text-xs text-[#8c8c94] leading-relaxed">
-                        <strong>„A” opció (Sideloading):</strong> Natív .ipa fájl telepítése AltStore / SideStore segítségével (ingyenes Apple ID-val, nem igényel Jailbreaket).<br />
-                        <strong>„B” opció (Safari PWA):</strong> Közvetlen Főképernyőhöz adás alkalmazásként.
-                      </p>
-                    </div>
-                    <div className="lg:col-span-7 space-y-3">
-                      {/* Option A: Sideloading */}
-                      <div className="bg-[#1b1b1f] border border-[#28282d] rounded-2xl p-4 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <strong className="text-xs font-bold text-[#f3f3f6]">„A” Opció: Sideloading (.ipa csomag)</strong>
-                          <span className="text-[10px] bg-[#ff8800]/15 text-[#ff8800] px-2 py-0.5 rounded font-bold">Natív IPA</span>
-                        </div>
-                        <p className="text-[11px] text-[#8c8c94] leading-relaxed">
-                          1. Töltsd le a legfrissebb <code className="text-[#ff8800] font-mono">Pala.ipa</code> fájlt a GitHub Kiadásokból.<br />
-                          2. Nyisd meg a telefonodon az <strong>AltStore</strong> vagy <strong>SideStore</strong> alkalmazást.<br />
-                          3. Kattints a <strong>„+”</strong> gombra és válaszd ki a letöltött IPA fájlt.
-                        </p>
-                        <a
-                          href="https://github.com/CsPS0/pala/releases/latest"
-                          className="inline-flex items-center gap-1.5 bg-[#ff8800] hover:bg-[#ffa033] text-black font-extrabold text-xs px-4 py-2 rounded-xl transition-all shadow-[0_0_15px_rgba(255,136,0,0.2)] mt-1"
-                        >
-                          <Download size={13} />
-                          <span>IPA Letöltése</span>
-                        </a>
-                      </div>
-
-                      {/* Option B: Safari Home Screen */}
-                      <div className="bg-[#151518] border border-[#28282d] rounded-2xl p-4 space-y-1.5 text-xs text-[#8c8c94]">
-                        <strong className="text-[#f3f3f6] block">„B” Opció: Safari Főképernyőhöz adás (PWA)</strong>
-                        <p className="text-[11px] leading-relaxed">
-                          1. Nyisd meg Safariban a Pala webes felületét.<br />
-                          2. Érintsd meg a <strong>Megosztás</strong> ikont (négyzetből felfelé mutató nyíl).<br />
-                          3. Válaszd a <strong>„Főképernyőhöz adás”</strong> (Add to Home Screen) lehetőséget.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Step 2: iOS Compatibility */}
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-                    <div className="lg:col-span-5 space-y-1.5">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-black text-[#ff8800]">[ 02 ]</span>
-                        <h3 className="text-sm font-bold text-[#f3f3f6]">Kompatibilitás & Rendszerkövetelmények</h3>
-                      </div>
-                      <p className="text-xs text-[#8c8c94] leading-relaxed">
-                        Támogatott iOS verziók és készülékek iPhone és iPad rendszereken.
-                      </p>
-                    </div>
-                    <div className="lg:col-span-7 bg-[#1b1b1f] border border-[#28282d] rounded-2xl p-4 space-y-3 text-xs text-[#8c8c94]">
-                      <div className="flex items-center justify-between border-b border-[#28282d] pb-2">
-                        <span className="text-[#f3f3f6] font-semibold">Támogatott Rendszerek:</span>
-                        <span className="text-[#ff8800] font-mono">iOS 14.0+ és iPadOS 14.0 vagy újabb</span>
-                      </div>
-                      <div className="flex items-center justify-between border-b border-[#28282d] pb-2">
-                        <span className="text-[#f3f3f6] font-semibold">Támogatott Eszközök:</span>
-                        <span>iPhone 6s-től iPhone 16 Pro Max-ig, iPad Air, iPad Pro, iPad mini</span>
-                      </div>
-                      <div className="flex items-center justify-between border-b border-[#28282d] pb-2">
-                        <span className="text-[#f3f3f6] font-semibold">Böngésző:</span>
-                        <span>Safari (a teljes PWA és WebPush értesítés támogatáshoz)</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-[#f3f3f6] font-semibold">Sideloading Eszközök:</span>
-                        <span>AltStore, SideStore, Sideloadly, TrollStore (Jailbreak nem szükséges)</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Step 3: iOS Update Guide */}
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-                    <div className="lg:col-span-5 space-y-1.5">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-black text-[#30d158]">[ 03 ]</span>
-                        <h3 className="text-sm font-bold text-[#30d158]">Automatikus Verziókövetés & Frissítés</h3>
-                      </div>
-                      <p className="text-xs text-[#8c8c94] leading-relaxed">
-                        Hogyan frissül az iOS verzió Sideloading vagy Safari PWA módban.
-                      </p>
-                    </div>
-                    <div className="lg:col-span-7 bg-[#151518] border border-[#28282d] rounded-2xl p-4 space-y-2.5 text-xs text-[#8c8c94]">
-                      <div className="p-3 bg-[#1b1b1f] rounded-xl border border-[#28282d]">
-                        <strong className="text-[#f3f3f6] block mb-1">Safari PWA (Főképernyőhöz adott app):</strong>
-                        A webes felület a háttérben automatikusan letölti a legújabb kódot és komponenseket internetkapcsolat esetén. Nincs szükség kézi frissítésre.
-                      </div>
-                      <div className="p-3 bg-[#1b1b1f] rounded-xl border border-[#28282d]">
-                        <strong className="text-[#f3f3f6] block mb-1">Sideloading (.ipa):</strong>
-                        Töltsd le az új kiadásból származó .ipa fájlt, és telepítsd felül az AltStore vagy Sideloadly alkalmazásban a korábbi verzió törlése nélkül.
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Step 4: Integrated iOS Uninstallation */}
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start border-t border-[#28282d] pt-6">
-                    <div className="lg:col-span-5 space-y-1.5">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-black text-[#ff453a]">[ 04 ]</span>
-                        <h3 className="text-sm font-bold text-[#ff453a] flex items-center gap-1.5">
-                          <Trash2 size={14} />
-                          <span>Eltávolítás iOS alatt</span>
+                <div className="space-y-6">
+                  <div className="bg-[#1b1b1f] border border-[#ff8800]/40 p-6 rounded-2xl space-y-3 shadow-[0_0_20px_rgba(255,136,0,0.08)]">
+                    <div className="flex items-start gap-3">
+                      <ServerOff size={20} className="text-[#ff8800] shrink-0 mt-0.5" />
+                      <div>
+                        <h3 className="text-sm font-bold text-[#f3f3f6] leading-snug">
+                          Az iOS (iPhone / iPad) verzió egyelőre nem elérhető
                         </h3>
+                        <span className="text-[11px] text-[#ff8800] font-semibold">Hamarosan érkezik</span>
                       </div>
-                      <p className="text-xs text-[#8c8c94]">
-                        Az alkalmazás és a helyi adatok teljes törlése az iPhone-ról vagy iPad-ről.
-                      </p>
                     </div>
-                    <div className="lg:col-span-7 bg-[#151518] border border-[#28282d] rounded-2xl p-4 space-y-1.5 text-xs text-[#8c8c94]">
-                      <div className="text-[#f3f3f6] font-semibold">1. Hosszan tartsd nyomva a Pala ikont a Főképernyőn</div>
-                      <div className="text-[#ff453a] font-semibold">2. Válaszd az „Alkalmazás törlése” (Delete App) lehetőséget</div>
-                      <div className="text-[#8c8c94]">3. Nyomj a „Törlés” gombra a megerősítéshez</div>
+                    <div className="text-xs text-[#8c8c94] space-y-2 leading-relaxed mt-2 sm:pl-8">
+                      <p>
+                        A Safari böngésző biztonsági szabályai (CORS házirend) miatt egy weboldalként futó Pala nem tud közvetlenül kommunikálni a Kréta szervereivel — ehhez egy köztes proxy/backend szerverre lenne szükség, ami viszont diákok jelszavait és személyes adatait terelné át egy külső szerveren, súlyos GDPR-kockázatot vállalva (lásd lentebb a GYIK-ben).
+                      </p>
+                      <p>
+                        A natív iOS alkalmazás alternatíva (App Store vagy TestFlight) pedig Apple fizetős Fejlesztői Programjához (99 USD/év) kötött. Emiatt az iOS-támogatás jelenleg nincs a kliensoldali, köztes szerver nélküli architektúrába illesztve.
+                      </p>
+                      <div className="p-3 bg-[#151518] rounded-xl border border-[#28282d] text-[#30d158] font-semibold">
+                        Addig is: Windows, Linux, macOS, Android és a böngésző-kiterjesztés (Chrome, Brave, Edge) mind elérhetők és teljes funkcionalitással működnek.
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -2327,7 +2231,7 @@ export default function DocsPage() {
                   Pala Mobile (Mobil Alkalmazás)
                 </h1>
                 <p className="text-sm text-[#8c8c94] leading-relaxed max-w-2xl">
-                  Letisztult, villámgyors és 100% reklámmentes zsebméretű Kréta alkalmazás Android és iOS eszközökre.
+                  Letisztult, villámgyors és 100% reklámmentes zsebméretű Kréta alkalmazás Android eszközökre. (iOS/iPhone támogatás hamarosan — lásd lentebb, miért nem elérhető még.)
                 </p>
               </div>
 
@@ -2342,9 +2246,9 @@ export default function DocsPage() {
                       <strong className="text-[#f3f3f6] block mb-0.5">Android Közvetlen APK:</strong>
                       Letölthető és egy kattintással telepíthető önálló APK (ARM64, ARMv7, x86_64 vagy univerzális).
                     </li>
-                    <li className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
-                      <strong className="text-[#f3f3f6] block mb-0.5">iOS / iPadOS Támogatás:</strong>
-                      Safari böngészőből kezdőképernyőhöz adható (PWA) teljes képernyős élmény vagy Sideloading.
+                    <li className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d] opacity-70">
+                      <strong className="text-[#ff8800] block mb-0.5">iOS / iPadOS Támogatás: Hamarosan</strong>
+                      A Safari CORS-korlátai és a natív App Store/TestFlight fizetős Apple Fejlesztői Program-követelménye miatt egyelőre nem elérhető. Részletek a Telepítés &rarr; iOS fülön.
                     </li>
                     <li className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
                       <strong className="text-[#f3f3f6] block mb-0.5">100% Offline Adatelérés:</strong>
@@ -2637,6 +2541,9 @@ export default function DocsPage() {
                     <div className="p-3 bg-[#151518] rounded-xl border border-[#28282d] text-[#30d158] font-semibold">
                       Ezért a Pala kizárólag <strong>kliensoldali alkalmazásként</strong> (Windows, Linux, macOS, Android, Böngésző Bővítmény) érhető el: az adataid 100%-ban közvetlenül a te saját eszközödről kommunikálnak a hivatalos Kréta szerverrel, köztes szerverek nélkül!
                     </div>
+                    <p>
+                      <strong className="text-[#f3f3f6]">Ez ugyanaz az ok, amiért iPhone/iPad (iOS) verzió egyelőre nincs:</strong> Safari nem engedi meg egy weboldalnak, hogy közvetlenül, a fenti köztes szerver nélkül kommunikáljon a Kréta rendszerével — a natív alkalmazás alternatíva (App Store / TestFlight) pedig Apple fizetős fejlesztői tagságát igényli. Az iOS-támogatás azután érkezik, ha ez a kérdés megoldódik.
+                    </p>
                   </div>
                 </div>
 
