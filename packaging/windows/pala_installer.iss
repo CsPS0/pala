@@ -54,7 +54,7 @@ Source: "..\..\pala.exe"; DestDir: "{app}\bin"; DestName: "pala.exe"; Flags: ign
 Source: "..\..\scripts\install_start_menu_shortcut.ps1"; DestDir: "{app}\scripts"; Flags: ignoreversion
 
 [Icons]
-Name: "{autoprograms}\Pala Desktop"; Filename: "{app}\desktop\{#MyAppExeName}"; IconFilename: "{app}\desktop\data\flutter_assets\app_icon.ico"; Components: desktop
+Name: "{autoprograms}\Pala Desktop"; Filename: "{app}\desktop\{#MyAppExeName}"; Components: desktop
 Name: "{autodesktop}\Pala Desktop"; Filename: "{app}\desktop\{#MyAppExeName}"; Tasks: desktopicon; Components: desktop
 Name: "{autoprograms}\Pala CLI (Terminál)"; Filename: "{app}\bin\{#MyCliExeName}"; Components: cli
 
