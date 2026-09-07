@@ -123,6 +123,19 @@ pala
 - [CONTRIBUTING.md](CONTRIBUTING.md): Irányelvek hozzájárulóknak.
 - [DATA_SECURITY.md](docs/DATA_SECURITY.md): Adatkezelés és biztonsági tájékoztató.
 
+## AI-asszisztensek és a `CLAUDE.md`
+
+A repó gyökerében található egy [CLAUDE.md](CLAUDE.md) fájl, amely projekt-specifikus szabályokat ad AI-alapú kódolóasszisztenseknek (pl. Claude Code). Ha AI-asszisztenssel dolgozol a Pala kódján, érdemes ezt kihasználni — hasznos, és a tapasztalat szerint jelentősen csökkenti a hibás vagy inkonzisztens módosítások számát:
+
+- Az asszisztens a munka megkezdése előtt olvassa be a `CLAUDE.md`-t: ez rögzíti a nyelvhasználatot (kód angolul, felhasználói szövegek magyarul), a projektstruktúrát és a minőségi kapukat (`dart analyze` / `flutter analyze` futtatása a végén).
+- A jobb kompatibilitás érdekében ajánlott beállítások/eszközök:
+  - **Serena MCP** — fájlkeresés, kód olvasás/szerkesztés elsődleges eszközként.
+  - **Context7 MCP** — friss Flutter/Dart/Next.js csomagdokumentáció lekérdezéséhez a (potenciálisan elavult) tanult tudás helyett.
+  - **Dart MCP** (`dart mcp-server`) — Dart/Flutter elemzéshez, hot reload/restart-hoz nyers `dart` parancsok helyett.
+  - Ha egy MCP nem elérhető vagy kifogyott a kerete, az asszisztens essen vissza a beépített fájlkezelő/szerkesztő eszközökre — ne akadjon el emiatt.
+- Az `rsfilc` és `folioweb` mappák kizárólag referenciaként szolgálnak: ezeket az AI (és emberi hozzájáruló) sem módosíthatja, kódot nem szabad belőlük szó szerint átvenni.
+- Commit és push csak explicit felhasználói jóváhagyással történjen, soha automatikusan.
+
 ## Elismerések & Közösségi Projektek
 
 Minden használatba vett nyílt forráskódú csomagnak köszönet.
