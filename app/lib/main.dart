@@ -1,7 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pala/app/state/app_state.dart';
+import 'package:pala/utils/encryption.dart';
 import 'state/app_model.dart';
 import 'theme/pala_theme.dart';
 import 'views/absences_view.dart';
@@ -17,6 +21,17 @@ import 'views/wrapped_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Android/iOS have no HOME/USERPROFILE env var and a read-only process
+  // working directory, so the shared package's default '~/.config/pala'
+  // (falling back to './.config/pala') can't be created there. Point it at
+  // a writable app-specific directory instead.
+  if (Platform.isAndroid || Platform.isIOS) {
+    final dir = await getApplicationSupportDirectory();
+    AppState.configDirOverride = dir.path;
+    EncryptionUtil.configDirOverride = dir.path;
+  }
+
   await initializeDateFormatting('hu_HU', null);
   final appModel = AppModel();
   runApp(PalaMobileApp(appModel: appModel));

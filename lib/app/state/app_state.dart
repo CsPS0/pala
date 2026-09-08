@@ -4,7 +4,14 @@ import 'package:pala/utils/logger.dart';
 
 class AppState {
   static final AppState instance = AppState._internal();
-  
+
+  /// Set by the Flutter app on platforms without a HOME/USERPROFILE env var
+  /// (Android, iOS) to a writable app-specific directory (e.g. from
+  /// path_provider's getApplicationSupportDirectory()), before AppState.instance
+  /// is first touched. The plain Dart CLI never sets this and keeps using
+  /// ~/.config/pala.
+  static String? configDirOverride;
+
   bool isOffline = false;
   String themeMode = 'dark';
   bool showAsciiBanner = true;
@@ -15,6 +22,7 @@ class AppState {
   }
 
   String get configDir {
+    if (configDirOverride != null) return configDirOverride!;
     final home = Platform.environment['HOME'] ?? Platform.environment['USERPROFILE'] ?? '.';
     return '$home/.config/pala';
   }

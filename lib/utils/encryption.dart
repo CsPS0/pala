@@ -29,7 +29,14 @@ class EncryptionUtil {
     return IV(Uint8List.fromList(bytes.sublist(0, 16)));
   }
 
+  /// Set by the Flutter app on Android/iOS to a writable app-specific
+  /// directory before any encrypt/decrypt call, since those platforms have
+  /// no HOME/USERPROFILE env var and the process working directory is
+  /// read-only. See AppState.configDirOverride for the same pattern.
+  static String? configDirOverride;
+
   static String get _configDir {
+    if (configDirOverride != null) return configDirOverride!;
     final home = Platform.environment['HOME'] ?? Platform.environment['USERPROFILE'] ?? '.';
     return '$home/.config/pala';
   }
