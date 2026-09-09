@@ -49,6 +49,9 @@ export const metadata: Metadata = {
   authors: [{ name: "Pala Csapat", url: "https://github.com/CsPS0/pala" }],
   creator: "Pala Team",
   publisher: "Pala",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     title: "Pala — A Modern, Nyílt Forráskódú Kréta Kliens",
     description:
