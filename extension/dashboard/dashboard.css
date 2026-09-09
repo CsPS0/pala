@@ -71,6 +71,7 @@ body {
   flex-direction: column;
   padding: 0 16px 20px;
   flex-shrink: 0;
+  transition: width 0.18s ease, padding 0.18s ease;
 }
 
 .brand {
@@ -81,9 +82,37 @@ body {
   padding: 22px 20px;
   border-bottom: 1px solid var(--border);
 }
-.brand-logo { width: 36px; height: 36px; border-radius: 9px; }
+.brand-logo { width: 36px; height: 36px; border-radius: 9px; flex-shrink: 0; }
+.brand-text { flex: 1; min-width: 0; }
 .brand-name { font-size: 1.1rem; font-weight: 900; letter-spacing: 0.5px; }
 .brand-sub { font-size: 0.72rem; color: var(--text-muted); }
+
+.sidebar-toggle-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: var(--transition);
+}
+.sidebar-toggle-btn:hover { background: var(--card); color: var(--text); }
+.sidebar-toggle-btn .icon { width: 16px; height: 16px; }
+
+/* Collapsed state: icons only, no labels */
+.sidebar.collapsed { width: 68px; padding: 0 10px 20px; }
+.sidebar.collapsed .brand { justify-content: center; margin: 0 -10px 12px; padding: 18px 8px; gap: 0; }
+.sidebar.collapsed .brand-text { display: none; }
+.sidebar.collapsed .sidebar-toggle-btn .icon { transform: rotate(180deg); }
+.sidebar.collapsed .nav-item { justify-content: center; padding: 10px; gap: 0; }
+.sidebar.collapsed .nav-item span { display: none; }
+.sidebar.collapsed .collapse-hide { display: none; }
+.sidebar.collapsed .btn-label { display: none; }
 
 .nav-menu { display: flex; flex-direction: column; gap: 6px; flex: 1; }
 .nav-item {

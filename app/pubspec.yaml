@@ -36,6 +36,8 @@ dependencies:
   intl: ^0.20.3
   shared_preferences: ^2.2.3
   path_provider: ^2.0.15
+  workmanager: ^0.10.10
+  awesome_notifications: ^0.12.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

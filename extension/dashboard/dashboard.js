@@ -24,6 +24,14 @@ function getDisplaySubject(name) {
   return fullState.aliases?.[name] || name;
 }
 
+/** Collapses the sidebar to icons-only, or restores the full labeled view. */
+function applySidebarCollapsed(collapsed) {
+  const sidebar = document.querySelector(".sidebar");
+  sidebar?.classList.toggle("collapsed", collapsed);
+  const btn = document.getElementById("btn-toggle-sidebar");
+  if (btn) btn.title = collapsed ? "Oldalsáv kinyitása" : "Oldalsáv összecsukása";
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   // Initialize dark/light mode (dark is the default).
   const themeStore = await chrome.storage.local.get("pala_dark_mode");
@@ -34,6 +42,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     const dark = e.target.checked;
     applyThemeMode(dark);
     await chrome.storage.local.set({ pala_dark_mode: dark });
+  });
+
+  const sidebarStore = await chrome.storage.local.get("pala_sidebar_collapsed");
+  applySidebarCollapsed(!!sidebarStore.pala_sidebar_collapsed);
+  document.getElementById("btn-toggle-sidebar")?.addEventListener("click", async () => {
+    const store = await chrome.storage.local.get("pala_sidebar_collapsed");
+    const next = !store.pala_sidebar_collapsed;
+    applySidebarCollapsed(next);
+    await chrome.storage.local.set({ pala_sidebar_collapsed: next });
   });
 
   setupSidebarNavigation();

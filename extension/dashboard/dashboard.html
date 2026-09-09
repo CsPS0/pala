@@ -11,10 +11,13 @@
   <aside class="sidebar">
     <div class="brand">
       <img src="../icons/icon-48.png" alt="Pala" class="brand-logo">
-      <div>
+      <div class="brand-text">
         <div class="brand-name">PALA</div>
         <div class="brand-sub">Kréta Bővítmény</div>
       </div>
+      <button id="btn-toggle-sidebar" class="sidebar-toggle-btn" title="Oldalsáv összecsukása">
+        <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
     </div>
 
     <nav class="nav-menu">
@@ -53,12 +56,12 @@
     </nav>
 
     <div class="sidebar-footer">
-      <div id="student-info" class="student-pill">
+      <div id="student-info" class="student-pill collapse-hide">
         <strong id="student-name">Betöltés...</strong>
         <span id="inst-name" style="font-size:0.7rem; color:var(--text-muted);"></span>
       </div>
-      <button id="btn-reload" class="btn btn-secondary btn-block" style="margin-top:8px;">⟳ Frissítés</button>
-      <button id="btn-toggle-dash-sim-maint" class="btn btn-secondary btn-block" style="margin-top:6px; font-size:0.7rem; color:var(--warning); border-color:rgba(255,214,10,0.3);">Karbantartás Szimuláció</button>
+      <button id="btn-reload" class="btn btn-secondary btn-block" style="margin-top:8px;" title="Frissítés"><span>⟳</span><span class="btn-label"> Frissítés</span></button>
+      <button id="btn-toggle-dash-sim-maint" class="btn btn-secondary btn-block collapse-hide" style="margin-top:6px; font-size:0.7rem; color:var(--warning); border-color:rgba(255,214,10,0.3);">Karbantartás Szimuláció</button>
     </div>
   </aside>
 

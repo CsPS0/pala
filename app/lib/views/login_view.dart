@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pala/api/client.dart';
@@ -140,10 +141,10 @@ class _LoginViewState extends State<LoginView> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Center(
+                  Center(
                     child: Text(
-                      'Kréta Mobil Kliens',
-                      style: TextStyle(
+                      (Platform.isWindows || Platform.isLinux || Platform.isMacOS) ? 'Kréta Desktop Kliens' : 'Kréta Mobil Kliens',
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
                         fontSize: 20,
@@ -230,9 +231,11 @@ class _LoginViewState extends State<LoginView> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'Intézmény Azonosító (Kréta kód)',
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: PalaTheme.textMuted),
+                            Expanded(
+                              child: Text(
+                                'Intézmény Azonosító (Kréta kód)',
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: PalaTheme.textMuted),
+                              ),
                             ),
                             InkWell(
                               onTap: () => _pasteInto(_instituteController),
@@ -274,9 +277,11 @@ class _LoginViewState extends State<LoginView> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'Felhasználónév (Oktatási Azonosító)',
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: PalaTheme.textMuted),
+                            Expanded(
+                              child: Text(
+                                'Felhasználónév (Oktatási Azonosító)',
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: PalaTheme.textMuted),
+                              ),
                             ),
                             InkWell(
                               onTap: () => _pasteInto(_usernameController),
@@ -319,9 +324,11 @@ class _LoginViewState extends State<LoginView> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'Jelszó',
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: PalaTheme.textMuted),
+                            Expanded(
+                              child: Text(
+                                'Jelszó',
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: PalaTheme.textMuted),
+                              ),
                             ),
                             InkWell(
                               onTap: () => _pasteInto(_passwordController),

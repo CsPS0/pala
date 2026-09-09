@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:pala/api/client.dart';
 import 'package:pala/api/demo_client.dart';
@@ -10,13 +12,18 @@ import 'package:pala/models/message.dart';
 import 'package:pala/models/student.dart';
 import 'package:pala/models/timetable_entry.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:workmanager/workmanager.dart';
+import '../notifications/background_check.dart';
+import '../notifications/notification_service.dart';
 import '../theme/pala_theme.dart';
+import 'session_store.dart';
 
 class AppModel extends ChangeNotifier {
   KretaClient? _client;
   bool _isDemo = false;
   bool _isAuthenticated = false;
   bool _isLoading = false;
+  bool _isSidebarCollapsed = false;
   String? _errorMessage;
   bool _isDarkMode = true;
 
@@ -44,6 +51,7 @@ class AppModel extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get isDarkMode => _isDarkMode;
+  bool get isSidebarCollapsed => _isSidebarCollapsed;
 
   Student? get student => _student;
   List<Grade> get grades => _grades;
@@ -68,6 +76,7 @@ class AppModel extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     _isDarkMode = prefs.getBool('pala_dark_mode') ?? true;
     PalaTheme.isLight = !_isDarkMode;
+    _isSidebarCollapsed = prefs.getBool('pala_sidebar_collapsed') ?? false;
     _parentalQuota = prefs.getInt('pala_parental_quota') ?? 5;
     
     final aliasStr = prefs.getString('pala_aliases');
@@ -90,6 +99,48 @@ class AppModel extends ChangeNotifier {
     }
 
     notifyListeners();
+
+    await _tryRestoreSession();
+  }
+
+  /// Restores a previously saved login (see [SessionStore]) so the user
+  /// isn't dropped back to the login screen on every cold start. Tokens are
+  /// trusted optimistically — if they turned out to be dead, individual
+  /// [refreshAll] fetches just come back empty/null the same way they
+  /// already do for any other request failure, instead of forcing a logout
+  /// on what might just be a network blip.
+  Future<void> _tryRestoreSession() async {
+    final session = await SessionStore.load();
+    if (session == null) return;
+
+    final kClient = KretaClient(instituteCode: session['instituteCode']!);
+    kClient.accessToken = session['accessToken'];
+    kClient.refreshToken = session['refreshToken'];
+    kClient.onTokenRefreshed = () => SessionStore.save(kClient);
+
+    _client = kClient;
+    _isDemo = false;
+    _isAuthenticated = true;
+    notifyListeners();
+
+    await refreshAll();
+    unawaited(_enableBackgroundNotifications());
+  }
+
+  /// Registers the Android background sync (see notifications/background_check.dart)
+  /// and asks for the notification permission. Android-only: iOS background
+  /// execution is too unreliable to promise "even when closed" notifications,
+  /// and desktop already gets them from the CLI daemon.
+  Future<void> _enableBackgroundNotifications() async {
+    if (!Platform.isAndroid) return;
+    await NotificationService.instance.requestPermission();
+    await Workmanager().initialize(callbackDispatcher);
+    await Workmanager().registerPeriodicTask(
+      backgroundTaskUniqueName,
+      backgroundTaskName,
+      frequency: const Duration(minutes: 15),
+      constraints: Constraints(networkType: NetworkType.connected),
+    );
   }
 
   Future<bool> login({
@@ -107,11 +158,14 @@ class AppModel extends ChangeNotifier {
       if (!loggedIn) {
         throw Exception('Nem sikerült bejelentkezni. Ellenőrizd az adataidat!');
       }
+      kClient.onTokenRefreshed = () => SessionStore.save(kClient);
       _client = kClient;
       _isDemo = false;
       _isAuthenticated = true;
       _isLoading = false;
+      await SessionStore.save(kClient);
       await refreshAll();
+      unawaited(_enableBackgroundNotifications());
       return true;
     } catch (e) {
       _isLoading = false;
@@ -140,6 +194,7 @@ class AppModel extends ChangeNotifier {
   }
 
   Future<void> logout() async {
+    await SessionStore.clear();
     _client = null;
     _isAuthenticated = false;
     _isDemo = false;
@@ -270,6 +325,13 @@ class AppModel extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('pala_dark_mode', isDark);
+  }
+
+  Future<void> toggleSidebarCollapsed() async {
+    _isSidebarCollapsed = !_isSidebarCollapsed;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('pala_sidebar_collapsed', _isSidebarCollapsed);
   }
 
   Future<void> setParentalQuota(int quota) async {
