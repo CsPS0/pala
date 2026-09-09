@@ -71,9 +71,13 @@ export default function DocsPage() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchTriggerRef = useRef<HTMLButtonElement>(null);
 
-  // Client-side OS detection on mount
+  // Client-side OS detection on mount. detectClientOS() reads navigator/
+  // window, unavailable during this page's static SSR pass, so this must
+  // run post-mount rather than during render (see Hero.tsx for the same
+  // pattern and rationale).
   useEffect(() => {
     const os = detectClientOS();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDetectedOS(os);
     if (os !== "unknown") {
       setInstallTab(os);
@@ -142,9 +146,12 @@ export default function DocsPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Autofocus search input whenever modal opens
+  // Reset and autofocus search whenever the modal opens. Kept as one effect
+  // rather than duplicated at each of the several open/toggle call sites
+  // (Cmd+K toggle, header button, etc.) below.
   useEffect(() => {
     if (searchModalOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSearchQuery("");
       setSelectedIndex(0);
       setTimeout(() => {
@@ -1020,7 +1027,7 @@ export default function DocsPage() {
                       <ol className="list-decimal pl-4 space-y-1 text-[#8c8c94]">
                         <li><span className="text-[#30d158] font-bold">1. Aranyszabály:</span> Töltsd le az <strong>Universal</strong> (<code className="text-[#ff8800] font-mono">app-release.apk</code>) csomagot. Ez garantáltan működni fog!</li>
                         <li><strong>2. Szabály:</strong> Ha a telefonod az elmúlt 7-8 évben vásároltad, válaszd az <strong>ARM64</strong> verziót a legkisebb méretért és legnagyobb sebességért.</li>
-                        <li><strong>3. Ellenőrzés appal:</strong> Töltsd le a Play Áruházból a díjmentes <em>CPU-Z</em> vagy <em>AIDA64</em> alkalmazást, és a "System / Processzor" menüben nézd meg az <em>Instruction Set</em> sort.</li>
+                        <li><strong>3. Ellenőrzés appal:</strong> Töltsd le a Play Áruházból a díjmentes <em>CPU-Z</em> vagy <em>AIDA64</em> alkalmazást, és a &quot;System / Processzor&quot; menüben nézd meg az <em>Instruction Set</em> sort.</li>
                       </ol>
                     </div>
                   </div>

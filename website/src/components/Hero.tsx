@@ -56,6 +56,11 @@ export function Hero() {
 
   useEffect(() => {
     const os = detectClientOS();
+    // Deliberately set state after mount: detectClientOS() reads navigator/
+    // window, which don't exist during this statically-exported page's SSR
+    // pass. Computing it during render would make the client's first paint
+    // disagree with the server-rendered HTML and break hydration.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDetectedPlatform(os);
     if (os === "android" || os === "ios") {
       setPreviewMode("mobile");
