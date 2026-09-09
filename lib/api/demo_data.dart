@@ -935,22 +935,22 @@ class DemoData {
         ('Magyar nyelv és irodalom', 'Arany Jánosné', '108-as terem', '08:55', '09:40', 'A magyar felvilágosodás korszaka', false, false),
         ('Történelem', 'Kossuth Lajos', '215-ös terem', '09:55', '10:40', 'A reformkor gazdasági törekvései', false, false),
         ('Digitális kultúra', 'Neumann János', 'Infó labor 1', '10:55', '11:40', 'Dart CLI programozás', false, false),
-        ('Fizika', 'Eötvös Loránd', 'Fizika előadó', '11:55', '12:40', 'Newton III. törvénye', false, false),
-        ('Angol nyelv', 'Smith John', 'Nyelvi terem 3', '12:55', '13:40', 'Conditional sentences practice', false, false),
+        ('Fizika', 'Eötvös Loránd', 'Fizika előadó', '11:55', '12:40', 'Newton III. törvénye', true, false),
+        ('Angol nyelv', 'Smith John', 'Nyelvi terem 3', '12:55', '13:40', 'Conditional sentences practice', false, true),
       ],
       // Tuesday (2)
       [
         ('Angol nyelv', 'Smith John', 'Nyelvi terem 3', '08:00', '08:45', 'Vocabulary expansion: Ecology', false, false),
         ('Matematika', 'Dr. Számoló Szilárd', '204-es terem', '08:55', '09:40', 'Geometria: Pitagorasz-tétel', false, false),
         ('Biológia', 'Szent-Györgyi Albert', 'Bio labor', '09:55', '10:40', 'A sejt felépítése és működése', false, false),
-        ('Kémia', 'Irinyi János', 'Kémia előadó', '10:55', '11:40', 'Reakciósebesség kísérletek', false, false),
+        ('Kémia', 'Irinyi János', 'Kémia előadó', '10:55', '11:40', 'Reakciósebesség kísérletek', true, false),
         ('Testnevelés és egészségfejlesztés', 'Hajós Alfréd', 'Tornaterem', '11:55', '12:40', 'Kosárlabda játékelemek', false, false),
-        ('Földrajz', 'Teleki Pál', '105-ös terem', '12:55', '13:40', 'A Kárpát-medence domborzata', false, false),
+        ('Földrajz', 'Teleki Pál', '105-ös terem', '12:55', '13:40', 'A Kárpát-medence domborzata', false, true),
       ],
       // Wednesday (3)
       [
         ('Magyar nyelv és irodalom', 'Arany Jánosné', '108-as terem', '08:00', '08:45', 'Berzsenyi Dániel ódái', false, false),
-        ('Történelem', 'Kossuth Lajos', '215-ös terem', '08:55', '09:40', 'Széchenyi István Hitel című műve', false, false),
+        ('Történelem', 'Kossuth Lajos', '215-ös terem', '08:55', '09:40', 'Széchenyi István Hitel című műve', false, true),
         ('Matematika', 'Dr. Számoló Szilárd', '204-es terem', '09:55', '10:40', 'Függvények ábrázolása és elemzése', false, false),
         ('Digitális kultúra', 'Neumann János', 'Infó labor 1', '10:55', '11:40', 'Adatbázisok és SQL lekérdezések', false, false),
         ('Testnevelés és egészségfejlesztés', 'Hajós Alfréd', 'Tornaterem', '11:55', '12:40', 'Erőnléti körverseny', false, false),
@@ -960,18 +960,18 @@ class DemoData {
       [
         ('Kémia', 'Irinyi János', 'Kémia előadó', '08:00', '08:45', 'Sav-bázis titrálás labor', false, false),
         ('Biológia', 'Szent-Györgyi Albert', 'Bio labor', '08:55', '09:40', 'Fotoszintézis és légzés', false, false),
-        ('Angol nyelv', 'Smith John', 'Nyelvi terem 3', '09:55', '10:40', 'Reading comprehension B2 mock', false, false),
+        ('Angol nyelv', 'Smith John', 'Nyelvi terem 3', '09:55', '10:40', 'Reading comprehension B2 mock', true, false),
         ('Magyar nyelv és irodalom', 'Arany Jánosné', '108-as terem', '10:55', '11:40', 'Kölcsey Ferenc: Himnusz elemzés', false, false),
-        ('Történelem', 'Kossuth Lajos', '215-ös terem', '11:55', '12:40', 'Az 1848-as márciusi forradalom', false, false),
+        ('Történelem', 'Kossuth Lajos', '215-ös terem', '11:55', '12:40', 'Az 1848-as márciusi forradalom', false, true),
         ('Földrajz', 'Teleki Pál', '105-ös terem', '12:55', '13:40', 'Európa éghajlati övezetei', false, false),
       ],
       // Friday (5)
       [
         ('Matematika', 'Dr. Számoló Szilárd', '204-es terem', '08:00', '08:45', 'Valószínűségszámítás alapjai', false, false),
-        ('Digitális kultúra', 'Neumann János', 'Infó labor 1', '08:55', '09:40', 'Projektmunka bemutatók', false, false),
+        ('Digitális kultúra', 'Neumann János', 'Infó labor 1', '08:55', '09:40', 'Projektmunka bemutatók', true, false),
         ('Fizika', 'Eötvös Loránd', 'Fizika előadó', '09:55', '10:40', 'Összefoglalás és feladatmegoldás', false, false),
         ('Angol nyelv', 'Smith John', 'Nyelvi terem 3', '10:55', '11:40', 'Discussion: Artificial Intelligence', false, false),
-        ('Testnevelés és egészségfejlesztés', 'Hajós Alfréd', 'Sportpálya', '11:55', '12:40', 'Foci bajnokság', false, false),
+        ('Testnevelés és egészségfejlesztés', 'Hajós Alfréd', 'Sportpálya', '11:55', '12:40', 'Foci bajnokság', false, true),
         ('Osztályfőnöki', 'Kossuth Lajos', '215-ös terem', '12:55', '13:40', 'DÖK választás és kirándulás megbeszélés', false, false),
       ],
     ];

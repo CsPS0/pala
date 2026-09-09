@@ -379,6 +379,7 @@ class _DashboardViewState extends State<DashboardView> {
           else
             ...todayLessons.map((l) {
               final isCancelled = l.isCancelled;
+              final hasSubstitute = !isCancelled && (l.substituteTeacher?.isNotEmpty ?? false);
               final startTime = l.startTime;
               final endTime = l.endTime;
               final isNow = startTime != null && endTime != null && now.isAfter(startTime) && now.isBefore(endTime);
@@ -391,7 +392,11 @@ class _DashboardViewState extends State<DashboardView> {
                   color: isNow ? primary.withValues(alpha: 0.08) : PalaTheme.sidebar,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: isNow ? primary : (isCancelled ? PalaTheme.danger.withValues(alpha: 0.5) : PalaTheme.border),
+                    color: isNow
+                        ? primary
+                        : (isCancelled
+                            ? PalaTheme.danger.withValues(alpha: 0.5)
+                            : (hasSubstitute ? PalaTheme.warning.withValues(alpha: 0.5) : PalaTheme.border)),
                   ),
                 ),
                 child: Row(
@@ -424,8 +429,9 @@ class _DashboardViewState extends State<DashboardView> {
                             ),
                           ),
                           Text(
-                            '${startTime != null ? DateFormat('HH:mm').format(startTime) : "-"} - ${endTime != null ? DateFormat('HH:mm').format(endTime) : "-"} • Terem: ${l.room != null && l.room!.isNotEmpty ? l.room : "N/A"}',
-                            style: TextStyle(color: PalaTheme.textMuted, fontSize: 10),
+                            '${startTime != null ? DateFormat('HH:mm').format(startTime) : "-"} - ${endTime != null ? DateFormat('HH:mm').format(endTime) : "-"} • Terem: ${l.room != null && l.room!.isNotEmpty ? l.room : "N/A"}'
+                            '${hasSubstitute ? " • Helyettesítő: ${l.substituteTeacher}" : ""}',
+                            style: TextStyle(color: hasSubstitute ? PalaTheme.warning : PalaTheme.textMuted, fontSize: 10),
                           ),
                         ],
                       ),
@@ -438,6 +444,15 @@ class _DashboardViewState extends State<DashboardView> {
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text('Elmarad', style: TextStyle(color: PalaTheme.danger, fontSize: 9, fontWeight: FontWeight.w700)),
+                      )
+                    else if (hasSubstitute)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: PalaTheme.warning.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text('Helyettesítés', style: TextStyle(color: PalaTheme.warning, fontSize: 9, fontWeight: FontWeight.w700)),
                       )
                     else if (isNow)
                       Container(

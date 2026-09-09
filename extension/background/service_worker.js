@@ -174,6 +174,8 @@ async function checkForNewGrades(force = false) {
     // Broadcast data update to any open extension views
     chrome.runtime.sendMessage({ type: "pala_data_updated" }).catch(() => {});
 
+    await checkScheduleChanges(data);
+
     const knownIds = new Set(store.pala_known_grade_ids || []);
     const newGrades = data.grades.filter(g => !knownIds.has(g.Id));
 
@@ -201,5 +203,65 @@ async function checkForNewGrades(force = false) {
   } catch (err) {
     console.warn("Background grade check failed:", err);
   }
+}
+
+/**
+ * Kréta only marks a substitution or cancellation once it's decided, so a
+ * student otherwise finds out by opening the timetable. Mirrors the grade
+ * check above but tracks notified lesson ids instead of a count, since
+ * "new" here means "changed", not "added".
+ */
+async function checkScheduleChanges(data) {
+  const store = await chrome.storage.local.get(["pala_notified_schedule_change_ids"]);
+  const notified = new Set(store.pala_notified_schedule_change_ids || []);
+
+  const now = new Date();
+  const todayStr = now.toDateString();
+  const tomorrow = new Date(now);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowStr = tomorrow.toDateString();
+
+  const isChanged = (l) => {
+    const stateName = (l.Allapot?.Nev || l.Allapot || "").toLowerCase();
+    const substitute = l.HelyettesTanarNeve || l.HelyettesitoTanarNeve;
+    return stateName.includes("elmaradt") || !!substitute;
+  };
+
+  const changed = (data.timetable || []).filter(l => {
+    if (!l.KezdetIdopont) return false;
+    const dStr = new Date(l.KezdetIdopont).toDateString();
+    return (dStr === todayStr || dStr === tomorrowStr) && isChanged(l);
+  });
+
+  const currentIds = new Set();
+  for (const l of changed) {
+    const id = l.Uid || `${l.KezdetIdopont}_${l.Oraszam}`;
+    currentIds.add(id);
+    if (notified.has(id)) continue;
+
+    const dStr = new Date(l.KezdetIdopont).toDateString();
+    const dayLabel = dStr === todayStr ? "Ma" : "Holnap";
+    const sub = l.Tantargy?.Nev || "Tanóra";
+    const stateName = (l.Allapot?.Nev || l.Allapot || "").toLowerCase();
+    const substitute = l.HelyettesTanarNeve || l.HelyettesitoTanarNeve;
+    const cancelled = stateName.includes("elmaradt");
+
+    chrome.notifications.create(`pala_schedule_${Date.now()}_${id}`, {
+      type: "basic",
+      iconUrl: "../icons/icon-128.png",
+      title: cancelled ? `${dayLabel} elmarad: ${sub}` : `${dayLabel} helyettesítés: ${sub}`,
+      message: cancelled ? "Az óra törölve lett az órarendből." : `Helyettesítő tanár: ${substitute}`,
+      priority: 2
+    });
+
+    notified.add(id);
+  }
+
+  // Drop ids that fell out of today/tomorrow's changed-lesson window.
+  for (const id of Array.from(notified)) {
+    if (!currentIds.has(id)) notified.delete(id);
+  }
+
+  await chrome.storage.local.set({ pala_notified_schedule_change_ids: Array.from(notified) });
 }
 
