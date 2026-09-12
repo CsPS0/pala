@@ -29,6 +29,9 @@ A Pala elérhető modern Chromium böngészőbővítményként is (Manifest V3) 
 
 ## Telepítés
 
+> [!WARNING]
+> **Ideiglenesen csak forráskódból fordítható.** A `folio-cli` → `pala` átnevezés óta még nincs kiadott release, ezért az alábbi gyors telepítők (`install.sh`, `install.ps1`, Scoop, AUR, Homebrew, APT, a Windows-os `.exe`) egyelőre nem működnek — a szkript "sikeres" telepítést ír ki, de a bináris letöltése 404-et ad ([lásd az #2-es issue-t](https://github.com/CsPS0/pala/issues/2)). Amíg nem jelenik meg az első release, kizárólag a lenti **"Forráskódból történő fordítás"** szekció használható.
+
 ### 1. Windows Gyors Telepítés
 - **Grafikus telepítő (.exe)**: Töltsd le a [Pala-Setup.exe](https://github.com/CsPS0/pala/releases/latest) fájlt (egyéni komponensválasztóval: Desktop GUI + CLI / TUI + PATH integráció).
 - **PowerShell 1-soros**:
