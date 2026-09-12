@@ -28,6 +28,9 @@ export function Footer() {
           <Link href="/adatvedelem" className="hover:text-[#ff8800] text-[#f3f3f6] font-bold transition-colors">
             Adatvédelem
           </Link>
+          <Link href="/ai-hasznalat" className="hover:text-[#ff8800] text-[#f3f3f6] font-bold transition-colors">
+            AI használat
+          </Link>
           <a href="https://github.com/CsPS0/pala" target="_blank" rel="noopener noreferrer" className="hover:text-[#f3f3f6] transition-colors">
             GitHub
           </a>

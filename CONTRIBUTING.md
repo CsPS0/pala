@@ -29,3 +29,15 @@ Ha kóddal szeretnél hozzájárulni a projekthez:
 - Hibakezelés: A Kréta API válaszai változatosak lehetnek. Minden adatszerkezet beolvasásánál kötelező a biztonságos típusellenőrzés és a kivételkezelés.
 - UI Konvenciók: A terminál interfészekhez az `interact` csomag használandó, a projekt meglévő vizuális irányelveinek (színtémák, háttér megőrzése) tiszteletben tartásával.
 
+## AI Használat
+
+A Palát gyakorlatilag egyedül fejlesztem, és ehhez sokat használok AI-t/LLM-eket — ezt nem titkolom, és nem is gondolom, hogy szégyellnivaló lenne. Amíg nagyjából értem és valamennyire átlátom, amit a gép leír, addig ez csak egy eszköz a sok közül — a maradékra meg ott az MIT licenc: a kód "ahogy van" alapon, mindenféle garancia nélkül érhető el.
+
+Ha te is hozzá szeretnél járulni kóddal, ugyanezt az elvárást támasztom feléd: nyugodtan használhatsz AI-t a Pull Requestedhez, de a beküldés előtt neked kell értened, hogy mit csinált az LLM. Ha megkérdezem, miért így oldottad meg, tudnod kell válaszolni rá — a "az AI így írta" nem válasz.
+
+Azok a Pull Requestek, amelyeknél látszik, hogy a hozzájáruló nem érti a saját kódját, javítási kérés nélkül elutasításra kerülhetnek.
+
+Emberi szöveg AI-alapú helyesírás-ellenőrzése és fordítása természetesen megengedett.
+
+Ha állásra jelentkezőként vagy felhasználóként megtévesztőnek találod az AI ilyen jellegű használatát ebben a projektben, használd inkább a [Firka](https://github.com/QwIT-Development/firka)-t vagy a [Folio](https://github.com/Zan1456/folio) alkalmazást a Pala helyett.
+
