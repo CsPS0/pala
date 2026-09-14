@@ -581,7 +581,7 @@ class KretaClient {
     return null;
   }
 
-  Future<List<TimetableEntry>?> getTimetable(DateTime start, DateTime end) async {
+  Future<List<TimetableEntry>?> getTimetable(DateTime start, DateTime end, {bool? overrideAWeek}) async {
     final url = KretaAPI.timetable(instituteCode, start: start, end: end);
     final data = await _getAPI(url);
     if (data is List) {
@@ -595,6 +595,15 @@ class KretaClient {
     final data = await _getAPI(url);
     if (data is List) {
       return data.map((e) => Absence.fromJson(e as Map<String, dynamic>)).toList();
+    }
+    return null;
+  }
+
+  Future<List<Note>?> getNotes() async {
+    final url = KretaAPI.notes(instituteCode);
+    final data = await _getAPI(url);
+    if (data is List) {
+      return data.map((e) => Note.fromJson(e as Map<String, dynamic>)).toList();
     }
     return null;
   }

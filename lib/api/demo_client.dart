@@ -46,8 +46,8 @@ class DemoKretaClient extends KretaClient {
   }
 
   @override
-  Future<List<TimetableEntry>?> getTimetable(DateTime start, DateTime end) async {
-    return DemoData.getTimetable(start: start, end: end);
+  Future<List<TimetableEntry>?> getTimetable(DateTime start, DateTime end, {bool? overrideAWeek}) async {
+    return DemoData.getTimetable(start: start, end: end, overrideAWeek: overrideAWeek);
   }
 
   @override
@@ -75,6 +75,11 @@ class DemoKretaClient extends KretaClient {
   @override
   Future<List<Absence>?> getAbsences() async {
     return DemoData.getAbsences();
+  }
+
+  @override
+  Future<List<Note>?> getNotes() async {
+    return DemoData.getNotes();
   }
 
   @override

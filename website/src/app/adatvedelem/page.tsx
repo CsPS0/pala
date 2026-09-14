@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { Footer } from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Adatvédelmi tájékoztató",
@@ -13,23 +12,7 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[#f3f3f6] flex flex-col">
-      <header className="border-b border-[#28282d] bg-[#151518]/90 backdrop-blur-md h-[70px] flex items-center px-4 sm:px-6">
-        <div className="max-w-3xl mx-auto w-full flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <img src="/logo.svg" alt="Pala logó" width={36} height={36} className="w-9 h-9 rounded-xl object-contain" />
-            <span className="font-extrabold text-base tracking-wide">PALA</span>
-          </Link>
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 bg-[#1b1b1f] hover:bg-[#222227] text-[#8c8c94] hover:text-[#f3f3f6] border border-[#28282d] text-xs font-bold px-3.5 py-2 rounded-xl transition-colors"
-          >
-            <ArrowLeft size={13} />
-            <span>Főoldal</span>
-          </Link>
-        </div>
-      </header>
-
+    <div className="min-h-screen bg-[var(--bg)] text-[#f3f3f6] flex flex-col pt-[68px]">
       <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-12 sm:py-16">
         <h1 className="text-2xl sm:text-3xl font-black tracking-tight mb-2">Adatvédelmi tájékoztató</h1>
         <p className="text-xs text-[#5f5f67] mb-10">Utolsó frissítés: 2026. szeptember</p>
@@ -110,9 +93,7 @@ export default function PrivacyPage() {
         </div>
       </main>
 
-      <footer className="border-t border-[#28282d] bg-[#151518] py-6 px-4 text-center text-xs text-[#8c8c94]">
-        <span>Pala — Nyílt forráskódú Kréta Kliens</span>
-      </footer>
+      <Footer />
     </div>
   );
 }

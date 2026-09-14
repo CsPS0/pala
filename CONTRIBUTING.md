@@ -2,6 +2,8 @@
 
 Köszönjük az érdeklődést a **Pala** projekt iránt. A nyílt forráskódú közösség segítségét (hibajelentések, új funkciók, dokumentáció) minden esetben szívesen fogadjuk.
 
+A részvétellel elfogadod a projekt [Magatartási Kódexét](CODE_OF_CONDUCT.md).
+
 ## Közreműködés Menete
 
 ### 1. Hibajelentés (Issue)

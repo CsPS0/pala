@@ -119,6 +119,43 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                           icon: Icon(Icons.chevron_right, size: 22),
                           onPressed: () => widget.appModel.setWeekOffset(widget.appModel.weekOffset + 1),
                         ),
+                        const SizedBox(width: 8),
+                        Tooltip(
+                          message: 'Kattints az A/B hét váltásához',
+                          child: InkWell(
+                            onTap: () => widget.appModel.toggleABWeek(),
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: widget.appModel.isAWeek ? primary.withValues(alpha: 0.15) : PalaTheme.accent.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: widget.appModel.isAWeek ? primary.withValues(alpha: 0.5) : PalaTheme.accent.withValues(alpha: 0.5),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.swap_horiz_rounded,
+                                    size: 15,
+                                    color: widget.appModel.isAWeek ? primary : PalaTheme.accent,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '„${widget.appModel.abWeekName}” (${widget.appModel.currentWeekNumber}. hét)',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w800,
+                                      color: widget.appModel.isAWeek ? primary : PalaTheme.accent,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                     Row(
@@ -254,9 +291,26 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                                   Expanded(
                                     child: lessons.isEmpty
                                         ? Center(
-                                            child: Text(
-                                              'Nincs tanóra',
-                                              style: TextStyle(color: PalaTheme.textMuted.withValues(alpha: 0.5), fontSize: 12),
+                                            child: Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 10),
+                                              child: Column(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  Icon(Icons.event_available_outlined, size: 28, color: PalaTheme.textMuted.withValues(alpha: 0.35)),
+                                                  const SizedBox(height: 8),
+                                                  Text(
+                                                    'Nincs tanóra',
+                                                    style: TextStyle(fontWeight: FontWeight.w700, color: PalaTheme.textMuted, fontSize: 12),
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    'Tanítás nélküli munkanap / Szabadnap',
+                                                    style: TextStyle(color: PalaTheme.textMuted.withValues(alpha: 0.5), fontSize: 10),
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                           )
                                         : ListView.builder(
@@ -299,16 +353,26 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
 
                       if (lessons.isEmpty) {
                         return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.event_busy, size: 48, color: PalaTheme.textMuted.withValues(alpha: 0.5)),
-                              const SizedBox(height: 12),
-                              Text(
-                                'Nincsenek órák erre a napra (${_days[idx]}).',
-                                style: TextStyle(color: PalaTheme.textMuted, fontSize: 13),
-                              ),
-                            ],
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.event_available_outlined, size: 48, color: PalaTheme.textMuted.withValues(alpha: 0.4)),
+                                const SizedBox(height: 14),
+                                Text(
+                                  'Nincs tanóra ezen a napon (${_days[idx]}).',
+                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Tanítás nélküli munkanap / Szabadnap',
+                                  style: TextStyle(color: PalaTheme.textMuted, fontSize: 13),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
                           ),
                         );
                       }
@@ -342,15 +406,21 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
     final endTime = l.endTime;
     final isToday = startTime != null && startTime.year == now.year && startTime.month == now.month && startTime.day == now.day;
     final isNow = isToday && endTime != null && now.isAfter(startTime) && now.isBefore(endTime);
+    final isPast = isToday && endTime != null && now.isAfter(endTime);
+    final hasSubstitute = !isCancelled && (l.substituteTeacher?.isNotEmpty ?? false);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 6),
       padding: EdgeInsets.all(compact ? 10 : 14),
       decoration: BoxDecoration(
         color: isNow ? primary.withValues(alpha: 0.08) : PalaTheme.card,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isNow ? primary : (isCancelled ? PalaTheme.danger.withValues(alpha: 0.5) : PalaTheme.border),
+          color: isNow
+              ? primary
+              : (isCancelled
+                  ? PalaTheme.danger.withValues(alpha: 0.5)
+                  : (hasSubstitute ? PalaTheme.warning.withValues(alpha: 0.5) : PalaTheme.border)),
         ),
       ),
       child: Row(
@@ -422,6 +492,15 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
               ),
               child: Text('Elmarad', style: TextStyle(color: PalaTheme.danger, fontSize: 10, fontWeight: FontWeight.w700)),
             )
+          else if (hasSubstitute)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: PalaTheme.warning.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text('Helyettesítés', style: TextStyle(color: PalaTheme.warning, fontSize: 10, fontWeight: FontWeight.w700)),
+            )
           else if (isNow)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -430,7 +509,9 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text('Most', style: TextStyle(color: primary, fontSize: 10, fontWeight: FontWeight.w700)),
-            ),
+            )
+          else if (isPast)
+            Icon(Icons.check_circle, size: 15, color: PalaTheme.success),
         ],
       ),
     );

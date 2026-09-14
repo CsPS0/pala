@@ -1,9 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import Link from "next/link";
 import {
-  BookOpen,
   Download,
   Trash2,
   HelpCircle,
@@ -15,9 +13,7 @@ import {
   Copy,
   Check,
   Search,
-  ExternalLink,
   ChevronRight,
-  ArrowLeft,
   Sparkles,
   Calculator,
   Clock,
@@ -26,8 +22,6 @@ import {
   Info,
   CheckCircle2,
   Cpu,
-  Menu,
-  X,
   RefreshCw,
   Layers,
   FileText,
@@ -41,11 +35,20 @@ import {
   Play,
   Lock,
   ServerOff,
-  CornerDownLeft
+  CornerDownLeft,
+  History,
+  AppWindow,
+  ArrowRight,
+  Database,
+  AlertCircle,
+  Building2
 } from "lucide-react";
 import { WindowsIcon, AppleIcon, AndroidIcon, LinuxIcon } from "@/components/PlatformIcons";
+import { Footer } from "@/components/Footer";
+import { ClientHistory } from "@/components/ClientHistory";
 import { detectClientOS } from "@/lib/detectOS";
 import { useRelease } from "@/lib/useRelease";
+import { useDocsUI } from "@/lib/DocsUIContext";
 
 interface SearchIndexItem {
   id: string;
@@ -65,11 +68,31 @@ export default function DocsPage() {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchModalOpen, setSearchModalOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const { setIsDocsPage, mobileMenuOpen, setMobileMenuOpen, registerSearchOpener } = useDocsUI();
+
+  // Config builder state
+  const [cfgTheme, setCfgTheme] = useState<"dark" | "light" | "system">("dark");
+  const [cfgBanner, setCfgBanner] = useState<boolean>(true);
+  const [cfgQuota, setCfgQuota] = useState<number>(5);
+  const [cfgAliases, setCfgAliases] = useState<Record<string, string>>({
+    "Magyar nyelv és irodalom": "Irodalom",
+    "Matematika": "Matek",
+    "Testnevelés és sport": "Tesi",
+  });
 
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const searchTriggerRef = useRef<HTMLButtonElement>(null);
+
+  // Tell the shared Navbar this page is a docs page (shows its search box
+  // and routes the search trigger here) and hand it an opener for the modal.
+  useEffect(() => {
+    setIsDocsPage(true);
+    registerSearchOpener(() => setSearchModalOpen(true));
+    return () => {
+      setIsDocsPage(false);
+      registerSearchOpener(null);
+    };
+  }, [setIsDocsPage, registerSearchOpener]);
 
   // Client-side OS detection on mount. detectClientOS() reads navigator/
   // window, unavailable during this page's static SSR pass, so this must
@@ -81,6 +104,34 @@ export default function DocsPage() {
     setDetectedOS(os);
     if (os !== "unknown") {
       setInstallTab(os);
+    }
+    if (typeof window !== "undefined") {
+      const hash = window.location.hash.replace("#", "").toLowerCase();
+      const params = new URLSearchParams(window.location.search);
+      const target = (params.get("page") || hash || "").toLowerCase();
+      const tab = params.get("tab");
+
+      if (target === "tortenet" || target === "history") {
+        setActivePage("tortenet");
+      } else if (target === "telepites" || target === "installation") {
+        setActivePage("installation");
+      } else if (target === "eltavolitas" || target === "uninstall") {
+        setActivePage("installation");
+      } else if (target === "beallitasok" || target === "config" || target === "files-configs") {
+        setActivePage("files-configs");
+      } else if (target === "adatvedelem" || target === "privacy") {
+        setActivePage("security");
+      } else if (target === "gyik" || target === "faq" || target === "troubleshooting") {
+        setActivePage("troubleshooting");
+      } else if (target === "inst-ios") {
+        setActivePage("installation");
+        setInstallTab("ios");
+      }
+
+      const validTabs = ["windows", "macos", "linux", "android", "ios", "extension"];
+      if (tab && validTabs.includes(tab)) {
+        setInstallTab(tab);
+      }
     }
   }, []);
 
@@ -144,11 +195,11 @@ export default function DocsPage() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [setMobileMenuOpen]);
 
   // Reset and autofocus search whenever the modal opens. Kept as one effect
   // rather than duplicated at each of the several open/toggle call sites
-  // (Cmd+K toggle, header button, etc.) below.
+  // (Cmd+K toggle, Navbar search button, etc.) below.
   useEffect(() => {
     if (searchModalOpen) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -157,8 +208,6 @@ export default function DocsPage() {
       setTimeout(() => {
         searchInputRef.current?.focus();
       }, 50);
-    } else {
-      searchTriggerRef.current?.focus();
     }
   }, [searchModalOpen]);
 
@@ -369,6 +418,54 @@ export default function DocsPage() {
       category: "Biztonság & Architektúra / GYIK",
       description: "Intézménykód ellenőrzése, Kréta szerver leállások kezelése és Teszt Elek demó mód.",
       keywords: ["bejelentkezés", "hiba", "szerverhiba", "karbantartás", "teszt elek", "demo"]
+    },
+    {
+      id: "hasznalat-intezmenyek",
+      pageId: "hasznalat",
+      title: "Iskolakereső, OM Azonosító és Gondviselői Fiók",
+      category: "Kezdő Lépések / Használat",
+      description: "Iskolakódok (klik, szc), 11 jegyű 7-tel kezdődő diák OM azonosító, G- gondviselői fiókok és a beépített intézménykereső.",
+      keywords: ["iskolakereső", "intézménykereső", "klik", "szc", "om azonosító", "gondviselő", "szülői fiók", "g-", "diákigazolvány"]
+    },
+    {
+      id: "webui-overview",
+      pageId: "webui",
+      title: "Pala Webes Felület (Localhost Web UI)",
+      category: "Változatok / Webes Felület",
+      description: "pala --web vagy pala -w helyi webszerver, böngészős felület, egyedi kriptográfiai session token és zero-cloud adatvédelem.",
+      keywords: ["webui", "web", "böngésző", "localhost", "127.0.0.1", "pala --web", "pala -w", "--web", "szerver", "felhőmentes", "privát"]
+    },
+    {
+      id: "zero-proxy-arch",
+      pageId: "security",
+      title: "Zero-Proxy Architektúra Diagram",
+      category: "Biztonság & Architektúra / Titkosítás",
+      description: "Miért nem használ a Pala központi proxyt: közvetlen TLS 1.3 kapcsolat vs. veszélyes harmadik feles szervermodell.",
+      keywords: ["zero-proxy", "proxy", "architektúra", "tls 1.3", "adatvédelem", "diagram", "biztonság", "gdpr", "központi szerver"]
+    },
+    {
+      id: "kreta-errors",
+      pageId: "troubleshooting",
+      title: "Kréta API Hibakódok (HTTP 429, 502, 503, 401)",
+      category: "Biztonság & Architektúra / Hibaelhárítás",
+      description: "HTTP 429 túllépési korlát és Retry-After, 502/503 Kréta szerver leállás offline gyorsítótár, 401 csendes token megújítás.",
+      keywords: ["hibakód", "429", "502", "503", "504", "401", "rate limit", "karbantartás", "leállás", "refresh token", "szerverhiba", "hiba", "túlterheltség"]
+    },
+    {
+      id: "kreta-tortenet",
+      pageId: "tortenet",
+      title: "A Kréta- és Iskolai Kliensek Története (Idővonal)",
+      category: "Közösség & Történet",
+      description: "A Szivacs Naplótól a Filc, reFilc, Firka, Folio, Toll, rsfilc és Pala kliensekig, külföldi rendszerekig (Wulkanowy, BetterUntis) és a Kréta-feltörésig.",
+      keywords: ["történet", "idővonal", "szivacs", "filc", "kréta feltörés", "feltörés", "refilc", "qwit", "firka", "folio", "toll", "rsfilc", "pala", "kronológia", "wulkanowy", "betteruntis", "discipulus", "papillon", "arisztokréta", "napló+"]
+    },
+    {
+      id: "neptun-tortenet",
+      pageId: "tortenet",
+      title: "Egyetemi Világ: A Neptun és a Hallgatói Kiegészítők",
+      category: "Közösség & Történet",
+      description: "Felsőoktatási tanulmányi rendszerek, Neptun PowerUp! (NPU), Solymosi Máté (szalio), tárgyfelvételi CAPTCHA automatizálás (CSN) és Karmin ELTE mobil app.",
+      keywords: ["neptun", "egyetem", "főiskola", "bme", "elte", "corvinus", "powerup", "npu", "solymosi", "szalio", "tárgyfelvétel", "kidobásvédelem", "kki", "átlag", "csn", "captcha", "szaturn", "karmin"]
     }
   ];
 
@@ -418,6 +515,7 @@ export default function DocsPage() {
         { id: "tui", label: "TUI", icon: Terminal, kicker: "VÁLTOZATOK / TUI" },
         { id: "desktop", label: "Desktop App", icon: Monitor, kicker: "VÁLTOZATOK / DESKTOP APP" },
         { id: "mobile", label: "Mobile App", icon: Smartphone, kicker: "VÁLTOZATOK / MOBILE APP" },
+        { id: "webui", label: "Webes Felület (Web UI)", icon: AppWindow, kicker: "VÁLTOZATOK / WEBES FELÜLET (WEB UI)" },
         { id: "extension", label: "Böngésző Kiterjesztés", icon: Globe, kicker: "VÁLTOZATOK / BÖNGÉSZŐ KITERJESZTÉS" },
       ],
     },
@@ -426,6 +524,12 @@ export default function DocsPage() {
       items: [
         { id: "security", label: "Zero-Knowledge & Titkosítás", icon: Shield, kicker: "SECURITY & ARCHITECTURE" },
         { id: "troubleshooting", label: "Hibaelhárítás & GYIK", icon: HelpCircle, kicker: "BIZTONSÁG & ARCHITEKTÚRA / GYIK" },
+      ],
+    },
+    {
+      category: "Közösség & Történet",
+      items: [
+        { id: "tortenet", label: "Kliensek Története", icon: History, kicker: "KÖZÖSSÉG & TÖRTÉNET / A KRÉTA-KLIENSEK TÖRTÉNETE" },
       ],
     },
   ];
@@ -445,7 +549,7 @@ export default function DocsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0e0e11] text-[#f3f3f6] flex flex-col font-sans selection:bg-[#ff8800]/30 selection:text-[#ff8800]">
+    <div className="min-h-screen bg-[#0e0e11] text-[#f3f3f6] flex flex-col font-sans selection:bg-[#ff8800]/30 selection:text-[#ff8800] pt-[68px]">
       {/* Interactive Command Palette / Search Modal */}
       {searchModalOpen && (
         <div
@@ -563,86 +667,24 @@ export default function DocsPage() {
         </div>
       )}
 
-      {/* Top Sticky Header Navbar */}
-      <header className="sticky top-0 z-40 bg-[#151518]/90 backdrop-blur-md border-b border-[#28282d] h-[70px] flex items-center px-4 sm:px-6 w-full shrink-0">
-        <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
-          <div className="flex items-center gap-3 sm:gap-6">
-            <Link href="/" className="flex items-center gap-3 group">
-              <img
-                src="/logo.svg"
-                alt="Pala logó"
-                width={40}
-                height={40}
-                className="w-10 h-10 rounded-xl shadow-[0_0_15px_rgba(255,136,0,0.25)] transition-transform group-hover:scale-105 object-contain"
-              />
-              <div className="flex flex-col">
-                <span className="font-extrabold text-base tracking-wide text-[#f3f3f6] flex items-center gap-2">
-                  PALA
-                  <span className="text-[10px] font-bold bg-[#ff8800]/15 text-[#ff8800] border border-[#ff8800]/30 px-1.5 py-0.5 rounded min-w-[36px] text-center">
-                    {release.isLoading ? "..." : release.version}
-                  </span>
-                </span>
-                <span className="text-[11px] font-semibold text-[#8c8c94]">Dokumentáció</span>
-              </div>
-            </Link>
-          </div>
-
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Quick Search Button / Box - Opens Command Palette */}
-            <button
-              ref={searchTriggerRef}
-              onClick={() => setSearchModalOpen(true)}
-              className="relative flex items-center justify-between bg-[#151518] hover:bg-[#1b1b1f] border border-[#28282d] hover:border-[#ff8800]/50 rounded-xl px-2.5 sm:px-3 py-1.5 text-xs text-[#8c8c94] transition-all cursor-pointer group shadow-sm max-w-[150px] sm:max-w-[240px] lg:w-64"
-              aria-label="Dokumentáció kereső megnyitása"
-            >
-              <div className="flex items-center gap-1.5 sm:gap-2 truncate">
-                <Search size={14} className="text-[#8c8c94] group-hover:text-[#ff8800] transition-colors shrink-0" />
-                <span className="truncate hidden sm:inline">Keresés a docsban...</span>
-                <span className="truncate sm:hidden">Keresés...</span>
-              </div>
-              <kbd className="hidden sm:inline-block bg-[#1b1b1f] border border-[#28282d] text-[10px] font-mono text-[#8c8c94] group-hover:text-[#f3f3f6] px-1.5 py-0.5 rounded shrink-0">
-                Ctrl K
-              </kbd>
-            </button>
-
-            <Link
-              href="/"
-              className="hidden sm:inline-flex items-center gap-1.5 bg-[#1b1b1f] hover:bg-[#222227] text-[#8c8c94] hover:text-[#f3f3f6] border border-[#28282d] text-xs font-bold px-3.5 py-2 rounded-xl transition-colors"
-            >
-              <ArrowLeft size={13} />
-              <span>Főoldal</span>
-            </Link>
-
-            <a
-              href="https://github.com/CsPS0/pala"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden sm:flex bg-[#1b1b1f] hover:bg-[#222227] border border-[#28282d] text-xs font-bold text-[#f3f3f6] px-3.5 py-2 rounded-xl transition-all items-center gap-1.5"
-            >
-              <span>GitHub</span>
-              <ExternalLink size={12} className="text-[#8c8c94]" />
-            </a>
-
-            {/* Mobile Navigation Drawer Button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden bg-[#1b1b1f] border border-[#28282d] text-[#f3f3f6] p-2 rounded-xl"
-              aria-label="Menü"
-              aria-expanded={mobileMenuOpen}
-            >
-              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Mobile Drawer */}
+      {/* Mobile Section Drawer (opened from the shared Navbar's hamburger button) */}
       {mobileMenuOpen && (
         <div
-          className="md:hidden fixed inset-0 top-[70px] z-50 bg-[#0e0e11]/98 backdrop-blur-xl p-6 overflow-y-auto border-b border-[#28282d]"
+          className="md:hidden fixed inset-0 top-[68px] z-50 bg-[#0e0e11]/98 backdrop-blur-xl p-6 overflow-y-auto border-b border-[#28282d]"
           onClick={() => setMobileMenuOpen(false)}
         >
           <nav className="space-y-6 max-w-sm mx-auto" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                setSearchModalOpen(true);
+              }}
+              className="w-full flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold text-[#8c8c94] bg-[#1b1b1f] border border-[#28282d]"
+            >
+              <Search size={16} />
+              <span>Keresés a docsban...</span>
+            </button>
+
             {navCategories.map((group, gIdx) => (
               <div key={gIdx}>
                 <h4 className="text-[11px] font-black uppercase tracking-wider text-[#ff8800] mb-2 px-1">
@@ -677,7 +719,7 @@ export default function DocsPage() {
       {/* Main Documentation Container */}
       <div className="max-w-7xl mx-auto w-full flex-1 flex items-start px-3 sm:px-6 py-6 sm:py-8 gap-6 sm:gap-10 min-w-0">
         {/* Left Sticky Sidebar */}
-        <aside className="w-64 shrink-0 hidden md:block sticky top-[95px] h-[calc(100vh-120px)] overflow-y-auto pr-2 self-start">
+        <aside className="w-64 shrink-0 hidden md:block sticky top-[93px] h-[calc(100vh-118px)] overflow-y-auto pr-2 self-start">
           <nav className="space-y-6">
             {navCategories.map((group, gIdx) => (
               <div key={gIdx}>
@@ -745,14 +787,14 @@ export default function DocsPage() {
                     >
                       <TabIcon size={14} className={isActive ? "text-[#ff8800]" : "text-[#8c8c94]"} />
                       <span>{tab.label}</span>
-                      {isDetected && (
+                      {isDetected && tab.id !== "ios" && (
                         <span className="text-[9px] bg-[#30d158]/20 text-[#30d158] border border-[#30d158]/30 px-1.5 py-0.2 rounded font-mono font-black">
                           Ajánlott
                         </span>
                       )}
                       {tab.id === "ios" && (
-                        <span className="text-[9px] bg-[#ff8800]/15 text-[#ff8800] border border-[#ff8800]/30 px-1.5 py-0.2 rounded font-mono font-black">
-                          Hamarosan
+                        <span className="text-[9px] bg-[#ff453a]/15 text-[#ff453a] border border-[#ff453a]/30 px-1.5 py-0.2 rounded font-mono font-black">
+                          Nem elérhető
                         </span>
                       )}
                     </button>
@@ -1175,26 +1217,26 @@ dart run bin/pala.dart`}</pre>
 
               {/* ================= TAB 3: IOS (iPhone & iPad) — not available yet ================= */}
               {installTab === "ios" && (
-                <div className="space-y-6">
-                  <div className="bg-[#1b1b1f] border border-[#ff8800]/40 p-6 rounded-2xl space-y-3 shadow-[0_0_20px_rgba(255,136,0,0.08)]">
+                <div id="inst-ios" className="space-y-6">
+                  <div className="bg-[#1b1b1f] border border-[#ff453a]/40 p-6 rounded-2xl space-y-3 shadow-[0_0_20px_rgba(255,69,58,0.08)]">
                     <div className="flex items-start gap-3">
-                      <ServerOff size={20} className="text-[#ff8800] shrink-0 mt-0.5" />
+                      <ServerOff size={20} className="text-[#ff453a] shrink-0 mt-0.5" />
                       <div>
                         <h3 className="text-sm font-bold text-[#f3f3f6] leading-snug">
-                          Az iOS (iPhone / iPad) verzió egyelőre nem elérhető
+                          Az iOS (iPhone / iPad) verzió jelenleg nem érhető el
                         </h3>
-                        <span className="text-[11px] text-[#ff8800] font-semibold">Hamarosan érkezik</span>
+                        <span className="text-[11px] text-[#ff453a] font-semibold">Fejlesztés alatt • Jelenleg nincs App Store / IPA letöltés</span>
                       </div>
                     </div>
                     <div className="text-xs text-[#8c8c94] space-y-2 leading-relaxed mt-2 sm:pl-8">
                       <p>
-                        A Safari böngésző biztonsági szabályai (CORS házirend) miatt egy weboldalként futó Pala nem tud közvetlenül kommunikálni a Kréta szervereivel — ehhez egy köztes proxy/backend szerverre lenne szükség, ami viszont diákok jelszavait és személyes adatait terelné át egy külső szerveren, súlyos GDPR-kockázatot vállalva (lásd lentebb a GYIK-ben).
+                        A Safari böngésző szigorú biztonsági szabályai (CORS házirend) miatt egy böngészőben futó kliens nem tud közvetlenül, kliensoldalról kommunikálni a Kréta hivatalos szervereivel. Ezt tisztán webes felületek csak egy köztes proxy/backend szerverrel tudnák áthidalni, ami viszont több tízezer diák jelszavait és személyes adatait terelné át egy külső szerveren, súlyos adatvédelmi és GDPR-kockázatot vállalva. A Pala alapelve a szigorúan kliensoldali, közvetlen és nulla-telemetriás adatkezelés, így köztes szerver soha nem fog futni.
                       </p>
                       <p>
-                        A natív iOS alkalmazás alternatíva (App Store vagy TestFlight) pedig Apple fizetős Fejlesztői Programjához (99 USD/év) kötött. Emiatt az iOS-támogatás jelenleg nincs a kliensoldali, köztes szerver nélküli architektúrába illesztve.
+                        A hivatalos natív iOS alkalmazás terjesztése (App Store vagy TestFlight) az Apple évi fizetős Fejlesztői Programjához (99 USD/év) és Mac gépes hitelesítéshez kötött. Emiatt az iOS-támogatás jelenleg nem elérhető a felhasználók számára.
                       </p>
                       <div className="p-3 bg-[#151518] rounded-xl border border-[#28282d] text-[#30d158] font-semibold">
-                        Addig is: Windows, Linux, macOS, Android és a böngésző-kiterjesztés (Chrome, Brave, Edge) mind elérhetők és teljes funkcionalitással működnek.
+                        Addig is: Windows, Linux, macOS és Android eszközökön a Pala natívan elérhető, vagy számítógépen a böngésző-kiterjesztés (Chrome, Brave, Edge) azonnal használható.
                       </div>
                     </div>
                   </div>
@@ -1681,6 +1723,67 @@ dart run bin/pala.dart`}</pre>
                 </div>
               </div>
 
+              {/* Institutional Login Helper */}
+              <div className="bg-[#1b1b1f] border border-[#28282d] p-6 rounded-2xl space-y-4">
+                <div className="flex items-center gap-2 text-sm font-bold text-[#f3f3f6]">
+                  <Building2 size={16} className="text-[#ff8800]" />
+                  <span>Intézmény Kód & Bejelentkezési Segédlet</span>
+                </div>
+                <p className="text-xs text-[#8c8c94] leading-relaxed">
+                  A Kréta rendszerbe történő sikeres belépéshez az alábbi azonosítókra van szükség:
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                  <div className="p-4 bg-[#151518] border border-[#28282d] rounded-xl space-y-2">
+                    <strong className="text-[#f3f3f6] text-xs flex items-center gap-1.5">
+                      <Search size={14} className="text-[#ff8800]" />
+                      <span>Beépített Intézménykereső</span>
+                    </strong>
+                    <p className="text-[11px] text-[#8c8c94] leading-relaxed">
+                      Nem szükséges fejből tudnod az iskola Kréta azonosítóját. A bejelentkezés során elegendő elkezdeni begépelni az iskola nevét vagy városát (minimum 3 karakter). A Pala közvetlenül a hivatalos <code className="text-[#ff8800] font-mono">intezmenykereso.e-kreta.hu</code> szerverről lekéri az élő intézménylistát, ahonnan azonnal kiválaszthatod a saját intézményedet.
+                    </p>
+                  </div>
+
+                  <div className="p-4 bg-[#151518] border border-[#28282d] rounded-xl space-y-2">
+                    <strong className="text-[#f3f3f6] text-xs flex items-center gap-1.5">
+                      <FolderTree size={14} className="text-[#30d158]" />
+                      <span>Gyakori Intézménykód Formátumok</span>
+                    </strong>
+                    <ul className="text-[11px] text-[#8c8c94] space-y-1.5 list-disc list-inside">
+                      <li>
+                        <strong className="text-[#f3f3f6]">Tankerületi (állami) iskolák:</strong> általában <code className="text-[#ff8800] font-mono">klik</code> előtag + 6 jegyű sorszám (pl. <code className="text-[#ff8800] font-mono">klik039000</code>).
+                      </li>
+                      <li>
+                        <strong className="text-[#f3f3f6]">Szakképzési Centrumok:</strong> gyakran <code className="text-[#ff8800] font-mono">szc-</code> előtag (pl. technikumok, szakképző intézmények).
+                      </li>
+                      <li>
+                        <strong className="text-[#f3f3f6]">Egyházi & alapítványi intézmények:</strong> egyedi betűkód vagy OM azonosító alapú elnevezés.
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="p-4 bg-[#151518] border border-[#28282d] rounded-xl space-y-2">
+                    <strong className="text-[#f3f3f6] text-xs flex items-center gap-1.5">
+                      <KeyRound size={14} className="text-[#0a84ff]" />
+                      <span>Diák Azonosító (11 jegyű OM azonosító)</span>
+                    </strong>
+                    <p className="text-[11px] text-[#8c8c94] leading-relaxed">
+                      Diákoknál a felhasználónév a 11 jegyű oktatási azonosító, amely mindig <strong className="text-[#f3f3f6]">7</strong>-es számmal kezdődik (megtalálható a diákigazolvány hátoldalán vagy a korábbi bizonyítványokon).
+                    </p>
+                  </div>
+
+                  <div className="p-4 bg-[#151518] border border-[#28282d] rounded-xl space-y-2">
+                    <strong className="text-[#f3f3f6] text-xs flex items-center gap-1.5">
+                      <Shield size={14} className="text-[#bf5af2]" />
+                      <span>Gondviselői (Szülői) Fiókok Támogatása</span>
+                    </strong>
+                    <p className="text-[11px] text-[#8c8c94] leading-relaxed">
+                      Szülők és gondviselők számára a felhasználónév általában <code className="text-[#ff8800] font-mono">G-</code> előtaggal rendelkezik (pl. <code className="text-[#ff8800] font-mono">G-72489...</code>) vagy az iskola által egyedileg megadott e-mail/azonosító. A Pala a szülői fiókokat is teljes körűen kezeli.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               {/* CLI Command Line Flags */}
               <div className="bg-[#1b1b1f] border border-[#28282d] p-6 rounded-2xl space-y-4">
                 <div className="flex items-center gap-2 text-sm font-bold text-[#f3f3f6]">
@@ -1690,21 +1793,33 @@ dart run bin/pala.dart`}</pre>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                   <div className="p-3.5 bg-[#151518] border border-[#28282d] rounded-xl space-y-1">
-                    <code className="text-[#ff8800] font-mono font-bold block">pala --demo</code>
+                    <code className="text-[#ff8800] font-mono font-bold block">pala --desktop (vagy -g)</code>
+                    <p className="text-[11px] text-[#8c8c94]">A grafikus Pala Asztali Alkalmazás (Desktop GUI) azonnali elindítása.</p>
+                  </div>
+                  <div className="p-3.5 bg-[#151518] border border-[#28282d] rounded-xl space-y-1">
+                    <code className="text-[#ff8800] font-mono font-bold block">pala --web (vagy -w)</code>
+                    <p className="text-[11px] text-[#8c8c94]">A grafikus Pala Webes Felület elindítása a böngésződben (helyi szerverként).</p>
+                  </div>
+                  <div className="p-3.5 bg-[#151518] border border-[#28282d] rounded-xl space-y-1">
+                    <code className="text-[#ff8800] font-mono font-bold block">pala dash</code>
+                    <p className="text-[11px] text-[#8c8c94]">Közvetlen belépés az élő visszaszámláló és teendők terminál nézetbe.</p>
+                  </div>
+                  <div className="p-3.5 bg-[#151518] border border-[#28282d] rounded-xl space-y-1">
+                    <code className="text-[#ff8800] font-mono font-bold block">pala --demo (vagy -m)</code>
                     <p className="text-[11px] text-[#8c8c94]">Teszt Elek beépített mintafiók indítása valós Kréta kapcsolat nélkül.</p>
                   </div>
                   <div className="p-3.5 bg-[#151518] border border-[#28282d] rounded-xl space-y-1">
+                    <code className="text-[#ff8800] font-mono font-bold block">pala --daemon (vagy -d)</code>
+                    <p className="text-[11px] text-[#8c8c94]">Értesítésfigyelő háttérfolyamat indítása (új jegyek és változások figyelése).</p>
+                  </div>
+                  <div className="p-3.5 bg-[#151518] border border-[#28282d] rounded-xl space-y-1">
                     <code className="text-[#ff8800] font-mono font-bold block">pala --clear-cache</code>
-                    <p className="text-[11px] text-[#8c8c94]">Minden mentett token és offline adatbázis azonnali törlése.</p>
+                    <p className="text-[11px] text-[#8c8c94]">Minden mentett token, beállítás és offline gyorsítótár azonnali törlése.</p>
                   </div>
-                  <div className="p-3.5 bg-[#151518] border border-[#28282d] rounded-xl space-y-1">
-                    <code className="text-[#ff8800] font-mono font-bold block">pala --json</code>
-                    <p className="text-[11px] text-[#8c8c94]">Órarend és jegyek kiírása strukturált JSON formátumban scripteknek.</p>
-                  </div>
-                  <div className="p-3.5 bg-[#151518] border border-[#28282d] rounded-xl space-y-1">
-                    <code className="text-[#ff8800] font-mono font-bold block">pala --export-ics</code>
-                    <p className="text-[11px] text-[#8c8c94]">Órarend mentése Google Naptárba vagy Outlookba importálható iCal fájlként.</p>
-                  </div>
+                </div>
+
+                <div className="p-3 bg-[#151518] rounded-xl border border-[#28282d] text-xs text-[#8c8c94]">
+                  <strong className="text-[#f3f3f6]">Naptár (.ics), CSV és Git jegytörténet export:</strong> A TUI felületen a <code className="text-[#ff8800] font-mono">Beállítások</code> almenüben érhető el interaktívan, ahol közvetlenül generálható és menthető a Google Naptár / Outlook kompatibilis iCal vagy Excel-kompatibilis CSV fájl.
                 </div>
               </div>
             </div>
@@ -1739,23 +1854,27 @@ dart run bin/pala.dart`}</pre>
                       <Monitor size={14} className="text-[#ff8800]" />
                       <span>Windows 10 / 11</span>
                     </strong>
-                    <span className="text-[10px] font-mono text-[#5f5f67]">%APPDATA%\pala</span>
+                    <span className="text-[10px] font-mono text-[#5f5f67]">%USERPROFILE%\.config\pala</span>
                   </div>
                   <div className="text-xs text-[#8c8c94] space-y-1.5 font-mono">
                     <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d] break-all">
-                      <span className="text-[#5f5f67]">Konfiguráció: </span>
-                      <span className="text-[#ff8800]">%APPDATA%\pala\config.json</span>
+                      <span className="text-[#5f5f67]">Beállítások & Téma: </span>
+                      <span className="text-[#ff8800]">%USERPROFILE%\.config\pala\state.json</span>
                     </div>
                     <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d] break-all">
-                      <span className="text-[#5f5f67]">Offline SQLite Adatbázis: </span>
-                      <span className="text-[#ff8800]">%LOCALAPPDATA%\pala\cache.db</span>
+                      <span className="text-[#5f5f67]">Titkosított Hitelesítés: </span>
+                      <span className="text-[#ff8800]">%USERPROFILE%\.config\pala\auth.json</span>
+                    </div>
+                    <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d] break-all">
+                      <span className="text-[#5f5f67]">Offline Kréta Gyorsítótár: </span>
+                      <span className="text-[#ff8800]">%USERPROFILE%\.config\pala\cache.json</span>
                     </div>
                   </div>
                   <div className="text-xs text-[#8c8c94]">
-                    <strong>Manuális szerkesztés PowerShellből:</strong>
+                    <strong>Megnyitás Jegyzettömbben PowerShellből:</strong>
                     <div className="mt-1.5 p-2.5 bg-[#0e0e11] rounded-xl border border-[#28282d] font-mono text-[#ff8800] flex items-center justify-between gap-2">
-                      <span className="truncate text-[11px] sm:text-xs">notepad $env:APPDATA\pala\config.json</span>
-                      <button onClick={() => handleCopy("notepad $env:APPDATA\\pala\\config.json", "cfg-win")} className="hover:text-white shrink-0 p-1">
+                      <span className="truncate text-[11px] sm:text-xs">notepad $env:USERPROFILE\.config\pala\state.json</span>
+                      <button onClick={() => handleCopy("notepad $env:USERPROFILE\\.config\\pala\\state.json", "cfg-win")} className="hover:text-white shrink-0 p-1">
                         {copiedKey === "cfg-win" ? <Check size={13} className="text-[#30d158]" /> : <Copy size={13} />}
                       </button>
                     </div>
@@ -1773,19 +1892,23 @@ dart run bin/pala.dart`}</pre>
                   </div>
                   <div className="text-xs text-[#8c8c94] space-y-1.5 font-mono">
                     <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d] break-all">
-                      <span className="text-[#5f5f67]">Konfiguráció: </span>
-                      <span className="text-[#ff8800]">~/.config/pala/config.json</span>
+                      <span className="text-[#5f5f67]">Beállítások & Téma: </span>
+                      <span className="text-[#ff8800]">~/.config/pala/state.json</span>
                     </div>
                     <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d] break-all">
-                      <span className="text-[#5f5f67]">Offline Adatbázis: </span>
-                      <span className="text-[#ff8800]">~/.local/share/pala/cache.db</span>
+                      <span className="text-[#5f5f67]">Titkosított Hitelesítés: </span>
+                      <span className="text-[#ff8800]">~/.config/pala/auth.json</span>
+                    </div>
+                    <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d] break-all">
+                      <span className="text-[#5f5f67]">Offline Kréta Gyorsítótár: </span>
+                      <span className="text-[#ff8800]">~/.config/pala/cache.json</span>
                     </div>
                   </div>
                   <div className="text-xs text-[#8c8c94]">
-                    <strong>Manuális szerkesztés terminálban:</strong>
+                    <strong>Szerkesztés terminálban:</strong>
                     <div className="mt-1.5 p-2.5 bg-[#0e0e11] rounded-xl border border-[#28282d] font-mono text-[#ff8800] flex items-center justify-between gap-2">
-                      <span className="truncate text-[11px] sm:text-xs">nano ~/.config/pala/config.json</span>
-                      <button onClick={() => handleCopy("nano ~/.config/pala/config.json", "cfg-lin")} className="hover:text-white shrink-0 p-1">
+                      <span className="truncate text-[11px] sm:text-xs">nano ~/.config/pala/state.json</span>
+                      <button onClick={() => handleCopy("nano ~/.config/pala/state.json", "cfg-lin")} className="hover:text-white shrink-0 p-1">
                         {copiedKey === "cfg-lin" ? <Check size={13} className="text-[#30d158]" /> : <Copy size={13} />}
                       </button>
                     </div>
@@ -1799,23 +1922,27 @@ dart run bin/pala.dart`}</pre>
                       <Monitor size={14} className="text-[#0a84ff]" />
                       <span>macOS</span>
                     </strong>
-                    <span className="text-[10px] font-mono text-[#5f5f67]">~/Library/Application Support/pala</span>
+                    <span className="text-[10px] font-mono text-[#5f5f67]">~/.config/pala</span>
                   </div>
                   <div className="text-xs text-[#8c8c94] space-y-1.5 font-mono">
                     <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d] break-all">
-                      <span className="text-[#5f5f67]">Konfiguráció: </span>
-                      <span className="text-[#ff8800]">~/Library/Application Support/pala/config.json</span>
+                      <span className="text-[#5f5f67]">Beállítások & Téma: </span>
+                      <span className="text-[#ff8800]">~/.config/pala/state.json</span>
                     </div>
                     <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d] break-all">
-                      <span className="text-[#5f5f67]">Gyorsítótár: </span>
-                      <span className="text-[#ff8800]">~/Library/Caches/pala/cache.db</span>
+                      <span className="text-[#5f5f67]">Titkosított Hitelesítés: </span>
+                      <span className="text-[#ff8800]">~/.config/pala/auth.json</span>
+                    </div>
+                    <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d] break-all">
+                      <span className="text-[#5f5f67]">Offline Kréta Gyorsítótár: </span>
+                      <span className="text-[#ff8800]">~/.config/pala/cache.json</span>
                     </div>
                   </div>
                   <div className="text-xs text-[#8c8c94]">
                     <strong>Megnyitás TextEditben:</strong>
                     <div className="mt-1.5 p-2.5 bg-[#0e0e11] rounded-xl border border-[#28282d] font-mono text-[#ff8800] flex items-center justify-between gap-2">
-                      <span className="truncate text-[11px] sm:text-xs">open -a TextEdit ~/Library/Application\ Support/pala/config.json</span>
-                      <button onClick={() => handleCopy("open -a TextEdit ~/Library/Application\\ Support/pala/config.json", "cfg-mac")} className="hover:text-white shrink-0 p-1">
+                      <span className="truncate text-[11px] sm:text-xs">open -a TextEdit ~/.config/pala/state.json</span>
+                      <button onClick={() => handleCopy("open -a TextEdit ~/.config/pala/state.json", "cfg-mac")} className="hover:text-white shrink-0 p-1">
                         {copiedKey === "cfg-mac" ? <Check size={13} className="text-[#30d158]" /> : <Copy size={13} />}
                       </button>
                     </div>
@@ -1827,23 +1954,253 @@ dart run bin/pala.dart`}</pre>
               <div className="bg-[#1b1b1f] border border-[#28282d] p-6 rounded-2xl space-y-4">
                 <div className="flex items-center gap-2 text-sm font-bold text-[#f3f3f6]">
                   <FileCode2 size={16} className="text-[#ff8800]" />
-                  <span>A <code className="text-[#ff8800] font-mono">config.json</code> Fájl Struktúrája</span>
+                  <span>A <code className="text-[#ff8800] font-mono">state.json</code> Beállításfájl Struktúrája</span>
                 </div>
 
                 <p className="text-xs text-[#8c8c94]">
-                  A konfigurációs fájl tetszőleges szövegszerkesztővel (VS Code, Notepad, Nano) manuálisan módosítható a program leállított állapotában:
+                  A beállításfájl közvetlenül módosítható tetszőleges szövegszerkesztővel (VS Code, Notepad, Nano) a program futása nélkül:
                 </p>
 
                 <div className="bg-[#151518] border border-[#28282d] rounded-xl p-4 font-mono text-xs text-[#f3f3f6] overflow-x-auto leading-relaxed">
                   <pre>{`{
-  "institute_code": "klik039000",       // Iskolád Kréta azonosító kódja
-  "theme": "dark",                     // "dark", "light", vagy "system"
-  "auto_sync_interval_minutes": 15,    // Automatikus háttér szinkronizáció gyakorisága
-  "absence_warning_hours": 250,        // Figyelmeztetési küszöb a 250 órás limithez
-  "notifications_enabled": true,       // Új jegy és teremváltozás asztali értesítések
-  "anonymize_student_name": false,     // Név elrejtése nyilvános prezentációkhoz / streamhez
-  "offline_fallback": true             // Kréta szerverleálláskor offline gyorsítótár használata
+  "themeMode": "dark",         // Felület témája: "dark" (sötét) vagy "light" (világos)
+  "showAsciiBanner": true,     // Nagy PALA ASCII logó megjelenítése a terminál főmenüjében
+  "parentalQuota": 5,          // Szülői igazolások éves napkerete (alapértelmezett: 5 nap)
+  "aliases": {                 // Tantárgyak egyéni átnevezései (pl. hosszú nevek rövidítése)
+    "Magyar nyelv és irodalom": "Irodalom",
+    "Matematika": "Matek"
+  }
 }`}</pre>
+                </div>
+              </div>
+
+              {/* Interactive Config Builder */}
+              <div className="bg-[#1b1b1f] border border-[#ff8800]/40 p-6 rounded-2xl space-y-6 shadow-[0_0_30px_rgba(255,136,0,0.08)]">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#28282d]">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-[#ff8800]/15 text-[#ff8800] border border-[#ff8800]/30 flex items-center justify-center shrink-0">
+                      <Sliders size={18} />
+                    </div>
+                    <div>
+                      <h3 className="text-sm sm:text-base font-black text-[#f3f3f6]">
+                        Interaktív Konfiguráció Generátor (state.json Builder)
+                      </h3>
+                      <p className="text-xs text-[#8c8c94]">
+                        Állítsd be a kívánt értékeket, majd töltsd le vagy másold a kész beállításfájlt egyetlen kattintással.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
+                  {/* Option 1: Theme */}
+                  <div className="space-y-2 bg-[#151518] border border-[#28282d] p-4 rounded-xl">
+                    <label className="font-bold text-white block">Felület Témája (themeMode):</label>
+                    <div className="flex items-center gap-2">
+                      {(["dark", "light", "system"] as const).map((mode) => (
+                        <button
+                          key={mode}
+                          type="button"
+                          onClick={() => setCfgTheme(mode)}
+                          className={`flex-1 py-2 rounded-lg font-bold transition-colors cursor-pointer text-center ${
+                            cfgTheme === mode
+                              ? "bg-[#ff8800] text-black"
+                              : "bg-[#1b1b1f] text-[#8c8c94] hover:text-white border border-[#28282d]"
+                          }`}
+                        >
+                          {mode === "dark" && "Sötét"}
+                          {mode === "light" && "Világos"}
+                          {mode === "system" && "Rendszer"}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Option 2: ASCII Banner */}
+                  <div className="space-y-2 bg-[#151518] border border-[#28282d] p-4 rounded-xl">
+                    <label className="font-bold text-white block">TUI ASCII Logó (showAsciiBanner):</label>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setCfgBanner(true)}
+                        className={`flex-1 py-2 rounded-lg font-bold transition-colors cursor-pointer text-center ${
+                          cfgBanner
+                            ? "bg-[#ff8800] text-black"
+                            : "bg-[#1b1b1f] text-[#8c8c94] hover:text-white border border-[#28282d]"
+                        }`}
+                      >
+                        Bekapcsolva
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCfgBanner(false)}
+                        className={`flex-1 py-2 rounded-lg font-bold transition-colors cursor-pointer text-center ${
+                          !cfgBanner
+                            ? "bg-[#ff8800] text-black"
+                            : "bg-[#1b1b1f] text-[#8c8c94] hover:text-white border border-[#28282d]"
+                        }`}
+                      >
+                        Kikapcsolva
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Option 3: Parental Quota */}
+                  <div className="space-y-2 bg-[#151518] border border-[#28282d] p-4 rounded-xl">
+                    <div className="flex items-center justify-between">
+                      <label className="font-bold text-white">Szülői Igazolási Keret (parentalQuota):</label>
+                      <span className="font-mono font-black text-[#ff8800] text-sm">{cfgQuota} nap</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {[3, 5, 8, 10].map((num) => (
+                        <button
+                          key={num}
+                          type="button"
+                          onClick={() => setCfgQuota(num)}
+                          className={`flex-1 py-1.5 rounded-lg font-bold transition-colors cursor-pointer text-center ${
+                            cfgQuota === num
+                              ? "bg-[#ff8800] text-black"
+                              : "bg-[#1b1b1f] text-[#8c8c94] hover:text-white border border-[#28282d]"
+                          }`}
+                        >
+                          {num} nap
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Option 4: Aliases presets */}
+                  <div className="space-y-2 bg-[#151518] border border-[#28282d] p-4 rounded-xl">
+                    <label className="font-bold text-white block">Tantárgy Rövidítések (aliases):</label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        { full: "Magyar nyelv és irodalom", short: "Irodalom" },
+                        { full: "Matematika", short: "Matek" },
+                        { full: "Testnevelés és sport", short: "Tesi" },
+                        { full: "Történelem", short: "Töri" },
+                        { full: "Biológia", short: "Bio" },
+                        { full: "Fizika", short: "Fizi" },
+                      ].map((item) => {
+                        const active = Boolean(cfgAliases[item.full]);
+                        return (
+                          <button
+                            key={item.full}
+                            type="button"
+                            onClick={() => {
+                              setCfgAliases((prev) => {
+                                const next = { ...prev };
+                                if (next[item.full]) {
+                                  delete next[item.full];
+                                } else {
+                                  next[item.full] = item.short;
+                                }
+                                return next;
+                              });
+                            }}
+                            className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors cursor-pointer border ${
+                              active
+                                ? "bg-[#ff8800]/20 text-[#ff8800] border-[#ff8800]/40"
+                                : "bg-[#1b1b1f] text-[#8c8c94] border-[#28282d] hover:text-white"
+                            }`}
+                          >
+                            <span>{item.short}</span>
+                            <span className="text-[10px] ml-1 opacity-75">{active ? "[be]" : "[+]"}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Generated JSON Output with Action Buttons */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <FileCode2 size={14} className="text-[#ff8800]" />
+                      <span>Generált state.json Tartalom:</span>
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const jsonStr = JSON.stringify(
+                            {
+                              themeMode: cfgTheme,
+                              showAsciiBanner: cfgBanner,
+                              parentalQuota: cfgQuota,
+                              aliases: cfgAliases,
+                            },
+                            null,
+                            2
+                          );
+                          handleCopy(jsonStr, "cfg-builder");
+                        }}
+                        className="inline-flex items-center gap-1.5 bg-[#1b1b1f] hover:bg-[#222227] text-white border border-[#28282d] hover:border-[#ff8800] px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                      >
+                        {copiedKey === "cfg-builder" ? (
+                          <>
+                            <Check size={13} className="text-[#30d158]" />
+                            <span className="text-[#30d158]">Másolva!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy size={13} />
+                            <span>JSON másolása</span>
+                          </>
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const jsonStr = JSON.stringify(
+                            {
+                              themeMode: cfgTheme,
+                              showAsciiBanner: cfgBanner,
+                              parentalQuota: cfgQuota,
+                              aliases: cfgAliases,
+                            },
+                            null,
+                            2
+                          );
+                          const blob = new Blob([jsonStr], { type: "application/json" });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement("a");
+                          a.href = url;
+                          a.download = "state.json";
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                          URL.revokeObjectURL(url);
+                        }}
+                        className="inline-flex items-center gap-1.5 bg-[#ff8800] hover:bg-[#ffa033] text-black px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-sm"
+                      >
+                        <Download size={13} />
+                        <span>state.json letöltése</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#151518] border border-[#28282d] rounded-xl p-4 font-mono text-xs text-[#f3f3f6] overflow-x-auto leading-relaxed">
+                    <pre>{JSON.stringify(
+                      {
+                        themeMode: cfgTheme,
+                        showAsciiBanner: cfgBanner,
+                        parentalQuota: cfgQuota,
+                        aliases: cfgAliases,
+                      },
+                      null,
+                      2
+                    )}</pre>
+                  </div>
+
+                  <div className="text-[11px] text-[#8c8c94] bg-[#151518] border border-[#28282d] p-3 rounded-xl">
+                    <strong>Hova másold a letöltött fájlt?</strong>
+                    <div className="mt-1 font-mono text-[10px] space-y-0.5 text-[#c5c5cc]">
+                      <div>Windows: <span className="text-[#ff8800]">%USERPROFILE%\.config\pala\state.json</span></div>
+                      <div>Linux / macOS: <span className="text-[#ff8800]">~/.config/pala/state.json</span></div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1959,7 +2316,7 @@ dart run bin/pala.dart`}</pre>
                   Melyik Pala verziót válasszam?
                 </h1>
                 <p className="text-sm text-[#8c8c94] leading-relaxed max-w-2xl">
-                  A Pala négy önálló felületen érhető el, amelyek ugyanazt a titkosított, helyi adattárolást és Kréta-kapcsolatot használják, de eltérő
+                  A Pala önálló felületeken (TUI, Desktop, Mobile, helyi Web UI és Böngésző Kiterjesztés) érhető el, amelyek ugyanazt a titkosított, helyi adattárolást és közvetlen Kréta-kapcsolatot használják, de eltérő
                   célra és fejlettségi szinten állnak. Az alábbi táblázat és a platformonkénti előnyök/hátrányok segítenek eldönteni, melyik illik hozzád.
                 </p>
               </div>
@@ -1989,7 +2346,7 @@ dart run bin/pala.dart`}</pre>
                         <td className="p-3 font-semibold text-[#f3f3f6]">Telepítés</td>
                         <td className="p-3">Egyetlen bináris</td>
                         <td className="p-3">Telepítő / bundle</td>
-                        <td className="p-3">APK / (fejlesztés alatt)</td>
+                        <td className="p-3">Android: APK • iOS: Nem elérhető</td>
                         <td className="p-3">Nulla telepítés</td>
                       </tr>
                       <tr className="border-t border-[#28282d]">
@@ -2074,8 +2431,8 @@ dart run bin/pala.dart`}</pre>
                     <Monitor size={16} />
                     <span>Desktop (Windows / macOS / Linux)</span>
                   </div>
-                  <div className="space-y-1.5">
-                    <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><CheckCircle2 size={13} className="text-[#30d158] shrink-0 mt-0.5" /><span>Egy kódbázis mind az 5 célplatformra (Windows, macOS, Linux, Android, iOS) — konzisztens fejlesztés és karbantartás.</span></div>
+                    <div className="space-y-1.5">
+                    <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><CheckCircle2 size={13} className="text-[#30d158] shrink-0 mt-0.5" /><span>Közös Flutter felületi kódbázis (Windows, macOS, Linux, Android — iOS előkészületben) a konzisztens karbantartásért.</span></div>
                     <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><CheckCircle2 size={13} className="text-[#30d158] shrink-0 mt-0.5" /><span>Igazi grafikus vizualizációk, interaktív diagramok, egérrel/érintéssel kényelmesen kezelhető felület.</span></div>
                     <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><CheckCircle2 size={13} className="text-[#30d158] shrink-0 mt-0.5" /><span>A háttérben ugyanazt a Kréta-klienst használja, mint a TUI — nincs duplikált, eltérően viselkedő hálózati logika.</span></div>
                     <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><AlertTriangle size={13} className="text-[#ffd60a] shrink-0 mt-0.5" /><span>Nagyobb telepítő méret és memóriaigény (~120–180 MB) a TUI-hoz képest.</span></div>
@@ -2087,12 +2444,12 @@ dart run bin/pala.dart`}</pre>
                 <div className="bg-[#1b1b1f] border border-[#28282d] rounded-2xl p-5 space-y-3">
                   <div className="flex items-center gap-2 text-sm font-bold text-[#0a84ff]">
                     <Smartphone size={16} />
-                    <span>Mobile (Android / iOS)</span>
+                    <span>Mobile (Android • iOS fejlesztés alatt)</span>
                   </div>
                   <div className="space-y-1.5">
                     <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><CheckCircle2 size={13} className="text-[#30d158] shrink-0 mt-0.5" /><span>Natív érintéses élmény, zsebméretű, 100% reklám- és nyomkövetés-mentes.</span></div>
                     <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><CheckCircle2 size={13} className="text-[#30d158] shrink-0 mt-0.5" /><span>Android: közvetlen APK letöltés, telepítés áruházi engedélyek nélkül is.</span></div>
-                    <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><AlertTriangle size={13} className="text-[#ffd60a] shrink-0 mt-0.5" /><span>A natív Flutter iOS build fejlesztés alatt áll; hivatalos App Store / TestFlight terjesztéshez Apple Developer Program tagság (kb. 99 USD/év) és Mac gép szükséges — addig a Safari-alapú webapp (PWA) vagy sideloading (AltStore/SideStore) az elérési út.</span></div>
+                    <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><AlertTriangle size={13} className="text-[#ffd60a] shrink-0 mt-0.5" /><span>A natív Flutter iOS build fejlesztés alatt áll; a Safari szigorú CORS szabályai miatt weboldalként futó PWA közvetlenül nem érheti el a Krétát köztes szerver nélkül (ami adatvédelmileg kizárt). Így kizárólag a jövőbeli natív iOS kliens jöhet szóba (amihez Apple Developer Program tagság szükséges).</span></div>
                     <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><AlertTriangle size={13} className="text-[#ffd60a] shrink-0 mt-0.5" /><span>Háttérben futó automatikus értesítés (új jegy figyelése) mobilon még nem elérhető — ez platformonként (Android WorkManager, iOS Background App Refresh) külön megoldást igényel.</span></div>
                   </div>
                 </div>
@@ -2109,6 +2466,25 @@ dart run bin/pala.dart`}</pre>
                     <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><CheckCircle2 size={13} className="text-[#30d158] shrink-0 mt-0.5" /><span>Mini popup gyorsnézet + teljes vezérlőpult, 429-kezeléssel és cache-first tartalékkal terhelés esetén.</span></div>
                     <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><AlertTriangle size={13} className="text-[#ffd60a] shrink-0 mt-0.5" /><span>Csak Chromium-alapú böngészőkben (Chrome, Edge, Brave) — Firefox Manifest V3 támogatás korlátozott.</span></div>
                     <div className="flex items-start gap-2 text-xs text-[#8c8c94]"><AlertTriangle size={13} className="text-[#ffd60a] shrink-0 mt-0.5" /><span>Nincs értesítés, amíg a böngésző zárva van, és nincs asztali parancsikon-szintű gyors elérés.</span></div>
+                  </div>
+                </div>
+
+                {/* Web UI */}
+                <div className="bg-[#1b1b1f] border border-[#28282d] rounded-2xl p-5 space-y-3 md:col-span-2">
+                  <div className="flex items-center gap-2 text-sm font-bold text-[#ff8800]">
+                    <AppWindow size={16} />
+                    <span>Helyi Webes Felület (Localhost Web UI — pala --web / pala -w)</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-[#8c8c94]">
+                    <div className="space-y-1.5">
+                      <div className="flex items-start gap-2"><CheckCircle2 size={13} className="text-[#30d158] shrink-0 mt-0.5" /><span>Grafikus böngészős felület böngészőbővítmény vagy külön grafikus keretrendszer telepítése nélkül.</span></div>
+                      <div className="flex items-start gap-2"><CheckCircle2 size={13} className="text-[#30d158] shrink-0 mt-0.5" /><span>Loopback IP (127.0.0.1) és véletlenszerű kriptográfiai session token védi a helyi hozzáférést.</span></div>
+                      <div className="flex items-start gap-2"><CheckCircle2 size={13} className="text-[#30d158] shrink-0 mt-0.5" /><span>Bármilyen operációs rendszeren és modern böngészőben (Firefox, Safari, Chrome, Edge) azonnal fut.</span></div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <div className="flex items-start gap-2"><AlertTriangle size={13} className="text-[#ffd60a] shrink-0 mt-0.5" /><span>Futásához a terminálban vagy háttérben futnia kell a <code className="text-[#ff8800] font-mono text-[11px]">pala --web</code> parancsnak.</span></div>
+                      <div className="flex items-start gap-2"><AlertTriangle size={13} className="text-[#ffd60a] shrink-0 mt-0.5" /><span>Nem felhős weboldal: az adatok kizárólag a gépeden élnek, nincs központi elérés idegen gépről.</span></div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2177,8 +2553,8 @@ dart run bin/pala.dart`}</pre>
                   </div>
                   <div className="space-y-2 text-xs text-[#8c8c94]">
                     <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
-                      <strong className="text-[#f3f3f6] block mb-0.5">4 Beépített Színtéma:</strong>
-                      <span>Classic Blue, Neon Matrix zöld, Midnight Pink és Amber borostyán választható témák.</span>
+                      <strong className="text-[#f3f3f6] block mb-0.5">Sötét & Világos Terminál Mód:</strong>
+                      <span>Automatikus kontraszt-igazítás sötét és világos hátterű terminálablakokhoz, egységes Pala Amber borostyán kiemeléssel.</span>
                     </div>
                     <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
                       <strong className="text-[#f3f3f6] block mb-0.5">Automatikus UTF-8 & FFI:</strong>
@@ -2490,6 +2866,89 @@ dart run bin/pala.dart`}</pre>
             </div>
           )}
 
+          {/* ================= PAGE: WEBES FELÜLET (WEB UI) ================= */}
+          {activePage === "webui" && (
+            <div className="space-y-8 animate-fadeIn">
+              <div>
+                <span className="text-[11px] font-mono font-bold tracking-widest text-[#ff8800] uppercase block mb-1">
+                  VÁLTOZATOK / WEBES FELÜLET (WEB UI)
+                </span>
+                <h1 className="text-3xl sm:text-4xl font-black text-[#f3f3f6] tracking-tight mb-3">
+                  Pala Webes Felület (Localhost Web UI)
+                </h1>
+                <p className="text-sm text-[#8c8c94] leading-relaxed max-w-2xl">
+                  Grafikus böngészős Kréta felület a gép helyi loopback hálózatán futtatva. Nem igényel bővítményt vagy felhős regisztrációt, és bármilyen operációs rendszeren, bármelyik modern böngészőben azonnal használható.
+                </p>
+              </div>
+
+              {/* Commands & How to Run */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-[#1b1b1f] border border-[#28282d] p-5 rounded-2xl space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-bold text-[#ff8800]">
+                    <AppWindow size={16} />
+                    <span>Indítás és Parancsok</span>
+                  </div>
+                  <div className="space-y-2 text-xs text-[#8c8c94]">
+                    <div className="p-3 bg-[#151518] rounded-xl border border-[#28282d]">
+                      <code className="text-[#ff8800] font-mono font-bold block mb-0.5">pala --web (vagy pala -w)</code>
+                      <span>
+                        Elindítja a beépített helyi loopback HTTP szervert, és automatikusan megnyitja a rendszer alapértelmezett böngészőjét az egyedi titkosított munkamenet-URL-lel (pl. <code className="text-[#f3f3f6] font-mono text-[11px]">http://127.0.0.1:54321/?token=...</code>).
+                      </span>
+                    </div>
+                    <div className="p-3 bg-[#151518] rounded-xl border border-[#28282d]">
+                      <code className="text-[#ff8800] font-mono font-bold block mb-0.5">pala --web --demo (vagy pala -w -m)</code>
+                      <span>
+                        Webes felület indítása a beépített Teszt Elek demó profillal, internetkapcsolat vagy éles Kréta fiók nélkül.
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-[#1b1b1f] border border-[#28282d] p-5 rounded-2xl space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-bold text-[#30d158]">
+                    <Shield size={16} />
+                    <span>Zero-Cloud Adatvédelmi Modell</span>
+                  </div>
+                  <div className="space-y-2 text-xs text-[#8c8c94]">
+                    <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
+                      <strong className="text-[#f3f3f6] block mb-0.5">Kizárólag Helyi Loopback (127.0.0.1):</strong>
+                      <span>A webszerver kizárólag a saját gépedről érhető el; a helyi hálózatról (LAN) nem nyit portot, így a közös WiFi-n lévők nem érhetik el.</span>
+                    </div>
+                    <div className="p-2.5 bg-[#151518] rounded-xl border border-[#28282d]">
+                      <strong className="text-[#f3f3f6] block mb-0.5">Kriptográfiai Token Védelem:</strong>
+                      <span>Minden indításkor egyedi 24 bájtos kriptográfiai tokent generál (<code className="text-[#ff8800] font-mono">Random.secure()</code>), megakadályozva, hogy más helyi programok engedély nélkül hozzáférjenek.</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Web UI Capabilities */}
+              <div className="bg-[#1b1b1f] border border-[#28282d] p-6 rounded-2xl space-y-4">
+                <div className="flex items-center gap-2 text-sm font-bold text-[#f3f3f6]">
+                  <Globe size={16} className="text-[#0a84ff]" />
+                  <span>Funkciók és Böngésző-kompatibilitás</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-[#8c8c94]">
+                  <div className="p-3.5 bg-[#151518] border border-[#28282d] rounded-xl space-y-1.5">
+                    <strong className="text-[#f3f3f6] block text-xs">Minden Böngészőben Működik</strong>
+                    <span>Google Chrome, Mozilla Firefox, Brave, Safari, Microsoft Edge, Opera vagy bármilyen WebKit/Gecko böngésző.</span>
+                  </div>
+
+                  <div className="p-3.5 bg-[#151518] border border-[#28282d] rounded-xl space-y-1.5">
+                    <strong className="text-[#f3f3f6] block text-xs">Nulla Bővítményigény</strong>
+                    <span>Nem szükséges kiegészítőt vagy bővítményt telepíteni. Ideális olyan iskolai vagy munkahelyi gépeken, ahol a bővítménytelepítés rendszergazdailag zárolt.</span>
+                  </div>
+
+                  <div className="p-3.5 bg-[#151518] border border-[#28282d] rounded-xl space-y-1.5">
+                    <strong className="text-[#f3f3f6] block text-xs">Teljes Diák Áttekintés</strong>
+                    <span>Heti órarend nézet, teremjelölések, tanári helyettesítések, legfrissebb jegyek, tantárgyi átlagok és hiányzások táblázata.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* ================= PAGE: SECURITY ================= */}
           {activePage === "security" && (
             <div className="space-y-8 animate-fadeIn">
@@ -2534,6 +2993,100 @@ dart run bin/pala.dart`}</pre>
                       Semmilyen analitikai vagy viselkedéskövető kód nincs a programban.
                     </span>
                   </div>
+                </div>
+              </div>
+
+              {/* Zero-Proxy Architecture Comparison Diagram */}
+              <div className="bg-[#1b1b1f] border border-[#28282d] p-6 rounded-2xl space-y-5">
+                <div className="flex items-center gap-2 text-sm font-bold text-[#f3f3f6]">
+                  <ShieldAlert size={16} className="text-[#ff8800]" />
+                  <span>Miért tilos a Központi Proxy? — Architektúra Összehasonlítás</span>
+                </div>
+                <p className="text-xs text-[#8c8c94] leading-relaxed">
+                  Egyes alternatív Kréta projektek központi backend szervereket üzemeltetnek a kérések átjátszására. A Pala ezt szigorúan elutasítja: az alábbi összehasonlítás bemutatja a két modell közötti kritikus biztonsági különbséget.
+                </p>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {/* Dangerous Proxy Model */}
+                  <div className="p-4 bg-red-500/5 border border-red-500/30 rounded-xl space-y-3">
+                    <div className="flex items-center gap-2 text-xs font-bold text-red-400">
+                      <AlertCircle size={15} />
+                      <span>Veszélyes Központi Proxy Modell (Harmadik Fél)</span>
+                    </div>
+
+                    {/* Flow Diagram */}
+                    <div className="p-2.5 bg-[#151518] rounded-lg border border-red-500/20 text-[11px] font-mono text-center space-y-1">
+                      <div className="text-[#8c8c94]">Diák Böngészője / Kliens</div>
+                      <div className="text-red-400 flex items-center justify-center gap-1">
+                        <span>↓</span> <span className="text-[10px] text-red-300">nyers jelszó / adatok</span> <span>↓</span>
+                      </div>
+                      <div className="p-1.5 bg-red-500/15 text-red-300 font-bold rounded border border-red-500/30">
+                        Központi Harmadik Feles Proxy Szerver (Veszélyzóna!)
+                      </div>
+                      <div className="text-red-400 flex items-center justify-center gap-1">
+                        <span>↓</span> <span className="text-[10px] text-red-300">köztes továbbítás</span> <span>↓</span>
+                      </div>
+                      <div className="text-[#8c8c94]">Hivatalos e-Kréta Szerverek</div>
+                    </div>
+
+                    <ul className="text-[11px] text-[#8c8c94] space-y-2">
+                      <li className="flex items-start gap-1.5">
+                        <span className="text-red-400 font-bold shrink-0">•</span>
+                        <span><strong className="text-red-300">Jelszavak idegen szerveren:</strong> A bejelentkezési adatok és munkamenet-tokenek átfutnak a harmadik fél kiszolgálóján.</span>
+                      </li>
+                      <li className="flex items-start gap-1.5">
+                        <span className="text-red-400 font-bold shrink-0">•</span>
+                        <span><strong className="text-red-300">Súlyos GDPR incidens kockázat:</strong> Több tízezer kiskorú diák jegyei, hiányzásai és személyes adatai kerülnek egy ismeretlen üzemeltető kezébe.</span>
+                      </li>
+                      <li className="flex items-start gap-1.5">
+                        <span className="text-red-400 font-bold shrink-0">•</span>
+                        <span><strong className="text-red-300">Központi célpont támadóknak:</strong> Ha a központi szervert feltörik, az összes diák hitelesítési adata azonnal kiszivároghat.</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* Pala Zero-Proxy Model */}
+                  <div className="p-4 bg-[#30d158]/5 border border-[#30d158]/30 rounded-xl space-y-3">
+                    <div className="flex items-center gap-2 text-xs font-bold text-[#30d158]">
+                      <CheckCircle2 size={15} />
+                      <span>Pala Zero-Proxy Modell (100% Kliensoldali TLS 1.3)</span>
+                    </div>
+
+                    {/* Flow Diagram */}
+                    <div className="p-2.5 bg-[#151518] rounded-lg border border-[#30d158]/20 text-[11px] font-mono text-center space-y-1">
+                      <div className="text-[#f3f3f6] font-bold">Te Saját Eszközöd (Pala TUI / Desktop / Mobile / Web / Bővítmény)</div>
+                      <div className="text-[#30d158] flex items-center justify-center gap-1">
+                        <span>↓</span> <span className="text-[10px] text-[#30d158]">Közvetlen Végpontok Közötti TLS 1.3 Titkosítás</span> <span>↓</span>
+                      </div>
+                      <div className="p-1.5 bg-[#30d158]/15 text-[#30d158] font-bold rounded border border-[#30d158]/30">
+                        NINCS Köztes Szerver — 0 Adatgyűjtés
+                      </div>
+                      <div className="text-[#30d158] flex items-center justify-center gap-1">
+                        <span>↓</span> <span className="text-[10px] text-[#30d158]">Hivatalos Kréta API Végpontok</span> <span>↓</span>
+                      </div>
+                      <div className="text-[#f3f3f6]">Hivatalos idp.e-kreta.hu & Iskolai Kréta</div>
+                    </div>
+
+                    <ul className="text-[11px] text-[#8c8c94] space-y-2">
+                      <li className="flex items-start gap-1.5">
+                        <span className="text-[#30d158] font-bold shrink-0">•</span>
+                        <span><strong className="text-[#f3f3f6]">Közvetlen titkosított alagút:</strong> A kommunikáció kizárólag a te eszközöd és a Kréta között zajlik, nincsenek köztes átjárók.</span>
+                      </li>
+                      <li className="flex items-start gap-1.5">
+                        <span className="text-[#30d158] font-bold shrink-0">•</span>
+                        <span><strong className="text-[#f3f3f6]">Helyi AES-256 tárolás:</strong> A jelszót a Pala soha nem tárolja, kizárólag a titkosított OAuth2 tokent a te gépeden/telefonodon.</span>
+                      </li>
+                      <li className="flex items-start gap-1.5">
+                        <span className="text-[#30d158] font-bold shrink-0">•</span>
+                        <span><strong className="text-[#f3f3f6]">Nincs központi adatbázis:</strong> Mivel nem létezik Pala szerver, fizikai és elméleti képtelenség a felhasználók adatainak tömeges ellopása.</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="p-3.5 bg-[#151518] rounded-xl border border-[#28282d] text-xs text-[#8c8c94] leading-relaxed">
+                  <strong className="text-[#f3f3f6] block mb-1">Miért nem működik a hagyományos nyilvános weboldal (PWA) közvetlen kapcsolattal?</strong>
+                  A böngészők szigorú biztonsági házirendje (Same-Origin Policy és CORS) megakadályozza, hogy egy külső weboldal JavaScript kódja közvetlenül AJAX kérést küldjön a Kréta szervereire. Emiatt egy internetes weboldal csak a bal oldalon látható veszélyes proxy szerverrel működhetne — amit a Pala az adatvédelem védelmében határozottan elutasít. Helyette a helyben futtatott <code className="text-[#ff8800] font-mono">pala --web</code> vagy a böngésző kiterjesztés biztosítja a grafikus felületet kockázatmentesen.
                 </div>
               </div>
             </div>
@@ -2616,11 +3169,72 @@ dart run bin/pala.dart`}</pre>
                     2. Ha a hivatalos Kréta szerverek karbantartás miatt leálltak, a Pala felajánlja az offline módot vagy a <code className="text-[#ff8800] font-mono">pala --demo</code> tesztmódot.
                   </p>
                 </div>
+
+                {/* Kréta API Error Codes & Outage Handling */}
+                <div className="bg-[#1b1b1f] border border-[#28282d] p-6 rounded-2xl space-y-4">
+                  <div className="flex items-center gap-2 text-sm font-bold text-[#f3f3f6]">
+                    <AlertCircle size={16} className="text-[#ff8800]" />
+                    <span>Kréta API Hibakódok és Terheléskezelés</span>
+                  </div>
+                  <p className="text-xs text-[#8c8c94] leading-relaxed">
+                    Az e-Kréta központi szerverei csúcsidőszakokban (pl. félévzáráskor vagy vasárnap esténként) gyakran túlterhelődnek. A Pala intelligens védelmi réteggel kezeli ezeket a helyzeteket:
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div className="p-4 bg-[#151518] border border-[#28282d] rounded-xl space-y-2">
+                      <div className="flex items-center justify-between">
+                        <strong className="text-[#ffd60a] font-mono text-xs">HTTP 429 • Too Many Requests</strong>
+                        <span className="text-[10px] bg-[#ffd60a]/15 text-[#ffd60a] px-2 py-0.5 rounded font-bold">Kéréskorlát</span>
+                      </div>
+                      <p className="text-[11px] text-[#8c8c94] leading-relaxed">
+                        A Kréta szerverei túl sok lekérdezés esetén ideiglenes kéréskorlátozást léptetnek életbe. A Pala automatikusan kiolvassa a szerver válaszából a <code className="text-[#ff8800] font-mono">Retry-After</code> fejlécet (általában 30–60 másodperc), szünetelteti az újabb hálózati kéréseket, és az átmeneti idő alatt a helyi titkosított gyorsítótárból szolgálja ki az adatokat.
+                      </p>
+                    </div>
+
+                    <div className="p-4 bg-[#151518] border border-[#28282d] rounded-xl space-y-2">
+                      <div className="flex items-center justify-between">
+                        <strong className="text-red-400 font-mono text-xs">HTTP 502 / 503 / 504 • Server Error</strong>
+                        <span className="text-[10px] bg-red-500/15 text-red-400 px-2 py-0.5 rounded font-bold">Leállás / Karbantartás</span>
+                      </div>
+                      <p className="text-[11px] text-[#8c8c94] leading-relaxed">
+                        A központi Kréta szerverek leállása vagy karbantartása esetén a Pala azonnal aktiválja a karbantartási üzemmódot (<code className="text-[#ff8800] font-mono">isMaintenanceMode</code>). Hibaüzenetek helyett tiszta információs sáv jelenik meg, és a korábban szinkronizált órarend, jegyek és hiányzások azonnal elérhetők maradnak offline.
+                      </p>
+                    </div>
+
+                    <div className="p-4 bg-[#151518] border border-[#28282d] rounded-xl space-y-2">
+                      <div className="flex items-center justify-between">
+                        <strong className="text-[#0a84ff] font-mono text-xs">HTTP 401 • Unauthorized</strong>
+                        <span className="text-[10px] bg-[#0a84ff]/15 text-[#0a84ff] px-2 py-0.5 rounded font-bold">Token Frissítés</span>
+                      </div>
+                      <p className="text-[11px] text-[#8c8c94] leading-relaxed">
+                        Az OAuth2 belépési tokenek 40–60 perc után lejárnak. A Pala a háttérben, a felhasználó zavarása nélkül automatikusan beküldi a titkosított <code className="text-[#ff8800] font-mono">refresh_token</code>-t a Kréta IDP szervernek, megújítja a munkamenetet, és azonnal újrahívja az API kérést. Nem szükséges újra megadni a jelszót.
+                      </p>
+                    </div>
+
+                    <div className="p-4 bg-[#151518] border border-[#28282d] rounded-xl space-y-2">
+                      <div className="flex items-center justify-between">
+                        <strong className="text-[#30d158] font-mono text-xs">Hálózati Kimaradás & Offline Mód</strong>
+                        <span className="text-[10px] bg-[#30d158]/15 text-[#30d158] px-2 py-0.5 rounded font-bold">3x Retry</span>
+                      </div>
+                      <p className="text-[11px] text-[#8c8c94] leading-relaxed">
+                        Ha az iskolai WiFi vagy mobilnet megszakad, a Pala 3 lépésben (1s, 2s, 4s késleltetéssel) exponenciális újrapróbálkozást végez. Ha a hálózat nem tér vissza, automatikusan offline módra vált a mentett adatokkal.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
+            </div>
+          )}
+
+          {/* ================= PAGE: HISTORY ================= */}
+          {activePage === "tortenet" && (
+            <div className="space-y-8 animate-fadeIn min-w-0 w-full">
+              <ClientHistory />
             </div>
           )}
         </main>
       </div>
+      <Footer />
     </div>
   );
 }

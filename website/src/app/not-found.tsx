@@ -2,50 +2,32 @@
 
 import React from "react";
 import Link from "next/link";
-import { ArrowLeft, BookOpen, Home, Download, Search } from "lucide-react";
-import { useRelease } from "@/lib/useRelease";
+import {
+  BookOpen,
+  Home,
+  Download,
+  HelpCircle,
+  History,
+  Users,
+  Search,
+} from "lucide-react";
+import { Footer } from "@/components/Footer";
 
 export default function NotFound() {
-  const { version } = useRelease();
+  const SUGGESTIONS = [
+    { label: "Windows telepítés", href: "/docs#telepites" },
+    { label: "Android APK", href: "/docs#telepites" },
+    { label: "Kliensek története", href: "/tortenet" },
+    { label: "Gyakori kérdések (GYIK)", href: "/docs#gyik" },
+    { label: "Adatvédelem", href: "/adatvedelem" },
+  ];
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[#f3f3f6] flex flex-col font-sans selection:bg-[#ff8800]/30 selection:text-[#ff8800] overflow-x-hidden">
-      {/* Top Simple Header */}
-      <header className="border-b border-[#28282d] bg-[#151518]/90 backdrop-blur-md h-[70px] flex items-center px-4 sm:px-6">
-        <div className="max-w-6xl mx-auto w-full flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group">
-            <img
-              src="/logo.svg"
-              alt="Pala logó"
-              width={40}
-              height={40}
-              className="w-10 h-10 rounded-xl shadow-[0_0_15px_rgba(255,136,0,0.25)] transition-transform group-hover:scale-105 object-contain"
-            />
-            <div className="flex flex-col">
-              <span className="font-extrabold text-base tracking-wide text-[#f3f3f6] flex items-center gap-2">
-                PALA
-                <span className="text-[10px] font-bold bg-[#ff8800]/15 text-[#ff8800] border border-[#ff8800]/30 px-1.5 py-0.5 rounded">
-                  {version}
-                </span>
-              </span>
-              <span className="text-[11px] font-semibold text-[#8c8c94]">Kréta Kliens</span>
-            </div>
-          </Link>
-
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 bg-[#1b1b1f] hover:bg-[#222227] text-[#8c8c94] hover:text-[#f3f3f6] border border-[#28282d] text-xs font-bold px-3.5 py-2 rounded-xl transition-colors"
-          >
-            <ArrowLeft size={13} />
-            <span>Főoldal</span>
-          </Link>
-        </div>
-      </header>
-
+    <div className="min-h-screen bg-[var(--bg)] text-[#f3f3f6] flex flex-col font-sans selection:bg-[#ff8800]/30 selection:text-[#ff8800] overflow-x-hidden pt-[68px]">
       {/* Main 404 Hero */}
-      <main className="flex-1 flex flex-col items-center justify-center text-center px-4 sm:px-6 py-16 max-w-3xl mx-auto w-full">
+      <main className="flex-1 flex flex-col items-center justify-center text-center px-4 sm:px-6 py-14 sm:py-20 max-w-4xl mx-auto w-full">
         {/* Glowing 404 Badge */}
-        <div className="inline-flex items-center gap-2 bg-[#ff453a]/10 border border-[#ff453a]/30 px-4 py-1.5 rounded-full text-xs font-bold text-[#ff453a] mb-6">
+        <div className="inline-flex items-center gap-2 bg-[#ff453a]/10 border border-[#ff453a]/30 px-4 py-1.5 rounded-full text-xs font-bold text-[#ff453a] mb-6 shadow-[0_0_20px_rgba(255,69,58,0.1)]">
           <span>404 HIBA</span> • <span>AZ OLDAL NEM TALÁLHATÓ</span>
         </div>
 
@@ -61,12 +43,12 @@ export default function NotFound() {
           Hoppá! Ez az oldal nem létezik vagy elköltözött.
         </h1>
 
-        <p className="text-sm sm:text-base text-[#8c8c94] leading-relaxed max-w-lg mb-8 sm:mb-10">
-          A keresett oldal vagy URL nem található. Lehet, hogy elgépelted a címet, vagy a hivatkozott tartalom átkerült egy másik menüpont alá.
+        <p className="text-sm sm:text-base text-[#8c8c94] leading-relaxed max-w-lg mb-8">
+          A keresett oldal vagy URL nem található. Lehet, hogy elgépelted a hivatkozást, vagy a tartalom átkerült egy másik menüpont alá.
         </p>
 
         {/* Quick Recovery Action Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full max-w-md mb-12">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full max-w-md mb-10">
           <Link
             href="/"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#ff8800] hover:bg-[#ffa033] text-black font-extrabold text-sm sm:text-base px-6 sm:px-8 py-3.5 rounded-2xl transition-all shadow-[0_0_25px_rgba(255,136,0,0.25)] hover:-translate-y-0.5"
@@ -84,40 +66,81 @@ export default function NotFound() {
           </Link>
         </div>
 
-        {/* Helpful Links Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full text-left">
+        {/* Popular Shortcuts */}
+        <div className="flex flex-wrap items-center justify-center gap-2 mb-10 max-w-lg">
+          <span className="text-xs font-semibold text-[#666670] flex items-center gap-1.5 mr-1">
+            <Search size={12} />
+            <span>Gyakori témák:</span>
+          </span>
+          {SUGGESTIONS.map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              className="text-xs px-2.5 py-1 rounded-lg bg-[#18181c] border border-[#28282d] text-[#8c8c94] hover:text-[#ff8800] hover:border-[#ff8800]/40 transition-colors"
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
+
+        {/* Helpful Recovery Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full text-left max-w-2xl">
           <Link
-            href="/docs"
-            className="p-4 rounded-2xl bg-[#151518] border border-[#28282d] hover:border-[#ff8800]/40 transition-all group"
+            href="/docs#telepites"
+            className="p-4 rounded-2xl bg-[#151518] border border-[#28282d] hover:border-[#ff8800]/40 hover:bg-[#19191d] transition-all group"
           >
             <div className="flex items-center gap-2 text-sm font-bold text-[#f3f3f6] group-hover:text-[#ff8800] transition-colors mb-1">
-              <Download size={14} className="text-[#ff8800]" />
+              <Download size={15} className="text-[#ff8800]" />
               <span>Telepítési Útmutató</span>
             </div>
-            <p className="text-xs text-[#8c8c94]">
-              Windows, Android APK, iOS Sideloading, Linux script és bővítmény telepítés.
+            <p className="text-xs text-[#8c8c94] leading-relaxed">
+              Windows asztali app, Android APK, iOS Sideloading, Linux csomagok és böngészőbővítmény.
             </p>
           </Link>
 
           <Link
-            href="/docs"
-            className="p-4 rounded-2xl bg-[#151518] border border-[#28282d] hover:border-[#ff8800]/40 transition-all group"
+            href="/tortenet"
+            className="p-4 rounded-2xl bg-[#151518] border border-[#28282d] hover:border-[#bf5af2]/40 hover:bg-[#19191d] transition-all group"
           >
-            <div className="flex items-center gap-2 text-sm font-bold text-[#f3f3f6] group-hover:text-[#ff8800] transition-colors mb-1">
-              <Search size={14} className="text-[#ff8800]" />
-              <span>Dokumentáció & GYIK</span>
+            <div className="flex items-center gap-2 text-sm font-bold text-[#f3f3f6] group-hover:text-[#bf5af2] transition-colors mb-1">
+              <History size={15} className="text-[#bf5af2]" />
+              <span>Kliensek Története</span>
             </div>
-            <p className="text-xs text-[#8c8c94]">
-              Részletes leírások, gyorsbillentyűk, konfigurációs fájlok és hibaelhárítási tippek.
+            <p className="text-xs text-[#8c8c94] leading-relaxed">
+              A magyar és európai elektronikus naplók és alternatív diák-kliensek fejlődésének idővonala.
+            </p>
+          </Link>
+
+          <Link
+            href="/docs#gyik"
+            className="p-4 rounded-2xl bg-[#151518] border border-[#28282d] hover:border-[#0a84ff]/40 hover:bg-[#19191d] transition-all group"
+          >
+            <div className="flex items-center gap-2 text-sm font-bold text-[#f3f3f6] group-hover:text-[#0a84ff] transition-colors mb-1">
+              <HelpCircle size={15} className="text-[#0a84ff]" />
+              <span>Gyakori Kérdések (GYIK)</span>
+            </div>
+            <p className="text-xs text-[#8c8c94] leading-relaxed">
+              Válaszok a hitelesítési, biztonsági, frissítési és működési kérdésekre.
+            </p>
+          </Link>
+
+          <Link
+            href="/#kozosseg"
+            className="p-4 rounded-2xl bg-[#151518] border border-[#28282d] hover:border-[#30d158]/40 hover:bg-[#19191d] transition-all group"
+          >
+            <div className="flex items-center gap-2 text-sm font-bold text-[#f3f3f6] group-hover:text-[#30d158] transition-colors mb-1">
+              <Users size={15} className="text-[#30d158]" />
+              <span>Közösségi Projektek</span>
+            </div>
+            <p className="text-xs text-[#8c8c94] leading-relaxed">
+              Fedezd fel a magyar nyílt forráskódú Kréta és Neptun fejlesztéseket a főoldalon.
             </p>
           </Link>
         </div>
       </main>
 
-      {/* Simple Footer */}
-      <footer className="border-t border-[#28282d] bg-[#151518] py-6 px-4 text-center text-xs text-[#8c8c94]">
-        <span>Pala — Nyílt forráskódú Kréta Kliens</span>
-      </footer>
+      {/* Shared Unified Footer */}
+      <Footer />
     </div>
   );
 }

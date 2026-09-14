@@ -45,13 +45,9 @@
         <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         <span>Mulasztások</span>
       </button>
-      <button class="nav-item" data-tab="view-student">
+      <button class="nav-item" data-tab="view-account">
         <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span>Profilom</span>
-      </button>
-      <button class="nav-item" data-tab="view-settings">
-        <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        <span>Beállítások</span>
+        <span>Fiók & Profil</span>
       </button>
     </nav>
 
@@ -61,7 +57,6 @@
         <span id="inst-name" style="font-size:0.7rem; color:var(--text-muted);"></span>
       </div>
       <button id="btn-reload" class="btn btn-secondary btn-block" style="margin-top:8px;" title="Frissítés"><span>⟳</span><span class="btn-label"> Frissítés</span></button>
-      <button id="btn-toggle-dash-sim-maint" class="btn btn-secondary btn-block collapse-hide" style="margin-top:6px; font-size:0.7rem; color:var(--warning); border-color:rgba(255,214,10,0.3);">Karbantartás Szimuláció</button>
     </div>
   </aside>
 
@@ -168,17 +163,20 @@
       </div>
 
       <!-- Active / Upcoming Class Hero Banner -->
-      <div id="dash-hero-card" class="card" style="display:none; border-left: 4px solid var(--primary); margin-bottom: 20px;">
+      <div id="dash-hero-card" class="card hero-banner" style="display:none;">
         <div style="display: flex; align-items: center; justify-content: space-between;">
           <div>
-            <span id="dash-hero-tag" class="badge" style="background: rgba(255,136,0,0.15); color: var(--primary); border:none; margin-bottom: 6px; display:inline-block;">AKTUÁLIS ÓRA</span>
-            <h2 id="dash-hero-subject" style="font-size: 1.25rem; font-weight: 900; margin-bottom: 4px;">-</h2>
-            <div id="dash-hero-details" style="font-size: 0.82rem; color: var(--text-muted);"></div>
+            <span id="dash-hero-tag" class="badge banner-tag" style="display:inline-block; margin-bottom: 6px;">AKTUÁLIS ÓRA</span>
+            <h2 id="dash-hero-subject" class="banner-title">-</h2>
+            <div id="dash-hero-details" style="font-size: 0.82rem; color: var(--text-muted); margin-top: 2px;"></div>
           </div>
           <div style="text-align: right;">
             <div id="dash-hero-time" style="font-size: 1.15rem; font-weight: 800; color: var(--text);"></div>
             <div id="dash-hero-status" style="font-size: 0.78rem; font-weight: 700; color: var(--success); margin-top: 2px;"></div>
           </div>
+        </div>
+        <div id="dash-hero-progress-track" class="hero-progress-track" style="display:none;">
+          <div id="dash-hero-progress-fill" class="hero-progress-fill"></div>
         </div>
       </div>
 
@@ -213,8 +211,14 @@
 
     <!-- View 2: Órarend (renamed from Heti Órarend) -->
     <div id="view-timetable" class="view-panel">
-      <header class="page-header" style="justify-content: space-between; display: flex; align-items: center;">
-        <h1>Órarend</h1>
+      <header class="page-header" style="justify-content: space-between; display: flex; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <h1>Órarend</h1>
+          <button id="btn-toggle-ab-week" class="badge" style="cursor: pointer; background: rgba(var(--primary-rgb), 0.15); color: var(--primary); border: 1px solid rgba(var(--primary-rgb), 0.4); padding: 6px 12px; font-weight: 800; border-radius: 8px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease;" title="Kattints az A/B hét váltásához">
+            <svg class="icon" viewBox="0 0 24 24" style="width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none;"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+            <span id="timetable-ab-badge">A hét</span>
+          </button>
+        </div>
         <div style="display: flex; gap: 8px;">
           <button id="btn-timetable-toggle" class="btn btn-secondary btn-sm">7-napos Mátrix</button>
           <button id="btn-export-ics" class="btn btn-secondary btn-sm" style="border-color: rgba(255,136,0,0.5); color: var(--primary);">Naptár (.ics)</button>
@@ -235,33 +239,36 @@
       </header>
       
       <!-- Ghost Grades & Planner Collapsible Section -->
-      <div class="card" style="margin-bottom: 20px;">
+      <div class="card grades-hero-card">
         <details>
-          <summary style="font-size: 1.05rem; font-weight: 800; cursor: pointer; color: var(--primary); outline: none;">Szellem-jegy Kalkulátor & Bizonyítvány Tervező</summary>
+          <summary style="font-size: 1.05rem; font-weight: 800; cursor: pointer; color: var(--primary); outline: none; display: flex; align-items: center; gap: 8px;">
+            <svg class="icon" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>
+            <span>Szellem-jegy Kalkulátor & Bizonyítvány Tervező</span>
+          </summary>
           
-          <div style="margin-top: 16px; border-top: 1px solid var(--border); padding-top: 16px;">
-            <h3 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 8px;">Egyedi Szellem-jegy</h3>
+          <div style="margin-top: 16px; border-top: 1px solid rgba(var(--primary-rgb), 0.2); padding-top: 16px;">
+            <h3 style="font-size: 0.88rem; font-weight: 700; margin-bottom: 8px; color: var(--text);">Egyedi Szellem-jegy Szimuláció</h3>
             <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; align-items: flex-end;">
               <div class="input-group" style="flex: 1; min-width: 140px;">
-                <label style="font-size: 0.75rem; color: var(--text-muted);">Tantárgy</label>
-                <select id="ghost-subject" style="width: 100%; background: var(--sidebar); border: 1px solid var(--border); padding: 8px; border-radius: 6px; color: var(--text);"></select>
+                <label style="font-size: 0.74rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; display: block;">Tantárgy</label>
+                <select id="ghost-subject" style="width: 100%; box-sizing: border-box; background: var(--sidebar); border: 1px solid var(--border); padding: 8px 10px; border-radius: 8px; color: var(--text); font-size: 0.82rem;"></select>
               </div>
-              <div class="input-group" style="width: 80px;">
-                <label style="font-size: 0.75rem; color: var(--text-muted);">Jegy (1-5)</label>
-                <input type="number" id="ghost-grade" min="1" max="5" value="5" style="width: 100%; background: var(--sidebar); border: 1px solid var(--border); padding: 8px; border-radius: 6px; color: var(--text);">
+              <div class="input-group" style="width: 90px;">
+                <label style="font-size: 0.74rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; display: block;">Jegy (1-5)</label>
+                <input type="number" id="ghost-grade" min="1" max="5" value="5" style="width: 100%; box-sizing: border-box; background: var(--sidebar); border: 1px solid var(--border); padding: 8px 10px; border-radius: 8px; color: var(--text); font-size: 0.82rem;">
               </div>
-              <div class="input-group" style="width: 80px;">
-                <label style="font-size: 0.75rem; color: var(--text-muted);">Súly (%)</label>
-                <input type="number" id="ghost-weight" min="1" max="200" value="100" style="width: 100%; background: var(--sidebar); border: 1px solid var(--border); padding: 8px; border-radius: 6px; color: var(--text);">
+              <div class="input-group" style="width: 90px;">
+                <label style="font-size: 0.74rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; display: block;">Súly (%)</label>
+                <input type="number" id="ghost-weight" min="1" max="200" value="100" style="width: 100%; box-sizing: border-box; background: var(--sidebar); border: 1px solid var(--border); padding: 8px 10px; border-radius: 8px; color: var(--text); font-size: 0.82rem;">
               </div>
             </div>
-            <div id="ghost-result" style="font-size: 0.85rem; padding: 10px; background: var(--sidebar); border-radius: 6px; margin-bottom: 20px;">
+            <div id="ghost-result" style="font-size: 0.85rem; padding: 12px 16px; background: var(--sidebar); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 20px;">
               Válassz tantárgyat a kalkulációhoz...
             </div>
 
-            <h3 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 8px;">Bizonyítvány Tervező</h3>
-            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">Hány darab 100%-os 5-ös kell a következő kerek egész jegy eléréséhez?</div>
-            <div id="planner-table-container" style="overflow-x: auto;">
+            <h3 style="font-size: 0.88rem; font-weight: 700; margin-bottom: 6px; color: var(--text);">Bizonyítvány Tervező</h3>
+            <div style="font-size: 0.74rem; color: var(--text-muted); margin-bottom: 10px;">Hány darab 100%-os 5-ös kell a következő kerek egész jegy eléréséhez?</div>
+            <div id="planner-table-container" style="overflow-x: auto; background: var(--sidebar); border: 1px solid var(--border); border-radius: 12px; padding: 10px;">
               <!-- Planner table injected dynamically -->
             </div>
           </div>
@@ -294,7 +301,6 @@
         </div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
           <button id="btn-sync-active-tab" class="btn btn-secondary" style="font-size: 0.78rem;">Szinkronizálás e-Ügyintézésből</button>
-          <button id="btn-refresh-messages" class="btn btn-secondary" style="font-size: 0.78rem;">Frissítés</button>
           <button id="btn-open-composer" class="btn btn-primary">+ Új üzenet írása</button>
           <a href="https://eugyintezes.e-kreta.hu/uzenetek" target="_blank" class="btn btn-secondary" style="text-decoration: none; font-size: 0.78rem;">e-Ügyintézés (Web) ↗</a>
           <a href="https://eugyintezes.e-kreta.hu/adatbekeresek" target="_blank" class="btn btn-secondary" style="text-decoration: none; font-size: 0.78rem;">Kérdőívek (Web) ↗</a>
@@ -320,42 +326,72 @@
       <header class="page-header">
         <h1>Mulasztások & 250 Órás Veszélyzóna</h1>
       </header>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 16px;">
-        <div class="card">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-            <span style="font-weight: 700; font-size: 0.9rem;">250 Órás Veszélyzóna: <strong id="absences-total-hours">0 óra</strong></span>
-            <span id="absences-zone-status" style="font-size: 0.8rem; color: var(--success); font-weight: 700;">Biztonságos (0%)</span>
-          </div>
-          <div class="progress-bar-container" style="height: 10px; margin-bottom: 12px;">
-            <div id="absences-progress-bar" class="progress-bar-fill" style="width: 0%; background: var(--success);"></div>
-          </div>
-          <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
-            <span style="color: var(--text-muted);">Igazolatlan: <strong id="absences-unexcused-count" style="color: var(--danger);">0</strong></span>
-            <span style="color: var(--text-muted);">Késések: <strong id="absences-delay-minutes" style="color: var(--warning);">0 perc</strong></span>
+      
+      <!-- 3 Summary Metric Cards (Mockup matching) -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-bottom: 16px;">
+        <div class="card stat-card" style="padding: 16px 18px;">
+          <div class="stat-label">Összes Hiányzás</div>
+          <div id="absences-total-hours" class="stat-val" style="margin-top: 4px;">0 óra</div>
+          <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 6px; display: flex; gap: 8px; flex-wrap: wrap;">
+            <span>Igazolt: <strong id="absences-justified-count" style="color: var(--success);">0</strong></span>
+            <span>•</span>
+            <span>Igazolatlan: <strong id="absences-unexcused-count" style="color: var(--danger);">0</strong></span>
+            <span>•</span>
+            <span>Késés: <strong id="absences-delay-minutes" style="color: var(--warning);">0 perc</strong></span>
           </div>
         </div>
 
-        <div class="card">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-            <span style="font-weight: 700; font-size: 0.9rem;">Szülői Igazolás Kóta</span>
-            <span id="absences-parental-status" style="font-size: 0.8rem; font-weight: 700;">0 / 3 nap</span>
+        <div class="card stat-card" style="padding: 16px 18px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="stat-label">250 Órás Limit</span>
+            <span id="absences-zone-status" class="badge" style="color: var(--success); font-weight: 700; font-size: 0.7rem;">Biztonságos (0%)</span>
           </div>
-          <div class="progress-bar-container" style="height: 10px;">
-            <div id="absences-parental-bar" class="progress-bar-fill" style="width: 0%; background: var(--primary);"></div>
+          <div id="absences-limit-pct" class="stat-val green" style="margin-top: 4px;">0.0%</div>
+          <div id="absences-remaining-hours" class="stat-sub" style="margin-top: 4px;">250 óra maradt a határig</div>
+          <div class="progress-bar-container" style="height: 7px; margin-top: 10px;">
+            <div id="absences-progress-bar" class="progress-bar-fill progress-glow-success" style="width: 0%;"></div>
           </div>
-          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 10px;">
-            A limit a Beállítások menüben módosítható (alapértelmezett: 3 nap).
+        </div>
+
+        <div class="card stat-card" style="padding: 16px 18px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="stat-label">Szülői Igazolás Keret</span>
+            <span id="absences-parental-status" class="badge" style="font-size: 0.7rem; font-weight: 700;">0 / 3 nap</span>
+          </div>
+          <div id="absences-parental-val" class="stat-val orange" style="margin-top: 4px;">0 / 3 nap</div>
+          <div id="absences-parental-sub" class="stat-sub" style="margin-top: 4px;">3 nap maradt felhasználható</div>
+          <div class="progress-bar-container" style="height: 7px; margin-top: 10px;">
+            <div id="absences-parental-bar" class="progress-bar-fill progress-glow-primary" style="width: 0%;"></div>
           </div>
         </div>
       </div>
-      <div id="absences-full-list" class="table-container">
-        <!-- Injected dynamically -->
+
+      <!-- Legal Info Notice Card -->
+      <div class="legal-notice-card" style="margin-bottom: 20px;">
+        <svg class="icon" viewBox="0 0 24 24" style="color: var(--primary);"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span>A jogszabályok szerint 250 órát meghaladó mulasztás esetén a nevelőtestület osztályozó vizsgát írhat elő. A Pala automatikusan figyelmeztet, ha bármely tantárgynál megközelíted a limitet.</span>
+      </div>
+
+      <!-- Detailed Absences Table Container -->
+      <div class="card" style="border-radius: 16px;">
+        <h2 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 14px;">Részletes Mulasztási Napló</h2>
+        <div id="absences-full-list" class="table-container">
+          <!-- Injected dynamically -->
+        </div>
       </div>
     </div>
 
-    <!-- View 7: Profilom -->
-    <div id="view-student" class="view-panel">
-      <header class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+    <!-- View 7: Fiók & Profil -->
+    <div id="view-account" class="view-panel">
+      <!-- Sub-tabs navigation -->
+      <div class="account-subtabs-row">
+        <button type="button" class="chip-btn active" id="account-tab-profile">Tanulói Profil</button>
+        <button type="button" class="chip-btn" id="account-tab-settings">Beállítások & Rendszer</button>
+      </div>
+
+      <!-- Sub-view 1: Tanulói Profil -->
+      <div id="subview-profile" style="display: block;">
+        <header class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
         <div>
           <h1 style="margin: 0;">Tanulói Profil</h1>
           <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">Személyes adatok, hivatalos okmányok és tanulmányi mérföldkövek</div>
@@ -398,8 +434,8 @@
       </div>
     </div>
 
-    <!-- View 8: Beállítások -->
-    <div id="view-settings" class="view-panel">
+    <!-- Sub-view 2: Beállítások & Rendszer -->
+    <div id="subview-settings" style="display: none;">
       <header class="page-header">
         <h1>Beállítások & Fiókkezelés</h1>
       </header>
@@ -584,6 +620,7 @@
         </div>
       </div>
     </div>
+  </div>
   </main>
 
   <!-- Modal: Message Composer (Új üzenet küldése) -->

@@ -54,6 +54,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   setupSidebarNavigation();
+  setupAccountSubtabs();
   document.getElementById("btn-reload")?.addEventListener("click", async () => {
     await loadDashboardData(true);
   });
@@ -69,13 +70,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     await chrome.storage.local.set({ pala_use_demo: true, pala_simulate_maintenance: false });
     await loadDashboardData(true);
   });
-  document.getElementById("btn-toggle-dash-sim-maint")?.addEventListener("click", async () => {
-    const store = await chrome.storage.local.get("pala_simulate_maintenance");
-    const next = !store.pala_simulate_maintenance;
-    await chrome.storage.local.set({ pala_simulate_maintenance: next });
-    await loadDashboardData(true);
-  });
-
   setupStudentExtraModal();
 
   // School Autocomplete in Dashboard Settings
@@ -148,8 +142,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   document.getElementById("btn-dash-demo-mode")?.addEventListener("click", async () => {
+    abWeekOverride = null;
     await SecureSession.save(null);
+    await chrome.storage.local.remove(["pala_cached_data", "pala_last_fetch"]);
     await chrome.storage.local.set({ pala_use_demo: true, pala_simulate_maintenance: false });
+    fullState.aliases = {};
     await loadDashboardData(true);
   });
 
@@ -166,8 +163,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   document.getElementById("btn-dash-logout")?.addEventListener("click", async () => {
+    abWeekOverride = null;
     await SecureSession.save(null);
+    await chrome.storage.local.remove(["pala_cached_data", "pala_last_fetch", "pala_student_extra"]);
     await chrome.storage.local.set({ pala_use_demo: true });
+    fullState.aliases = {};
     await loadDashboardData(true);
   });
 
@@ -180,6 +180,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     const mxGrid = document.getElementById("matrix-timetable-grid");
     if (listGrid) listGrid.style.display = isMatrixView ? "none" : "grid";
     if (mxGrid) mxGrid.style.display = isMatrixView ? "block" : "none";
+  });
+
+  document.getElementById("btn-toggle-ab-week")?.addEventListener("click", () => {
+    const currentInfo = getTimetableABWeek(fullState.data?.timetable);
+    abWeekOverride = !currentInfo.isAWeek;
+    if (fullState.isDemo) {
+      if (!fullState.data) fullState.data = {};
+      fullState.data.timetable = KretaApi.generateDemoTimetable(abWeekOverride);
+    }
+    renderWeeklyTimetable(fullState.data?.timetable || []);
   });
 
   setupMessageFilters();
@@ -410,6 +420,29 @@ function setupSidebarNavigation() {
   });
 }
 
+function setupAccountSubtabs() {
+  const tabProfileBtn = document.getElementById("account-tab-profile");
+  const tabSettingsBtn = document.getElementById("account-tab-settings");
+  const subviewProfile = document.getElementById("subview-profile");
+  const subviewSettings = document.getElementById("subview-settings");
+
+  if (!tabProfileBtn || !tabSettingsBtn) return;
+
+  tabProfileBtn.addEventListener("click", () => {
+    tabProfileBtn.classList.add("active");
+    tabSettingsBtn.classList.remove("active");
+    if (subviewProfile) subviewProfile.style.display = "block";
+    if (subviewSettings) subviewSettings.style.display = "none";
+  });
+
+  tabSettingsBtn.addEventListener("click", () => {
+    tabSettingsBtn.classList.add("active");
+    tabProfileBtn.classList.remove("active");
+    if (subviewProfile) subviewProfile.style.display = "none";
+    if (subviewSettings) subviewSettings.style.display = "block";
+  });
+}
+
 async function syncMessagesIfEmpty() {
   const store = await chrome.storage.local.get(["pala_use_demo"]);
   const session = await SecureSession.load();
@@ -440,13 +473,13 @@ async function loadDashboardData(force = false) {
     "pala_aliases"
   ]);
   const session = await SecureSession.load();
-  fullState.aliases = store.pala_aliases || {};
   const useDemo = store.pala_use_demo !== false;
+  fullState.aliases = useDemo ? {} : (store.pala_aliases || {});
 
   if (useDemo || !session) {
     fullState.isDemo = true;
     fullState.isMaintenance = false;
-    fullState.data = KretaApi.getDemoDataset();
+    fullState.data = KretaApi.getDemoDataset(abWeekOverride);
   } else {
     fullState.isDemo = false;
 
@@ -811,9 +844,15 @@ function renderDashboard() {
 }
 
 function renderDashboardHero(todayLessons) {
-  const titleEl = document.getElementById("dash-active-title");
-  const descEl = document.getElementById("dash-active-desc");
-  if (!titleEl || !descEl) return;
+  const card = document.getElementById("dash-hero-card");
+  const tagEl = document.getElementById("dash-hero-tag");
+  const subjectEl = document.getElementById("dash-hero-subject");
+  const detailsEl = document.getElementById("dash-hero-details");
+  const timeEl = document.getElementById("dash-hero-time");
+  const statusEl = document.getElementById("dash-hero-status");
+  const progressTrack = document.getElementById("dash-hero-progress-track");
+  const progressFill = document.getElementById("dash-hero-progress-fill");
+  if (!card || !tagEl || !subjectEl || !detailsEl || !timeEl || !statusEl) return;
 
   const now = new Date();
   let active = null;
@@ -830,24 +869,53 @@ function renderDashboardHero(todayLessons) {
     }
   }
 
+  if (!active && !next) {
+    card.style.display = "none";
+    return;
+  }
+  card.style.display = "block";
+
   if (active) {
     const sub = active.Tantargy?.Nev || active.Nev || "Tanóra";
-    const room = active.Terem ? ` • Terem: ${active.Terem}` : "";
-    const teacher = active.Tanar || active.TanarNeve ? ` (${active.Tanar || active.TanarNeve})` : "";
-    titleEl.innerText = `${sub}${room}${teacher}`;
-
+    const room = active.Terem ? `Terem: ${active.Terem}` : "";
+    const teacher = active.Tanar || active.TanarNeve || "";
+    const start = new Date(active.KezdetIdopont);
     const end = new Date(active.VegIdopont);
-    const minsLeft = Math.ceil((end - now) / 60000);
-    descEl.innerText = `Hátra van még: ${minsLeft} perc • ${active.Oraszam || ""}. tanóra`;
-  } else if (next) {
-    const sub = next.Tantargy?.Nev || next.Nev || "Tanóra";
-    const s = new Date(next.KezdetIdopont);
-    const timeStr = `${String(s.getHours()).padStart(2, '0')}:${String(s.getMinutes()).padStart(2, '0')}`;
-    titleEl.innerText = `Következő tanóra: ${sub}`;
-    descEl.innerText = `Kezdés: ${timeStr} • ${next.Oraszam || ""}. tanóra ${next.Terem ? "• Terem: " + next.Terem : ""}`;
+    const minsLeft = Math.max(0, Math.ceil((end - now) / 60000));
+
+    tagEl.innerText = "FOLYAMATBAN";
+    tagEl.style.background = "var(--primary)";
+    tagEl.style.color = "#000";
+    subjectEl.innerText = sub;
+    detailsEl.innerText = [room, teacher].filter(Boolean).join(" • ");
+    timeEl.innerText = `${active.Oraszam || ""}. tanóra`;
+    statusEl.innerText = `Hátra van még: ${minsLeft} perc`;
+    statusEl.style.color = "var(--text-muted)";
+
+    if (progressTrack && progressFill) {
+      const elapsed = now - start;
+      const total = end - start;
+      const pct = total > 0 ? Math.min(100, Math.max(0, (elapsed / total) * 100)) : 0;
+      progressFill.style.width = `${pct}%`;
+      progressTrack.style.display = "block";
+    }
   } else {
-    titleEl.innerText = todayLessons.length > 0 ? "A mai tanórák véget értek" : "Nincs tanóra rögzítve mára";
-    descEl.innerText = todayLessons.length > 0 ? `Összesen ${todayLessons.length} óra volt mára.` : "Jó pihenést és feltöltődést!";
+    const sub = next.Tantargy?.Nev || next.Nev || "Tanóra";
+    const room = next.Terem ? `Terem: ${next.Terem}` : "";
+    const s = new Date(next.KezdetIdopont);
+    const timeStr = `${String(s.getHours()).padStart(2, "0")}:${String(s.getMinutes()).padStart(2, "0")}`;
+    const minsUntil = Math.max(0, Math.ceil((s - now) / 60000));
+
+    tagEl.innerText = "KÖVETKEZŐ ÓRA";
+    tagEl.style.background = "rgba(255, 214, 10, 0.15)";
+    tagEl.style.color = "var(--warning)";
+    subjectEl.innerText = sub;
+    detailsEl.innerText = [room, next.Oraszam ? `${next.Oraszam}. tanóra` : ""].filter(Boolean).join(" • ");
+    timeEl.innerText = timeStr;
+    statusEl.innerText = `${minsUntil} perc múlva`;
+    statusEl.style.color = "var(--warning)";
+
+    if (progressTrack) progressTrack.style.display = "none";
   }
 }
 
@@ -997,12 +1065,40 @@ function renderDashboardSubjectCards(subjectMap) {
   });
 }
 
+let abWeekOverride = null;
+
+function getTimetableABWeek(timetable) {
+  let date = new Date();
+  if (timetable && timetable.length > 0 && timetable[0].KezdetIdopont) {
+    date = new Date(timetable[0].KezdetIdopont);
+  }
+  const currentDay = date.getDay();
+  const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
+  const monday = new Date(date.getFullYear(), date.getMonth(), date.getDate() + mondayOffset);
+  const startOfYear = new Date(monday.getFullYear(), 0, 1);
+  const weekNum = Math.floor((monday - startOfYear) / (7 * 24 * 60 * 60 * 1000)) + 1;
+  const isAWeek = abWeekOverride !== null ? abWeekOverride : (weekNum % 2 !== 0);
+  return { isAWeek, weekNum, overridden: abWeekOverride !== null };
+}
+
 function renderWeeklyTimetable(timetable) {
   const listGrid = document.getElementById("weekly-timetable-grid");
   const matrixGrid = document.getElementById("matrix-timetable-grid");
   if (!listGrid || !matrixGrid) return;
   listGrid.innerHTML = "";
   matrixGrid.innerHTML = "";
+
+  const abBadge = document.getElementById("timetable-ab-badge");
+  const abInfo = getTimetableABWeek(timetable);
+  if (abBadge) {
+    abBadge.textContent = `${abInfo.isAWeek ? "A hét" : "B hét"} (${abInfo.weekNum}. hét)`;
+    const toggleBtn = document.getElementById("btn-toggle-ab-week");
+    if (toggleBtn) {
+      toggleBtn.style.color = abInfo.isAWeek ? "var(--primary)" : "var(--accent, #3b82f6)";
+      toggleBtn.style.borderColor = abInfo.isAWeek ? "rgba(var(--primary-rgb), 0.4)" : "rgba(59, 130, 246, 0.4)";
+      toggleBtn.title = `Kattints az A/B hét váltásához (jelenleg: ${abInfo.isAWeek ? "A hét" : "B hét"})`;
+    }
+  }
 
   const dayNames = ["Hétfő", "Kedd", "Szerda", "Csütörtök", "Péntek", "Szombat", "Vasárnap"];
   const dayBuckets = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [] };
@@ -1022,44 +1118,77 @@ function renderWeeklyTimetable(timetable) {
   });
 
   // 1) List View (Only Mon-Fri usually, but we can do 1-5 to keep it as before)
+  const todayWeekday = new Date().getDay() === 0 ? 7 : new Date().getDay();
+  const nowMs = Date.now();
+
   for (let i = 1; i <= 5; i++) {
+    const isToday = i === todayWeekday;
     const col = document.createElement("div");
-    col.className = "timetable-day-card";
-    col.innerHTML = `<div class="day-title">${dayNames[i - 1]}</div>`;
+    col.className = isToday ? "timetable-day-card today" : "timetable-day-card";
+    const todayBadge = isToday ? `<span class="badge" style="background:var(--primary); color:#000; font-weight:900; font-size:0.65rem; border:none;">Ma</span>` : "";
+    col.innerHTML = `<div class="day-title" style="display:flex; justify-content:space-between; align-items:center;"><span>${dayNames[i - 1]}</span>${todayBadge}</div>`;
 
     const lessons = dayBuckets[i];
     if (lessons.length === 0) {
-      col.innerHTML += `<div style="text-align:center; padding: 24px 0; font-size: 0.75rem; color: var(--text-muted);">Nincs tanóra</div>`;
+      col.innerHTML += `
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 36px 12px; text-align: center; color: var(--text-muted);">
+          <svg class="icon" viewBox="0 0 24 24" style="width: 26px; height: 26px; stroke: currentColor; stroke-width: 1.5; fill: none; opacity: 0.4; margin-bottom: 8px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg>
+          <div style="font-size: 0.8rem; font-weight: 700; color: var(--text);">Nincs tanóra ezen a napon</div>
+          <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">Tanítás nélküli munkanap / Szabadnap</div>
+        </div>
+      `;
     } else {
       lessons.forEach((l, idx) => {
         const itemEl = document.createElement("div");
-        itemEl.style.padding = "8px 0";
-        itemEl.style.borderBottom = "1px solid var(--border)";
         const sub = escapeHtml(getDisplaySubject(l.Tantargy?.Nev || l.Nev || "Tanóra"));
         const room = l.Terem ? `Terem: ${escapeHtml(l.Terem)}` : "";
         const substitute = l.HelyettesitoTanarNeve ? `Helyettesítő: ${escapeHtml(l.HelyettesitoTanarNeve)}` : "";
 
-        let stateHtml = "";
         const stateNameRaw = l.Allapot?.Nev || l.Allapot || "Megtartott";
         const stateName = escapeHtml(stateNameRaw);
-        let titleStyle = "";
 
-        if (stateNameRaw !== "Megtartott") {
-          let badgeColor = "var(--warning)";
-          if (stateNameRaw.toLowerCase().includes("elmaradt")) {
-            badgeColor = "var(--danger)";
-            titleStyle = "text-decoration: line-through; color: var(--text-muted);";
-          }
-          stateHtml = `<span style="display:inline-block; margin-top:2px; font-size:0.65rem; color:${badgeColor}; font-weight:700;">${stateName}</span>`;
+        const startMs = l.KezdetIdopont ? new Date(l.KezdetIdopont).getTime() : 0;
+        const endMs = l.VegIdopont ? new Date(l.VegIdopont).getTime() : 0;
+        const isActive = isToday && startMs > 0 && endMs > 0 && nowMs >= startMs && nowMs <= endMs;
+        const isPast = isToday && endMs > 0 && nowMs > endMs;
+        const isCancelled = stateNameRaw.toLowerCase().includes("elmaradt");
+        const isSub = !isCancelled && (stateNameRaw !== "Megtartott" || !!l.HelyettesitoTanarNeve);
+
+        let pillClass = "lesson-pill";
+        if (isActive) pillClass += " active";
+        else if (isCancelled) pillClass += " cancelled";
+        else if (isSub) pillClass += " substitute";
+        else if (isPast) pillClass += " past";
+        itemEl.className = pillClass;
+
+        let statusBadgeHtml = "";
+        if (isActive) {
+          statusBadgeHtml = `<span class="badge" style="background:var(--primary); color:#000; font-weight:900; font-size:0.65rem; border:none; flex-shrink:0;">Folyamatban</span>`;
+        } else if (isCancelled) {
+          statusBadgeHtml = `<span class="badge" style="background:rgba(255,69,58,0.15); color:var(--danger); border:1px solid rgba(255,69,58,0.35); font-size:0.65rem; flex-shrink:0;">Elmaradt</span>`;
+        } else if (isSub) {
+          statusBadgeHtml = `<span class="badge" style="background:rgba(255,214,10,0.15); color:var(--warning); border:1px solid rgba(255,214,10,0.35); font-size:0.65rem; flex-shrink:0;">Helyettesítés</span>`;
+        } else if (isPast) {
+          statusBadgeHtml = `<span style="color:var(--success); font-weight:900; font-size:0.75rem; flex-shrink:0;">✓</span>`;
         }
 
-        const theme = l.Tema ? `<div style="font-size:0.65rem; color:var(--text-muted); margin-top:2px;">${escapeHtml(l.Tema)}</div>` : "";
+        const slotNum = l.Oraszam || idx + 1;
+        const timeSpan = l.KezdetIdopont && l.VegIdopont
+          ? `${l.KezdetIdopont.slice(11, 16)} - ${l.VegIdopont.slice(11, 16)}`
+          : "";
+        const titleStyle = isCancelled ? "text-decoration: line-through; color: var(--text-muted);" : (isActive ? "color: var(--primary);" : "");
+        const theme = l.Tema ? `<div style="font-size:0.68rem; color:var(--text-muted); margin-top:2px;">${escapeHtml(l.Tema)}</div>` : "";
 
         itemEl.innerHTML = `
-          <div style="font-size:0.8rem; font-weight:700; ${titleStyle}">${l.Oraszam || idx + 1}. ${sub}</div>
-          <div style="font-size:0.7rem; color:var(--text-muted);">${room} ${substitute ? ' • ' + substitute : ''}</div>
-          ${theme}
-          ${stateHtml}
+          <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
+            <span class="lesson-slot-badge">${slotNum}</span>
+            <div style="min-width:0; flex:1;">
+              <div style="font-size:0.8rem; font-weight:700; ${titleStyle}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${sub}</div>
+              <div style="font-size:0.68rem; color:var(--text-muted);">${timeSpan ? timeSpan + ' • ' : ''}${room}${substitute ? ' • ' + substitute : ''}</div>
+              ${theme}
+            </div>
+          </div>
+          ${statusBadgeHtml}
         `;
         col.appendChild(itemEl);
       });
@@ -1071,23 +1200,25 @@ function renderWeeklyTimetable(timetable) {
   let matrixHtml = `<table style="width: 100%; border-collapse: collapse; min-width: 600px; text-align: center; font-size: 0.75rem;">
     <thead>
       <tr style="border-bottom: 2px solid var(--border);">
-        <th style="padding: 8px; width: 40px; color: var(--text-muted);">Óra</th>`;
+        <th style="padding: 10px; width: 44px; color: var(--text-muted);">Óra</th>`;
   for (let i = 1; i <= 7; i++) {
-    matrixHtml += `<th style="padding: 8px;">${dayNames[i-1]}</th>`;
+    const isToday = i === todayWeekday;
+    const headerStyle = isToday ? "color: var(--primary); font-weight: 800;" : "color: var(--text);";
+    matrixHtml += `<th style="padding: 10px; ${headerStyle}">${dayNames[i-1]}${isToday ? ' (Ma)' : ''}</th>`;
   }
   matrixHtml += `</tr></thead><tbody>`;
 
   for (let slot = 1; slot <= 10; slot++) {
     matrixHtml += `<tr style="border-bottom: 1px solid var(--border);">
-      <td style="padding: 8px; font-weight: 700; color: var(--text-muted);">${slot}.</td>`;
+      <td style="padding: 10px; font-weight: 800; color: var(--text-muted);">${slot}.</td>`;
     for (let day = 1; day <= 7; day++) {
       const l = matrixData[day][slot];
       if (l) {
         const sub = escapeHtml(getDisplaySubject(l.Tantargy?.Nev || l.Nev || "Tanóra"));
         const room = escapeHtml(l.Terem || "");
         const stateName = l.Allapot?.Nev || l.Allapot || "Megtartott";
-        let cellStyle = "padding: 8px; border-left: 1px solid var(--border);";
-        let contentStyle = "font-weight: 600;";
+        let cellStyle = "padding: 8px 10px; border-left: 1px solid var(--border);";
+        let contentStyle = "font-weight: 700; font-size: 0.78rem;";
 
         if (stateName.toLowerCase().includes("elmaradt")) {
           cellStyle += " background: rgba(255,69,58,0.1);";
@@ -1102,7 +1233,7 @@ function renderWeeklyTimetable(timetable) {
           <div style="font-size: 0.65rem; color: var(--text-muted);">${room}</div>
         </td>`;
       } else {
-        matrixHtml += `<td style="padding: 8px; border-left: 1px solid var(--border);"></td>`;
+        matrixHtml += `<td style="padding: 8px 10px; border-left: 1px solid var(--border);"></td>`;
       }
     }
     matrixHtml += `</tr>`;
@@ -1110,6 +1241,7 @@ function renderWeeklyTimetable(timetable) {
   matrixHtml += `</tbody></table>`;
   matrixGrid.innerHTML = matrixHtml;
 }
+
 
 function renderAllGradesView(grades, groupAverages = []) {
   const container = document.getElementById("all-grades-grid");
@@ -1216,28 +1348,28 @@ function renderAllGradesView(grades, groupAverages = []) {
     }
 
     const card = document.createElement("div");
-    card.className = "card";
+    card.className = "card grade-subject-card";
     card.style.marginBottom = "14px";
 
     let badgesHtml = "";
     subGrades.forEach(g => {
       const parsed = KretaApi.parseGrade(g);
-      badgesHtml += `<div class="grade-badge ${parsed.badgeClass}" style="height:28px; font-size:0.8rem;" title="${escapeHtml(g.Tema || '')} (${parsed.weightPercent}%)">${parsed.displayValue}</div>`;
+      badgesHtml += `<div class="grade-badge ${parsed.badgeClass}" style="height:28px; border-radius:8px; font-size:0.8rem; font-weight:800;" title="${escapeHtml(g.Tema || '')} (${parsed.weightPercent}%)">${parsed.displayValue}</div>`;
     });
 
     const sparklineHtml = createSparklineSvg(validGrades);
 
     card.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <div style="display:flex; align-items:center; flex-wrap: wrap;">
-          <strong style="font-size:0.95rem;">${escapeHtml(getDisplaySubject(subName))}</strong>
-          <span style="font-size:0.75rem; color:var(--text-muted); margin-left:8px;">${subGrades.length} jegy</span>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <div style="display:flex; align-items:center; flex-wrap: wrap; gap: 6px;">
+          <strong style="font-size:0.95rem; color:var(--text);">${escapeHtml(getDisplaySubject(subName))}</strong>
+          <span style="font-size:0.75rem; color:var(--text-muted);">${subGrades.length} jegy</span>
           ${warningHtml}
         </div>
         <div style="text-align: right;">
           <div style="display:flex; align-items:center; gap: 8px; justify-content: flex-end;">
             <span style="font-size:1.1rem; color:var(--text-muted);">${trendArrow}</span>
-            <div style="font-size:1.1rem; font-weight:900; padding: 4px 10px; border-radius: 8px; background: ${avgColor}20; color: ${avgColor};">${avg}</div>
+            <div style="font-size:1.05rem; font-weight:900; padding: 4px 10px; border-radius: 10px; background: ${avgColor}20; color: ${avgColor}; border: 1px solid ${avgColor}40;">${avg}</div>
           </div>
           ${classAvgHtml}
         </div>
@@ -1392,23 +1524,37 @@ function renderAbsencesView(absences) {
 
   const statusEl = document.getElementById("absences-zone-status");
   const barEl = document.getElementById("absences-progress-bar");
+  const limitPctEl = document.getElementById("absences-limit-pct");
+  const remHoursEl = document.getElementById("absences-remaining-hours");
+
+  if (limitPctEl) {
+    limitPctEl.innerText = `${pct.toFixed(1)}%`;
+    limitPctEl.className = "stat-val " + (totalHours < 150 ? "green" : (totalHours < 220 ? "orange" : "danger"));
+  }
+  if (remHoursEl) {
+    remHoursEl.innerText = `${Math.max(0, 250 - totalHours)} óra maradt a határig`;
+  }
 
   if (statusEl) {
     if (totalHours < 150) {
       statusEl.innerText = `Biztonságos (${pct.toFixed(1)}%)`;
       statusEl.style.color = "var(--success)";
+      statusEl.style.borderColor = "rgba(48,209,88,0.3)";
     } else if (totalHours < 220) {
       statusEl.innerText = `Közelít a limithez (${pct.toFixed(1)}%)`;
       statusEl.style.color = "var(--warning)";
+      statusEl.style.borderColor = "rgba(255,214,10,0.3)";
     } else {
       statusEl.innerText = `VESZÉLYZÓNA! (${pct.toFixed(1)}%)`;
       statusEl.style.color = "var(--danger)";
+      statusEl.style.borderColor = "rgba(255,69,58,0.3)";
     }
   }
 
   if (barEl) {
     barEl.style.width = `${pct}%`;
-    barEl.style.background = totalHours < 150 ? "var(--success)" : (totalHours < 220 ? "var(--warning)" : "var(--danger)");
+    const glowClass = totalHours < 150 ? "progress-glow-success" : (totalHours < 220 ? "progress-glow-warning" : "progress-glow-danger");
+    barEl.className = `progress-bar-fill ${glowClass}`;
   }
 
   let unexcusedCount = 0;
@@ -1429,6 +1575,10 @@ function renderAbsencesView(absences) {
     }
   });
 
+  const justifiedCount = Math.max(0, totalHours - unexcusedCount);
+  const justifiedEl = document.getElementById("absences-justified-count");
+  if (justifiedEl) justifiedEl.innerText = `${justifiedCount}`;
+
   const unexcusedEl = document.getElementById("absences-unexcused-count");
   if (unexcusedEl) unexcusedEl.innerText = `${unexcusedCount}`;
   
@@ -1437,26 +1587,26 @@ function renderAbsencesView(absences) {
 
   chrome.storage.local.get("pala_parental_limit").then(res => {
     const limit = res.pala_parental_limit || 3;
-    // calculate lessons per day approximation if needed? The prompt says "use lesson count" but also "Default limit is 3 days (720 minutes or ~21 lessons, but use lesson count). Show X / 3 szülői igazolás felhasználva" Wait, "limit is 3 days" but the UI says "0 / 3 nap".
-    // If the tracker is by *days*, how to convert lesson count to days?
-    // "count absences where Tipus includes 'Szülői'. Default limit is 3 days, but use lesson count."
-    // Let's assume it means "limit is 3 days" and one day is approx 7 lessons. So limit in lessons = 3 * 7 = 21.
-    // Let's use parentalCount directly if it says "use lesson count". But the UI string was "0 / 3 nap".
-    // Actually, prompt says "Default limit is 3 days... but use lesson count. Show "X / 3 szülői igazolás felhasználva"".
-    // So if limit = 3, show `parentalCount / limit szülői igazolás felhasználva`? No, "X / 3". Wait, maybe it means parentalCount / 3 szülői igazolás (like each absence is 1 igazolás? No).
-    // Let's divide by 7 to show days? Let's just show `parentalCount` and `limit * 7` as lessons, OR `parentalCount / (limit * 7)`.
-    // Let's make it simple: "parentalCount tanóra / limit*7 tanóra felhasználva" or just limit the progress bar.
-    
-    // I will show: `${parentalCount} óra / ${limit * 7} óra`
     const maxLessons = limit * 7;
+    const usedDays = Math.ceil(parentalCount / 7);
     const parentStatus = document.getElementById("absences-parental-status");
     if (parentStatus) parentStatus.innerText = `${parentalCount} / ${maxLessons} óra`;
+
+    const parentVal = document.getElementById("absences-parental-val");
+    if (parentVal) parentVal.innerText = `${usedDays} / ${limit} nap`;
+
+    const parentSub = document.getElementById("absences-parental-sub");
+    if (parentSub) {
+      const remDays = Math.max(0, limit - usedDays);
+      parentSub.innerText = `${remDays} nap felhasználható (${parentalCount} óra)`;
+    }
     
     const parentBar = document.getElementById("absences-parental-bar");
     if (parentBar) {
       const pPct = Math.min(100, (parentalCount / maxLessons) * 100);
       parentBar.style.width = `${pPct}%`;
-      parentBar.style.background = pPct < 70 ? "var(--primary)" : (pPct < 90 ? "var(--warning)" : "var(--danger)");
+      const pGlow = pPct < 70 ? "progress-glow-primary" : (pPct < 90 ? "progress-glow-warning" : "progress-glow-danger");
+      parentBar.className = `progress-bar-fill ${pGlow}`;
     }
   });
 
@@ -1478,7 +1628,7 @@ function renderAbsencesView(absences) {
 
   if (highRiskSubjects.length > 0) {
     const riskBanner = document.createElement("div");
-    riskBanner.style.cssText = "background: rgba(255,69,58,0.1); border: 1px solid rgba(255,69,58,0.3); border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; font-size: 0.78rem; color: var(--danger); line-height: 1.4;";
+    riskBanner.style.cssText = "background: rgba(255,69,58,0.1); border: 1px solid rgba(255,69,58,0.3); border-radius: 12px; padding: 12px 16px; margin-bottom: 14px; font-size: 0.78rem; color: var(--danger); line-height: 1.45;";
     riskBanner.innerHTML = `<strong>Figyelem!</strong> Az alábbi tantárgy(ak)ból a hiányzások elérték a 20%-os kritikus határt: <strong>${highRiskSubjects.join(", ")}</strong>. (Osztályozó vizsga kockázat!)`;
     container.appendChild(riskBanner);
   }
@@ -1505,20 +1655,25 @@ function renderAbsencesView(absences) {
 
     const row = document.createElement("div");
     row.className = "table-row";
+    const statusBg = isJustified ? "rgba(48,209,88,0.15)" : "rgba(255,69,58,0.15)";
+    const statusBorder = isJustified ? "rgba(48,209,88,0.35)" : "rgba(255,69,58,0.35)";
+    const statusColor = isJustified ? "var(--success)" : "var(--danger)";
+
     row.innerHTML = `
       <div>
         <div style="display:flex; align-items:center;">
-          <strong style="font-size:0.88rem;">${sub}</strong>
+          <strong style="font-size:0.88rem; color:var(--text);">${sub}</strong>
           ${riskBadge}
         </div>
-        <div style="font-size:0.72rem; color:var(--text-muted);">${type} • ${dateText}</div>
+        <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">${type} • ${dateText}</div>
       </div>
-      <span class="badge" style="color: ${isJustified ? 'var(--success)' : 'var(--danger)'}; border-color: ${isJustified ? 'rgba(48,209,88,0.3)' : 'rgba(255,69,58,0.3)'}">
+      <span class="badge" style="background:${statusBg}; color:${statusColor}; border:1px solid ${statusBorder}; font-size:0.72rem; font-weight:700;">
         ${status}
       </span>
     `;
     container.appendChild(row);
   });
+
 }
 
 let currentMessageFilter = "all";
@@ -1972,8 +2127,10 @@ async function renderSettingsView() {
   }
 
   const instInput = document.getElementById("dash-login-institute");
-  if (instInput && !instInput.value && store.pala_session?.institute) {
+  if (instInput && !fullState.isDemo && !instInput.value && store.pala_session?.institute) {
     instInput.value = store.pala_session.institute;
+  } else if (instInput && fullState.isDemo) {
+    instInput.value = "";
   }
   
   chrome.storage.local.get(["pala_parental_limit", "pala_popup_settings"]).then(res => {
@@ -2018,7 +2175,8 @@ async function renderStudentView(student) {
   console.log("Pala Student Raw Object:", student);
 
   const extraStore = await chrome.storage.local.get(["pala_student_extra"]);
-  const extra = extraStore.pala_student_extra || {};
+  // In demo mode, strictly prevent real student extra data from leaking into Teszt Elek's profile
+  const extra = fullState.isDemo ? {} : (extraStore.pala_student_extra || {});
 
   const d = fullState.data || {};
   const grades = Array.isArray(d.grades) ? d.grades : [];
@@ -2371,7 +2529,8 @@ async function openExtraModal() {
   if (!modal) return;
 
   const extraStore = await chrome.storage.local.get(["pala_student_extra"]);
-  const extra = extraStore.pala_student_extra || {};
+  // In demo mode, strictly prevent real student extra data from appearing in modal
+  const extra = fullState.isDemo ? {} : (extraStore.pala_student_extra || {});
   const student = fullState.data?.student || {};
 
   const setVal = (id, val) => {
@@ -2447,6 +2606,15 @@ function setupStudentExtraModal() {
   });
 
   saveBtn?.addEventListener("click", async () => {
+    if (fullState.isDemo) {
+      if (statusEl) {
+        statusEl.innerText = "Demó módban a módosítások nem írják felül a valós adatokat.";
+        statusEl.style.display = "block";
+        statusEl.style.color = "var(--primary)";
+      }
+      setTimeout(() => closeModal(), 800);
+      return;
+    }
     const data = {
       name: document.getElementById("extra-input-name")?.value.trim(),
       birthName: document.getElementById("extra-input-birth-name")?.value.trim(),

@@ -168,14 +168,6 @@ function setupActions() {
     modal?.classList.toggle("active");
   });
 
-  document.getElementById("btn-toggle-sim-maintenance")?.addEventListener("click", async () => {
-    const store = await chrome.storage.local.get("pala_simulate_maintenance");
-    const nextState = !store.pala_simulate_maintenance;
-    await chrome.storage.local.set({ pala_simulate_maintenance: nextState });
-    document.getElementById("login-modal")?.classList.remove("active");
-    await loadData(true);
-  });
-
   document.getElementById("btn-maintenance-retry")?.addEventListener("click", async () => {
     await chrome.storage.local.set({ pala_simulate_maintenance: false });
     await loadData(true);
@@ -193,6 +185,7 @@ function setupActions() {
 
   document.getElementById("btn-demo-mode")?.addEventListener("click", async () => {
     await SecureSession.save(null);
+    await chrome.storage.local.remove(["pala_cached_data", "pala_last_fetch"]);
     await chrome.storage.local.set({ pala_use_demo: true, pala_simulate_maintenance: false });
     document.getElementById("login-modal")?.classList.remove("active");
     await loadData(true);
@@ -446,20 +439,51 @@ function renderTimetable(timetable) {
 
   const now = new Date();
   const todayIso = now.toISOString().split("T")[0];
+  const todayWeekday = now.getDay();
+  const isWeekend = todayWeekday === 0 || todayWeekday === 6;
+
+  // A/B week calculation for badge
+  const mondayOffset = todayWeekday === 0 ? -6 : 1 - todayWeekday;
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset);
+  const startOfYear = new Date(monday.getFullYear(), 0, 1);
+  const weekNum = Math.floor((monday - startOfYear) / (7 * 24 * 60 * 60 * 1000)) + 1;
+  const isAWeek = (weekNum % 2 !== 0);
+
+  const abBadge = document.getElementById("popup-ab-badge");
+  if (abBadge) {
+    abBadge.textContent = `${isAWeek ? "A hét" : "B hét"} (${weekNum}. hét)`;
+  }
 
   // Filter lessons for today
-  const todayLessons = (timetable || []).filter(item => {
-    if (!item.KezdetIdopont) return true;
-    const itemDate = new Date(item.KezdetIdopont).toISOString().split("T")[0];
-    return itemDate === todayIso;
-  });
+  const hasDates = (timetable || []).some(item => !!item.KezdetIdopont);
+  const todayLessons = hasDates
+    ? (timetable || []).filter(item => {
+        if (!item.KezdetIdopont) return false;
+        const itemDate = new Date(item.KezdetIdopont).toISOString().split("T")[0];
+        return itemDate === todayIso;
+      })
+    : (timetable || []);
 
-  const displayList = todayLessons.length > 0 ? todayLessons : timetable;
-
-  if (displayList.length === 0) {
-    listEl.innerHTML = `<div style="text-align:center; padding: 24px; color: var(--text-muted); font-size: 0.78rem;">Nincs rögzített tanóra mára.</div>`;
+  if (todayLessons.length === 0) {
+    if (isWeekend) {
+      listEl.innerHTML = `
+        <div style="text-align:center; padding: 32px 16px; color: var(--text-muted); font-size: 0.8rem;">
+          <strong style="color: var(--text); display: block; margin-bottom: 4px;">Hétvége van.</strong>
+          <span>Jó pihenést és feltöltődést!</span>
+        </div>
+      `;
+    } else {
+      listEl.innerHTML = `
+        <div style="text-align:center; padding: 32px 16px; color: var(--text-muted); font-size: 0.8rem;">
+          <strong style="color: var(--text); display: block; margin-bottom: 4px;">Nincs tanóra a mai napon.</strong>
+          <span>Tanítás nélküli munkanap / Szabadnap</span>
+        </div>
+      `;
+    }
     return;
   }
+
+  const displayList = todayLessons;
 
   displayList.forEach((item, idx) => {
     const card = document.createElement("div");

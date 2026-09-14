@@ -9,6 +9,7 @@ import 'package:pala/models/exam.dart';
 import 'package:pala/models/grade.dart';
 import 'package:pala/models/homework.dart';
 import 'package:pala/models/message.dart';
+import 'package:pala/models/note.dart';
 import 'package:pala/models/student.dart';
 import 'package:pala/models/timetable_entry.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -34,6 +35,7 @@ class AppModel extends ChangeNotifier {
   List<Exam> _exams = [];
   List<Message> _messages = [];
   List<Absence> _absences = [];
+  List<Note> _notes = [];
   List<dynamic> _groupAverages = [];
   List<Map<String, dynamic>> _teachers = [];
 
@@ -41,6 +43,7 @@ class AppModel extends ChangeNotifier {
   Map<String, String> _aliases = {};
   Set<String> _completedHomework = {};
   int _weekOffset = 0;
+  bool? _overrideAWeek;
 
   // Getters
   KretaClient? get client => _client;
@@ -60,6 +63,7 @@ class AppModel extends ChangeNotifier {
   List<Exam> get exams => _exams;
   List<Message> get messages => _messages;
   List<Absence> get absences => _absences;
+  List<Note> get notes => _notes;
   List<dynamic> get groupAverages => _groupAverages;
   List<Map<String, dynamic>> get teachers => _teachers;
 
@@ -67,6 +71,25 @@ class AppModel extends ChangeNotifier {
   Map<String, String> get aliases => _aliases;
   Set<String> get completedHomework => _completedHomework;
   int get weekOffset => _weekOffset;
+  bool? get overrideAWeek => _overrideAWeek;
+
+  DateTime get currentWeekMonday {
+    final now = DateTime.now();
+    final currentMonday = now.subtract(Duration(days: now.weekday - 1));
+    return currentMonday.add(Duration(days: _weekOffset * 7));
+  }
+
+  int get currentWeekNumber {
+    final d = currentWeekMonday;
+    final thursday = d.add(Duration(days: 4 - d.weekday));
+    final firstThursday = DateTime(thursday.year, 1, 4);
+    final firstThursdayOfWeek1 = firstThursday.add(Duration(days: 4 - firstThursday.weekday));
+    return 1 + ((thursday.difference(firstThursdayOfWeek1).inDays) / 7).round();
+  }
+
+  bool get isAWeek => _overrideAWeek ?? (currentWeekNumber % 2 != 0);
+
+  String get abWeekName => isAWeek ? 'A hét' : 'B hét';
 
   AppModel() {
     _initStorage();
@@ -178,6 +201,20 @@ class AppModel extends ChangeNotifier {
   Future<void> loginDemo() async {
     _isLoading = true;
     _errorMessage = null;
+    _student = null;
+    _grades = [];
+    _timetable = [];
+    _homework = [];
+    _exams = [];
+    _messages = [];
+    _absences = [];
+    _notes = [];
+    _groupAverages = [];
+    _teachers = [];
+    _completedHomework = {};
+    _aliases = {};
+    _weekOffset = 0;
+    _overrideAWeek = null;
     notifyListeners();
 
     try {
@@ -195,6 +232,7 @@ class AppModel extends ChangeNotifier {
 
   Future<void> logout() async {
     await SessionStore.clear();
+    await clearLocalCache();
     _client = null;
     _isAuthenticated = false;
     _isDemo = false;
@@ -205,8 +243,13 @@ class AppModel extends ChangeNotifier {
     _exams = [];
     _messages = [];
     _absences = [];
+    _notes = [];
     _groupAverages = [];
     _teachers = [];
+    _completedHomework = {};
+    _aliases = {};
+    _weekOffset = 0;
+    _overrideAWeek = null;
     notifyListeners();
   }
 
@@ -226,6 +269,7 @@ class AppModel extends ChangeNotifier {
         _client!.getAbsences(),
         _client!.getGroupAverages(),
         _client!.getTeachers(),
+        _client!.getNotes(),
       ]);
 
       _student = futures[0] as Student?;
@@ -237,6 +281,7 @@ class AppModel extends ChangeNotifier {
       _absences = (futures[6] as List<Absence>?) ?? [];
       _groupAverages = (futures[7] as List<dynamic>?) ?? [];
       _teachers = (futures[8] as List<Map<String, dynamic>>?) ?? [];
+      _notes = (futures[9] as List<Note>?) ?? [];
       _errorMessage = null;
     } catch (e) {
       _errorMessage = 'Hiba az adatok lekérésekor: $e';
@@ -289,12 +334,13 @@ class AppModel extends ChangeNotifier {
     final start = DateTime(targetMonday.year, targetMonday.month, targetMonday.day, 0, 0, 0);
     final end = DateTime(targetFriday.year, targetFriday.month, targetFriday.day, 23, 59, 59);
 
-    final entries = await _client!.getTimetable(start, end);
+    final entries = await _client!.getTimetable(start, end, overrideAWeek: _overrideAWeek);
     return entries ?? [];
   }
 
   Future<void> setWeekOffset(int offset) async {
     _weekOffset = offset;
+    _overrideAWeek = null;
     _isLoading = true;
     notifyListeners();
     try {
@@ -305,6 +351,22 @@ class AppModel extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> toggleABWeek() async {
+    _overrideAWeek = !isAWeek;
+    if (_isDemo) {
+      _timetable = await _fetchTimetableForOffset(_weekOffset);
+    }
+    notifyListeners();
+  }
+
+  Future<void> resetABWeek() async {
+    _overrideAWeek = null;
+    if (_isDemo) {
+      _timetable = await _fetchTimetableForOffset(_weekOffset);
+    }
+    notifyListeners();
   }
 
   void toggleHomework(String hwId) async {

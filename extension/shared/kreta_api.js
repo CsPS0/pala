@@ -47,84 +47,164 @@ const DEMO_STUDENT = {
 };
 
 const DEMO_GRADES = [
-  { Id: 101, Tantargy: { Nev: "Matematika" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 200, Tema: "Függvények & Analízis", RogzitesDatuma: new Date().toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 1011, Tantargy: { Nev: "Matematika" }, SzovegesErtek: "Közepes (3)", SzamErtek: 3, SulySzazalek: 100, Tema: "Gyakorló", RogzitesDatuma: new Date(Date.now() - 50000000).toISOString(), Tipus: { Leiras: "Órai munka" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 1012, Tantargy: { Nev: "Matematika" }, SzovegesErtek: "Jó (4)", SzamErtek: 4, SulySzazalek: 100, Tema: "Számonkérés", RogzitesDatuma: new Date(Date.now() - 100000000).toISOString(), Tipus: { Leiras: "Röpdolgozat" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 102, Tantargy: { Nev: "Magyar nyelv és irodalom" }, SzovegesErtek: "Jó (4)", SzamErtek: 4, SulySzazalek: 100, Tema: "Nyugat költészete", RogzitesDatuma: new Date(Date.now() - 86400000).toISOString(), Tipus: { Leiras: "Szóbeli felelet" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 1021, Tantargy: { Nev: "Magyar nyelv és irodalom" }, SzovegesErtek: "Közepes (3)", SzamErtek: 3, SulySzazalek: 100, Tema: "Memoriter", RogzitesDatuma: new Date(Date.now() - 90000000).toISOString(), Tipus: { Leiras: "Felelet" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 103, Tantargy: { Nev: "Történelem" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 100, Tema: "A reformkor nagyjai", RogzitesDatuma: new Date(Date.now() - 172800000).toISOString(), Tipus: { Leiras: "Órai munka" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 1031, Tantargy: { Nev: "Történelem" }, SzovegesErtek: "Elégséges (2)", SzamErtek: 2, SulySzazalek: 100, Tema: "Évszámok", RogzitesDatuma: new Date(Date.now() - 180000000).toISOString(), Tipus: { Leiras: "Röpdolgozat" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 1032, Tantargy: { Nev: "Történelem" }, SzovegesErtek: "Közepes (3)", SzamErtek: 3, SulySzazalek: 200, Tema: "Témazáró", RogzitesDatuma: new Date(Date.now() - 190000000).toISOString(), Tipus: { Leiras: "Dolgozat" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 104, Tantargy: { Nev: "Angol nyelv" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 100, Tema: "Conditionals & Essay", RogzitesDatuma: new Date(Date.now() - 259200000).toISOString(), Tipus: { Leiras: "Írásbeli dolgozat" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 105, Tantargy: { Nev: "Fizika" }, SzovegesErtek: "Közepes (3)", SzamErtek: 3, SulySzazalek: 100, Tema: "Elektrosztatika számítások", RogzitesDatuma: new Date(Date.now() - 345600000).toISOString(), Tipus: { Leiras: "Röpdolgozat" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 1051, Tantargy: { Nev: "Fizika" }, SzovegesErtek: "Elégséges (2)", SzamErtek: 2, SulySzazalek: 200, Tema: "Mechanika TZ", RogzitesDatuma: new Date(Date.now() - 360000000).toISOString(), Tipus: { Leiras: "Témazáró dolgozat" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 1052, Tantargy: { Nev: "Fizika" }, SzovegesErtek: "Jó (4)", SzamErtek: 4, SulySzazalek: 100, Tema: "Labor", RogzitesDatuma: new Date(Date.now() - 370000000).toISOString(), Tipus: { Leiras: "Gyakorlati" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 106, Tantargy: { Nev: "Informatika / Digitális kultúra" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 200, Tema: "Python algoritmusok & Adatbázisok", RogzitesDatuma: new Date(Date.now() - 432000000).toISOString(), Tipus: { Leiras: "Gyakorlati feladat" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } }
+  // Matematika (Dr. Számoló Szilárd)
+  { Id: 101, Tantargy: { Nev: "Matematika" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 200, Tema: "Függvények & Analízis témazáró", RogzitesDatuma: new Date().toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+  { Id: 1011, Tantargy: { Nev: "Matematika" }, SzovegesErtek: "Elégtelen (1)", SzamErtek: 1, SulySzazalek: 100, Tema: "Váratlan röpdolgozat: Algebrai törtek", RogzitesDatuma: new Date(Date.now() - 50000000).toISOString(), Tipus: { Leiras: "Írásbeli röpdolgozat" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+  { Id: 1012, Tantargy: { Nev: "Matematika" }, SzovegesErtek: "Elégséges (2)", SzamErtek: 2, SulySzazalek: 200, Tema: "Trigonometria és szögfüggvények témazáró", RogzitesDatuma: new Date(Date.now() - 100000000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+  { Id: 1013, Tantargy: { Nev: "Matematika" }, SzovegesErtek: "Jó (4)", SzamErtek: 4, SulySzazalek: 100, Tema: "Vektorok koordinátái", RogzitesDatuma: new Date(Date.now() - 150000000).toISOString(), Tipus: { Leiras: "Órai munka" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+
+  // Magyar nyelv és irodalom (Arany Jánosné)
+  { Id: 102, Tantargy: { Nev: "Magyar nyelv és irodalom" }, SzovegesErtek: "Jó (4)", SzamErtek: 4, SulySzazalek: 100, Tema: "Nyugat lírája", RogzitesDatuma: new Date(Date.now() - 86400000).toISOString(), Tipus: { Leiras: "Szóbeli felelet" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+  { Id: 1021, Tantargy: { Nev: "Magyar nyelv és irodalom" }, SzovegesErtek: "Elégséges (2)", SzamErtek: 2, SulySzazalek: 100, Tema: "Helyesírási röpdolgozat", RogzitesDatuma: new Date(Date.now() - 90000000).toISOString(), Tipus: { Leiras: "Röpdolgozat" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+  { Id: 1022, Tantargy: { Nev: "Magyar nyelv és irodalom" }, SzovegesErtek: "Közepes (3)", SzamErtek: 3, SulySzazalek: 200, Tema: "Romantika és reformkori irodalom témazáró", RogzitesDatuma: new Date(Date.now() - 120000000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+
+  // Történelem (Kossuth Lajos)
+  { Id: 103, Tantargy: { Nev: "Történelem" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 100, Tema: "A reformkor gazdasági törekvései", RogzitesDatuma: new Date(Date.now() - 172800000).toISOString(), Tipus: { Leiras: "Órai munka" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+  { Id: 1031, Tantargy: { Nev: "Történelem" }, SzovegesErtek: "Elégséges (2)", SzamErtek: 2, SulySzazalek: 100, Tema: "Évszám röpdolgozat", RogzitesDatuma: new Date(Date.now() - 180000000).toISOString(), Tipus: { Leiras: "Röpdolgozat" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+  { Id: 1032, Tantargy: { Nev: "Történelem" }, SzovegesErtek: "Közepes (3)", SzamErtek: 3, SulySzazalek: 200, Tema: "Az 1848-as forradalmak témazáró", RogzitesDatuma: new Date(Date.now() - 190000000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+
+  // Angol nyelv (Smith John)
+  { Id: 104, Tantargy: { Nev: "Angol nyelv" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 100, Tema: "Conditionals & Essay writing", RogzitesDatuma: new Date(Date.now() - 259200000).toISOString(), Tipus: { Leiras: "Írásbeli dolgozat" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+  { Id: 1041, Tantargy: { Nev: "Angol nyelv" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 200, Tema: "B2 Mock Exam témazáró", RogzitesDatuma: new Date(Date.now() - 300000000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+
+  // Fizika (Eötvös Loránd) - BUKÁSRA ÁLL (~1.71)
+  { Id: 105, Tantargy: { Nev: "Fizika" }, SzovegesErtek: "Elégtelen (1)", SzamErtek: 1, SulySzazalek: 200, Tema: "Newton törvényei témazáró dolgozat", RogzitesDatuma: new Date(Date.now() - 345600000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+  { Id: 1051, Tantargy: { Nev: "Fizika" }, SzovegesErtek: "Elégtelen (1)", SzamErtek: 1, SulySzazalek: 100, Tema: "Vektoriális gyorsulás röpdolgozat", RogzitesDatuma: new Date(Date.now() - 360000000).toISOString(), Tipus: { Leiras: "Röpdolgozat" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+  { Id: 1052, Tantargy: { Nev: "Fizika" }, SzovegesErtek: "Elégséges (2)", SzamErtek: 2, SulySzazalek: 100, Tema: "Kinematika és szabadesés felelet", RogzitesDatuma: new Date(Date.now() - 370000000).toISOString(), Tipus: { Leiras: "Szóbeli felelet" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+  { Id: 1053, Tantargy: { Nev: "Fizika" }, SzovegesErtek: "Elégséges (2)", SzamErtek: 2, SulySzazalek: 200, Tema: "Elektrosztatika és Coulomb-törvény TZ", RogzitesDatuma: new Date(Date.now() - 400000000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+
+  // Informatika / Digitális kultúra (Neumann János)
+  { Id: 106, Tantargy: { Nev: "Informatika / Digitális kultúra" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 200, Tema: "Python algoritmusok & Adatbázisok", RogzitesDatuma: new Date(Date.now() - 432000000).toISOString(), Tipus: { Leiras: "Gyakorlati feladat" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+  { Id: 1061, Tantargy: { Nev: "Informatika / Digitális kultúra" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 100, Tema: "Relációs adatmodellek házi feladat", RogzitesDatuma: new Date(Date.now() - 440000000).toISOString(), Tipus: { Leiras: "Házi feladat" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+
+  // Kémia (Irinyi János) - BUKÁSRA ÁLL (~1.33)
+  { Id: 107, Tantargy: { Nev: "Kémia" }, SzovegesErtek: "Elégtelen (1)", SzamErtek: 1, SulySzazalek: 100, Tema: "Atomszerkezet és periódusos rendszer", RogzitesDatuma: new Date(Date.now() - 190000000).toISOString(), Tipus: { Leiras: "Röpdolgozat" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+  { Id: 1071, Tantargy: { Nev: "Kémia" }, SzovegesErtek: "Elégtelen (1)", SzamErtek: 1, SulySzazalek: 200, Tema: "Kémiai kötések és molekulák témazáró", RogzitesDatuma: new Date(Date.now() - 260000000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+  { Id: 1072, Tantargy: { Nev: "Kémia" }, SzovegesErtek: "Elégtelen (1)", SzamErtek: 1, SulySzazalek: 200, Tema: "Sav-bázis reakciók és titrálás témazáró", RogzitesDatuma: new Date(Date.now() - 290000000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+  { Id: 1073, Tantargy: { Nev: "Kémia" }, SzovegesErtek: "Elégséges (2)", SzamErtek: 2, SulySzazalek: 100, Tema: "Indikátorok pH vizsgálata labor", RogzitesDatuma: new Date(Date.now() - 320000000).toISOString(), Tipus: { Leiras: "Gyakorlati" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+
+  // Biológia (Szent-Györgyi Albert)
+  { Id: 108, Tantargy: { Nev: "Biológia" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 100, Tema: "Sejtbiológia és citoplazma", RogzitesDatuma: new Date(Date.now() - 210000000).toISOString(), Tipus: { Leiras: "Órai munka" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+  { Id: 1081, Tantargy: { Nev: "Biológia" }, SzovegesErtek: "Jó (4)", SzamErtek: 4, SulySzazalek: 200, Tema: "Genetika és molekuláris biológia témazáró", RogzitesDatuma: new Date(Date.now() - 280000000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+
+  // Testnevelés és egészségfejlesztés (Hajós Alfréd)
+  { Id: 109, Tantargy: { Nev: "Testnevelés és egészségfejlesztés" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 100, Tema: "Kosárlabda technikai gyakorlatok", RogzitesDatuma: new Date(Date.now() - 150000000).toISOString(), Tipus: { Leiras: "Gyakorlati" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+
+  // Földrajz (Teleki Pál) - Gyenge 2-es (~2.00)
+  { Id: 110, Tantargy: { Nev: "Földrajz" }, SzovegesErtek: "Elégtelen (1)", SzamErtek: 1, SulySzazalek: 100, Tema: "Földrajzi fokhálózat röpdolgozat", RogzitesDatuma: new Date(Date.now() - 230000000).toISOString(), Tipus: { Leiras: "Röpdolgozat" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+  { Id: 1101, Tantargy: { Nev: "Földrajz" }, SzovegesErtek: "Elégséges (2)", SzamErtek: 2, SulySzazalek: 200, Tema: "A Föld szerkezete és vulkánosság témazáró", RogzitesDatuma: new Date(Date.now() - 270000000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+  { Id: 1102, Tantargy: { Nev: "Földrajz" }, SzovegesErtek: "Elégséges (2)", SzamErtek: 2, SulySzazalek: 100, Tema: "Európa vaktérkép", RogzitesDatuma: new Date(Date.now() - 310000000).toISOString(), Tipus: { Leiras: "Gyakorlati" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } }
 ];
 
-function generateDemoTimetable() {
-  const today = new Date();
-  const subjects = [
-    { name: "Matematika", room: "204", teacher: "Kovács Péter" },
-    { name: "Magyar irodalom", room: "102", teacher: "Nagy Erika" },
-    { name: "Történelem", room: "305", teacher: "Horváth László" },
-    { name: "Angol nyelv", room: "201", teacher: "Kiss Andrea" },
-    { name: "Fizika", room: "Fizika Ea.", teacher: "Szabó Zoltán" },
-    { name: "Testnevelés", room: "Tornaterem", teacher: "Varga Dániel" }
+function generateDemoTimetable(overrideAWeek = null) {
+  const now = new Date();
+  const currentDay = now.getDay(); // 0 is Sunday, 1 is Monday...
+  const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset);
+
+  // A/B week check
+  const startOfYear = new Date(monday.getFullYear(), 0, 1);
+  const weekNum = Math.floor((monday - startOfYear) / (7 * 24 * 60 * 60 * 1000)) + 1;
+  const isAWeek = overrideAWeek !== null ? overrideAWeek : (weekNum % 2 !== 0);
+
+  const weeklySchedule = [
+    // Hétfő (Day 0) - 8 óra
+    [
+      { name: "Matematika", room: "204", teacher: "Dr. Számoló Szilárd", theme: "Másodfokú egyenletek és függvények" },
+      { name: "Magyar nyelv és irodalom", room: "108", teacher: "Arany Jánosné", theme: "A magyar felvilágosodás korszaka" },
+      { name: "Történelem", room: "215", teacher: "Kossuth Lajos", theme: "A reformkor gazdasági törekvései" },
+      { name: "Digitális kultúra", room: "Infó labor 1", teacher: "Neumann János", theme: "Programozás és algoritmusok" },
+      { name: "Fizika", room: "Fizika előadó", teacher: "Eötvös Loránd", theme: "Newton törvényei és dinamika", isSubst: true },
+      { name: "Angol nyelv", room: "Nyelvi terem 3", teacher: "Smith John", theme: "Conditional sentences practice B2" },
+      { name: "Kémia", room: "Kémia labor", teacher: "Irinyi János", theme: "Sav-bázis titrálási kísérlet" },
+      { name: "Testnevelés és egészségfejlesztés", room: "Tornaterem", teacher: "Hajós Alfréd", theme: "Kosárlabda technikai elemek" }
+    ],
+    // Kedd (Day 1) - 7 óra
+    [
+      { name: "Angol nyelv", room: "Nyelvi terem 3", teacher: "Smith John", theme: "Vocabulary: Environment & Climate" },
+      { name: "Matematika", room: "204", teacher: "Dr. Számoló Szilárd", theme: "Geometria: Vektorok a síkban" },
+      isAWeek
+        ? { name: "Biológia", room: "Bio labor", teacher: "Szent-Györgyi Albert", theme: "Sejtbiológia és biokémiai folyamatok" }
+        : { name: "Földrajz", room: "105", teacher: "Teleki Pál", theme: "A Föld belső szerkezete" },
+      { name: "Kémia", room: "Kémia előadó", teacher: "Irinyi János", theme: "Redoxireakciók és égés", isSubst: true },
+      { name: "Testnevelés és egészségfejlesztés", room: "Tornaterem", teacher: "Hajós Alfréd", theme: "Erőnléti állapotfelmérés" },
+      { name: "Földrajz", room: "105", teacher: "Teleki Pál", theme: "A Kárpát-medence természeti földrajza" },
+      { name: "Fizika", room: "Fizika előadó", teacher: "Eötvös Loránd", theme: "Elektrosztatika: Coulomb-törvény", isCanc: true }
+    ],
+    // Szerda (Day 2) - 0 óra (NINCS TANÓRA - Tanítás nélküli nap / Szabadnap)
+    [],
+    // Csütörtök (Day 3) - 8 óra
+    [
+      { name: "Kémia", room: "Kémia előadó", teacher: "Irinyi János", theme: "Szerves kémia alapjai" },
+      { name: "Biológia", room: "Bio labor", teacher: "Szent-Györgyi Albert", theme: "Fotoszintézis és sejtlégzés" },
+      { name: "Angol nyelv", room: "Nyelvi terem 3", teacher: "Smith John", theme: "Reading comprehension B2 mock test", isSubst: true },
+      { name: "Magyar nyelv és irodalom", room: "108", teacher: "Arany Jánosné", theme: "Kölcsey Ferenc: Himnusz elemzés" },
+      { name: "Történelem", room: "215", teacher: "Kossuth Lajos", theme: "Az 1848-as forradalom eseményei" },
+      { name: "Földrajz", room: "105", teacher: "Teleki Pál", theme: "Európa gazdasági földrajza" },
+      isAWeek
+        ? { name: "Matematika", room: "204", teacher: "Dr. Számoló Szilárd", theme: "Trigonometrikus feladatok" }
+        : { name: "Fizika", room: "Fizika előadó", teacher: "Eötvös Loránd", theme: "Mérési gyakorlat" },
+      { name: "Digitális kultúra", room: "Infó labor 1", teacher: "Neumann János", theme: "Adatbázisok és SQL lekérdezések" }
+    ],
+    // Péntek (Day 4) - 7 óra
+    [
+      { name: "Matematika", room: "204", teacher: "Dr. Számoló Szilárd", theme: "Valószínűségszámítás alapjai" },
+      { name: "Digitális kultúra", room: "Infó labor 1", teacher: "Neumann János", theme: "Projektmunka bemutató", isSubst: true },
+      { name: "Fizika", room: "Fizika előadó", teacher: "Eötvös Loránd", theme: "Fénytörés és lencsék" },
+      { name: "Angol nyelv", room: "Nyelvi terem 3", teacher: "Smith John", theme: "Academic essay writing" },
+      { name: "Testnevelés és egészségfejlesztés", room: "Sportpálya", teacher: "Hajós Alfréd", theme: "Foci és atlétika bajnokság" },
+      { name: "Osztályfőnöki", room: "215", teacher: "Kossuth Lajos", theme: "DÖK választás és osztályprogramok" },
+      { name: "Magyar nyelv és irodalom", room: "108", teacher: "Arany Jánosné", theme: "Vörösmarty: Szózat lírai világa" }
+    ]
   ];
 
   const timetable = [];
-  for (let i = 0; i < subjects.length; i++) {
-    const startHour = 8 + i;
-    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate(), startHour, 0);
-    const end = new Date(today.getFullYear(), today.getMonth(), today.getDate(), startHour, 45);
+  const periodHours = [
+    ["07:55", "08:40"],
+    ["08:50", "09:35"],
+    ["09:45", "10:30"],
+    ["10:45", "11:30"],
+    ["11:40", "12:25"],
+    ["12:45", "13:30"],
+    ["13:40", "14:25"],
+    ["14:35", "15:20"]
+  ];
 
-    let state = { Nev: "Megtartott" };
-    let subTeacher = null;
-    let theme = `Tananyag ${i + 1}. fejezet`;
+  weeklySchedule.forEach((dayLessons, dayIdx) => {
+    const dayDate = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + dayIdx);
 
-    if (i === 1) {
-      state = { Nev: "Helyettesített" };
-      subTeacher = "Kiss Andrea";
-    }
-    if (i === 4) {
-      state = { Nev: "Elmaradt" };
-      theme = "Tanár betegsége miatt elmarad";
-    }
+    dayLessons.forEach((lesson, lessonIdx) => {
+      const [startStr, endStr] = periodHours[lessonIdx] || ["08:00", "08:45"];
+      const [sH, sM] = startStr.split(":").map(Number);
+      const [eH, eM] = endStr.split(":").map(Number);
 
-    timetable.push({
-      Id: 1000 + i,
-      Oraszam: i + 1,
-      KezdetIdopont: start.toISOString(),
-      VegIdopont: end.toISOString(),
-      Tantargy: { Nev: subjects[i].name },
-      Terem: subjects[i].room,
-      Tanar: subjects[i].teacher,
-      HelyettesitoTanarNeve: subTeacher,
-      Tema: theme,
-      Allapot: state
+      const start = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate(), sH, sM);
+      const end = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate(), eH, eM);
+
+      let state = { Nev: "Megtartott" };
+      let subTeacher = null;
+      if (lesson.isSubst) {
+        state = { Nev: "Helyettesített" };
+        subTeacher = "Jedlik Ányos";
+      } else if (lesson.isCanc) {
+        state = { Nev: "Elmaradt" };
+      }
+
+      timetable.push({
+        Id: (dayIdx + 1) * 1000 + lessonIdx + 1,
+        Oraszam: lessonIdx + 1,
+        KezdetIdopont: start.toISOString(),
+        VegIdopont: end.toISOString(),
+        Tantargy: { Nev: lesson.name },
+        Terem: lesson.room,
+        Tanar: lesson.teacher,
+        HelyettesitoTanarNeve: subTeacher,
+        Tema: lesson.theme,
+        Allapot: state
+      });
     });
-  }
-  
-  // Add some for tomorrow to show matrix
-  for (let i = 0; i < 3; i++) {
-    const startHour = 8 + i;
-    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1, startHour, 0);
-    const end = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1, startHour, 45);
-    
-    timetable.push({
-      Id: 2000 + i,
-      Oraszam: i + 1,
-      KezdetIdopont: start.toISOString(),
-      VegIdopont: end.toISOString(),
-      Tantargy: { Nev: subjects[i].name },
-      Terem: subjects[i].room,
-      Tanar: subjects[i].teacher,
-      Tema: `Gyakorlás`,
-      Allapot: { Nev: "Megtartott" }
-    });
-  }
-  
+  });
+
   return timetable;
 }
 
@@ -144,7 +224,11 @@ const DEMO_ABSENCES = [
   { Id: 402, Datum: new Date(Date.now() - 604800000).toISOString(), Tantargy: "Kémia", IgazolasAllapota: "Igazolt", Tipus: "Szülői igazolás", KesesPercben: 0 },
   { Id: 403, Datum: new Date(Date.now() - 500000000).toISOString(), Tantargy: "Fizika", IgazolasAllapota: "Igazolatlan", Tipus: "Mulasztás", KesesPercben: 0 },
   { Id: 404, Datum: new Date(Date.now() - 400000000).toISOString(), Tantargy: "Történelem", IgazolasAllapota: "Igazolt", Tipus: "Késés", KesesPercben: 15 },
-  { Id: 405, Datum: new Date(Date.now() - 300000000).toISOString(), Tantargy: "Matematika", IgazolasAllapota: "Igazolatlan", Tipus: "Késés", KesesPercben: 10 }
+  { Id: 405, Datum: new Date(Date.now() - 300000000).toISOString(), Tantargy: "Matematika", IgazolasAllapota: "Igazolatlan", Tipus: "Késés", KesesPercben: 10 },
+  // Repeated unexcused absences/lateness behind the megrovás messages below.
+  { Id: 406, Datum: new Date(Date.now() - 1641600000).toISOString(), Tantargy: "Történelem", IgazolasAllapota: "Igazolatlan", Tipus: "Mulasztás", KesesPercben: 0 },
+  { Id: 407, Datum: new Date(Date.now() - 1641600000).toISOString(), Tantargy: "Kémia", IgazolasAllapota: "Igazolatlan", Tipus: "Mulasztás", KesesPercben: 0 },
+  { Id: 408, Datum: new Date(Date.now() - 950400000).toISOString(), Tantargy: "Angol nyelv", IgazolasAllapota: "Igazolatlan", Tipus: "Késés", KesesPercben: 12 }
 ];
 
 const DEMO_GROUP_AVERAGES = [
@@ -153,7 +237,11 @@ const DEMO_GROUP_AVERAGES = [
   { Tantargy: { Nev: "Történelem" }, OsztalyAtlag: 3.95 },
   { Tantargy: { Nev: "Angol nyelv" }, OsztalyAtlag: 4.30 },
   { Tantargy: { Nev: "Informatika / Digitális kultúra" }, OsztalyAtlag: 4.60 },
-  { Tantargy: { Nev: "Fizika" }, OsztalyAtlag: 3.45 }
+  { Tantargy: { Nev: "Fizika" }, OsztalyAtlag: 3.45 },
+  { Tantargy: { Nev: "Kémia" }, OsztalyAtlag: 3.60 },
+  { Tantargy: { Nev: "Biológia" }, OsztalyAtlag: 4.05 },
+  { Tantargy: { Nev: "Testnevelés és egészségfejlesztés" }, OsztalyAtlag: 4.70 },
+  { Tantargy: { Nev: "Földrajz" }, OsztalyAtlag: 3.75 }
 ];
 
 const KRETA_IDP = "https://idp.e-kreta.hu";
@@ -1110,11 +1198,15 @@ class KretaApi {
     };
   }
 
-  static getDemoDataset() {
+  static generateDemoTimetable(overrideAWeek = null) {
+    return generateDemoTimetable(overrideAWeek);
+  }
+
+  static getDemoDataset(overrideAWeek = null) {
     return {
       student: DEMO_STUDENT,
       grades: DEMO_GRADES,
-      timetable: generateDemoTimetable(),
+      timetable: generateDemoTimetable(overrideAWeek),
       homework: DEMO_HOMEWORK,
       exams: DEMO_EXAMS,
       absences: DEMO_ABSENCES,
@@ -1205,6 +1297,26 @@ class KretaApi {
           content: "A Zrínyi Ilona Matematikaverseny vármegyei fordulóján nyújtott kiemelkedő felkészültségéért és az elért dobogós helyezéséért szaktárgyi dicséretben részesül.",
           date: "2026-03-25T10:30:00",
           isRead: true,
+          source: "ellenorzo"
+        },
+        {
+          id: "m-9",
+          type: "Osztályfőnöki megrovás",
+          sender: "Nagy Erika (Osztályfőnök)",
+          title: "Osztályfőnöki megrovás",
+          content: "Ismétlődő igazolatlan hiányzásai és késései (Történelem, Kémia, Angol nyelv) miatt osztályfőnöki megrovásban részesül. Kérjük a mulasztások haladéktalan igazolását, ellenkező esetben a fegyelmi eljárás következő fokozata alkalmazandó.",
+          date: "2026-06-10T09:15:00",
+          isRead: false,
+          source: "ellenorzo"
+        },
+        {
+          id: "m-10",
+          type: "Igazgatói megrovás",
+          sender: "Kaufmann Péter (igazgató h.)",
+          title: "Igazgatói megrovás",
+          content: "Az osztályfőnöki jelzés és a folytatódó igazolatlan mulasztások alapján az intézmény vezetése igazgatói megrovás fegyelmező intézkedést alkalmaz. Kérjük a Házirendben foglaltak betartását és a hiányzó igazolások pótlását.",
+          date: "2026-06-12T11:00:00",
+          isRead: false,
           source: "ellenorzo"
         }
       ],

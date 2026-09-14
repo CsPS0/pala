@@ -5,3 +5,5 @@ export 'message.dart';
 export 'student.dart';
 export 'timetable_entry.dart';
 export 'homework.dart';
+export 'note.dart';
+

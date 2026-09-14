@@ -148,7 +148,7 @@ export function ReleaseProvider({ children }: { children: React.ReactNode }) {
         case "linux":
           return { url: "/docs", label: `Telepítés Linuxra`, isDirect: false };
         case "ios":
-          return { url: "/docs", label: `iOS Telepítési Útmutató`, isDirect: false };
+          return { url: "/docs#inst-ios", label: `iOS: Jelenleg nem elérhető (Részletek)`, isDirect: false };
         default:
           return { url: "/docs", label: `Telepítés & Dokumentáció`, isDirect: false };
       }

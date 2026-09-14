@@ -546,12 +546,12 @@ class DemoData {
         teacherName: 'Neumann János',
       ),
 
-      // --- FIZIKA (Tanár: Eötvös Loránd) ---
+      // --- FIZIKA (Tanár: Eötvös Loránd) - Bukásra áll ---
       Grade(
         subject: 'Fizika',
         subjectCategory: 'Természettudomány',
-        numericValue: 4,
-        textValue: 'Jó (4)',
+        numericValue: 2,
+        textValue: 'Elégséges (2)',
         weight: 100,
         date: d(y1, 10, 2),
         type: 'Szóbeli felelet',
@@ -561,30 +561,41 @@ class DemoData {
       Grade(
         subject: 'Fizika',
         subjectCategory: 'Természettudomány',
-        numericValue: 4,
-        textValue: 'Jó (4)',
+        numericValue: 1,
+        textValue: 'Elégtelen (1)',
+        weight: 100,
+        date: d(y1, 10, 25),
+        type: 'Írásbeli röpdolgozat',
+        theme: 'Vektoriális sebesség és pillanatnyi gyorsulás',
+        teacherName: 'Eötvös Loránd',
+      ),
+      Grade(
+        subject: 'Fizika',
+        subjectCategory: 'Természettudomány',
+        numericValue: 1,
+        textValue: 'Elégtelen (1)',
         weight: 200,
         date: d(y1, 11, 15),
         type: 'Írásbeli témazáró dolgozat',
-        theme: 'Newton törvényei és gravitáció',
+        theme: 'Newton törvényei és dinamikai alapegyenlet',
         teacherName: 'Eötvös Loránd',
       ),
       Grade(
         subject: 'Fizika',
         subjectCategory: 'Természettudomány',
-        numericValue: 5,
-        textValue: 'Jeles (5)',
+        numericValue: 2,
+        textValue: 'Elégséges (2)',
         weight: 100,
         date: d(y1, 12, 17),
         type: 'Laboratóriumi mérési jegyzőkönyv',
-        theme: 'Lejtőn mozgó test gyorsulásának mérése',
+        theme: 'Súrlódási együttható vizsgálata lejtőn',
         teacherName: 'Eötvös Loránd',
       ),
       Grade(
         subject: 'Fizika',
         subjectCategory: 'Természettudomány',
-        numericValue: 4,
-        textValue: 'Jó (4)',
+        numericValue: 2,
+        textValue: 'Elégséges (2)',
         weight: 100,
         date: d(y2, 1, 23),
         type: 'Félévi értékelés',
@@ -594,30 +605,41 @@ class DemoData {
       Grade(
         subject: 'Fizika',
         subjectCategory: 'Természettudomány',
-        numericValue: 3,
-        textValue: 'Közepes (3)',
+        numericValue: 1,
+        textValue: 'Elégtelen (1)',
         weight: 100,
         date: d(y2, 3, 5),
         type: 'Írásbeli röpdolgozat',
-        theme: 'Munka, energia és teljesítmény',
+        theme: 'Munka, mechanikai energia és teljesítmény',
         teacherName: 'Eötvös Loránd',
       ),
       Grade(
         subject: 'Fizika',
         subjectCategory: 'Természettudomány',
-        numericValue: 5,
-        textValue: 'Jeles (5)',
+        numericValue: 3,
+        textValue: 'Közepes (3)',
+        weight: 100,
+        date: d(y2, 4, 18),
+        type: 'Házi feladat',
+        theme: 'Energiamegmaradás törvényének alkalmazása',
+        teacherName: 'Eötvös Loránd',
+      ),
+      Grade(
+        subject: 'Fizika',
+        subjectCategory: 'Természettudomány',
+        numericValue: 2,
+        textValue: 'Elégséges (2)',
         weight: 200,
         date: d(y2, 5, 8),
         type: 'Írásbeli témazáró dolgozat',
-        theme: 'Elektrosztatika és egyenáram',
+        theme: 'Elektrosztatika és egyenáramú áramkörök',
         teacherName: 'Eötvös Loránd',
       ),
       Grade(
         subject: 'Fizika',
         subjectCategory: 'Természettudomány',
-        numericValue: 4,
-        textValue: 'Jó (4)',
+        numericValue: 2,
+        textValue: 'Elégséges (2)',
         weight: 100,
         date: d(y2, 6, 17),
         type: 'Év végi értékelés',
@@ -625,23 +647,34 @@ class DemoData {
         teacherName: 'Eötvös Loránd',
       ),
 
-      // --- KÉMIA (Tanár: Irinyi János) ---
+      // --- KÉMIA (Tanár: Irinyi János) - Bukásra áll ---
       Grade(
         subject: 'Kémia',
         subjectCategory: 'Természettudomány',
-        numericValue: 5,
-        textValue: 'Jeles (5)',
+        numericValue: 1,
+        textValue: 'Elégtelen (1)',
         weight: 100,
         date: d(y1, 10, 12),
         type: 'Írásbeli röpdolgozat',
-        theme: 'Atomszerkezet és periódusos rendszer',
+        theme: 'Atomszerkezet és periódusos rendszer felépítése',
         teacherName: 'Irinyi János',
       ),
       Grade(
         subject: 'Kémia',
         subjectCategory: 'Természettudomány',
-        numericValue: 4,
-        textValue: 'Jó (4)',
+        numericValue: 2,
+        textValue: 'Elégséges (2)',
+        weight: 100,
+        date: d(y1, 11, 5),
+        type: 'Órai munka',
+        theme: 'Elektronkonfiguráció gyakorló feladatok',
+        teacherName: 'Irinyi János',
+      ),
+      Grade(
+        subject: 'Kémia',
+        subjectCategory: 'Természettudomány',
+        numericValue: 1,
+        textValue: 'Elégtelen (1)',
         weight: 200,
         date: d(y1, 12, 3),
         type: 'Írásbeli témazáró dolgozat',
@@ -651,8 +684,8 @@ class DemoData {
       Grade(
         subject: 'Kémia',
         subjectCategory: 'Természettudomány',
-        numericValue: 5,
-        textValue: 'Jeles (5)',
+        numericValue: 1,
+        textValue: 'Elégtelen (1)',
         weight: 100,
         date: d(y2, 1, 23),
         type: 'Félévi értékelés',
@@ -662,34 +695,56 @@ class DemoData {
       Grade(
         subject: 'Kémia',
         subjectCategory: 'Természettudomány',
-        numericValue: 5,
-        textValue: 'Jeles (5)',
+        numericValue: 1,
+        textValue: 'Elégtelen (1)',
         weight: 100,
-        date: d(y2, 3, 22),
+        date: d(y2, 3, 14),
         type: 'Szóbeli felelet',
-        theme: 'Termokémia és reakciósebesség',
+        theme: 'Termokémia, reakciósebesség és dinamikus egyensúly',
         teacherName: 'Irinyi János',
       ),
       Grade(
         subject: 'Kémia',
         subjectCategory: 'Természettudomány',
-        numericValue: 5,
-        textValue: 'Jeles (5)',
+        numericValue: 2,
+        textValue: 'Elégséges (2)',
+        weight: 100,
+        date: d(y2, 4, 10),
+        type: 'Laboratóriumi jegyzőkönyv',
+        theme: 'Sav-bázis indikátorok vizsgálata és pH mérés',
+        teacherName: 'Irinyi János',
+      ),
+      Grade(
+        subject: 'Kémia',
+        subjectCategory: 'Természettudomány',
+        numericValue: 1,
+        textValue: 'Elégtelen (1)',
         weight: 200,
         date: d(y2, 5, 15),
         type: 'Írásbeli témazáró dolgozat',
-        theme: 'Szervetlen kémia: fémek és nemfémek',
+        theme: 'Sav-bázis titrálás és redoxireakciók',
         teacherName: 'Irinyi János',
       ),
       Grade(
         subject: 'Kémia',
         subjectCategory: 'Természettudomány',
-        numericValue: 5,
-        textValue: 'Jeles (5)',
+        numericValue: 2,
+        textValue: 'Elégséges (2)',
+        weight: 100,
+        date: d(y2, 6, 10),
+        type: 'Írásbeli röpdolgozat',
+        theme: 'Szervetlen kémiai reakcióegyenletek rendezése',
+        teacherName: 'Irinyi János',
+      ),
+      Grade(
+        subject: 'Kémia',
+        subjectCategory: 'Természettudomány',
+        numericValue: 1,
+        textValue: 'Elégtelen (1)',
         weight: 100,
         date: d(y2, 6, 18),
         type: 'Év végi értékelés',
-        theme: 'Év végi lezárás',
+        theme: 'Év végi lezárás (javítóvizsgára utalva)',
         teacherName: 'Irinyi János',
       ),
 
@@ -822,19 +877,30 @@ class DemoData {
       Grade(
         subject: 'Földrajz',
         subjectCategory: 'Természettudomány',
-        numericValue: 5,
-        textValue: 'Jeles (5)',
+        numericValue: 2,
+        textValue: 'Elégséges (2)',
         weight: 100,
         date: d(y1, 10, 16),
         type: 'Térképismereti dolgozat',
-        theme: 'Európa domborzata és vízrajza',
+        theme: 'Európa domborzata és vaktérkép',
         teacherName: 'Teleki Pál',
       ),
       Grade(
         subject: 'Földrajz',
         subjectCategory: 'Természettudomány',
-        numericValue: 4,
-        textValue: 'Jó (4)',
+        numericValue: 1,
+        textValue: 'Elégtelen (1)',
+        weight: 100,
+        date: d(y1, 11, 20),
+        type: 'Írásbeli röpdolgozat',
+        theme: 'Földrajzi fokhálózat és időzónák számítása',
+        teacherName: 'Teleki Pál',
+      ),
+      Grade(
+        subject: 'Földrajz',
+        subjectCategory: 'Természettudomány',
+        numericValue: 2,
+        textValue: 'Elégséges (2)',
         weight: 200,
         date: d(y1, 12, 8),
         type: 'Írásbeli témazáró dolgozat',
@@ -844,8 +910,8 @@ class DemoData {
       Grade(
         subject: 'Földrajz',
         subjectCategory: 'Természettudomány',
-        numericValue: 5,
-        textValue: 'Jeles (5)',
+        numericValue: 2,
+        textValue: 'Elégséges (2)',
         weight: 100,
         date: d(y2, 1, 23),
         type: 'Félévi értékelés',
@@ -855,8 +921,8 @@ class DemoData {
       Grade(
         subject: 'Földrajz',
         subjectCategory: 'Természettudomány',
-        numericValue: 5,
-        textValue: 'Jeles (5)',
+        numericValue: 3,
+        textValue: 'Közepes (3)',
         weight: 100,
         date: d(y2, 4, 5),
         type: 'Szóbeli felelet',
@@ -866,8 +932,8 @@ class DemoData {
       Grade(
         subject: 'Földrajz',
         subjectCategory: 'Természettudomány',
-        numericValue: 5,
-        textValue: 'Jeles (5)',
+        numericValue: 2,
+        textValue: 'Elégséges (2)',
         weight: 200,
         date: d(y2, 5, 30),
         type: 'Írásbeli témazáró dolgozat',
@@ -877,8 +943,8 @@ class DemoData {
       Grade(
         subject: 'Földrajz',
         subjectCategory: 'Természettudomány',
-        numericValue: 5,
-        textValue: 'Jeles (5)',
+        numericValue: 2,
+        textValue: 'Elégséges (2)',
         weight: 100,
         date: d(y2, 6, 19),
         type: 'Év végi értékelés',
@@ -907,72 +973,80 @@ class DemoData {
   /// Subject averages calculated for Teszt Elek.
   static List<Map<String, dynamic>> getAverages() {
     return [
-      {'Tantargy': {'Nev': 'Matematika'}, 'Atlag': 4.67},
-      {'Tantargy': {'Nev': 'Magyar nyelv és irodalom'}, 'Atlag': 4.80},
-      {'Tantargy': {'Nev': 'Történelem'}, 'Atlag': 4.80},
+      {'Tantargy': {'Nev': 'Matematika'}, 'Atlag': 4.30},
+      {'Tantargy': {'Nev': 'Magyar nyelv és irodalom'}, 'Atlag': 4.50},
+      {'Tantargy': {'Nev': 'Történelem'}, 'Atlag': 4.60},
       {'Tantargy': {'Nev': 'Angol nyelv'}, 'Atlag': 4.85},
       {'Tantargy': {'Nev': 'Digitális kultúra'}, 'Atlag': 5.00},
-      {'Tantargy': {'Nev': 'Fizika'}, 'Atlag': 4.14},
-      {'Tantargy': {'Nev': 'Kémia'}, 'Atlag': 4.80},
+      {'Tantargy': {'Nev': 'Fizika'}, 'Atlag': 1.72},
+      {'Tantargy': {'Nev': 'Kémia'}, 'Atlag': 1.27},
       {'Tantargy': {'Nev': 'Biológia'}, 'Atlag': 5.00},
       {'Tantargy': {'Nev': 'Testnevelés és egészségfejlesztés'}, 'Atlag': 5.00},
-      {'Tantargy': {'Nev': 'Földrajz'}, 'Atlag': 4.80},
+      {'Tantargy': {'Nev': 'Földrajz'}, 'Atlag': 2.11},
     ];
   }
 
   /// Returns dynamic timetable for requested Monday-Friday dates.
-  static List<TimetableEntry> getTimetable({DateTime? start, DateTime? end}) {
+  static List<TimetableEntry> getTimetable({DateTime? start, DateTime? end, bool? overrideAWeek}) {
     final now = DateTime.now();
     DateTime baseMonday = start ?? now.subtract(Duration(days: now.weekday - 1));
     baseMonday = DateTime(baseMonday.year, baseMonday.month, baseMonday.day);
 
     final timetable = <TimetableEntry>[];
 
+    // Calculate A or B week based on ISO week number
+    final dayOfYear = baseMonday.difference(DateTime(baseMonday.year, 1, 1)).inDays;
+    final weekNum = (dayOfYear ~/ 7) + 1;
+    final isAWeek = overrideAWeek ?? (weekNum % 2 != 0);
+
     final weeklySchedule = [
-      // Monday (1)
+      // Monday (1) - 8 periods
       [
-        ('Matematika', 'Dr. Számoló Szilárd', '204-es terem', '08:00', '08:45', 'Másodfokú egyenletek gyakorlása', false, false),
-        ('Magyar nyelv és irodalom', 'Arany Jánosné', '108-as terem', '08:55', '09:40', 'A magyar felvilágosodás korszaka', false, false),
-        ('Történelem', 'Kossuth Lajos', '215-ös terem', '09:55', '10:40', 'A reformkor gazdasági törekvései', false, false),
-        ('Digitális kultúra', 'Neumann János', 'Infó labor 1', '10:55', '11:40', 'Dart CLI programozás', false, false),
-        ('Fizika', 'Eötvös Loránd', 'Fizika előadó', '11:55', '12:40', 'Newton III. törvénye', true, false),
-        ('Angol nyelv', 'Smith John', 'Nyelvi terem 3', '12:55', '13:40', 'Conditional sentences practice', false, true),
+        ('Matematika', 'Dr. Számoló Szilárd', '204-es terem', '07:55', '08:40', 'Másodfokú egyenletek és függvények', false, false),
+        ('Magyar nyelv és irodalom', 'Arany Jánosné', '108-as terem', '08:50', '09:35', 'A magyar felvilágosodás korszaka', false, false),
+        ('Történelem', 'Kossuth Lajos', '215-ös terem', '09:45', '10:30', 'A reformkor gazdasági törekvései', false, false),
+        ('Digitális kultúra', 'Neumann János', 'Infó labor 1', '10:45', '11:30', 'Dart CLI és objektumorientált programozás', false, false),
+        ('Fizika', 'Eötvös Loránd', 'Fizika előadó', '11:40', '12:25', 'Newton törvényei és gravitáció', true, false),
+        ('Angol nyelv', 'Smith John', 'Nyelvi terem 3', '12:45', '13:30', 'Conditional sentences practice B2', false, false),
+        ('Kémia', 'Irinyi János', 'Kémia labor', '13:40', '14:25', 'Sav-bázis titrálási kísérletek', false, false),
+        ('Testnevelés és egészségfejlesztés', 'Hajós Alfréd', 'Tornaterem', '14:35', '15:20', 'Kosárlabda technikai gyakorlatok', false, false),
       ],
-      // Tuesday (2)
+      // Tuesday (2) - 7 periods (Alternating subject on period 3 for A/B week)
       [
-        ('Angol nyelv', 'Smith John', 'Nyelvi terem 3', '08:00', '08:45', 'Vocabulary expansion: Ecology', false, false),
-        ('Matematika', 'Dr. Számoló Szilárd', '204-es terem', '08:55', '09:40', 'Geometria: Pitagorasz-tétel', false, false),
-        ('Biológia', 'Szent-Györgyi Albert', 'Bio labor', '09:55', '10:40', 'A sejt felépítése és működése', false, false),
-        ('Kémia', 'Irinyi János', 'Kémia előadó', '10:55', '11:40', 'Reakciósebesség kísérletek', true, false),
-        ('Testnevelés és egészségfejlesztés', 'Hajós Alfréd', 'Tornaterem', '11:55', '12:40', 'Kosárlabda játékelemek', false, false),
-        ('Földrajz', 'Teleki Pál', '105-ös terem', '12:55', '13:40', 'A Kárpát-medence domborzata', false, true),
+        ('Angol nyelv', 'Smith John', 'Nyelvi terem 3', '07:55', '08:40', 'Vocabulary expansion: Ecology & Environment', false, false),
+        ('Matematika', 'Dr. Számoló Szilárd', '204-es terem', '08:50', '09:35', 'Geometria: Síkvektorok és koordinátageometria', false, false),
+        isAWeek
+            ? ('Biológia', 'Szent-Györgyi Albert', 'Bio labor', '09:45', '10:30', 'A sejt felépítése és biokémiai folyamatai', false, false)
+            : ('Földrajz', 'Teleki Pál', '105-ös terem', '09:45', '10:30', 'A Föld belső szerkezete és lemeztektonika', false, false),
+        ('Kémia', 'Irinyi János', 'Kémia előadó', '10:45', '11:30', 'Redoxireakciók és égési folyamatok', true, false),
+        ('Testnevelés és egészségfejlesztés', 'Hajós Alfréd', 'Tornaterem', '11:40', '12:25', 'Erőnléti állapotfelmérés', false, false),
+        ('Földrajz', 'Teleki Pál', '105-ös terem', '12:45', '13:30', 'A Kárpát-medence természeti kincsei', false, false),
+        ('Fizika', 'Eötvös Loránd', 'Fizika előadó', '13:40', '14:25', 'Elektrosztatika: Coulomb-törvény feladatok', false, true),
       ],
-      // Wednesday (3)
+      // Wednesday (3) - 0 periods (Tanítás nélküli nap / Szabadnap)
+      <(String, String, String, String, String, String, bool, bool)>[],
+      // Thursday (4) - 8 periods (Alternating subject on period 7 for A/B week)
       [
-        ('Magyar nyelv és irodalom', 'Arany Jánosné', '108-as terem', '08:00', '08:45', 'Berzsenyi Dániel ódái', false, false),
-        ('Történelem', 'Kossuth Lajos', '215-ös terem', '08:55', '09:40', 'Széchenyi István Hitel című műve', false, true),
-        ('Matematika', 'Dr. Számoló Szilárd', '204-es terem', '09:55', '10:40', 'Függvények ábrázolása és elemzése', false, false),
-        ('Digitális kultúra', 'Neumann János', 'Infó labor 1', '10:55', '11:40', 'Adatbázisok és SQL lekérdezések', false, false),
-        ('Testnevelés és egészségfejlesztés', 'Hajós Alfréd', 'Tornaterem', '11:55', '12:40', 'Erőnléti körverseny', false, false),
-        ('Fizika', 'Eötvös Loránd', 'Fizika előadó', '12:55', '13:40', 'Kísérletek síktükörrel (Helyettesítés: Jedlik Ányos)', true, false),
+        ('Kémia', 'Irinyi János', 'Kémia előadó', '07:55', '08:40', 'Szerves kémia alapjai és szénhidrogének', false, false),
+        ('Biológia', 'Szent-Györgyi Albert', 'Bio labor', '08:50', '09:35', 'Fotoszintézis, sejtlégzés és anyagcsere', false, false),
+        ('Angol nyelv', 'Smith John', 'Nyelvi terem 3', '09:45', '10:30', 'Reading comprehension B2 mock test', true, false),
+        ('Magyar nyelv és irodalom', 'Arany Jánosné', '108-as terem', '10:45', '11:30', 'Kölcsey Ferenc: Himnusz elemzés', false, false),
+        ('Történelem', 'Kossuth Lajos', '215-ös terem', '11:40', '12:25', 'Az 1848-as márciusi forradalom eseményei', false, false),
+        ('Földrajz', 'Teleki Pál', '105-ös terem', '12:45', '13:30', 'Európa gazdasági körzetei és integráció', false, false),
+        isAWeek
+            ? ('Matematika', 'Dr. Számoló Szilárd', '204-es terem', '13:40', '14:25', 'Trigonometrikus azonosságok feladatmegoldás', false, false)
+            : ('Fizika', 'Eötvös Loránd', 'Fizika előadó', '13:40', '14:25', 'Laboratóriumi mérési gyakorlat', false, false),
+        ('Digitális kultúra', 'Neumann János', 'Infó labor 1', '14:35', '15:20', 'Adatbázisok: Relációs adatmodellek és SQL', false, false),
       ],
-      // Thursday (4)
+      // Friday (5) - 7 periods
       [
-        ('Kémia', 'Irinyi János', 'Kémia előadó', '08:00', '08:45', 'Sav-bázis titrálás labor', false, false),
-        ('Biológia', 'Szent-Györgyi Albert', 'Bio labor', '08:55', '09:40', 'Fotoszintézis és légzés', false, false),
-        ('Angol nyelv', 'Smith John', 'Nyelvi terem 3', '09:55', '10:40', 'Reading comprehension B2 mock', true, false),
-        ('Magyar nyelv és irodalom', 'Arany Jánosné', '108-as terem', '10:55', '11:40', 'Kölcsey Ferenc: Himnusz elemzés', false, false),
-        ('Történelem', 'Kossuth Lajos', '215-ös terem', '11:55', '12:40', 'Az 1848-as márciusi forradalom', false, true),
-        ('Földrajz', 'Teleki Pál', '105-ös terem', '12:55', '13:40', 'Európa éghajlati övezetei', false, false),
-      ],
-      // Friday (5)
-      [
-        ('Matematika', 'Dr. Számoló Szilárd', '204-es terem', '08:00', '08:45', 'Valószínűségszámítás alapjai', false, false),
-        ('Digitális kultúra', 'Neumann János', 'Infó labor 1', '08:55', '09:40', 'Projektmunka bemutatók', true, false),
-        ('Fizika', 'Eötvös Loránd', 'Fizika előadó', '09:55', '10:40', 'Összefoglalás és feladatmegoldás', false, false),
-        ('Angol nyelv', 'Smith John', 'Nyelvi terem 3', '10:55', '11:40', 'Discussion: Artificial Intelligence', false, false),
-        ('Testnevelés és egészségfejlesztés', 'Hajós Alfréd', 'Sportpálya', '11:55', '12:40', 'Foci bajnokság', false, true),
-        ('Osztályfőnöki', 'Kossuth Lajos', '215-ös terem', '12:55', '13:40', 'DÖK választás és kirándulás megbeszélés', false, false),
+        ('Matematika', 'Dr. Számoló Szilárd', '204-es terem', '07:55', '08:40', 'Valószínűségszámítás alapjai és kombinatorika', false, false),
+        ('Digitális kultúra', 'Neumann János', 'Infó labor 1', '08:50', '09:35', 'Szoftverfejlesztési projektmunkák bemutatója', true, false),
+        ('Fizika', 'Eötvös Loránd', 'Fizika előadó', '09:45', '10:30', 'Optika: Fénytörés és lencsék képalkotása', false, false),
+        ('Angol nyelv', 'Smith John', 'Nyelvi terem 3', '10:45', '11:30', 'Academic writing & Essay structure', false, false),
+        ('Testnevelés és egészségfejlesztés', 'Hajós Alfréd', 'Sportpálya', '11:40', '12:25', 'Foci és atlétika bajnokság', false, false),
+        ('Osztályfőnöki', 'Kossuth Lajos', '215-ös terem', '12:45', '13:30', 'DÖK választás és osztálykirándulás megbeszélése', false, false),
+        ('Magyar nyelv és irodalom', 'Arany Jánosné', '108-as terem', '13:40', '14:25', 'Vörösmarty Mihály: Szózat és gondolati lírája', false, false),
       ],
     ];
 
@@ -1142,8 +1216,61 @@ class DemoData {
         text: 'Sikeresen elindítottad a Pala TUI demó profilját (Teszt Elek). Minden funkció – a grafikonoktól a Pala Wrappedig – teljes mértékben elérhető és tesztelhető offline módban.',
         attachments: [],
       ),
+      Message(
+        id: 108,
+        senderName: 'Teleki Pál (Földrajz)',
+        subject: 'Helyettesítés csütörtökön',
+        sentDate: now.subtract(const Duration(days: 4, hours: 6)),
+        isRead: true,
+        text: 'Kedves Diákok!\n\nCsütörtöki földrajz óráimat betegség miatt Irinyi János tanár úr helyettesíti. Kérlek, hozzátok magatokkal a munkafüzeteteket, önálló feladatlapot fogtok megoldani.',
+        attachments: [],
+      ),
+      Message(
+        id: 109,
+        senderName: 'Pala Rendszerértesítő',
+        subject: 'Emlékeztető: közösségi szolgálat óraszám',
+        sentDate: now.subtract(const Duration(days: 20)),
+        isRead: true,
+        text: 'Az érettségi bizonyítvány feltétele az 50 óra igazolt közösségi szolgálat teljesítése. Jelenlegi állásod a Statisztikák menüpontban tekinthető meg.',
+        attachments: [],
+      ),
     ];
     return _cachedMessages!;
+  }
+
+  static List<Note>? _cachedNotes;
+
+  /// Electronic diary notes and disciplinary/praise records.
+  static List<Note> getNotes() {
+    if (_cachedNotes != null) return _cachedNotes!;
+    final now = DateTime.now();
+    _cachedNotes = [
+      Note(
+        id: '105',
+        type: 'Osztályfőnöki megrovás',
+        senderName: 'Kossuth Lajos (Osztályfőnök)',
+        title: 'Osztályfőnöki megrovás',
+        content: 'Tájékoztatlak, hogy a 2026. szeptemberi hónapban tanúsított ismétlődő igazolatlan hiányzásaid és késéseid (Történelem, Kémia, Matematika, Angol nyelv) miatt osztályfőnöki megrovásban részesítelek. Kérlek, a jövőben minden hiányzást és késést haladéktalanul igazolj az ellenőrzőben, illetve a Beállítások menüben beállított szülői keret felhasználásával. Ismétlődés esetén a fegyelmi eljárás következő fokozata az igazgatói figyelmeztetés.\n\nÜdvözlettel:\nKossuth Lajos\nOsztályfőnök',
+        date: now.subtract(const Duration(days: 6, hours: 1)),
+      ),
+      Note(
+        id: '106',
+        type: 'Igazgatói megrovás',
+        senderName: 'Dr. Igazgató István (Intézményvezető)',
+        title: 'Igazgatói megrovás',
+        content: 'Az osztályfőnöki jelzés és a több alkalommal ismétlődő igazolatlan mulasztás, valamint a tanórai késések alapján az intézmény vezetőjeként igazgatói megrovás fegyelmező intézkedést alkalmazok veled szemben. Kérlek, a Házirendben foglaltaknak megfelelően pótold a hiányzó igazolásokat, és a jövőben kerüld az iskolai hiányzást és késést. További szabálysértés esetén a fegyelmi bizottság összehívására kerülhet sor.\n\nDr. Igazgató István\nIntézményvezető',
+        date: now.subtract(const Duration(days: 5, hours: 4)),
+      ),
+      Note(
+        id: '107',
+        type: 'Szaktanári dicséret',
+        senderName: 'Dr. Számoló Szilárd (Matematika)',
+        title: 'Szaktanári dicséret – Zrínyi Ilona Matematikaverseny',
+        content: 'Kedves Elek!\n\nGratulálok a Zrínyi Ilona Matematikaverseny megyei fordulóján elért kiváló, dobogós helyezésedhez! Kimagasló felkészültségedért és eredményedért szaktárgyi dicséretben részesítelek, mely bekerül a törzslapodba is.\n\nÜdvözlettel:\nDr. Számoló Szilárd',
+        date: now.subtract(const Duration(days: 14, hours: 2)),
+      ),
+    ];
+    return _cachedNotes!;
   }
 
   static void addSentMessage({required String subject, required String text, required String recipientName, List<String>? attachmentNames}) {
@@ -1250,6 +1377,34 @@ class DemoData {
         date: now.subtract(const Duration(days: 1)),
         status: 'Igazolandó',
         type: 'Hiányzás',
+      ),
+      // Unexcused absences and repeated lateness: the reason behind the
+      // osztályfőnöki/igazgatói megrovás messages below.
+      Absence(
+        subject: 'Történelem',
+        date: now.subtract(const Duration(days: 19)),
+        status: 'Igazolatlan',
+        type: 'Hiányzás',
+      ),
+      Absence(
+        subject: 'Kémia',
+        date: now.subtract(const Duration(days: 19)),
+        status: 'Igazolatlan',
+        type: 'Hiányzás',
+      ),
+      Absence(
+        subject: 'Matematika',
+        date: now.subtract(const Duration(days: 11)),
+        status: 'Igazolatlan',
+        type: 'Késés',
+        delayMinutes: 20,
+      ),
+      Absence(
+        subject: 'Angol nyelv',
+        date: now.subtract(const Duration(days: 6)),
+        status: 'Igazolatlan',
+        type: 'Késés',
+        delayMinutes: 12,
       ),
     ];
   }

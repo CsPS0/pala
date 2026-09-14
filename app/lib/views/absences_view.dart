@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:pala/models/note.dart';
 import '../state/app_model.dart';
 import '../theme/pala_theme.dart';
 
@@ -66,7 +67,7 @@ class _AbsencesViewState extends State<AbsencesView> {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: PalaTheme.card,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: isCritical ? PalaTheme.danger : (isWarning ? PalaTheme.warning : PalaTheme.border),
                   ),
@@ -89,14 +90,26 @@ class _AbsencesViewState extends State<AbsencesView> {
                       ],
                     ),
                     const SizedBox(height: 10),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: LinearProgressIndicator(
-                        value: dangerPercent,
-                        minHeight: 8,
-                        backgroundColor: Colors.white10,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          isCritical ? PalaTheme.danger : (isWarning ? PalaTheme.warning : PalaTheme.success),
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(6),
+                        boxShadow: [
+                          BoxShadow(
+                            color: (isCritical ? PalaTheme.danger : (isWarning ? PalaTheme.warning : PalaTheme.success)).withValues(alpha: 0.5),
+                            blurRadius: 8,
+                            spreadRadius: 0.5,
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: LinearProgressIndicator(
+                          value: dangerPercent,
+                          minHeight: 8,
+                          backgroundColor: Colors.white10,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            isCritical ? PalaTheme.danger : (isWarning ? PalaTheme.warning : PalaTheme.success),
+                          ),
                         ),
                       ),
                     ),
@@ -341,7 +354,7 @@ class _AbsencesViewState extends State<AbsencesView> {
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: PalaTheme.card,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: PalaTheme.border),
               ),
               child: Column(
@@ -392,6 +405,46 @@ class _AbsencesViewState extends State<AbsencesView> {
                 ],
               ),
             ),
+
+            if (widget.appModel.notes.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: PalaTheme.card,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: PalaTheme.border),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Hivatalos Feljegyzések & Dicséretek',
+                          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Colors.white),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: PalaTheme.sidebar,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: PalaTheme.border),
+                          ),
+                          child: Text(
+                            '${widget.appModel.notes.length} db',
+                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: PalaTheme.textMuted),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    ...widget.appModel.notes.map((note) => _buildNoteCard(note)),
+                  ],
+                ),
+              ),
+            ],
 
             const SizedBox(height: 14),
 
@@ -492,6 +545,87 @@ class _AbsencesViewState extends State<AbsencesView> {
             const SizedBox(height: 60),
           ],
         ),
+      ),
+    );
+  }
+
+  Color _getNoteColor(Note note) {
+    final t = note.type.toLowerCase();
+    if (t.contains('dicséret') || t.contains('dicseret')) {
+      return PalaTheme.success;
+    }
+    if (t.contains('megrovás') || t.contains('megrovas')) {
+      return PalaTheme.danger;
+    }
+    if (t.contains('figyelmeztet') || t.contains('intő') || t.contains('into')) {
+      return PalaTheme.warning;
+    }
+    return PalaTheme.accent;
+  }
+
+  Widget _buildNoteCard(Note note) {
+    final color = _getNoteColor(note);
+    final dateStr = note.date != null ? DateFormat('yyyy. MM. dd.').format(note.date!) : '-';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: PalaTheme.sidebar,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: color.withValues(alpha: 0.35)),
+                ),
+                child: Text(
+                  note.type,
+                  style: TextStyle(color: color, fontWeight: FontWeight.w800, fontSize: 10),
+                ),
+              ),
+              Text(
+                dateStr,
+                style: TextStyle(color: PalaTheme.textMuted, fontSize: 10),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            note.title,
+            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Colors.white),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            note.senderName,
+            style: TextStyle(fontSize: 11, color: PalaTheme.textMuted),
+          ),
+          if (note.content.isNotEmpty && note.content != note.title) ...[
+            const SizedBox(height: 6),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: PalaTheme.card,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: PalaTheme.border),
+              ),
+              child: Text(
+                note.content,
+                style: TextStyle(fontSize: 11, height: 1.4, color: PalaTheme.text),
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

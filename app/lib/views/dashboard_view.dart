@@ -96,14 +96,18 @@ class _DashboardViewState extends State<DashboardView> {
 
                     const SizedBox(width: 20),
 
-                    // Right Column (50%): Quick Actions + KPI Metrics + Recent Activity
+                    // Right Column (50%): KPI Metrics + Recent Activity.
+                    // No quick-actions row here: on desktop the sidebar
+                    // (Mulasztások, Statisztikák, Beállítások) and header
+                    // (search, Wrapped) already cover the same destinations
+                    // one click away, so repeating them here was pure
+                    // clutter. Mobile keeps the row below since its bottom
+                    // nav doesn't carry all of those.
                     Expanded(
                       flex: 5,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          _buildQuickActionsRow(primary),
-                          const SizedBox(height: 16),
                           _buildMetricsGrid(todayLessons, now, primary),
                           const SizedBox(height: 16),
                           _buildUpcomingPreviewSection(primary),
@@ -152,14 +156,15 @@ class _DashboardViewState extends State<DashboardView> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            primary.withValues(alpha: 0.15),
-            primary.withValues(alpha: 0.04),
+            primary.withValues(alpha: 0.2),
+            primary.withValues(alpha: 0.05),
+            Colors.transparent,
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: primary.withValues(alpha: 0.3)),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: primary.withValues(alpha: 0.4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -179,6 +184,8 @@ class _DashboardViewState extends State<DashboardView> {
                   ),
                 ),
                 const SizedBox(width: 8),
+                Icon(Icons.location_on_outlined, size: 13, color: PalaTheme.textMuted),
+                const SizedBox(width: 2),
                 Text(
                   'Terem: ${currentLesson.room != null && currentLesson.room!.isNotEmpty ? currentLesson.room : "N/A"}',
                   style: TextStyle(fontSize: 12, color: PalaTheme.textMuted),
@@ -196,13 +203,21 @@ class _DashboardViewState extends State<DashboardView> {
               style: TextStyle(color: PalaTheme.textMuted, fontSize: 13),
             ),
             const SizedBox(height: 10),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: (now.difference(currentLesson.startTime!).inSeconds / currentLesson.endTime!.difference(currentLesson.startTime!).inSeconds).clamp(0.0, 1.0),
-                backgroundColor: Colors.white10,
-                valueColor: AlwaysStoppedAnimation<Color>(primary),
-                minHeight: 6,
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                boxShadow: [
+                  BoxShadow(color: primary.withValues(alpha: 0.5), blurRadius: 8, spreadRadius: 0.5),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: (now.difference(currentLesson.startTime!).inSeconds / currentLesson.endTime!.difference(currentLesson.startTime!).inSeconds).clamp(0.0, 1.0),
+                  backgroundColor: Colors.white10,
+                  valueColor: AlwaysStoppedAnimation<Color>(primary),
+                  minHeight: 6,
+                ),
               ),
             ),
           ] else if (nextLesson != null && nextLesson.startTime != null) ...[
@@ -220,6 +235,8 @@ class _DashboardViewState extends State<DashboardView> {
                   ),
                 ),
                 const SizedBox(width: 8),
+                Icon(Icons.location_on_outlined, size: 13, color: PalaTheme.textMuted),
+                const SizedBox(width: 2),
                 Text(
                   'Terem: ${nextLesson.room != null && nextLesson.room!.isNotEmpty ? nextLesson.room : "N/A"}',
                   style: TextStyle(fontSize: 12, color: PalaTheme.textMuted),
@@ -349,7 +366,7 @@ class _DashboardViewState extends State<DashboardView> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: PalaTheme.card,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: PalaTheme.border),
       ),
       child: Column(
@@ -385,7 +402,9 @@ class _DashboardViewState extends State<DashboardView> {
               final isNow = startTime != null && endTime != null && now.isAfter(startTime) && now.isBefore(endTime);
               final isPast = endTime != null && now.isAfter(endTime);
 
-              return Container(
+              return Opacity(
+                opacity: isPast && !isCancelled ? 0.6 : 1.0,
+                child: Container(
                 margin: const EdgeInsets.only(bottom: 6),
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
@@ -462,8 +481,11 @@ class _DashboardViewState extends State<DashboardView> {
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text('Folyamatban', style: TextStyle(color: primary, fontSize: 9, fontWeight: FontWeight.w700)),
-                      ),
+                      )
+                    else if (isPast)
+                      Icon(Icons.check_circle, size: 15, color: PalaTheme.success),
                   ],
+                ),
                 ),
               );
             }),
@@ -480,7 +502,7 @@ class _DashboardViewState extends State<DashboardView> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: PalaTheme.card,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: PalaTheme.border),
       ),
       child: Column(
@@ -492,7 +514,7 @@ class _DashboardViewState extends State<DashboardView> {
             Text('Nincsenek aktív bejegyzések.', style: TextStyle(color: PalaTheme.textMuted, fontSize: 12))
           else ...[
             ...upcomingExams.map((e) => Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
+                  padding: const EdgeInsets.only(bottom: 8),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -504,17 +526,27 @@ class _DashboardViewState extends State<DashboardView> {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      Text(
-                        e.date != null ? DateFormat('MM.dd.').format(e.date!) : '',
-                        style: TextStyle(color: primary, fontSize: 11, fontWeight: FontWeight.w700),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: primary.withValues(alpha: 0.3)),
+                        ),
+                        child: Text(
+                          e.date != null ? DateFormat('MM.dd.').format(e.date!) : '',
+                          style: TextStyle(color: primary, fontSize: 11, fontWeight: FontWeight.w800),
+                        ),
                       ),
                     ],
                   ),
                 )),
             if (recentGrades.isNotEmpty) ...[
               Divider(height: 14),
-              ...recentGrades.map((g) => Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
+              ...recentGrades.map((g) {
+                final gradeColor = _gradeColor(g.numericValue);
+                return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -527,19 +559,23 @@ class _DashboardViewState extends State<DashboardView> {
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          width: 24,
+                          height: 24,
+                          alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: primary.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(4),
+                            color: gradeColor.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: gradeColor.withValues(alpha: 0.3)),
                           ),
                           child: Text(
                             '${g.numericValue ?? g.textValue ?? "-"}',
-                            style: TextStyle(color: primary, fontWeight: FontWeight.w800, fontSize: 12),
+                            style: TextStyle(color: gradeColor, fontWeight: FontWeight.w800, fontSize: 12),
                           ),
                         ),
                       ],
                     ),
-                  )),
+                  );
+              }),
             ],
           ],
         ],
@@ -581,11 +617,11 @@ class _DashboardViewState extends State<DashboardView> {
       child: Material(
         color: PalaTheme.card,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(14),
           side: BorderSide(color: PalaTheme.border),
         ),
         child: InkWell(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(14),
           onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
@@ -606,6 +642,19 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
+  /// Grade color-coding, kept local since this view doesn't share the
+  /// grades tab's state class. Matches _getGradeColor in grades_view.dart.
+  Color _gradeColor(num? val) {
+    switch (val?.round()) {
+      case 5: return PalaTheme.success;
+      case 4: return const Color(0xFFFF8800);
+      case 3: return PalaTheme.warning;
+      case 2: return const Color(0xFFFF9500);
+      case 1: return PalaTheme.danger;
+      default: return PalaTheme.textMuted;
+    }
+  }
+
   Widget _buildMetricCard({
     required String title,
     required String value,
@@ -616,11 +665,11 @@ class _DashboardViewState extends State<DashboardView> {
     return Material(
       color: PalaTheme.card,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         side: BorderSide(color: PalaTheme.border),
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(14),
@@ -634,7 +683,7 @@ class _DashboardViewState extends State<DashboardView> {
               ),
               Text(
                 value,
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: valueColor),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: valueColor),
               ),
               Text(
                 subtitle,

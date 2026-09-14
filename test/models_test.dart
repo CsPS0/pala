@@ -1,6 +1,7 @@
 import 'package:test/test.dart';
 import 'package:pala/models/grade.dart';
 import 'package:pala/models/absence.dart';
+import 'package:pala/models/note.dart';
 
 void main() {
   group('Grade', () {
@@ -83,4 +84,52 @@ void main() {
       expect(absence.status, 'Igazolt');
     });
   });
+
+  group('Note', () {
+    test('fromJson parses fields correctly and identifies praise/disciplinary', () {
+      final praiseNote = Note.fromJson({
+        'Uid': 'note-1',
+        'Tipus': {'Leiras': 'Szaktanári dicséret'},
+        'KeszitoTanarNeve': 'Kovács Péter',
+        'Cim': 'Dicséret versenyért',
+        'Tartalom': 'Gratulálok a versenyhez!',
+        'KeszitesDatuma': '2026-03-01T09:00:00Z',
+      });
+
+      expect(praiseNote.id, 'note-1');
+      expect(praiseNote.type, 'Szaktanári dicséret');
+      expect(praiseNote.senderName, 'Kovács Péter');
+      expect(praiseNote.title, 'Dicséret versenyért');
+      expect(praiseNote.content, 'Gratulálok a versenyhez!');
+      expect(praiseNote.date, isNotNull);
+      expect(praiseNote.isPraise, isTrue);
+      expect(praiseNote.isDisciplinary, isFalse);
+
+      final warningNote = Note.fromJson({
+        'Id': 105,
+        'Tipus': {'Leiras': 'Osztályfőnöki megrovás'},
+        'KeszitoTanarNeve': 'Kossuth Lajos',
+        'Cim': 'Osztályfőnöki megrovás',
+        'Tartalom': 'Hiányzások miatt megrovásban részesítelek.',
+        'KeszitesDatuma': '2026-03-05T12:00:00Z',
+      });
+
+      expect(warningNote.id, '105');
+      expect(warningNote.type, 'Osztályfőnöki megrovás');
+      expect(warningNote.isPraise, isFalse);
+      expect(warningNote.isDisciplinary, isTrue);
+    });
+
+    test('fromJson handles empty/missing fields gracefully', () {
+      final note = Note.fromJson({});
+
+      expect(note.id, '');
+      expect(note.type, 'Feljegyzés');
+      expect(note.senderName, 'Ismeretlen tanár');
+      expect(note.title, 'Feljegyzés');
+      expect(note.content, '');
+      expect(note.date, isNull);
+    });
+  });
 }
+

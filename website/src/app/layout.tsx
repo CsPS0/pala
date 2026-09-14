@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ReleaseProvider } from "@/lib/ReleaseContext";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { Navbar } from "@/components/Navbar";
+import { DocsUIProvider } from "@/lib/DocsUIContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -85,7 +87,10 @@ export default function RootLayout({
     <html lang="hu" className={`${geistSans.variable} ${geistMono.variable} dark scroll-smooth overflow-x-hidden max-w-full`}>
       <body className="bg-[var(--bg)] text-[#f0f0f5] min-h-screen flex flex-col font-sans antialiased selection:bg-[#ff8800] selection:text-black overflow-x-hidden max-w-full w-full">
         <ReleaseProvider>
-          {children}
+          <DocsUIProvider>
+            <Navbar />
+            {children}
+          </DocsUIProvider>
           <ScrollToTop />
         </ReleaseProvider>
       </body>
