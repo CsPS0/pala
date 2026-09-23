@@ -1,58 +1,89 @@
 # Fejlesztői Dokumentáció
 
-Ez a leírás a `pala` architektúráját, fejlesztési és buildelési folyamatát foglalja össze.
+Ez a leírás a Pala felépítését, a Kréta API sajátosságait, valamint az ellenőrzési és kiadási folyamatot foglalja össze.
 
-## Architektúra és Csomagok
-Az alkalmazás kizárólag a Dart ökoszisztémára épít, Flutter függőségek nélkül, amely garantálja a gyors AOT fordítást.
+## Felépítés
+
+A Pala egy közös Dart magra épülő több kliensből áll:
+
+| Mappa | Tartalom |
+| :--- | :--- |
+| `lib/`, `bin/` | Közös mag (API, modellek, állapot) és a terminálos alkalmazás (TUI). Tiszta Dart, Flutter nélkül, így gyorsan AOT-fordítható natív binárissá. |
+| `app/` | Flutter asztali és mobil alkalmazás (`pala --desktop`). A `lib/`-et a `package:pala` függőségen keresztül használja. |
+| `extension/` | Manifest V3 böngésző-kiterjesztés (Chrome, Brave, Edge), sima JavaScript, build lépés nélkül. |
+| `website/` | Next.js weboldal ([pala-app.hu](https://pala-app.hu)), Vercelen. |
+
+**Fontos:** a kiterjesztés nem tudja használni a Dart kódot. Ha a `lib/api/` vagy a `lib/models/` viselkedése megváltozik, ugyanazt a változtatást kézzel át kell vezetni az `extension/shared/kreta_api.js` fájlba is. Ugyanez vonatkozik a demó adatokra: a `lib/api/demo_data.dart` és a `kreta_api.js` `DEMO_*` konstansai legyenek szinkronban.
+
+### Közös mag és TUI (`lib/`)
 
 Kiemelt függőségek:
-1. interact: Interaktív terminál-felületek (menük, bevitel, maszkolás) kezelése.
-2. http: Kommunikáció a Kréta IDP és V3 (Ellenőrző) API-kkal. A `KRETA_API_KEY` konstans (`lib/api/api.dart`, `extension/shared/kreta_api.js`) a hivatalos Kréta mobilalkalmazás publikus API-kulcsa, amelyet minden nyílt forráskódú Kréta-kliens (rsfilc, Firka stb.) ugyanígy használ — nem egyedi titok, ezért szándékosan van a forráskódban.
-3. args: Parancssori argumentumok feldolgozása.
+- **interact**: interaktív terminálfelület (menük, bevitel, maszkolás).
+- **http**: kommunikáció a Kréta IDP és V3 (Ellenőrző) API-kkal. A `KRETA_API_KEY` konstans (`lib/api/api.dart`, `extension/shared/kreta_api.js`) a hivatalos Kréta mobilalkalmazás publikus API-kulcsa, amelyet minden nyílt forráskódú Kréta-kliens (rsfilc, Firka stb.) ugyanígy használ. Nem titok, ezért szándékosan szerepel a forráskódban.
+- **args**: parancssori argumentumok feldolgozása.
 
 Fő modulok:
-- **api/client.dart**: Hálózati réteg és OAuth2 token menedzsment. A token-frissítések (`refreshAccessToken`) aszinkron zárolással (`_activeRefreshFuture`) vannak ellátva, így elkerülhetők a párhuzamos API-hívások során fellépő `auth.json` fájl-íródási race-condition hibák és titkosítási korrupciók.
-- **models/**: Típusbiztos model osztályok (Grade, Student, Absence, TimetableEntry, stb.) a Kréta API válaszok feldolgozására. Az UTC dátumokat azonnal helyi időzónába konvertálják. A `isSummaryGrade` metódus ékezet-érzékeny és ékezet-mentes szűréssel is kiszűri a félévi/év végi összefoglaló értékeléseket.
-- **app/state/app_state.dart**: Singleton a helyi konfigurációk (`state.json` és titkosított `auth.json`) kezelésére a `~/.config/pala/` mappa alatt, a választott témák és az ASCII banner beállítások perzisztálására.
-- **app/theme.dart**: A parancssor globális témasémáit és színkódjait (szövegek, menü jelölők, gombok, grafikonok) vezérlő modul (`PalaTheme`).
+- **api/client.dart**: hálózati réteg és OAuth2 token-kezelés. A token-frissítés (`refreshAccessToken`) aszinkron zárral (`_activeRefreshFuture`) védett, így párhuzamos API-hívásoknál sem sérül az `auth.json` írása és titkosítása.
+- **models/**: típusbiztos modellek (Grade, Student, Absence, TimetableEntry stb.). Az UTC dátumokat azonnal helyi időre alakítják. Az `isSummaryGrade` ékezetes és ékezet nélküli szűréssel is kiszűri a félévi és év végi összefoglaló jegyeket.
+- **app/state/app_state.dart**: singleton a helyi beállításokhoz (`state.json` és a titkosított `auth.json`) a `~/.config/pala/` mappában, a témával és az ASCII banner beállításaival együtt.
+- **app/theme.dart**: a terminál globális témája és színei (`PalaTheme`).
 - **app/views/**:
-  - **dashboard_view.dart**: Aszinkron billentyűzet-olvasó eseményhurok és órarendi óra-visszaszámláló widget. A főmenüből külön alfolyamatként (subprocess) indul, ami izolálja az aszinkron `stdin` folyamatot a főprogram konzol-leíróitól.
-  - **wrapped_view.dart**: Spotify-Wrapped stílusú statisztikákat (késések, tanári eloszlás, legszorgalmasabb nap, üzenetek) vizualizáló slides (`Pala Wrapped`).
-  - **absences_view.dart**: Veszélyzóna kalkulátor, osztályátlag és eltérés-táblázat, valamint a heti kumulatív jegy-trendek dashboardja.
-  - **grades_view.dart**: Szellem jegyek kalkulátor, jegy heatmap és a globális ékezet-érzéketlen keresőmotor.
-- **app/components/utf8_input.dart**: Egyéni parancssoros beviteli wrapper, amely garantálja az echo (karakter-megjelenítés) helyes állapotát a Windows konzolon.
-- **utils/win32_console.dart**: Windows-specifikus Win32 API FFI hívásokat tartalmazó segédfájl. A `forceRestoreConsoleMode()` közvetlen kernel-szintű konzol módosításokkal állítja vissza a billentyűzet-echo-t (`ENABLE_ECHO_INPUT`) és letiltja a `0x0200` (virtual terminal input) módot a backspace-törlés helyes működéséhez.
-- **utils/chart_generator.dart**: ANSI alapú terminál grafikon-generátor. A `generateLineChart` dinamikus y-tengely skálázást végez az input adathatárvonalak alapján, így kiküszöböli a lapos GPA grafikonokat.
-- **utils/ics_exporter.dart**: RFC 5545 iCalendar kompatibilis naptárexportáló.
-- **web/pala_web_server.dart** és **web/pala_web_html.dart**: Beágyazott HTTP szerver és HTML renderelés a `--desktop` mód böngésző-alapú nézeteihez.
+  - **dashboard_view.dart**: aszinkron billentyűzet-eseményhurok és óra-visszaszámláló. Külön alfolyamatként indul, így az aszinkron `stdin` nem akad össze a főprogram konzoljával.
+  - **wrapped_view.dart**: a Pala Wrapped éves statisztika diái.
+  - **absences_view.dart**: Veszélyzóna kalkulátor, osztályátlag- és eltérés-táblázat, heti jegy-trendek.
+  - **grades_view.dart**: Szellem jegy kalkulátor, jegy-heatmap és az ékezet-érzéketlen kereső.
+- **app/components/utf8_input.dart**: saját beviteli réteg, amely Windows konzolon is helyesen kezeli a karakterek visszaírását (echo).
+- **utils/win32_console.dart**: Win32 API FFI hívások. A `forceRestoreConsoleMode()` visszaállítja a billentyűzet-echót (`ENABLE_ECHO_INPUT`), és kikapcsolja a `0x0200` (virtual terminal input) módot, hogy a backspace helyesen töröljön.
+- **utils/chart_generator.dart**: ANSI terminálgrafikonok. A `generateLineChart` az adatokhoz igazítja az y-tengelyt, így az átlaggrafikon nem lesz lapos.
+- **utils/ics_exporter.dart**: RFC 5545 kompatibilis naptárexport.
+- **web/pala_web_server.dart** és **web/pala_web_html.dart**: beágyazott HTTP szerver és HTML nézetek.
 
-## Kiegészítő Komponensek
+### Asztali alkalmazás (`app/`)
 
-A `lib/` melletti fő platform-specifikus komponensek:
-- **app/**: Flutter Desktop Alkalmazás (Windows/macOS/Linux GUI, `pala --desktop`). Nézetek a `lib/views/` alatt (login, dashboard, grades, absences, timetable, tasks, wrapped, stats, compose_message, settings), állapotkezelés a `lib/state/app_model.dart`-ban.
-- **extension/**: Manifest V3 böngésző kiterjesztés (Chrome/Brave/Edge). `shared/kreta_api.js` a közös API/OAuth2 réteg, `background/service_worker.js` a token silent-refresh és háttérszinkron, `popup/` és `dashboard/` a felhasználói felületek.
-- **website/**: Next.js alapú marketing weboldal (`website/src`), Vercel-re deployolva (`vercel.json`, `public/.htaccess` biztonsági fejlécekkel).
+Nézetek az `app/lib/views/` alatt (bejelentkezés, dashboard, jegyek, hiányzások, órarend, feladatok, üzenetírás, kereső, statisztika, Wrapped, beállítások), állapotkezelés az `app/lib/state/app_model.dart` fájlban.
 
-## Tesztelés
-A fejlesztés során az alábbi ellenőrzéseket javasolt lefolytatni minden commit előtt:
-1. Statikus analízis: `dart analyze` (nem lehet hiba, vagy force-unwrap `!`).
-2. Nyers TUI indítás: `dart run bin/pala.dart --help` futtathatósága.
-3. Dummy adatok: Off-line fallback tesztelés cache-ből hálózat leválasztásával.
+### Böngésző-kiterjesztés (`extension/`)
 
-## Kréta API Specifikumok és Időzónák
-A Kréta API V3 végpontjai szigorú paraméterezést követelnek. A `HaziFeladatok` például `500 Internal Server Error` hibát ad vissza, ha hiányzik a `datumTol` paraméter. Ennek elkerülése érdekében 30 napos alapértelmezett időablakot alkalmazunk. Továbbá az API által visszaadott JSON struktúrák (pl. a `Tantargy` kulcs típusai) inkonzisztensek lehetnek, így a kliensoldali típusellenőrzés (null check, type casting) elengedhetetlen.
+- `shared/kreta_api.js`: közös API és OAuth2 réteg, valamint a demó motor.
+- `background/service_worker.js`: token-megújítás a háttérben és háttérszinkron.
+- `popup/` és `dashboard/`: a felhasználói felületek.
 
-**Kritikus:** A Kréta API a dátumokat (pl. órarend kezdete) **UTC időzónában** adja vissza. Ha ezeket egy az egyben jelenítjük meg, az eltolódásokat eredményezhet a napok között. Ennek kiküszöbölésére a modellek (`fromJson`) minden dátum parsolás után meghívják a `.toLocal()` függvényt.
-Windows rendszereken a PowerShell alapértelmezett Windows-1252 kódolása miatt az UTF-8 karakterek és táblázatrajzoló elemek explicit kezelést igényelnek.
+## A Kréta API sajátosságai
 
-## Build, Fordítás és CI/CD Pipeline
-A natív végrehajtható fájl (`.exe` vagy bináris) előállításához az alábbi parancs használatos:
+- **UTC időpontok:** a Kréta API a dátumokat (például az órák kezdetét) UTC-ben adja vissza. Közvetlen megjelenítésnél a napok elcsúszhatnak, ezért a modellek `fromJson` metódusai minden dátumra meghívják a `.toLocal()` függvényt.
+- **Kötelező paraméterek:** a V3 végpontok szigorúak. A `HaziFeladatok` például `500 Internal Server Error` hibát ad, ha hiányzik a `datumTol` paraméter, ezért 30 napos alapértelmezett időablakot használunk.
+- **Inkonzisztens típusok:** a JSON mezők típusa (például a `Tantargy` kulcsé) változhat, ezért a kliensoldali típusellenőrzés (null check, típuskonverzió) elengedhetetlen.
+- **Windows kódolás:** a PowerShell alapértelmezett Windows-1252 kódolása miatt az UTF-8 karakterek és a táblázatrajzoló elemek külön kezelést igényelnek.
+
+## Ellenőrzés commit előtt
+
+A CI a Dart és Flutter ellenőrzéseket minden `main`-re történő pushnál és pull requestnél lefuttatja, és bármilyen hibánál elbukik. A megváltoztatott részekre futtasd le helyben is:
+
+| Változás helye | Parancs |
+| :--- | :--- |
+| `lib/`, `bin/`, `test/` | `dart analyze --fatal-infos` és `dart test` a repó gyökerében. A sima `dart analyze` nem elég: a CI az info szintű jelzéseket is hibának veszi. |
+| `app/` | `flutter analyze` az `app/` mappában. |
+| `extension/` | `node --check <fájl>` minden módosított JS fájlra. |
+| `website/` | `npm run lint` és `npm run build` a `website/` mappában. |
+
+Gyors kézi próba: `dart run bin/pala.dart --demo` bejelentkezés és hálózat nélkül, fiktív adatokkal indítja a TUI-t.
+
+## Build és kiadás
+
+A natív terminálos bináris előállítása:
 ```bash
 dart compile exe bin/pala.dart -o pala
 ```
 
-**Automatizált CI/CD (GitHub Actions):**
-- **release.yml**: Valahányszor új "Release" jön létre, a GitHub Actions automatikusan lefordítja a kódot Ubuntu, Windows és macOS környezeteken (`ubuntu-latest`, `windows-latest`, `macos-latest`), és feltölti a kiadáshoz az artifactokat (`pala.exe`, `pala-linux`, `pala-macos`).
-- **aur.yml**: Arch Linux felhasználóknak az alkalmazás az AUR-on (Arch User Repository) is elérhető (`pala-bin`). A publikálást a `.github/workflows/aur.yml` kezeli, ami a beállított SSH kulccsal szinkronizálja a `packaging/PKGBUILD` fájlt.
-- **Csomagkezelők**: A projekt gyökérkönyvtárában található `bucket/pala.json` (Scoop Windows-hoz) és `Formula/pala.rb` (Homebrew macOS/Linux-hoz) fájlok gondoskodnak arról, hogy az alkalmazás telepíthető legyen csomagkezelőkből, anélkül, hogy külön repót kéne fenntartani.
-A fordított állomány a Windows Task Scheduler-en keresztüli háttérfutáskor láthatatlan módban indul.
+A Windows Feladatütemezőből háttérben indított példány (`--daemon`) láthatatlan módban fut.
+
+### GitHub Actions
+
+- **ci.yml**: minden `main`-re történő pushnál és pull requestnél `dart analyze --fatal-infos`, `dart test` és `flutter analyze` az `app/` mappában.
+- **release.yml**: egy GitHub Release közzétételekor (vagy kézi indításra) elkészíti és a kiadáshoz csatolja:
+  - a terminálos binárisokat Windowsra, Linuxra és macOS-re (zip, `.deb` és `.tar.gz` csomagokkal),
+  - az asztali alkalmazást: Windows telepítő (`Pala-Setup.exe`), macOS DMG, Linux AppImage,
+  - az Android APK-kat,
+  - a böngésző-kiterjesztés zip fájlját,
+  - az APT tárolót, és frissíti a Scoop (`bucket/pala.json`) és Homebrew (`Formula/pala.rb`) manifesteket.
+- **aur.yml**: az AUR `pala-bin` csomagot a `packaging/PKGBUILD` alapján frissíti, a beállított SSH kulccsal.

@@ -2,106 +2,51 @@
 <img src="assets/icons/pala.svg" alt="Pala icon" width="30px" style="vertical-align: middle;">
 <span style="vertical-align: middle;">Pala</span>
 </h1>
+
 [![License: MIT](https://img.shields.io/github/license/CsPS0/pala?color=yellow)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/CsPS0/pala)](https://github.com/CsPS0/pala/releases)
-[![Build Status](https://github.com/CsPS0/pala/actions/workflows/release.yml/badge.svg?branch=v1.2.3)](https://github.com/CsPS0/pala/actions)
+[![CI](https://github.com/CsPS0/pala/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/CsPS0/pala/actions/workflows/ci.yml)
 
-A **Pala** egy interaktív terminálos felhasználói felület (TUI) a Kréta e-napló rendszerhez. Az iOS alkalmazás OAuth2 hitelesítési folyamatait szimulálva közvetlen, gyors és látványos terminálos hozzáférést biztosít a diákok adatlapjához, jegyeihez, órarendjéhez és hiányzásaihoz.
+A **Pala** ingyenes, nyílt forráskódú kliens a Kréta e-naplóhoz. Gyorsan és reklámok nélkül mutatja meg a jegyeidet, az órarendedet, a hiányzásaidat, a házi feladataidat és az üzeneteidet, három formában:
 
+- **Terminálos alkalmazás (TUI)**: Windows, Linux, macOS és Android (Termux)
+- **Asztali alkalmazás**: grafikus felület Windowsra, Linuxra és macOS-re
+- **Böngésző-kiterjesztés**: Chrome, Brave és Edge
 
-## Főbb funkciók
-- **Élő Dashboard (TUI felület)**
-- **Böngésző Kiterjesztés (Chrome, Brave, Edge)**: Mini popup gyorsnézet visszaszámlálóval, heti mátrix vezérlőpulttal, Globális Profil Szerkesztővel és automatikus Kréta lap szinkronnal.
-- **Pala Wrapped (Éves statisztika)**
-- **Bizonyítvány Tervező & Szellem Jegyek**
-- **Jegy-trendek & Átlagok**
-- **Globális Haladó Kereső**
-- *...és még több!*
+Weboldal: [pala-app.hu](https://pala-app.hu)
 
-## Böngésző Kiterjesztés (Browser Extension)
+## Mit tud?
 
-A Pala elérhető modern Chromium böngészőbővítményként is (Manifest V3) Chrome, Brave és Edge böngészőkhöz (`extension/` mappa):
-- **Mini Gyorsnézet (Popup)**: 1 kattintásos eszközsori ablak mai órarenddel, hátralévő idővel és testreszabható kezdőlappal.
-- **Teljes Vezérlőpult (Dashboard)**: Heti órarend mátrix, tantárgyi átlagok, Szellem-jegy kalkulátor, Bizonyítvány tervező, 250 órás hiányzáskeret, üzenetküldő és Profilom.
-- **Kréta Munkamenet Védelem**: A hivatalos weboldal 40-60 perces időkorlátját a háttérben futó automatikus OAuth2 token frissítés (Silent Refresh) oldja fel.
-- **Globális Profil Szerkesztő & API Korlátozás Kezelés**: A Kréta mobil API által nem szolgáltatott banki és okmány adatok manuális kezelése és 1-kattintásos beolvasása nyitott Kréta lapról.
-- **Popup Testreszabása**: Megjelenítési sűrűség, alapértelmezett fül és kártyakorlátok beállítása közvetlenül a popupból vagy a vezérlőpultról.
+- **Élő dashboard**: visszaszámlálás az óra vagy a szünet végéig, mai órarend, helyettesítések és elmaradt órák.
+- **Jegyek és átlagok**: tantárgyi és osztályátlagok, jegy-trendek, Szellem jegy kalkulátor és Bizonyítvány tervező.
+- **Hiányzások**: igazolt, igazolandó és igazolatlan órák, valamint a 250 órás keret figyelése.
+- **Kereső**: ékezet-érzéketlen keresés a jegyek, órák, feladatok, üzenetek és hiányzások között.
+- **Pala Wrapped**: éves statisztika a tanévedről.
+- **Export**: naptár (`.ics`) és táblázat (CSV).
+- **Demó mód**: kipróbálható bejelentkezés nélkül, fiktív adatokkal.
+
+A böngésző-kiterjesztés ezen felül a háttérben megújítja a Kréta munkamenetet, így 40-60 perc után sem léptet ki. Az összes funkció részletesen: [Felhasználói kézikönyv](docs/USER.md).
 
 ## Telepítés
 
 > [!WARNING]
-> **Ideiglenesen csak forráskódból fordítható.** A `folio-cli` → `pala` átnevezés óta még nincs kiadott release, ezért az alábbi gyors telepítők (`install.sh`, `install.ps1`, Scoop, AUR, Homebrew, APT, a Windows-os `.exe`) egyelőre nem működnek — a szkript "sikeres" telepítést ír ki, de a bináris letöltése 404-et ad ([lásd az #2-es issue-t](https://github.com/CsPS0/pala/issues/2)). Amíg nem jelenik meg az első release, kizárólag a lenti **"Forráskódból történő fordítás"** szekció használható.
+> Az első `pala` kiadás még nem jelent meg, ezért a csomagkezelős és az egysoros telepítők egyelőre nem működnek: sikeres telepítést írnak ki, de a letöltés 404-es hibát ad ([#2](https://github.com/CsPS0/pala/issues/2)). Addig csak a forráskódból fordítás használható.
 
-### 1. Windows Gyors Telepítés
-- **Grafikus telepítő (.exe)**: Töltsd le a [Pala-Setup.exe](https://github.com/CsPS0/pala/releases/latest) fájlt (egyéni komponensválasztóval: Desktop GUI + CLI / TUI + PATH integráció).
-- **PowerShell 1-soros**:
-  ```powershell
-  irm https://raw.githubusercontent.com/CsPS0/pala/main/install.ps1 | iex
-  ```
-- **Scoop**:
-  ```powershell
-  scoop bucket add pala https://github.com/CsPS0/pala-bucket
-  scoop install pala
-  ```
+### Forráskódból
 
-### 2. Linux & macOS Gyors Telepítés
-- **Interaktív 1-soros telepítő (Bash)**:
-  ```bash
-  curl -fsSL https://raw.githubusercontent.com/CsPS0/pala/main/install.sh | bash
-  ```
+Szükséges a [Dart SDK](https://dart.dev/get-dart), az asztali alkalmazáshoz a [Flutter SDK](https://flutter.dev) is.
 
-Ha manuálisan szeretnéd telepíteni vagy saját csomagkezelőt használsz:
+```bash
+git clone https://github.com/CsPS0/pala.git
+cd pala
+dart pub get
+dart compile exe bin/pala.dart -o pala    # terminálos alkalmazás
+cd app && flutter build windows           # asztali alkalmazás (vagy: linux, macos)
+```
 
-   <details>
-   <summary>Debian / Ubuntu / Linux Mint (APT)</summary>
+### Android (Termux)
 
-> ```bash
-> curl -fsSL https://CsPS0.github.io/pala/public.key | sudo gpg --dearmor -o /usr/share/keyrings/pala-archive-keyring.gpg
->
-> echo "deb [signed-by=/usr/share/keyrings/pala-archive-keyring.gpg] https://CsPS0.github.io/pala/repo stable main" | sudo tee /etc/apt/sources.list.d/pala.list > /dev/null
->
-> sudo apt update
-> sudo apt install pala
-> ```
-
-   </details>
-
-   <details>
-   <summary>Arch Linux (AUR)</summary>
-
-> ```bash
-> yay -S pala-bin
-> ```
-
-   </details>
-
-   <details>
-   <summary>macOS (Homebrew)</summary>
-
-> ```bash
-> brew tap CsPS0/pala https://github.com/CsPS0/pala
-> brew install pala
-> ```
-
-   </details>
-
-   <details>
-   <summary>Forráskódból történő fordítás</summary>
-
-> [Dart SDK](https://dart.dev/get-dart) és [Flutter SDK](https://flutter.dev) szükséges.
-> ```bash
-> git clone https://github.com/CsPS0/pala.git
-> cd pala
-> dart pub get
-> dart compile exe bin/pala.dart -o pala
-> cd app && flutter build windows  # vagy linux / macos
-> ```
-
-   </details>
-
-### 3. Android (Termux)
-
-A Pala TUI natívan fut Android alatt is a [Termux](https://termux.dev/) terminál-emulátorban — nincs szükség APK-ra vagy root jogosultságra. Egyelőre nincs kész `pkg install pala` csomag, de a Dart maga elérhető Termux csomagként, így a Pala forráskódból egy perc alatt futtatható:
+A terminálos alkalmazás APK és root jog nélkül fut a [Termux](https://termux.dev/) alatt:
 
 ```bash
 pkg update && pkg install dart git -y
@@ -111,71 +56,97 @@ dart pub get
 dart run bin/pala.dart
 ```
 
-Gyorsabb, natívan fordított futtatáshoz (nem kötelező, de ajánlott):
-```bash
-dart compile exe bin/pala.dart -o pala
-./pala
-```
+Gyorsabb indításhoz lefordíthatod natívan is: `dart compile exe bin/pala.dart -o pala`, majd `./pala`.
 
-*Megjegyzés: a natív Android alkalmazás (APK) és egy dedikált Termux csomag (`pkg install pala`) még nem érhető el — ez a jelenlegi legegyszerűbb módja a Pala futtatásának Android eszközön.*
+### Böngésző-kiterjesztés
+
+1. Töltsd le a kiterjesztést a [pala-app.hu](https://pala-app.hu) oldalról és csomagold ki, vagy használd a repó `extension/` mappáját.
+2. Nyisd meg a `chrome://extensions` (Edge alatt `edge://extensions`) oldalt, és kapcsold be a Fejlesztői módot.
+3. Kattints a „Kicsomagolt betöltése” gombra, és válaszd ki a mappát.
+
+### Telepítők (az első kiadástól)
+
+<details>
+<summary>Windows, Linux, macOS és csomagkezelők</summary>
+
+**Windows**
+
+- Grafikus telepítő: [Pala-Setup.exe](https://github.com/CsPS0/pala/releases/latest) (asztali alkalmazás, terminálos alkalmazás és PATH, választhatóan)
+- PowerShell:
+  ```powershell
+  irm https://raw.githubusercontent.com/CsPS0/pala/main/install.ps1 | iex
+  ```
+- Scoop:
+  ```powershell
+  scoop bucket add pala https://github.com/CsPS0/pala-bucket
+  scoop install pala
+  ```
+
+**Linux és macOS**
+
+- Egysoros telepítő:
+  ```bash
+  curl -fsSL https://raw.githubusercontent.com/CsPS0/pala/main/install.sh | bash
+  ```
+- Debian / Ubuntu / Linux Mint (APT):
+  ```bash
+  curl -fsSL https://CsPS0.github.io/pala/public.key | sudo gpg --dearmor -o /usr/share/keyrings/pala-archive-keyring.gpg
+  echo "deb [signed-by=/usr/share/keyrings/pala-archive-keyring.gpg] https://CsPS0.github.io/pala/repo stable main" | sudo tee /etc/apt/sources.list.d/pala.list > /dev/null
+  sudo apt update
+  sudo apt install pala
+  ```
+- Arch Linux (AUR):
+  ```bash
+  yay -S pala-bin
+  ```
+- macOS (Homebrew):
+  ```bash
+  brew tap CsPS0/pala https://github.com/CsPS0/pala
+  brew install pala
+  ```
+
+</details>
 
 ## Használat
-A telepítés után a Pala közvetlenül indítható terminálból és a Start menüből:
+
 ```bash
-pala
+pala              # terminálos felület
+pala --desktop    # asztali alkalmazás (röviden: pala -g)
+pala dash         # közvetlenül az élő dashboard
+pala --demo       # demó profil (Teszt Elek), bejelentkezés nélkül
+pala --daemon     # háttérfolyamat az értesítésekhez
+pala --help       # az összes kapcsoló
 ```
 
-**Fő parancsok és kapcsolók:**
-- `pala` : Interaktív terminálos TUI felület indítása.
-- `pala --desktop` vagy `pala -g` : Pala Asztali Grafikus Alkalmazás (Desktop GUI) indítása.
-- `pala dash` : Közvetlen belépés az Élő Dashboard nézetbe.
-- `pala --demo` : Indítás beépített demó profillal (**Teszt Elek** - offline tesztadatok).
-- `pala --daemon` : Háttérfolyamat indítása értesítésekhez.
+A parancsikonok, a PATH, a gyorsítótár törlése és az eltávolítás a [Felhasználói kézikönyvben](docs/USER.md) található.
 
-**Komponens kezelés és rendszerintegráció:**
-- `pala --install-shortcut` : Start menü és asztali parancsikon létrehozása.
-- `pala --remove-shortcut` : Start menü és asztali parancsikonok eltávolítása.
-- `pala --add-path` : Pala hozzáadása a felhasználói PATH környezeti változóhoz.
-- `pala --remove-path` : Pala eltávolítása a PATH-ból.
-- `pala --clear-cache` : Helyi gyorsítótár és hitelesítési adatok törlése.
-- `pala --uninstall` : Interaktív komponens eltávolítás és rendszer-tisztítás.
+## Adatvédelem
 
-## Dokumentáció
-- [USER.md](docs/USER.md): Felhasználói útmutató és funkciók részletezése.
-- [DEV.md](docs/DEV.md): Fejlesztői és architektúrális dokumentáció.
-- [CONTRIBUTING.md](CONTRIBUTING.md): Irányelvek hozzájárulóknak.
-- [DATA_SECURITY.md](docs/DATA_SECURITY.md): Adatkezelés és biztonsági tájékoztató.
-- [PRIVACY_POLICY.md](docs/PRIVACY_POLICY.md): Adatvédelmi szabályzat (böngésző-kiterjesztés áruházi közzétételéhez).
-- [CHANGELOG.md](CHANGELOG.md): Kiadási napló.
+A Pala csak a hivatalos Kréta szerverekkel kommunikál, és frissítések ellenőrzéséhez a GitHubbal. Az adataid a saját gépeden maradnak, a bejelentkezési tokenek titkosítva, telemetria és analitika nélkül.
 
-## AI használat
+- [Adatkezelés és biztonság](docs/DATA_SECURITY.md): mit, hol és hogyan tárol a Pala, és hogyan törölheted.
+- [Adatvédelmi szabályzat](docs/PRIVACY_POLICY.md)
+- Biztonsági hibát találtál? Lásd: [SECURITY.md](SECURITY.md).
 
-A Pala fejlesztése során AI-alapú kódolóasszisztenseket is használok, és ezt nem titkolom. Ez nem megy a minőség rovására: minden változtatást átnézek, és a kiadások előtt ugyanazok az ellenőrzések futnak (elemzés, tesztek, build), mint bármely más kódnál. Az alkalmazás ettől függetlenül ingyenes és szabadon használható marad.
+## Fejlesztés és hozzájárulás
 
-Ha hozzá szeretnél járulni a kódhoz, az AI használatára vonatkozó elvárásokat a [CONTRIBUTING.md](CONTRIBUTING.md) tartalmazza.
+- [Fejlesztői dokumentáció](docs/DEV.md): architektúra, build és a Kréta API sajátosságai.
+- [Hozzájárulási irányelvek](CONTRIBUTING.md) és [Magatartási kódex](CODE_OF_CONDUCT.md).
+- [Kiadási napló](CHANGELOG.md).
 
-## Elismerések & Közösségi Projektek
+### AI használat
 
-Minden használatba vett nyílt forráskódú csomagnak köszönet.
+A Pala fejlesztése során AI-alapú kódolóasszisztenseket is használok, és ezt nem titkolom. Ez nem megy a minőség rovására: minden változtatást átnézek, és a kiadások előtt ugyanazok az ellenőrzések futnak (elemzés, tesztek, build), mint bármely más kódnál. Az alkalmazás ettől függetlenül ingyenes és szabadon használható marad. A hozzájárulókra vonatkozó elvárások a [CONTRIBUTING.md](CONTRIBUTING.md) fájlban találhatók.
 
-### Aktív és kapcsolódó projektek:
-- [Firka](https://github.com/QwIT-Development/firka)
-- [app-legacy (refilc)](https://github.com/QwIT-Development/app-legacy)
-- [firka-extension](https://github.com/QwIT-Development/firka-extension)
-- [Folio](https://github.com/Zan1456/folio)
-- [folio-extension](https://github.com/Zan1456/folio-extension)
-- [RozsdásFilc (rsfilc)](https://github.com/jarjk/rsfilc)
-- [Toll](https://github.com/doomhyena/toll)
+## Elismerések
 
-### Archivált és korábbi projektek:
-- [Filc](https://github.com/filc/filc)
-- [Szivacs-Naplo](https://github.com/boapps/Szivacs-Naplo)
+Köszönet minden felhasznált nyílt forráskódú csomagnak, és a hasonló célú projekteknek, amelyek inspirációt adtak:
 
-### Licenc-megjegyzés
+- **Aktív projektek**: [Firka](https://github.com/QwIT-Development/firka), [app-legacy (refilc)](https://github.com/QwIT-Development/app-legacy), [firka-extension](https://github.com/QwIT-Development/firka-extension), [Folio](https://github.com/Zan1456/folio), [folio-extension](https://github.com/Zan1456/folio-extension), [RozsdásFilc (rsfilc)](https://github.com/jarjk/rsfilc), [Toll](https://github.com/doomhyena/toll)
+- **Archivált projektek**: [Filc](https://github.com/filc/filc), [Szivacs-Naplo](https://github.com/boapps/Szivacs-Naplo)
 
-A fent felsorolt projektek egy része eltérő licenc alatt áll (pl. GPL). A Pala kódja
-a nyilvánosan dokumentált e-Kréta API alapján, ezen projektektől függetlenül,
-önállóan lett megírva — kód nem került átvételre egyikből sem. A felsorolás
-kizárólag inspirációs forrásként és a hasonló célú projektek elismeréseként
-szerepel. A Pala forráskódja a repóban található [LICENSE](LICENSE) (MIT) fájl
-alatt érhető el.
+A felsorolt projektek egy része eltérő licenc (pl. GPL) alatt áll. A Pala a nyilvánosan dokumentált e-Kréta API alapján, ezektől függetlenül készült, és egyikükből sem vett át kódot.
+
+## Licenc
+
+MIT, lásd: [LICENSE](LICENSE).

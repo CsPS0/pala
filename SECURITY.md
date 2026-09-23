@@ -26,8 +26,6 @@ Ehelyett használd a GitHub privát bejelentő funkcióját:
 - A megerősített hibákra soron kívül biztonsági javítást adunk ki.
 - A bejelentő nevét (igény esetén) köszönettel feltüntetjük a kiadási megjegyzésekben.
 
-## Adatbiztonsági Alapelvek
-- **Helyi Titkosítás**: A hitelesítési tokenek AES-GCM titkosítással, véletlenszerű IV-vel kerülnek tárolásra a felhasználói könyvtárban (`~/.config/pala/`).
-- **Közvetlen Kapcsolat**: Az alkalmazás kizárólag a hivatalos Kréta szerverekkel (`*.e-kreta.hu`) és a GitHub API-val (frissítés-ellenőrzéshez) kommunikál.
-- **Nincs Harmadik Fél**: Az alkalmazás nem tartalmaz telemetriát, analitikát vagy külső adatgyűjtést.
-- További részletek az adatkezelésről: [docs/DATA_SECURITY.md](docs/DATA_SECURITY.md).
+## Adatkezelés
+
+A Pala csak a hivatalos Kréta szerverekkel és frissítés-ellenőrzéshez a GitHubbal kommunikál, telemetria nélkül, a tokeneket titkosítva tárolja. A részletek: [docs/DATA_SECURITY.md](docs/DATA_SECURITY.md).
