@@ -7,11 +7,14 @@
 [![Release](https://img.shields.io/github/v/release/CsPS0/pala)](https://github.com/CsPS0/pala/releases)
 [![CI](https://github.com/CsPS0/pala/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/CsPS0/pala/actions/workflows/ci.yml)
 
-A **Pala** ingyenes, nyílt forráskódú kliens a Kréta e-naplóhoz. Gyorsan és reklámok nélkül mutatja meg a jegyeidet, az órarendedet, a hiányzásaidat, a házi feladataidat és az üzeneteidet, három formában:
+A **Pala** ingyenes, nyílt forráskódú kliens a Kréta e-naplóhoz. Gyorsan és reklámok nélkül mutatja meg a jegyeidet, az órarendedet, a hiányzásaidat, a házi feladataidat és az üzeneteidet, négy formában:
 
-- **Terminálos alkalmazás (TUI)**: Windows, Linux, macOS és Android (Termux)
-- **Asztali alkalmazás**: grafikus felület Windowsra, Linuxra és macOS-re
-- **Böngésző-kiterjesztés**: Chrome, Brave és Edge
+1. **Böngésző-kiterjesztés**: Chrome, Brave és Edge
+2. **Mobilalkalmazás**: Android
+3. **Terminálos alkalmazás (TUI)**: Windows, Linux, macOS és Android (Termux)
+4. **Asztali alkalmazás**: Windows, Linux és macOS; ugyanaz, mint a mobilalkalmazás, csak asztali felülettel
+
+A fejlesztési prioritás is ez a sorrend: a kiterjesztés kapja a legtöbb figyelmet, az asztali alkalmazás a legkevesebbet.
 
 Weboldal: [pala-app.hu](https://pala-app.hu)
 
