@@ -148,17 +148,11 @@ pala
 - [PRIVACY_POLICY.md](docs/PRIVACY_POLICY.md): Adatvédelmi szabályzat (böngésző-kiterjesztés áruházi közzétételéhez).
 - [CHANGELOG.md](CHANGELOG.md): Kiadási napló.
 
-## AI-asszisztensek és a `CLAUDE.md`
+## AI használat
 
-A repó gyökerében található egy [CLAUDE.md](CLAUDE.md) fájl, amely projekt-specifikus szabályokat ad AI-alapú kódolóasszisztenseknek (pl. Claude Code). Ha AI-asszisztenssel dolgozol a Pala kódján, érdemes ezt kihasználni — hasznos, és a tapasztalat szerint jelentősen csökkenti a hibás vagy inkonzisztens módosítások számát:
+A Pala fejlesztése során AI-alapú kódolóasszisztenseket is használok, és ezt nem titkolom. Ez nem megy a minőség rovására: minden változtatást átnézek, és a kiadások előtt ugyanazok az ellenőrzések futnak (elemzés, tesztek, build), mint bármely más kódnál. Az alkalmazás ettől függetlenül ingyenes és szabadon használható marad.
 
-- Az asszisztens a munka megkezdése előtt olvassa be a `CLAUDE.md`-t: ez rögzíti a nyelvhasználatot (kód angolul, felhasználói szövegek magyarul), a projektstruktúrát és a minőségi kapukat (`dart analyze` / `flutter analyze` futtatása a végén).
-- A jobb kompatibilitás érdekében ajánlott beállítások/eszközök:
-  - **Serena MCP** — fájlkeresés, kód olvasás/szerkesztés elsődleges eszközként.
-  - **Context7 MCP** — friss Flutter/Dart/Next.js csomagdokumentáció lekérdezéséhez a (potenciálisan elavult) tanult tudás helyett.
-  - **Dart MCP** (`dart mcp-server`) — Dart/Flutter elemzéshez, hot reload/restart-hoz nyers `dart` parancsok helyett.
-  - Ha egy MCP nem elérhető vagy kifogyott a kerete, az asszisztens essen vissza a beépített fájlkezelő/szerkesztő eszközökre — ne akadjon el emiatt.
-- Commit és push csak explicit felhasználói jóváhagyással történjen, soha automatikusan.
+Ha hozzá szeretnél járulni a kódhoz, az AI használatára vonatkozó elvárásokat a [CONTRIBUTING.md](CONTRIBUTING.md) tartalmazza.
 
 ## Elismerések & Közösségi Projektek
 
