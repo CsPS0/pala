@@ -986,6 +986,16 @@ class DemoData {
     ];
   }
 
+  /// The demo school rotates an A/B week, alternating by week of the year.
+  static bool isDemoAWeek(DateTime monday, [bool? overrideAWeek]) {
+    // UTC so a daylight-saving change can't shorten a day.
+    final dayOfYear = DateTime.utc(monday.year, monday.month, monday.day).difference(DateTime.utc(monday.year, 1, 1)).inDays;
+    return overrideAWeek ?? ((dayOfYear ~/ 7) + 1) % 2 != 0;
+  }
+
+  static String weekType(DateTime monday, [bool? overrideAWeek]) =>
+      isDemoAWeek(monday, overrideAWeek) ? 'A hét' : 'B hét';
+
   /// Returns dynamic timetable for requested Monday-Friday dates.
   static List<TimetableEntry> getTimetable({DateTime? start, DateTime? end, bool? overrideAWeek}) {
     final now = DateTime.now();
@@ -994,10 +1004,7 @@ class DemoData {
 
     final timetable = <TimetableEntry>[];
 
-    // Calculate A or B week based on ISO week number
-    final dayOfYear = baseMonday.difference(DateTime(baseMonday.year, 1, 1)).inDays;
-    final weekNum = (dayOfYear ~/ 7) + 1;
-    final isAWeek = overrideAWeek ?? (weekNum % 2 != 0);
+    final isAWeek = isDemoAWeek(baseMonday, overrideAWeek);
 
     final weeklySchedule = [
       // Monday (1) - 8 periods

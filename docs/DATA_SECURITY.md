@@ -14,9 +14,18 @@ A működés érdekében a program a következő információkat menti el a szá
 
 ## 2. Hogyan és hol tároljuk az adatokat?
 
-Az adatok a számítógépeden, az operációs rendszered felhasználói mappájában, a szabványos `.config/pala` könyvtárban találhatóak:
+Az adatok a számítógépeden, két külön mappában vannak.
+
+A bejelentkezés és a beállítások (`auth.json`, `state.json`, `aliases.json`, `.pala_keyfile`) a `.config/pala` könyvtárban:
 *   **Windows:** `%USERPROFILE%\.config\pala` (Pl. `C:\Users\Neved\.config\pala`)
 *   **Linux / macOS:** `~/.config/pala` (A home könyvtárban)
+
+A Krétától letöltött adatok offline gyorsítótára (`cache.json`) a rendszer gyorsítótár-mappájában:
+*   **Windows:** `%LOCALAPPDATA%\pala\cache`
+*   **Linux:** `~/.cache/pala` (vagy `$XDG_CACHE_HOME/pala`)
+*   **macOS:** `~/Library/Caches/pala`
+
+A gyorsítótár bármikor törölhető, a Pala a következő frissítéskor újra letölti. Bejelentkezve maradsz.
 
 ### Titkosítás (Encryption at Rest)
 A tokeneket és profiladatokat tartalmazó konfigurációs fájl (`auth.json`) egy erős, iparági szabványnak megfelelő **AES-256-GCM** titkosítással van levédve.
@@ -30,21 +39,23 @@ A Pala **kizárólag** a Kréta hivatalos szervereivel kommunikál, szigorúan t
 
 Mivel a Pala semmilyen felhős infrastruktúrával nem rendelkezik, az adataid felett 100%-os kontrollal rendelkezel. 
 
-Ha ki szeretnél jelentkezni, vagy teljesen meg akarod semmisíteni a program által tárolt adataidat, egyszerűen használd a Beállítások menüben az "Összes mentett adat törlése" lehetőséget, vagy töröld le a `.config/pala` mappát.
+Ha ki szeretnél jelentkezni, vagy teljesen meg akarod semmisíteni a program által tárolt adataidat, egyszerűen használd a Beállítások menüben az "Összes mentett adat törlése" lehetőséget, vagy töröld le mindkét mappát.
 
 ### Törlés lépései parancssorból:
 
 **Windows rendszeren:**
 ```cmd
 rmdir /s /q "%USERPROFILE%\.config\pala"
+rmdir /s /q "%LOCALAPPDATA%\pala"
 ```
 
 **Linux / macOS rendszeren:**
 ```bash
-rm -rf ~/.config/pala
+rm -rf ~/.config/pala ~/.cache/pala        # Linux
+rm -rf ~/.config/pala ~/Library/Caches/pala # macOS
 ```
 
-A mappa törlésével minden tárolt profilod, titkosított tokened és offline gyorsítótárad (cache) azonnal és véglegesen törlődik. A program következő indításakor úgy fog viselkedni, mintha most telepítetted volna először.
+A mappák törlésével minden tárolt profilod, titkosított tokened és offline gyorsítótárad (cache) azonnal és véglegesen törlődik. A program következő indításakor úgy fog viselkedni, mintha most telepítetted volna először.
 
 ## 4. Böngésző Kiterjesztés: Munkamenet, Tokenek és Adatbiztonság
 

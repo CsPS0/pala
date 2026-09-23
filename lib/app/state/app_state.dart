@@ -12,6 +12,10 @@ class AppState {
   /// ~/.config/pala.
   static String? configDirOverride;
 
+  /// Mobile counterpart of [configDirOverride] for [cacheDir], set from
+  /// path_provider's getTemporaryDirectory() (the OS cache dir on Android/iOS).
+  static String? cacheDirOverride;
+
   bool isOffline = false;
   String themeMode = 'dark';
   bool showAsciiBanner = true;
@@ -25,6 +29,37 @@ class AppState {
     if (configDirOverride != null) return configDirOverride!;
     final home = Platform.environment['HOME'] ?? Platform.environment['USERPROFILE'] ?? '.';
     return '$home/.config/pala';
+  }
+
+  /// Downloaded Kréta responses (offline cache). Kept apart from [configDir],
+  /// which holds login and settings, so the cache can be wiped on its own.
+  String get cacheDir {
+    if (cacheDirOverride != null) return cacheDirOverride!;
+    final env = Platform.environment;
+    final home = env['HOME'] ?? env['USERPROFILE'] ?? '.';
+    if (Platform.isWindows && env['LOCALAPPDATA'] != null) {
+      return '${env['LOCALAPPDATA']}/pala/cache';
+    }
+    if (Platform.isMacOS) return '$home/Library/Caches/pala';
+    final xdg = env['XDG_CACHE_HOME'];
+    return xdg != null && xdg.isNotEmpty ? '$xdg/pala' : '$home/.cache/pala';
+  }
+
+  File get cacheFile {
+    final dir = Directory(cacheDir);
+    if (!dir.existsSync()) dir.createSync(recursive: true);
+    final file = File('$cacheDir/cache.json');
+    // Older versions kept the cache next to the login data.
+    final legacy = File('$configDir/cache.json');
+    if (legacy.existsSync()) {
+      try {
+        if (!file.existsSync()) legacy.copySync(file.path);
+        legacy.deleteSync();
+      } catch (e) {
+        PalaLogger.debug('Failed to move legacy cache: $e');
+      }
+    }
+    return file;
   }
 
   void _ensureConfigDir() {
@@ -55,8 +90,8 @@ class AppState {
           oldAliasesInFolio.copySync(aliasesFile.path);
         }
         final oldCacheInFolio = File('${oldConfigDir.path}/cache.json');
-        if (oldCacheInFolio.existsSync() && !File('$configDir/cache.json').existsSync()) {
-          oldCacheInFolio.copySync('$configDir/cache.json');
+        if (oldCacheInFolio.existsSync() && !cacheFile.existsSync()) {
+          oldCacheInFolio.copySync(cacheFile.path);
         }
       } catch (e) {
         PalaLogger.debug('Failed to migrate from ~/.config/folio: $e');
@@ -77,8 +112,8 @@ class AppState {
     }
     
     final oldCache = File('$home/.folio_cache.json');
-    if (oldCache.existsSync() && !File('$configDir/cache.json').existsSync()) {
-      oldCache.copySync('$configDir/cache.json');
+    if (oldCache.existsSync() && !cacheFile.existsSync()) {
+      oldCache.copySync(cacheFile.path);
       oldCache.deleteSync();
     }
   }
@@ -210,9 +245,10 @@ class AppState {
     if (secureFile.existsSync()) {
       secureFile.deleteSync();
     }
-    final cacheDir = Directory('$configDir/cache');
-    if (cacheDir.existsSync()) {
-      cacheDir.deleteSync(recursive: true);
+    // cacheFile also removes a leftover cache.json from the config dir.
+    final cache = cacheFile;
+    if (cache.existsSync()) {
+      cache.deleteSync();
     }
   }
 }

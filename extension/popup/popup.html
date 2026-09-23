@@ -84,7 +84,7 @@
     <div id="tab-today" class="tab-panel active">
       <div id="popup-timetable-header" style="display:flex; justify-content:space-between; align-items:center; padding: 4px 6px 8px 6px; font-size: 0.76rem;">
         <span style="font-weight: 700; color: var(--text);">Mai tanórák</span>
-        <span id="popup-ab-badge" class="badge" style="background: rgba(var(--primary-rgb), 0.15); color: var(--primary); font-size: 0.68rem; font-weight: 800; border: 1px solid rgba(var(--primary-rgb), 0.3);">A hét</span>
+        <span id="popup-ab-badge" class="badge" style="display: none; background: rgba(var(--primary-rgb), 0.15); color: var(--primary); font-size: 0.68rem; font-weight: 800; border: 1px solid rgba(var(--primary-rgb), 0.3);">A hét</span>
       </div>
       <div id="timetable-list" class="item-list">
         <!-- Injected dynamically -->
@@ -154,6 +154,15 @@
             <option value="tab-today">Mai Órák</option>
             <option value="tab-grades">Jegyek</option>
             <option value="tab-tasks">Feladatok</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Popup mérete:</label>
+          <select id="popup-pref-size" style="width: 100%; background: var(--sidebar); border: 1px solid var(--border); padding: 6px 8px; border-radius: 6px; color: var(--text); font-size: 0.8rem;">
+            <option value="small">Kicsi</option>
+            <option value="medium">Közepes</option>
+            <option value="large">Nagy</option>
           </select>
         </div>
 

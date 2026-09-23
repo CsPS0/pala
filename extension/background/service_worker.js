@@ -223,7 +223,7 @@ async function checkScheduleChanges(data) {
 
   const isChanged = (l) => {
     const stateName = (l.Allapot?.Nev || l.Allapot || "").toLowerCase();
-    const substitute = l.HelyettesTanarNeve || l.HelyettesitoTanarNeve;
+    const substitute = l.HelyettesTanarNeve;
     return stateName.includes("elmaradt") || !!substitute;
   };
 
@@ -243,7 +243,7 @@ async function checkScheduleChanges(data) {
     const dayLabel = dStr === todayStr ? "Ma" : "Holnap";
     const sub = l.Tantargy?.Nev || "Tanóra";
     const stateName = (l.Allapot?.Nev || l.Allapot || "").toLowerCase();
-    const substitute = l.HelyettesTanarNeve || l.HelyettesitoTanarNeve;
+    const substitute = l.HelyettesTanarNeve;
     const cancelled = stateName.includes("elmaradt");
 
     chrome.notifications.create(`pala_schedule_${Date.now()}_${id}`, {

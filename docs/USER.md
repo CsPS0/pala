@@ -43,7 +43,7 @@ A Pala teljes komponenskezelési támogatással rendelkezik a parancssorból és
 - **Interaktív eltávolító**: `pala --uninstall` (Választhatsz a parancsikonok, a PATH vagy a teljes program eltávolítása között)
 
 ## 5. Rendszer és Frissítések
-- **Konfigurációs Fájlok**: Az alkalmazás minden mentett adatot a `~/.config/pala/` (Windows-on `C:\Users\Felhasználónév\.config\pala\`) könyvtárban tárol.
+- **Konfigurációs Fájlok**: A bejelentkezést és a beállításokat a `~/.config/pala/` (Windows-on `C:\Users\Felhasználónév\.config\pala\`) könyvtárban tárolja. A letöltött Kréta-adatok offline gyorsítótára ettől külön, a rendszer gyorsítótár-mappájában van: Windows-on `%LOCALAPPDATA%\pala\cache`, Linuxon `~/.cache/pala`, macOS-en `~/Library/Caches/pala`.
 - **Csomagkezelők**: A Pala natívan támogatja a Windows (PowerShell / Scoop), macOS/Linux (Homebrew / Bash installer), Arch Linux (AUR) és Debian/Ubuntu (APT) csomagkezelőket.
 - **Frissítések**: Az alkalmazás induláskor automatikusan ellenőrzi a GitHub-ot, és sárga szöveges üzenettel jelez, ha új verzió érhető el. A frissítés ezután a telepítés módjától függően (pl. `scoop update pala`, `brew upgrade pala`, `sudo apt update && sudo apt install pala` vagy `irm https://raw.githubusercontent.com/CsPS0/pala/main/install.ps1 | iex`) könnyedén elvégezhető.
 

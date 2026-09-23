@@ -44,6 +44,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     await chrome.storage.local.set({ pala_dark_mode: dark });
   });
 
+  // Kréta labels weeks per school, not per class; let a class without a rotation hide it.
+  const weekTypeStore = await chrome.storage.local.get("pala_show_week_type");
+  showWeekType = weekTypeStore.pala_show_week_type !== false;
+  const weekTypeToggle = document.getElementById("dash-week-type-toggle");
+  if (weekTypeToggle) weekTypeToggle.checked = showWeekType;
+  weekTypeToggle?.addEventListener("change", async (e) => {
+    showWeekType = e.target.checked;
+    await chrome.storage.local.set({ pala_show_week_type: showWeekType });
+    renderWeeklyTimetable(fullState.data?.timetable || []);
+  });
+
   const sidebarStore = await chrome.storage.local.get("pala_sidebar_collapsed");
   applySidebarCollapsed(!!sidebarStore.pala_sidebar_collapsed);
   document.getElementById("btn-toggle-sidebar")?.addEventListener("click", async () => {
@@ -182,14 +193,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (mxGrid) mxGrid.style.display = isMatrixView ? "block" : "none";
   });
 
+  // Demo only: real week types come from Kréta, so there is nothing to flip.
   document.getElementById("btn-toggle-ab-week")?.addEventListener("click", () => {
-    const currentInfo = getTimetableABWeek(fullState.data?.timetable);
-    abWeekOverride = !currentInfo.isAWeek;
-    if (fullState.isDemo) {
-      if (!fullState.data) fullState.data = {};
-      fullState.data.timetable = KretaApi.generateDemoTimetable(abWeekOverride);
-    }
-    renderWeeklyTimetable(fullState.data?.timetable || []);
+    if (!fullState.isDemo || !fullState.data) return;
+    abWeekOverride = fullState.data.weekType !== "A hét";
+    fullState.data.timetable = KretaApi.generateDemoTimetable(abWeekOverride);
+    fullState.data.weekType = KretaApi.demoWeekType(abWeekOverride);
+    renderWeeklyTimetable(fullState.data.timetable);
   });
 
   setupMessageFilters();
@@ -218,6 +228,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       defaultTab: document.getElementById("dash-popup-pref-default-tab")?.value || "tab-today",
       showHeroCard: document.getElementById("dash-popup-pref-show-hero")?.checked !== false,
       compactMode: document.getElementById("dash-popup-pref-compact")?.checked === true,
+      popupSize: document.getElementById("dash-popup-pref-size")?.value || "medium",
       showAverageBar: document.getElementById("dash-popup-pref-show-average")?.checked !== false,
       maxGrades: parseInt(document.getElementById("dash-popup-pref-max-grades")?.value || "10", 10),
       maxTasks: parseInt(document.getElementById("dash-popup-pref-max-tasks")?.value || "5", 10)
@@ -289,7 +300,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const rawSub = l.Tantargy?.Nev || l.Tantargy || "Tanóra";
       const sub = getDisplaySubject(rawSub);
       const theme = (l.Tema || "").replace(/\r?\n/g, " ");
-      const room = l.Terem ? ` (Terem: ${l.Terem})` : "";
+      const room = l.TeremNeve ? ` (Terem: ${l.TeremNeve})` : "";
       const uid = `lesson-${l.Id || Math.random().toString(36).substring(2)}@pala`;
 
       ics += `BEGIN:VEVENT\r\nUID:${uid}\r\nDTSTAMP:${nowUtc}\r\nDTSTART:${start}\r\nDTEND:${end}\r\nSUMMARY:${sub}${room}\r\nDESCRIPTION:${theme}\r\nEND:VEVENT\r\n`;
@@ -358,6 +369,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const aliasOrigBox = document.getElementById("alias-orig-suggestions");
   aliasOrigInput?.addEventListener("focus", () => renderAliasSuggestions(aliasOrigInput.value));
   aliasOrigInput?.addEventListener("input", () => renderAliasSuggestions(aliasOrigInput.value));
+  aliasOrigInput?.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && aliasOrigBox) aliasOrigBox.style.display = "none";
+  });
   aliasOrigInput?.addEventListener("blur", () => {
     // Small delay so a mousedown-select on a suggestion still registers first.
     setTimeout(() => { if (aliasOrigBox) aliasOrigBox.style.display = "none"; }, 150);
@@ -383,6 +397,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (heroEl) heroEl.checked = s.showHeroCard !== false;
       const compactEl = document.getElementById("dash-popup-pref-compact");
       if (compactEl) compactEl.checked = s.compactMode === true;
+      const sizeEl = document.getElementById("dash-popup-pref-size");
+      if (sizeEl) sizeEl.value = s.popupSize || "medium";
       const avgEl = document.getElementById("dash-popup-pref-show-average");
       if (avgEl) avgEl.checked = s.showAverageBar !== false;
       const maxGradesEl = document.getElementById("dash-popup-pref-max-grades");
@@ -410,6 +426,7 @@ function setupSidebarNavigation() {
       document.querySelectorAll(".view-panel").forEach(p => p.classList.remove("active"));
 
       btn.classList.add("active");
+      document.title = `Pala // ${btn.textContent.trim()}`;
       const target = btn.getAttribute("data-tab");
       document.getElementById(target)?.classList.add("active");
 
@@ -704,10 +721,10 @@ function renderDashboard() {
 
   // Today's classes count
   const now = new Date();
-  const todayIso = now.toISOString().split("T")[0];
+  const todayIso = localDateKey(now);
   const todayLessons = (d.timetable || []).filter(item => {
     if (!item.KezdetIdopont) return false;
-    return new Date(item.KezdetIdopont).toISOString().split("T")[0] === todayIso;
+    return localDateKey(item.KezdetIdopont) === todayIso;
   });
   const classesEl = document.getElementById("dash-classes");
   if (classesEl) {
@@ -877,8 +894,8 @@ function renderDashboardHero(todayLessons) {
 
   if (active) {
     const sub = active.Tantargy?.Nev || active.Nev || "Tanóra";
-    const room = active.Terem ? `Terem: ${active.Terem}` : "";
-    const teacher = active.Tanar || active.TanarNeve || "";
+    const room = active.TeremNeve ? `Terem: ${active.TeremNeve}` : "";
+    const teacher = active.TanarNeve || "";
     const start = new Date(active.KezdetIdopont);
     const end = new Date(active.VegIdopont);
     const minsLeft = Math.max(0, Math.ceil((end - now) / 60000));
@@ -888,7 +905,7 @@ function renderDashboardHero(todayLessons) {
     tagEl.style.color = "#000";
     subjectEl.innerText = sub;
     detailsEl.innerText = [room, teacher].filter(Boolean).join(" • ");
-    timeEl.innerText = `${active.Oraszam || ""}. tanóra`;
+    timeEl.innerText = active.Oraszam != null ? `${active.Oraszam}. tanóra` : "";
     statusEl.innerText = `Hátra van még: ${minsLeft} perc`;
     statusEl.style.color = "var(--text-muted)";
 
@@ -901,16 +918,16 @@ function renderDashboardHero(todayLessons) {
     }
   } else {
     const sub = next.Tantargy?.Nev || next.Nev || "Tanóra";
-    const room = next.Terem ? `Terem: ${next.Terem}` : "";
+    const room = next.TeremNeve ? `Terem: ${next.TeremNeve}` : "";
     const s = new Date(next.KezdetIdopont);
-    const timeStr = `${String(s.getHours()).padStart(2, "0")}:${String(s.getMinutes()).padStart(2, "0")}`;
+    const timeStr = formatLocalTime(s);
     const minsUntil = Math.max(0, Math.ceil((s - now) / 60000));
 
     tagEl.innerText = "KÖVETKEZŐ ÓRA";
     tagEl.style.background = "rgba(255, 214, 10, 0.15)";
     tagEl.style.color = "var(--warning)";
     subjectEl.innerText = sub;
-    detailsEl.innerText = [room, next.Oraszam ? `${next.Oraszam}. tanóra` : ""].filter(Boolean).join(" • ");
+    detailsEl.innerText = [room, next.Oraszam != null ? `${next.Oraszam}. tanóra` : ""].filter(Boolean).join(" • ");
     timeEl.innerText = timeStr;
     statusEl.innerText = `${minsUntil} perc múlva`;
     statusEl.style.color = "var(--warning)";
@@ -1066,20 +1083,7 @@ function renderDashboardSubjectCards(subjectMap) {
 }
 
 let abWeekOverride = null;
-
-function getTimetableABWeek(timetable) {
-  let date = new Date();
-  if (timetable && timetable.length > 0 && timetable[0].KezdetIdopont) {
-    date = new Date(timetable[0].KezdetIdopont);
-  }
-  const currentDay = date.getDay();
-  const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
-  const monday = new Date(date.getFullYear(), date.getMonth(), date.getDate() + mondayOffset);
-  const startOfYear = new Date(monday.getFullYear(), 0, 1);
-  const weekNum = Math.floor((monday - startOfYear) / (7 * 24 * 60 * 60 * 1000)) + 1;
-  const isAWeek = abWeekOverride !== null ? abWeekOverride : (weekNum % 2 !== 0);
-  return { isAWeek, weekNum, overridden: abWeekOverride !== null };
-}
+let showWeekType = true;
 
 function renderWeeklyTimetable(timetable) {
   const listGrid = document.getElementById("weekly-timetable-grid");
@@ -1088,16 +1092,17 @@ function renderWeeklyTimetable(timetable) {
   listGrid.innerHTML = "";
   matrixGrid.innerHTML = "";
 
+  // Week rotation name straight from Kréta ("A hét", "C hét", ...); schools
+  // without a rotation get no badge. Only the demo can flip it.
+  const weekType = showWeekType ? fullState.data?.weekType || null : null;
   const abBadge = document.getElementById("timetable-ab-badge");
-  const abInfo = getTimetableABWeek(timetable);
-  if (abBadge) {
-    abBadge.textContent = `${abInfo.isAWeek ? "A hét" : "B hét"} (${abInfo.weekNum}. hét)`;
-    const toggleBtn = document.getElementById("btn-toggle-ab-week");
-    if (toggleBtn) {
-      toggleBtn.style.color = abInfo.isAWeek ? "var(--primary)" : "var(--accent, #3b82f6)";
-      toggleBtn.style.borderColor = abInfo.isAWeek ? "rgba(var(--primary-rgb), 0.4)" : "rgba(59, 130, 246, 0.4)";
-      toggleBtn.title = `Kattints az A/B hét váltásához (jelenleg: ${abInfo.isAWeek ? "A hét" : "B hét"})`;
-    }
+  const toggleBtn = document.getElementById("btn-toggle-ab-week");
+  if (abBadge) abBadge.textContent = weekType || "";
+  if (toggleBtn) {
+    toggleBtn.style.display = weekType ? "inline-flex" : "none";
+    toggleBtn.style.cursor = fullState.isDemo ? "pointer" : "default";
+    toggleBtn.querySelector("svg")?.style.setProperty("display", fullState.isDemo ? "" : "none");
+    toggleBtn.title = fullState.isDemo ? "Kattints a demó A/B hét váltásához" : "Az iskola hetirendje erre a hétre";
   }
 
   const dayNames = ["Hétfő", "Kedd", "Szerda", "Csütörtök", "Péntek", "Szombat", "Vasárnap"];
@@ -1111,7 +1116,7 @@ function renderWeeklyTimetable(timetable) {
       if (d === 0) d = 7; // Sunday
       if (d >= 1 && d <= 7) {
         dayBuckets[d].push(item);
-        const slot = item.Oraszam || 1;
+        const slot = item.Oraszam ?? 1;
         matrixData[d][slot] = item;
       }
     }
@@ -1141,8 +1146,8 @@ function renderWeeklyTimetable(timetable) {
       lessons.forEach((l, idx) => {
         const itemEl = document.createElement("div");
         const sub = escapeHtml(getDisplaySubject(l.Tantargy?.Nev || l.Nev || "Tanóra"));
-        const room = l.Terem ? `Terem: ${escapeHtml(l.Terem)}` : "";
-        const substitute = l.HelyettesitoTanarNeve ? `Helyettesítő: ${escapeHtml(l.HelyettesitoTanarNeve)}` : "";
+        const room = l.TeremNeve ? `Terem: ${escapeHtml(l.TeremNeve)}` : "";
+        const substitute = l.HelyettesTanarNeve ? `Helyettesítő: ${escapeHtml(l.HelyettesTanarNeve)}` : "";
 
         const stateNameRaw = l.Allapot?.Nev || l.Allapot || "Megtartott";
         const stateName = escapeHtml(stateNameRaw);
@@ -1152,7 +1157,9 @@ function renderWeeklyTimetable(timetable) {
         const isActive = isToday && startMs > 0 && endMs > 0 && nowMs >= startMs && nowMs <= endMs;
         const isPast = isToday && endMs > 0 && nowMs > endMs;
         const isCancelled = stateNameRaw.toLowerCase().includes("elmaradt");
-        const isSub = !isCancelled && (stateNameRaw !== "Megtartott" || !!l.HelyettesitoTanarNeve);
+        // Only a substitute teacher means a substitution. Real Kréta states are
+        // "Naplozott" etc., never the demo's "Megtartott", so don't compare those.
+        const isSub = !isCancelled && !!l.HelyettesTanarNeve;
 
         let pillClass = "lesson-pill";
         if (isActive) pillClass += " active";
@@ -1172,9 +1179,9 @@ function renderWeeklyTimetable(timetable) {
           statusBadgeHtml = `<span style="color:var(--success); font-weight:900; font-size:0.75rem; flex-shrink:0;">✓</span>`;
         }
 
-        const slotNum = l.Oraszam || idx + 1;
+        const slotNum = l.Oraszam ?? idx + 1;
         const timeSpan = l.KezdetIdopont && l.VegIdopont
-          ? `${l.KezdetIdopont.slice(11, 16)} - ${l.VegIdopont.slice(11, 16)}`
+          ? `${formatLocalTime(l.KezdetIdopont)} - ${formatLocalTime(l.VegIdopont)}`
           : "";
         const titleStyle = isCancelled ? "text-decoration: line-through; color: var(--text-muted);" : (isActive ? "color: var(--primary);" : "");
         const theme = l.Tema ? `<div style="font-size:0.68rem; color:var(--text-muted); margin-top:2px;">${escapeHtml(l.Tema)}</div>` : "";
@@ -1208,14 +1215,18 @@ function renderWeeklyTimetable(timetable) {
   }
   matrixHtml += `</tr></thead><tbody>`;
 
-  for (let slot = 1; slot <= 10; slot++) {
+  // Some schools have a 0th lesson or more than 10 a day.
+  const usedSlots = Object.values(matrixData).flatMap(day => Object.keys(day).map(Number));
+  const firstSlot = Math.min(1, ...usedSlots);
+  const lastSlot = Math.max(10, ...usedSlots);
+  for (let slot = firstSlot; slot <= lastSlot; slot++) {
     matrixHtml += `<tr style="border-bottom: 1px solid var(--border);">
       <td style="padding: 10px; font-weight: 800; color: var(--text-muted);">${slot}.</td>`;
     for (let day = 1; day <= 7; day++) {
       const l = matrixData[day][slot];
       if (l) {
         const sub = escapeHtml(getDisplaySubject(l.Tantargy?.Nev || l.Nev || "Tanóra"));
-        const room = escapeHtml(l.Terem || "");
+        const room = escapeHtml(l.TeremNeve || "");
         const stateName = l.Allapot?.Nev || l.Allapot || "Megtartott";
         let cellStyle = "padding: 8px 10px; border-left: 1px solid var(--border);";
         let contentStyle = "font-weight: 700; font-size: 0.78rem;";
@@ -1223,7 +1234,7 @@ function renderWeeklyTimetable(timetable) {
         if (stateName.toLowerCase().includes("elmaradt")) {
           cellStyle += " background: rgba(255,69,58,0.1);";
           contentStyle = "text-decoration: line-through; color: var(--danger); font-weight: 600;";
-        } else if (stateName !== "Megtartott" || l.HelyettesitoTanarNeve) {
+        } else if (l.HelyettesTanarNeve) {
           cellStyle += " background: rgba(255,214,10,0.1);";
           contentStyle += " color: var(--warning);";
         }
@@ -2147,6 +2158,9 @@ async function renderSettingsView() {
     const compactEl = document.getElementById("dash-popup-pref-compact");
     if (compactEl) compactEl.checked = s.compactMode === true;
 
+    const sizeEl = document.getElementById("dash-popup-pref-size");
+    if (sizeEl) sizeEl.value = s.popupSize || "medium";
+
     const avgEl = document.getElementById("dash-popup-pref-show-average");
     if (avgEl) avgEl.checked = s.showAverageBar !== false;
 
@@ -2933,10 +2947,8 @@ function getKnownTeacherNames() {
     if (n) names.add(n);
   });
   (data.timetable || []).forEach(l => {
-    // Real API uses TanarNeve/HelyettesTanarNeve; the demo generator uses
-    // Tanar/HelyettesitoTanarNeve. Check both so real and demo data both work.
-    const teacher = l.TanarNeve || l.Tanar;
-    const substitute = l.HelyettesTanarNeve || l.HelyettesitoTanarNeve;
+    const teacher = l.TanarNeve;
+    const substitute = l.HelyettesTanarNeve;
     if (teacher) names.add(teacher);
     if (substitute) names.add(substitute);
   });
@@ -2948,6 +2960,14 @@ let teachersLoading = false;
 function renderAliasSuggestions(filterText) {
   const box = document.getElementById("alias-orig-suggestions");
   if (!box) return;
+
+  // Only show while the user is typing in the field. Category switches and the
+  // async teacher load also call this, and a box opened without focus never
+  // gets the blur that closes it, so it would cover the alias list for good.
+  if (document.activeElement !== document.getElementById("alias-orig-input")) {
+    box.style.display = "none";
+    return;
+  }
 
   if (aliasCategory === "teacher" && teachersLoading) {
     box.innerHTML = '<div style="padding: 10px 12px; font-size: 0.8rem; color: var(--text-muted);">Tanárok betöltése...</div>';

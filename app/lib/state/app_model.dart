@@ -44,6 +44,8 @@ class AppModel extends ChangeNotifier {
   Set<String> _completedHomework = {};
   int _weekOffset = 0;
   bool? _overrideAWeek;
+  String? _weekType;
+  bool _showWeekType = true;
 
   // Getters
   KretaClient? get client => _client;
@@ -73,6 +75,13 @@ class AppModel extends ChangeNotifier {
   int get weekOffset => _weekOffset;
   bool? get overrideAWeek => _overrideAWeek;
 
+  /// The school's name for the shown week ("A hét", "C hét", ...), or null when
+  /// the school has no rotation or Kréta didn't say. Only then show a badge.
+  /// Kréta labels weeks per school, not per class, so a class without a
+  /// rotation at an A/B school can turn the badge off.
+  String? get weekType => _showWeekType ? _weekType : null;
+  bool get showWeekType => _showWeekType;
+
   DateTime get currentWeekMonday {
     final now = DateTime.now();
     final currentMonday = now.subtract(Duration(days: now.weekday - 1));
@@ -87,10 +96,6 @@ class AppModel extends ChangeNotifier {
     return 1 + ((thursday.difference(firstThursdayOfWeek1).inDays) / 7).round();
   }
 
-  bool get isAWeek => _overrideAWeek ?? (currentWeekNumber % 2 != 0);
-
-  String get abWeekName => isAWeek ? 'A hét' : 'B hét';
-
   AppModel() {
     _initStorage();
   }
@@ -100,6 +105,7 @@ class AppModel extends ChangeNotifier {
     _isDarkMode = prefs.getBool('pala_dark_mode') ?? true;
     PalaTheme.isLight = !_isDarkMode;
     _isSidebarCollapsed = prefs.getBool('pala_sidebar_collapsed') ?? false;
+    _showWeekType = prefs.getBool('pala_show_week_type') ?? true;
     _parentalQuota = prefs.getInt('pala_parental_quota') ?? 5;
     
     final aliasStr = prefs.getString('pala_aliases');
@@ -139,7 +145,7 @@ class AppModel extends ChangeNotifier {
     final kClient = KretaClient(instituteCode: session['instituteCode']!);
     kClient.accessToken = session['accessToken'];
     kClient.refreshToken = session['refreshToken'];
-    kClient.onTokenRefreshed = () => SessionStore.save(kClient);
+    SessionStore.attach(kClient);
 
     _client = kClient;
     _isDemo = false;
@@ -181,7 +187,7 @@ class AppModel extends ChangeNotifier {
       if (!loggedIn) {
         throw Exception('Nem sikerült bejelentkezni. Ellenőrizd az adataidat!');
       }
-      kClient.onTokenRefreshed = () => SessionStore.save(kClient);
+      SessionStore.attach(kClient);
       _client = kClient;
       _isDemo = false;
       _isAuthenticated = true;
@@ -215,6 +221,7 @@ class AppModel extends ChangeNotifier {
     _aliases = {};
     _weekOffset = 0;
     _overrideAWeek = null;
+    _weekType = null;
     notifyListeners();
 
     try {
@@ -250,6 +257,7 @@ class AppModel extends ChangeNotifier {
     _aliases = {};
     _weekOffset = 0;
     _overrideAWeek = null;
+    _weekType = null;
     notifyListeners();
   }
 
@@ -270,6 +278,7 @@ class AppModel extends ChangeNotifier {
         _client!.getGroupAverages(),
         _client!.getTeachers(),
         _client!.getNotes(),
+        _fetchWeekType(),
       ]);
 
       _student = futures[0] as Student?;
@@ -282,12 +291,20 @@ class AppModel extends ChangeNotifier {
       _groupAverages = (futures[7] as List<dynamic>?) ?? [];
       _teachers = (futures[8] as List<Map<String, dynamic>>?) ?? [];
       _notes = (futures[9] as List<Note>?) ?? [];
+      _weekType = futures[10] as String?;
       _errorMessage = null;
     } catch (e) {
       _errorMessage = 'Hiba az adatok lekérésekor: $e';
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+
+    // Kréta rejected the saved login itself (not a network error): say so on
+    // the login screen instead of silently showing empty data.
+    if (!_isDemo && (_client?.sessionExpired ?? false)) {
+      _errorMessage = 'A Kréta bejelentkezés lejárt, kérlek jelentkezz be újra.';
+      await logout();
     }
   }
 
@@ -338,6 +355,11 @@ class AppModel extends ChangeNotifier {
     return entries ?? [];
   }
 
+  Future<String?> _fetchWeekType() async {
+    final m = currentWeekMonday;
+    return _client?.getWeekType(DateTime(m.year, m.month, m.day), overrideAWeek: _overrideAWeek);
+  }
+
   Future<void> setWeekOffset(int offset) async {
     _weekOffset = offset;
     _overrideAWeek = null;
@@ -345,6 +367,7 @@ class AppModel extends ChangeNotifier {
     notifyListeners();
     try {
       _timetable = await _fetchTimetableForOffset(offset);
+      _weekType = await _fetchWeekType();
     } catch (e) {
       _errorMessage = 'Hiba az órarend betöltésekor: $e';
     } finally {
@@ -353,19 +376,13 @@ class AppModel extends ChangeNotifier {
     }
   }
 
+  /// Demo only: flips the demo school's A/B week to preview both timetables.
+  /// Real weeks come from Kréta, so there is nothing to toggle there.
   Future<void> toggleABWeek() async {
-    _overrideAWeek = !isAWeek;
-    if (_isDemo) {
-      _timetable = await _fetchTimetableForOffset(_weekOffset);
-    }
-    notifyListeners();
-  }
-
-  Future<void> resetABWeek() async {
-    _overrideAWeek = null;
-    if (_isDemo) {
-      _timetable = await _fetchTimetableForOffset(_weekOffset);
-    }
+    if (!_isDemo) return;
+    _overrideAWeek = _weekType != 'A hét';
+    _timetable = await _fetchTimetableForOffset(_weekOffset);
+    _weekType = await _fetchWeekType();
     notifyListeners();
   }
 
@@ -387,6 +404,13 @@ class AppModel extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('pala_dark_mode', isDark);
+  }
+
+  Future<void> setShowWeekType(bool show) async {
+    _showWeekType = show;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('pala_show_week_type', show);
   }
 
   Future<void> toggleSidebarCollapsed() async {

@@ -458,7 +458,38 @@ body.compact-mode .footer {
   padding: 6px 12px;
 }
 
+/* Popup size (medium is the default above). Chrome caps popups at 800x600. */
+body.size-small {
+  width: 320px;
+  max-height: 480px;
+}
+body.size-small .content {
+  min-height: 180px;
+  max-height: 210px;
+}
+body.size-small #status-badge {
+  white-space: nowrap;
+}
+/* The name/school lines carry an inline 180px max-width. */
+body.size-small #student-name,
+body.size-small #student-school {
+  max-width: 140px !important;
+}
+body.size-large {
+  width: 480px;
+  max-height: 600px;
+}
+body.size-large .content {
+  max-height: 330px;
+}
+
 /* Expanded content when hero card is hidden */
 body.hero-hidden .content {
   max-height: 380px;
+}
+body.size-small.hero-hidden .content {
+  max-height: 300px;
+}
+body.size-large.hero-hidden .content {
+  max-height: 440px;
 }

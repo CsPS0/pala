@@ -119,43 +119,39 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                           icon: Icon(Icons.chevron_right, size: 22),
                           onPressed: () => widget.appModel.setWeekOffset(widget.appModel.weekOffset + 1),
                         ),
-                        const SizedBox(width: 8),
-                        Tooltip(
-                          message: 'Kattints az A/B hét váltásához',
-                          child: InkWell(
-                            onTap: () => widget.appModel.toggleABWeek(),
-                            borderRadius: BorderRadius.circular(8),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: widget.appModel.isAWeek ? primary.withValues(alpha: 0.15) : PalaTheme.accent.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: widget.appModel.isAWeek ? primary.withValues(alpha: 0.5) : PalaTheme.accent.withValues(alpha: 0.5),
+                        // Only schools with a week rotation get a badge; the name
+                        // comes from Kréta. Tapping flips the week in demo mode only.
+                        if (widget.appModel.weekType != null) ...[
+                          const SizedBox(width: 8),
+                          Tooltip(
+                            message: widget.appModel.isDemo ? 'Kattints a demó A/B hét váltásához' : 'Az iskola hetirendje erre a hétre',
+                            child: InkWell(
+                              onTap: widget.appModel.isDemo ? () => widget.appModel.toggleABWeek() : null,
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: primary.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: primary.withValues(alpha: 0.5)),
                                 ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.swap_horiz_rounded,
-                                    size: 15,
-                                    color: widget.appModel.isAWeek ? primary : PalaTheme.accent,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '„${widget.appModel.abWeekName}” (${widget.appModel.currentWeekNumber}. hét)',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w800,
-                                      color: widget.appModel.isAWeek ? primary : PalaTheme.accent,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (widget.appModel.isDemo) ...[
+                                      Icon(Icons.swap_horiz_rounded, size: 15, color: primary),
+                                      const SizedBox(width: 4),
+                                    ],
+                                    Text(
+                                      '${widget.appModel.weekType} (${widget.appModel.currentWeekNumber}. hét)',
+                                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: primary),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                     Row(

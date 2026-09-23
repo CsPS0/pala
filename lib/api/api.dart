@@ -85,6 +85,11 @@ class KretaAPI {
         (start != null && end != null
             ? "?datumTol=${start.toUtc().toIso8601String()}&datumIg=${end.toUtc().toIso8601String()}"
             : "");
+    static String weekOrder(String iss, DateTime start, DateTime end) =>
+        BaseKreta.kreta(iss) +
+        KretaApiEndpoints.weekOrder +
+        "?orarendElemKezdoNapDatuma=${DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(start)}"
+        "&orarendElemVegNapDatuma=${DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(end)}";
     static String exams(String iss) =>
         BaseKreta.kreta(iss) + KretaApiEndpoints.exams;
     static String homework(String iss, {DateTime? start, String? id}) =>
@@ -127,11 +132,14 @@ class KretaApiEndpoints {
     static const averages =
         "/ellenorzo/V3/Sajat/Ertekelesek/Atlagok/TantargyiAtlagok";
     static const timetable = "/ellenorzo/V3/Sajat/OrarendElemek";
+    /// Which of the school's week types ("Minden héten", "A hét", ...) each week is.
+    static const weekOrder = "/ellenorzo/V3/Sajat/Intezmenyek/Hetirendek/Orarendi";
     static const exams = "/ellenorzo/V3/Sajat/BejelentettSzamonkeresek";
     static const homework = "/ellenorzo/V3/Sajat/HaziFeladatok";
     static const capabilities = "/ellenorzo/V3/Sajat/Intezmenyek";
     static const messages = "/api/v1/kommunikacio/postaladaelemek/sajat";
     static String message(int id) => "/api/v1/kommunikacio/postaladaelemek/$id";
-    static const teachers = "/api/v1/kommunikacio/tanarok";
+    // Same list the official e-Ügyintézés recipient picker loads for "Tanárok".
+    static const teachers = "/api/v1/kreta/alkalmazottak/tanar";
     static const sendMessage = "/api/v1/kommunikacio/uzenetek";
 }

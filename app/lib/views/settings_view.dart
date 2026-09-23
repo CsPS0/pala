@@ -244,6 +244,35 @@ class _SettingsViewState extends State<SettingsView> with SingleTickerProviderSt
                       ),
                     ],
                   ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Hetirend jelzés',
+                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: PalaTheme.text),
+                            ),
+                            Text(
+                              'Az iskola A/B/C hetének neve a Krétából. Kapcsold ki, ha az osztályodnak minden héten ugyanaz az órarendje.',
+                              style: TextStyle(color: PalaTheme.textMuted, fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Switch(
+                        value: widget.appModel.showWeekType,
+                        activeTrackColor: PalaTheme.accent,
+                        onChanged: (val) {
+                          widget.appModel.setShowWeekType(val);
+                          setState(() {});
+                        },
+                      ),
+                    ],
+                  ),
                 ],
               ),
               const SizedBox(height: 12),

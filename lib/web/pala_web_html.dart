@@ -18,7 +18,7 @@ class PalaWebHtml {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pala // Kréta Webes Felület</title>
+  <title>Pala // Vezérlőpult</title>
   <style>
     :root {
       --bg: #0e0e11;
@@ -1413,6 +1413,7 @@ class PalaWebHtml {
           document.querySelectorAll('.nav-item')[info.idx].classList.add('active');
         }
         document.getElementById('pageHeader').innerText = info.title;
+        document.title = 'Pala // ' + info.title;
       }
     }
 

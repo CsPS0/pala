@@ -4,6 +4,7 @@ const DEFAULT_POPUP_SETTINGS = {
   defaultTab: "tab-today",
   showHeroCard: true,
   compactMode: false,
+  popupSize: "medium",
   showAverageBar: true,
   maxGrades: 10,
   maxTasks: 5
@@ -72,6 +73,8 @@ function applyPopupSettings(settings, isInitial = false) {
   }
   document.body.classList.toggle("hero-hidden", currentPopupSettings.showHeroCard === false);
   document.body.classList.toggle("compact-mode", currentPopupSettings.compactMode === true);
+  document.body.classList.toggle("size-small", currentPopupSettings.popupSize === "small");
+  document.body.classList.toggle("size-large", currentPopupSettings.popupSize === "large");
 
   const avgBar = document.querySelector(".stat-summary");
   if (avgBar) {
@@ -91,6 +94,9 @@ function setupPopupSettingsModal() {
 
     const heroCheck = document.getElementById("popup-pref-show-hero");
     if (heroCheck) heroCheck.checked = currentPopupSettings.showHeroCard !== false;
+
+    const sizeSelect = document.getElementById("popup-pref-size");
+    if (sizeSelect) sizeSelect.value = currentPopupSettings.popupSize || "medium";
 
     const compactCheck = document.getElementById("popup-pref-compact");
     if (compactCheck) compactCheck.checked = currentPopupSettings.compactMode === true;
@@ -128,6 +134,7 @@ function setupPopupSettingsModal() {
       defaultTab: document.getElementById("popup-pref-default-tab")?.value || "tab-today",
       showHeroCard: document.getElementById("popup-pref-show-hero")?.checked !== false,
       compactMode: document.getElementById("popup-pref-compact")?.checked === true,
+      popupSize: document.getElementById("popup-pref-size")?.value || "medium",
       showAverageBar: document.getElementById("popup-pref-show-average")?.checked !== false,
       maxGrades: parseInt(document.getElementById("popup-pref-max-grades")?.value || "10", 10),
       maxTasks: parseInt(document.getElementById("popup-pref-max-tasks")?.value || "5", 10)
@@ -294,8 +301,10 @@ async function loadData(forceRefresh = false) {
     "pala_use_demo",
     "pala_cached_data",
     "pala_maintenance_mode",
-    "pala_simulate_maintenance"
+    "pala_simulate_maintenance",
+    "pala_show_week_type"
   ]);
+  appState.showWeekType = store.pala_show_week_type !== false;
   const session = await SecureSession.load();
   const useDemo = store.pala_use_demo !== false; // Default to demo if not set
 
@@ -426,32 +435,27 @@ function renderUI() {
     }
   }
 
-  renderTimetable(data.timetable || []);
+  renderTimetable(data.timetable || [], appState.showWeekType ? data.weekType : null);
   renderGrades(data.grades || []);
   renderTasks(data.homework || [], data.exams || []);
   updateActiveClass(data.timetable || []);
 }
 
-function renderTimetable(timetable) {
+function renderTimetable(timetable, weekType) {
   const listEl = document.getElementById("timetable-list");
   if (!listEl) return;
   listEl.innerHTML = "";
 
   const now = new Date();
-  const todayIso = now.toISOString().split("T")[0];
+  const todayIso = localDateKey(now);
   const todayWeekday = now.getDay();
   const isWeekend = todayWeekday === 0 || todayWeekday === 6;
 
-  // A/B week calculation for badge
-  const mondayOffset = todayWeekday === 0 ? -6 : 1 - todayWeekday;
-  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset);
-  const startOfYear = new Date(monday.getFullYear(), 0, 1);
-  const weekNum = Math.floor((monday - startOfYear) / (7 * 24 * 60 * 60 * 1000)) + 1;
-  const isAWeek = (weekNum % 2 !== 0);
-
+  // Week rotation name straight from Kréta; hidden when the school has none.
   const abBadge = document.getElementById("popup-ab-badge");
   if (abBadge) {
-    abBadge.textContent = `${isAWeek ? "A hét" : "B hét"} (${weekNum}. hét)`;
+    abBadge.textContent = weekType || "";
+    abBadge.style.display = weekType ? "" : "none";
   }
 
   // Filter lessons for today
@@ -459,8 +463,7 @@ function renderTimetable(timetable) {
   const todayLessons = hasDates
     ? (timetable || []).filter(item => {
         if (!item.KezdetIdopont) return false;
-        const itemDate = new Date(item.KezdetIdopont).toISOString().split("T")[0];
-        return itemDate === todayIso;
+        return localDateKey(item.KezdetIdopont) === todayIso;
       })
     : (timetable || []);
 
@@ -489,20 +492,16 @@ function renderTimetable(timetable) {
     const card = document.createElement("div");
     card.className = "item-card";
     const subName = item.Tantargy?.Nev || item.Tantargy || item.Nev || "Tanóra";
-    const room = item.Terem ? `Terem: ${item.Terem}` : "";
-    const teacher = item.Tanar || item.TanarNeve || "";
-    
-    let timeRange = "";
-    if (item.KezdetIdopont && item.VegIdopont) {
-      const s = new Date(item.KezdetIdopont);
-      const e = new Date(item.VegIdopont);
-      timeRange = `${String(s.getHours()).padStart(2, '0')}:${String(s.getMinutes()).padStart(2, '0')} - ${String(e.getHours()).padStart(2, '0')}:${String(e.getMinutes()).padStart(2, '0')}`;
-    }
-    const details = [timeRange, room, teacher].filter(Boolean).join(" • ");
+    const room = item.TeremNeve ? `Terem: ${item.TeremNeve}` : "";
+    const teacher = item.TanarNeve || "";
+    const timeRange = item.KezdetIdopont && item.VegIdopont
+      ? `${formatLocalTime(item.KezdetIdopont)} - ${formatLocalTime(item.VegIdopont)}`
+      : "";
+    const details = escapeHtml([timeRange, room, teacher].filter(Boolean).join(" • "));
 
     card.innerHTML = `
       <div class="item-left">
-        <div class="item-index">${item.Oraszam || idx + 1}</div>
+        <div class="item-index">${item.Oraszam ?? idx + 1}</div>
         <div style="min-width:0;">
           <div class="item-title" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(subName)}</div>
           <div class="item-sub">${details || "Órarendi tanóra"}</div>
@@ -682,11 +681,11 @@ function updateActiveClass(timetable) {
   if (!subjectEl) return;
 
   const now = new Date();
-  const todayIso = now.toISOString().split("T")[0];
+  const todayIso = localDateKey(now);
 
   const todayLessons = (timetable || []).filter(item => {
     if (!item.KezdetIdopont) return false;
-    return new Date(item.KezdetIdopont).toISOString().split("T")[0] === todayIso;
+    return localDateKey(item.KezdetIdopont) === todayIso;
   });
 
   if (todayLessons.length === 0) {
@@ -723,29 +722,30 @@ function updateActiveClass(timetable) {
     const percent = Math.min(100, Math.max(0, Math.round((elapsedMs / totalMs) * 100)));
     const minutesLeft = Math.ceil((end - now) / 60000);
 
-    if (tagEl) tagEl.innerText = `FOLYAMATBAN LÉVŐ TANÓRA (${currentLesson.Oraszam || ""}. óra)`;
+    if (tagEl) tagEl.innerText = `FOLYAMATBAN LÉVŐ TANÓRA${lessonNumberLabel(currentLesson, " (", ")")}`;
     subjectEl.innerText = currentLesson.Tantargy?.Nev || currentLesson.Nev || "Tanóra";
     if (detailsEl) {
-      const room = currentLesson.Terem ? `Terem: ${currentLesson.Terem}` : "";
-      const teacher = currentLesson.Tanar || currentLesson.TanarNeve || "";
+      const room = currentLesson.TeremNeve ? `Terem: ${currentLesson.TeremNeve}` : "";
+      const teacher = currentLesson.TanarNeve || "";
       detailsEl.innerText = [room, teacher].filter(Boolean).join(" • ");
     }
     if (progressContainer) progressContainer.style.display = "block";
     if (progressBar) progressBar.style.width = `${percent}%`;
-    if (countdownEl) countdownEl.innerText = `Hátra van még: ${minutesLeft} perc`;
+    if (countdownEl) countdownEl.innerText = `Hátra van még: ${formatDuration(minutesLeft)}`;
   } else if (nextLesson) {
     const start = new Date(nextLesson.KezdetIdopont);
     const minutesUntil = Math.ceil((start - now) / 60000);
-    const timeStr = `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`;
+    // Before the first lesson of the day it is not a break yet.
+    const isFirst = todayLessons.every(l => new Date(l.KezdetIdopont) >= start);
 
-    if (tagEl) tagEl.innerText = "SZÜNET";
-    subjectEl.innerText = `Következő: ${nextLesson.Tantargy?.Nev || nextLesson.Nev || "Tanóra"}`;
+    if (tagEl) tagEl.innerText = isFirst ? "MAI ELSŐ ÓRA" : "SZÜNET";
+    subjectEl.innerText = `${isFirst ? "Első óra" : "Következő"}: ${nextLesson.Tantargy?.Nev || nextLesson.Nev || "Tanóra"}`;
     if (detailsEl) {
-      const room = nextLesson.Terem ? `Terem: ${nextLesson.Terem}` : "";
-      detailsEl.innerText = `Kezdés: ${timeStr} (${nextLesson.Oraszam}. óra) ${room ? "• " + room : ""}`;
+      const room = nextLesson.TeremNeve ? `Terem: ${nextLesson.TeremNeve}` : "";
+      detailsEl.innerText = [`Kezdés: ${formatLocalTime(start)}${lessonNumberLabel(nextLesson, " (", ")")}`, room].filter(Boolean).join(" • ");
     }
     if (progressContainer) progressContainer.style.display = "none";
-    if (countdownEl) countdownEl.innerText = `Kezdésig hátralévő idő: ${minutesUntil} perc`;
+    if (countdownEl) countdownEl.innerText = `Kezdésig hátralévő idő: ${formatDuration(minutesUntil)}`;
   } else {
     if (tagEl) tagEl.innerText = "A MAI TANÓRÁK VÉGET ÉRTEK";
     subjectEl.innerText = "Minden mai óra befejeződött";
@@ -753,6 +753,19 @@ function updateActiveClass(timetable) {
     if (progressContainer) progressContainer.style.display = "none";
     if (countdownEl) countdownEl.innerText = "Kellemes pihenést!";
   }
+}
+
+/** "3. óra" with optional wrapping; empty when Kréta sent no lesson number (0 is valid). */
+function lessonNumberLabel(lesson, before = "", after = "") {
+  return lesson.Oraszam != null ? `${before}${lesson.Oraszam}. óra${after}` : "";
+}
+
+/** 45 -> "45 perc", 125 -> "2 óra 5 perc". */
+function formatDuration(minutes) {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h === 0) return `${m} perc`;
+  return m === 0 ? `${h} óra` : `${h} óra ${m} perc`;
 }
 
 function startCountdownTimer() {

@@ -35,6 +35,7 @@ Future<void> checkForUpdatesAndNotify() async {
     final dir = await getApplicationSupportDirectory();
     AppState.configDirOverride = dir.path;
     EncryptionUtil.configDirOverride = dir.path;
+    AppState.cacheDirOverride = '${(await getTemporaryDirectory()).path}/pala';
   }
 
   final session = await SessionStore.load();
@@ -43,7 +44,7 @@ Future<void> checkForUpdatesAndNotify() async {
   final client = KretaClient(instituteCode: session['instituteCode']!);
   client.accessToken = session['accessToken'];
   client.refreshToken = session['refreshToken'];
-  client.onTokenRefreshed = () => SessionStore.save(client);
+  SessionStore.attach(client);
 
   final prefs = await SharedPreferences.getInstance();
 

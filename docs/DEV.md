@@ -25,7 +25,7 @@ Kiemelt függőségek:
 Fő modulok:
 - **api/client.dart**: hálózati réteg és OAuth2 token-kezelés. A token-frissítés (`refreshAccessToken`) aszinkron zárral (`_activeRefreshFuture`) védett, így párhuzamos API-hívásoknál sem sérül az `auth.json` írása és titkosítása.
 - **models/**: típusbiztos modellek (Grade, Student, Absence, TimetableEntry stb.). Az UTC dátumokat azonnal helyi időre alakítják. Az `isSummaryGrade` ékezetes és ékezet nélküli szűréssel is kiszűri a félévi és év végi összefoglaló jegyeket.
-- **app/state/app_state.dart**: singleton a helyi beállításokhoz (`state.json` és a titkosított `auth.json`) a `~/.config/pala/` mappában, a témával és az ASCII banner beállításaival együtt.
+- **app/state/app_state.dart**: singleton a helyi beállításokhoz (`state.json` és a titkosított `auth.json`) a `~/.config/pala/` mappában, a témával és az ASCII banner beállításaival együtt. Az offline API-gyorsítótár (`cache.json`) ettől külön, a `cacheDir` szerinti OS gyorsítótár-mappában van (`%LOCALAPPDATA%\pala\cache`, `~/.cache/pala`, `~/Library/Caches/pala`, mobilon a `getTemporaryDirectory()` alatt); a régi helyről automatikusan átkerül.
 - **app/theme.dart**: a terminál globális témája és színei (`PalaTheme`).
 - **app/views/**:
   - **dashboard_view.dart**: aszinkron billentyűzet-eseményhurok és óra-visszaszámláló. Külön alfolyamatként indul, így az aszinkron `stdin` nem akad össze a főprogram konzoljával.

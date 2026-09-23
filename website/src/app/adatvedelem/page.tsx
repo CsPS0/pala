@@ -70,7 +70,9 @@ export default function PrivacyPage() {
             <p>
               Mivel minden adat helyben, a te eszközödön tárolódik, a törléshez elég kijelentkezni az
               alkalmazásból, vagy törölni a konfigurációs mappát (<code className="text-[#ff8800] font-mono text-xs">~/.config/pala</code>{" "}
-              Linuxon és macOS-en, illetve a Windows-os felhasználói profilban). Nincs központi
+              Linuxon és macOS-en, illetve a Windows-os felhasználói profilban) és a gyorsítótár-mappát
+              (<code className="text-[#ff8800] font-mono text-xs">~/.cache/pala</code>, Windows-on{" "}
+              <code className="text-[#ff8800] font-mono text-xs">%LOCALAPPDATA%\pala</code>). Nincs központi
               fiók vagy szerver, amit ehhez értesíteni kellene.
             </p>
           </section>

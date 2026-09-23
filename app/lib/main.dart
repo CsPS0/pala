@@ -21,6 +21,7 @@ void main() async {
     final dir = await getApplicationSupportDirectory();
     AppState.configDirOverride = dir.path;
     EncryptionUtil.configDirOverride = dir.path;
+    AppState.cacheDirOverride = '${(await getTemporaryDirectory()).path}/pala';
   }
 
   await initializeDateFormatting('hu_HU', null);

@@ -18,6 +18,18 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
+/** "HH:MM" in local time. Kréta timestamps are UTC, so never slice the ISO string. */
+function formatLocalTime(value) {
+  const d = new Date(value);
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
+/** Local calendar date as YYYY-MM-DD (toISOString() would give the UTC date). */
+function localDateKey(value) {
+  const d = new Date(value);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 const DEMO_STUDENT = {
   Nev: "Teszt Elek",
   SzuletesiNev: "Teszt Elek",
@@ -96,16 +108,27 @@ const DEMO_GRADES = [
   { Id: 1102, Tantargy: { Nev: "Földrajz" }, SzovegesErtek: "Elégséges (2)", SzamErtek: 2, SulySzazalek: 100, Tema: "Európa vaktérkép", RogzitesDatuma: new Date(Date.now() - 310000000).toISOString(), Tipus: { Leiras: "Gyakorlati" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } }
 ];
 
-function generateDemoTimetable(overrideAWeek = null) {
+function currentMonday() {
   const now = new Date();
   const currentDay = now.getDay(); // 0 is Sunday, 1 is Monday...
   const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
-  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset);
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset);
+}
 
-  // A/B week check
-  const startOfYear = new Date(monday.getFullYear(), 0, 1);
-  const weekNum = Math.floor((monday - startOfYear) / (7 * 24 * 60 * 60 * 1000)) + 1;
-  const isAWeek = overrideAWeek !== null ? overrideAWeek : (weekNum % 2 !== 0);
+/** The demo school rotates an A/B week, alternating by week of the year (same rule as DemoData.isDemoAWeek). */
+function isDemoAWeek(monday, overrideAWeek = null) {
+  if (overrideAWeek !== null) return overrideAWeek;
+  const dayOfYear = Math.round((monday - new Date(monday.getFullYear(), 0, 1)) / 86400000);
+  return (Math.floor(dayOfYear / 7) + 1) % 2 !== 0;
+}
+
+function demoWeekType(overrideAWeek = null) {
+  return isDemoAWeek(currentMonday(), overrideAWeek) ? "A hét" : "B hét";
+}
+
+function generateDemoTimetable(overrideAWeek = null) {
+  const monday = currentMonday();
+  const isAWeek = isDemoAWeek(monday, overrideAWeek);
 
   const weeklySchedule = [
     // Hétfő (Day 0) - 8 óra
@@ -196,9 +219,9 @@ function generateDemoTimetable(overrideAWeek = null) {
         KezdetIdopont: start.toISOString(),
         VegIdopont: end.toISOString(),
         Tantargy: { Nev: lesson.name },
-        Terem: lesson.room,
-        Tanar: lesson.teacher,
-        HelyettesitoTanarNeve: subTeacher,
+        TeremNeve: lesson.room,
+        TanarNeve: lesson.teacher,
+        HelyettesTanarNeve: subTeacher,
         Tema: lesson.theme,
         Allapot: state
       });
@@ -672,6 +695,7 @@ class KretaApi {
 
     const datumTol = monday.toISOString();
     const datumIg = sunday.toISOString();
+    const localStamp = d => `${localDateKey(d)}T${formatLocalTime(d)}:00`;
 
     // 30 days back for homework
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 86400000);
@@ -695,7 +719,7 @@ class KretaApi {
     })();
 
     // Fetch core Ellenőrző data (Fast, reliable, never blocked by e-Ügyintézés)
-    const [student, grades, timetable, homework, exams, absences, notes, circulars, groupAverages] = await Promise.all([
+    const [student, grades, timetable, homework, exams, absences, notes, circulars, groupAverages, weekOrder] = await Promise.all([
       fetchEndpoint("TanuloAdatlap"),
       fetchEndpoint("Ertekelesek"),
       fetchEndpoint(`OrarendElemek?datumTol=${encodeURIComponent(datumTol)}&datumIg=${encodeURIComponent(datumIg)}`),
@@ -704,7 +728,8 @@ class KretaApi {
       fetchEndpoint("Mulasztasok"),
       fetchEndpoint("Feljegyzesek"),
       fetchEndpoint("FaliujsagElemek"),
-      groupAveragesPromise
+      groupAveragesPromise,
+      fetchEndpoint(`Intezmenyek/Hetirendek/Orarendi?orarendElemKezdoNapDatuma=${encodeURIComponent(localStamp(monday))}&orarendElemVegNapDatuma=${encodeURIComponent(localStamp(sunday))}`)
     ]);
 
     // Normalize student institution name
@@ -763,6 +788,7 @@ class KretaApi {
       student: student || null,
       grades: sortedGrades,
       timetable: sortedTimetable,
+      weekType: KretaApi.weekTypeLabel(weekOrder, monday),
       homework: Array.isArray(homework) ? homework : [],
       exams: Array.isArray(exams) ? exams : [],
       absences: Array.isArray(absences) ? absences : [],
@@ -804,7 +830,7 @@ class KretaApi {
               fetch("/api/v1/kommunikacio/adatbekerok/kitolto?isLezartakIs=true", { credentials: "include" })
                 .then(r => r.ok ? r.json() : null)
                 .catch(() => null),
-              fetch("/api/v1/kommunikacio/tanarok", { credentials: "include" })
+              fetch("/api/v1/kreta/alkalmazottak/tanar", { credentials: "include" })
                 .then(r => r.ok ? r.json() : null)
                 .catch(() => null)
             ]);
@@ -935,7 +961,7 @@ class KretaApi {
       let data = webData?.teachers;
 
       if (!Array.isArray(data) || data.length === 0) {
-        data = await this.fetchAdmin(token, "kommunikacio/tanarok");
+        data = await this.fetchAdmin(token, "kreta/alkalmazottak/tanar");
       }
 
       if (!Array.isArray(data) || data.length === 0) {
@@ -1202,11 +1228,35 @@ class KretaApi {
     return generateDemoTimetable(overrideAWeek);
   }
 
+  static demoWeekType(overrideAWeek = null) {
+    return demoWeekType(overrideAWeek);
+  }
+
+  /**
+   * Picks the week covering `day` from a Hetirendek/Orarendi response and
+   * returns the school's name for it ("A hét", "C hét", ...). "Minden héten"
+   * is Kréta's built-in default for no rotation, so it (and any unexpected
+   * shape) gives null and the UI hides the badge. Mirrors KretaClient.weekTypeLabel.
+   */
+  static weekTypeLabel(weeks, day) {
+    if (!Array.isArray(weeks)) return null;
+    const target = localDateKey(day);
+    for (const week of weeks) {
+      if (!week?.KezdoNapDatuma || !week?.VegNapDatuma) continue;
+      if (target < localDateKey(week.KezdoNapDatuma) || target > localDateKey(week.VegNapDatuma)) continue;
+      const label = String(week.Tipus?.Leiras || week.Tipus?.Nev || "").trim();
+      if (!label || label.toLowerCase().startsWith("minden")) return null;
+      return label;
+    }
+    return null;
+  }
+
   static getDemoDataset(overrideAWeek = null) {
     return {
       student: DEMO_STUDENT,
       grades: DEMO_GRADES,
       timetable: generateDemoTimetable(overrideAWeek),
+      weekType: demoWeekType(overrideAWeek),
       homework: DEMO_HOMEWORK,
       exams: DEMO_EXAMS,
       absences: DEMO_ABSENCES,

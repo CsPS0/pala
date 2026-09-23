@@ -43,6 +43,16 @@ class KretaClient {
   String? refreshToken;
   String instituteCode;
   Future<void> Function()? onTokenRefreshed;
+
+  /// Lets another holder of the same saved session (the Android background
+  /// worker shares the app's session file) hand over tokens it has rotated.
+  /// Returns true if newer tokens were adopted. Kréta refresh tokens are
+  /// single-use, so refreshing with a copy someone else already used fails.
+  Future<bool> Function()? reloadTokens;
+
+  /// True once Kréta has rejected the refresh token itself (not a network
+  /// blip), so the user has to log in again.
+  bool sessionExpired = false;
   Future<bool>? _activeRefreshFuture;
   DateTime? _backoffUntil;
   static final _RequestGate _gate = _RequestGate();
@@ -276,9 +286,7 @@ class KretaClient {
     }
   }
 
-  File _getCacheFile() {
-    return File('${AppState.instance.configDir}/cache.json');
-  }
+  File _getCacheFile() => AppState.instance.cacheFile;
 
   Map<String, dynamic> _loadCache() {
     final file = _getCacheFile();
@@ -590,6 +598,40 @@ class KretaClient {
     return null;
   }
 
+  /// The school's name for the week starting on [monday] ("A hét", "B hét",
+  /// "C hét", ...), or null when every week is the same or Kréta didn't say.
+  Future<String?> getWeekType(DateTime monday, {bool? overrideAWeek}) async {
+    try {
+      final url = KretaAPI.weekOrder(instituteCode, monday, monday.add(const Duration(days: 6)));
+      return weekTypeLabel(await _getAPI(url, silent: true), monday);
+    } catch (e) {
+      PalaLogger.debug('Week type lookup failed: $e');
+      return null;
+    }
+  }
+
+  /// Picks the week covering [day] from a Hetirendek/Orarendi response.
+  /// Schools name their own week types; "Minden héten" is the built-in
+  /// default for schools (and weeks) without a rotation, so it maps to null.
+  static String? weekTypeLabel(Object? data, DateTime day) {
+    if (data is! List) return null;
+    final target = DateTime(day.year, day.month, day.day);
+    for (final week in data.whereType<Map>()) {
+      final start = DateTime.tryParse('${week['KezdoNapDatuma']}')?.toLocal();
+      final end = DateTime.tryParse('${week['VegNapDatuma']}')?.toLocal();
+      if (start == null || end == null) continue;
+      if (target.isBefore(DateTime(start.year, start.month, start.day)) ||
+          target.isAfter(DateTime(end.year, end.month, end.day))) {
+        continue;
+      }
+      final type = week['Tipus'];
+      final label = type is Map ? (type['Leiras'] ?? type['Nev'])?.toString().trim() : null;
+      if (label == null || label.isEmpty || label.toLowerCase().startsWith('minden')) return null;
+      return label;
+    }
+    return null;
+  }
+
   Future<List<Absence>?> getAbsences() async {
     final url = KretaAPI.absences(instituteCode);
     final data = await _getAPI(url);
@@ -757,17 +799,20 @@ class KretaClient {
       return _activeRefreshFuture!;
     }
     
-    final future = _performRefresh();
+    final future = _renewTokens();
     _activeRefreshFuture = future;
     try {
-      final success = await future;
-      if (success && onTokenRefreshed != null) {
-        await onTokenRefreshed!();
-      }
-      return success;
+      return await future;
     } finally {
       _activeRefreshFuture = null;
     }
+  }
+
+  Future<bool> _renewTokens() async {
+    if (reloadTokens != null && await reloadTokens!()) return true;
+    if (!await _performRefresh()) return false;
+    await onTokenRefreshed?.call();
+    return true;
   }
 
   Future<bool> _performRefresh() async {
@@ -783,7 +828,12 @@ class KretaClient {
         final data = jsonDecode(utf8.decode(tokenRes.bodyBytes));
         accessToken = data['access_token'];
         refreshToken = data['refresh_token'] ?? refreshToken;
+        sessionExpired = false;
         return true;
+      }
+      // 400 (invalid_grant) / 401: the refresh token is dead, unlike a timeout.
+      if (tokenRes.statusCode == 400 || tokenRes.statusCode == 401) {
+        sessionExpired = true;
       }
     } catch (e) {
       PalaLogger.debug('Failed to refresh access token: $e');

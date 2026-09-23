@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pala/api/client.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../state/app_model.dart';
 import '../theme/pala_theme.dart';
 
@@ -25,6 +26,35 @@ class _LoginViewState extends State<LoginView> {
   bool _isSearchingSchools = false;
   Map<String, String> _schoolSuggestions = {};
   Timer? _searchDebounce;
+
+  // Only the school code and username are remembered. The password is never
+  // stored by Pala; the phone's password manager can offer it via autofill.
+  static const _lastInstituteKey = 'pala_last_institute';
+  static const _lastUsernameKey = 'pala_last_username';
+
+  @override
+  void initState() {
+    super.initState();
+    _prefillLastLogin();
+    // E.g. "session expired" after Kréta rejected the saved login.
+    final message = widget.appModel.errorMessage;
+    if (message != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+        }
+      });
+    }
+  }
+
+  Future<void> _prefillLastLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() {
+      _instituteController.text = prefs.getString(_lastInstituteKey) ?? '';
+      _usernameController.text = prefs.getString(_lastUsernameKey) ?? '';
+    });
+  }
 
   @override
   void dispose() {
@@ -93,6 +123,13 @@ class _LoginViewState extends State<LoginView> {
       password: pass,
     );
 
+    if (success) {
+      TextInput.finishAutofillContext(); // lets the password manager offer to save
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_lastInstituteKey, inst);
+      await prefs.setString(_lastUsernameKey, user);
+    }
+
     if (!success && mounted && widget.appModel.errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -109,7 +146,8 @@ class _LoginViewState extends State<LoginView> {
     final primary = theme.primaryColor;
 
     return Scaffold(
-      body: SafeArea(
+      body: AutofillGroup(
+        child: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -307,6 +345,8 @@ class _LoginViewState extends State<LoginView> {
                           child: TextField(
                             controller: _usernameController,
                             keyboardType: TextInputType.text,
+                            autofillHints: const [AutofillHints.username],
+                            textInputAction: TextInputAction.next,
                             enableInteractiveSelection: true,
                             contextMenuBuilder: (context, editableTextState) => AdaptiveTextSelectionToolbar.editableText(editableTextState: editableTextState),
                             decoration: InputDecoration(
@@ -354,6 +394,9 @@ class _LoginViewState extends State<LoginView> {
                           child: TextField(
                             controller: _passwordController,
                             obscureText: _obscurePassword,
+                            autofillHints: const [AutofillHints.password],
+                            textInputAction: TextInputAction.done,
+                            onSubmitted: (_) => _handleLogin(),
                             enableInteractiveSelection: true,
                             contextMenuBuilder: (context, editableTextState) => AdaptiveTextSelectionToolbar.editableText(editableTextState: editableTextState),
                             decoration: InputDecoration(
@@ -417,6 +460,7 @@ class _LoginViewState extends State<LoginView> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

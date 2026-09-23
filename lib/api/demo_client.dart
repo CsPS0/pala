@@ -51,6 +51,11 @@ class DemoKretaClient extends KretaClient {
   }
 
   @override
+  Future<String?> getWeekType(DateTime monday, {bool? overrideAWeek}) async {
+    return DemoData.weekType(DateTime(monday.year, monday.month, monday.day), overrideAWeek);
+  }
+
+  @override
   Future<List<Exam>?> getExams() async {
     return DemoData.getExams();
   }
