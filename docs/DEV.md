@@ -87,3 +87,36 @@ A Windows Feladatütemezőből háttérben indított példány (`--daemon`) lát
   - a böngésző-kiterjesztés zip fájlját,
   - az APT tárolót, és frissíti a Scoop (`bucket/pala.json`) és Homebrew (`Formula/pala.rb`) manifesteket.
 - **aur.yml**: az AUR `pala-bin` csomagot a `packaging/PKGBUILD` alapján frissíti, a beállított SSH kulccsal.
+
+### Android aláíró kulcs
+
+Az Android csak akkor telepít frissítést, ha az ugyanazzal a kulccsal van aláírva, mint a már telepített verzió. Ezért a kiadott APK-kat egy állandó kulcs írja alá, amelyet a `release.yml` a GitHub titkokból állít elő. Ha a titkok hiányoznak, a build figyelmeztetéssel lefut, de az APK egy eldobható debug kulccsal lesz aláírva, amely nem frissíthető a következő kiadással.
+
+Egyszeri beállítás (a karbantartó végzi):
+
+1. Kulcs létrehozása (a jelszavakat és a fájlt biztonságos helyen, például jelszókezelőben kell megőrizni; ha elveszik, a meglévő telepítések többé nem frissíthetők):
+   ```bash
+   keytool -genkey -v -keystore pala-release.jks -keyalg RSA -keysize 2048 -validity 10000 -alias pala
+   ```
+2. A kulcsfájl base64 kódolása egyetlen sorba:
+   ```bash
+   base64 -w 0 pala-release.jks > pala-release.jks.b64
+   ```
+   Windows PowerShellben: `[Convert]::ToBase64String([IO.File]::ReadAllBytes("pala-release.jks")) | Set-Content pala-release.jks.b64`
+3. A repó **Settings > Secrets and variables > Actions** oldalán négy titok felvétele:
+   - `ANDROID_KEYSTORE_BASE64`: a `pala-release.jks.b64` tartalma,
+   - `ANDROID_KEYSTORE_PASSWORD`: a kulcstár jelszava,
+   - `ANDROID_KEY_ALIAS`: `pala`,
+   - `ANDROID_KEY_PASSWORD`: a kulcs jelszava (alapértelmezésben megegyezik a kulcstár jelszavával).
+4. A `.b64` fájl törlése. A kulcsfájlt és a `key.properties` fájlt soha nem szabad commitolni (a `.gitignore` kizárja őket).
+
+Helyi aláírt buildhez az `app/android/key.properties` fájl kell:
+```properties
+storeFile=pala-release.jks
+storePassword=...
+keyAlias=pala
+keyPassword=...
+```
+A `storeFile` az `app/android/app/` mappához képest relatív (vagy abszolút útvonal). Ha a fájl nincs meg, a `flutter build apk --release` a debug kulccsal ír alá.
+
+Az első, új kulccsal aláírt kiadásra váltáskor a korábbi (debug kulcsos) telepítést egyszer el kell távolítani; utána a frissítések már eltávolítás nélkül települnek.
