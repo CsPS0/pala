@@ -1220,6 +1220,18 @@ class PalaWebHtml {
             <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" />
           </div>
           <div id="loginErrorMsg" style="display: none; color: var(--danger); font-size: 0.85rem; margin-bottom: 12px;"></div>
+
+          <div style="border-top: 1px solid var(--border); padding-top: 12px;">
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">
+              CAPTCHA vagy kétlépcsős azonosítás esetén jelentkezz be a Kréta saját oldalán, majd másold ide a címsorból a "code=" utáni részt (vagy a teljes linket).
+            </p>
+            <button class="btn" style="width: 100%; margin-bottom: 8px;" onclick="openKretaLoginPage()">Kréta bejelentkezési oldal megnyitása</button>
+            <div class="form-group">
+              <label for="loginKretaCode">Kód a Kréta oldaláról</label>
+              <input type="text" id="loginKretaCode" class="form-control" placeholder="Kód vagy a teljes mobil.e-kreta.hu link" />
+            </div>
+            <button class="btn btn-primary" style="width: 100%;" id="btnKretaCodeSubmit" onclick="submitKretaCodeLogin()">Belépés a kóddal</button>
+          </div>
         </div>
 
         <!-- Demo Account Section -->
@@ -1432,7 +1444,9 @@ class PalaWebHtml {
       const res = await fetch(path, options);
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || ('Hiba: ' + res.status));
+        const err = new Error(errData.error || ('Hiba: ' + res.status));
+        err.status = res.status;
+        throw err;
       }
       return await res.json();
     }
@@ -2137,9 +2151,66 @@ class PalaWebHtml {
       } catch (e) {
         errBox.innerText = e.message || 'Hibás bejelentkezési adatok!';
         errBox.style.display = 'block';
+        // 409: the account has captcha or two-factor login, finish on Kréta's page.
+        if (e.status === 409) document.getElementById('loginKretaCode').focus();
       } finally {
         submitBtn.innerText = 'Bejelentkezés';
         submitBtn.disabled = false;
+      }
+    }
+
+    async function openKretaLoginPage() {
+      const inst = document.getElementById('loginInstituteCode').value.trim();
+      const errBox = document.getElementById('loginErrorMsg');
+      if (!inst) {
+        errBox.innerText = 'Előbb add meg az intézmény kódját!';
+        errBox.style.display = 'block';
+        return;
+      }
+      // Open the tab synchronously so popup blockers allow it, then point it at Kréta.
+      const tab = window.open('', '_blank');
+      try {
+        const res = await apiFetch('/api/login/kreta-url?institute=' + encodeURIComponent(inst));
+        if (tab) {
+          tab.opener = null;
+          tab.location = res.url;
+        }
+      } catch (e) {
+        if (tab) tab.close();
+        errBox.innerText = e.message;
+        errBox.style.display = 'block';
+      }
+    }
+
+    async function submitKretaCodeLogin() {
+      const inst = document.getElementById('loginInstituteCode').value.trim();
+      const code = document.getElementById('loginKretaCode').value.trim();
+      const errBox = document.getElementById('loginErrorMsg');
+      const btn = document.getElementById('btnKretaCodeSubmit');
+
+      if (!inst || !code) {
+        errBox.innerText = 'Add meg az intézmény kódját és a Kréta oldaláról kimásolt kódot!';
+        errBox.style.display = 'block';
+        return;
+      }
+
+      errBox.style.display = 'none';
+      btn.disabled = true;
+      try {
+        const res = await apiFetch('/api/login/code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ instituteCode: inst, code: code })
+        });
+        showToast('Sikeres bejelentkezés: ' + res.name, 'success');
+        document.getElementById('loginKretaCode').value = '';
+        closeLoginModal();
+        loadAllData();
+      } catch (e) {
+        errBox.innerText = e.message;
+        errBox.style.display = 'block';
+      } finally {
+        btn.disabled = false;
       }
     }
 

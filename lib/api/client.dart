@@ -38,6 +38,45 @@ class _RequestGate {
   }
 }
 
+/// Why Kréta wants the user on its own login page instead of Pala's form.
+enum InteractiveLoginReason { captcha, verificationCode, unknown }
+
+/// Thrown by [KretaClient.login] when Kréta asks for a step the user chose
+/// for their account (captcha, two-factor code). Pala never automates or
+/// skips these: the user finishes the login on Kréta's own page
+/// ([KretaAPI.authorizeUrl]) and the returned code goes to
+/// [KretaClient.webLogin].
+class InteractiveLoginRequired implements Exception {
+  final InteractiveLoginReason reason;
+  const InteractiveLoginRequired(this.reason);
+
+  @override
+  String toString() {
+    final why = switch (reason) {
+      InteractiveLoginReason.captcha => 'A Kréta fiókodon be van kapcsolva a CAPTCHA ellenőrzés.',
+      InteractiveLoginReason.verificationCode => 'A Kréta fiókodon be van kapcsolva a kétlépcsős azonosítás.',
+      InteractiveLoginReason.unknown => 'A Kréta további ellenőrzési lépést kér a bejelentkezéshez.',
+    };
+    return '$why A bejelentkezést a Kréta saját oldalán kell befejezni.';
+  }
+}
+
+/// Classifies a page Kréta returned after the password POST that is not the
+/// OAuth callback. Returns null when it is the login form again, i.e. a
+/// plain wrong username/password.
+InteractiveLoginReason? interactiveLoginReason(String html) {
+  // The login page always loads recaptcha/api.js, so only the rendered
+  // widget counts, not the script tag.
+  if (RegExp(r'g-recaptcha|data-sitekey').hasMatch(html)) {
+    return InteractiveLoginReason.captcha;
+  }
+  if (RegExp(r'''(id|name)=["']VerificationCode["']''').hasMatch(html)) {
+    return InteractiveLoginReason.verificationCode;
+  }
+  if (RegExp(r'''name=["']Password["']''').hasMatch(html)) return null;
+  return InteractiveLoginReason.unknown;
+}
+
 class KretaClient {
   String? accessToken;
   String? refreshToken;
@@ -64,6 +103,10 @@ class KretaClient {
   bool isMaintenanceMode = false;
   int? maintenanceStatusCode;
   DateTime? maintenanceDetectedAt;
+
+  /// True when the last request got no answer at all (timeout, DNS or socket
+  /// error after every retry), so the data shown came from the cache.
+  bool isNetworkDown = false;
 
   KretaClient({required this.instituteCode});
 
@@ -169,8 +212,13 @@ class KretaClient {
       };
       
       var res2 = await client.send(request);
-      
+
       updateCookies(res2.headers['set-cookie']);
+
+      Never needsKretaPage(InteractiveLoginReason reason) {
+        client.close();
+        throw InteractiveLoginRequired(reason);
+      }
       
       String redirectUrl1 = "";
       if (res2.statusCode == 302) {
@@ -187,6 +235,8 @@ class KretaClient {
         if (btnMatch != null) {
           redirectUrl1 = btnMatch.group(1)!.replaceAll('&amp;', '&');
         } else {
+          final reason = interactiveLoginReason(html);
+          if (reason != null) needsKretaPage(reason);
           print('Hibás adatok, vagy a Kréta idp elutasított.');
           client.close();
           return false;
@@ -214,18 +264,18 @@ class KretaClient {
           if (btnMatch != null) {
              finalRedirect = btnMatch.group(1)!.replaceAll('&amp;', '&');
           } else {
+            final reason = interactiveLoginReason(html);
+            if (reason != null) needsKretaPage(reason);
             print('A bejelentkezés utolsó lépésében nem kaptunk visszatérési URL-t.');
             client.close();
             return false;
           }
         }
       }
-      
-      if (!finalRedirect.contains('code=')) {
-        print('Nem kaptunk kódot a bejelentkezés végén.');
-        client.close();
-        return false;
-      }
+
+      // Kréta accepted the password but sent us somewhere other than the
+      // app redirect, e.g. a two-factor step behind another redirect.
+      if (!finalRedirect.contains('code=')) needsKretaPage(InteractiveLoginReason.unknown);
       
       final code = Uri.parse(finalRedirect.replaceAll('#', '?')).queryParameters['code'];
       if (code == null) {
@@ -252,6 +302,9 @@ class KretaClient {
         print('Hiba a token lekérésekor: ${tokenRes.statusCode} - ${tokenRes.body}');
         return false;
       }
+    } on InteractiveLoginRequired {
+      // Not a network problem: must not fall into offline mode below.
+      rethrow;
     } catch (e) {
       print('\n[\x1B[33mOFFLINE MÓD\x1B[0m] Hálózat vagy szerver hiba bejelentkezéskor. A gyorsítótár használata aktív.');
       AppState.instance.isOffline = true;
@@ -259,9 +312,20 @@ class KretaClient {
     }
   }
 
+  /// The OAuth code from what the user pasted: the redirect URL, or just the
+  /// code copied out of it (possibly with the rest of the query after it).
+  static String? codeFromPasted(String pasted) {
+    pasted = pasted.trim();
+    if (pasted.contains('code=')) {
+      return Uri.tryParse(pasted.replaceAll('#', '?'))?.queryParameters['code'];
+    }
+    return pasted.split('&').first;
+  }
+
+  /// Finishes a login done on Kréta's own page. Takes the redirect URL or
+  /// just the code the user copied from it.
   Future<bool> webLogin(String pastedUrl) async {
-    final parsedUrl = Uri.tryParse(pastedUrl.replaceAll('#', '?'));
-    final code = parsedUrl?.queryParameters['code'];
+    final code = codeFromPasted(pastedUrl);
     
     if (code == null || code.isEmpty) {
       print('Nem található kód a megadott URL-ben.');
@@ -450,7 +514,10 @@ class KretaClient {
     const maxRetries = 3;
     for (int attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        final response = await _gate.run(() => http.get(Uri.parse(url), headers: headers));
+        // Same 8 s limit as the extension's data fetches; a stalled socket otherwise hangs forever.
+        final response = await _gate.run(
+            () => http.get(Uri.parse(url), headers: headers).timeout(const Duration(seconds: 8)));
+        isNetworkDown = false;
         if (response.statusCode == 200) {
           isMaintenanceMode = false;
           final data = jsonDecode(utf8.decode(response.bodyBytes));
@@ -504,6 +571,7 @@ class KretaClient {
           await Future.delayed(delay);
           continue;
         }
+        isNetworkDown = true;
         if (!silent) {
           print('\n[\x1B[33mOFFLINE MÓD\x1B[0m] Hálózat vagy szerver hiba, próbálkozás a gyorsítótárból...');
         }
@@ -822,7 +890,7 @@ class KretaClient {
         tokenUrl,
         headers: KretaAPI.tokenHeaders,
         body: KretaAPI.refreshRequestBody(refreshToken!),
-      );
+      ).timeout(const Duration(seconds: 15)); // the extension's AUTH_TIMEOUT_MS
       
       if (tokenRes.statusCode == 200) {
         final data = jsonDecode(utf8.decode(tokenRes.bodyBytes));

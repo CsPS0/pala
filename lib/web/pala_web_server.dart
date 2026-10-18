@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:pala/api/api.dart';
 import 'package:pala/api/client.dart';
 import 'package:pala/api/demo_client.dart';
 import 'package:pala/app/state/app_state.dart';
@@ -148,17 +149,42 @@ class PalaWebServer {
         }
 
         final newClient = KretaClient(instituteCode: instituteCode);
-        final ok = await newClient.login(username, password);
-        if (ok) {
-          client = newClient;
-          final student = await client!.getStudentData(silent: true);
-          _saveWebAuth(student?.name ?? username, instituteCode, newClient.accessToken, newClient.refreshToken);
-          _sendJson(request, {'success': true, 'name': student?.name ?? username});
+        if (await newClient.login(username, password)) {
+          await _finishLogin(request, newClient, username);
         } else {
           _sendError(request, HttpStatus.unauthorized, 'Hibás felhasználónév vagy jelszó!');
         }
+      } on InteractiveLoginRequired catch (e) {
+        // 409 tells the page to switch to the "login on Kréta's page" section.
+        _sendError(request, HttpStatus.conflict, e.toString());
       } catch (e) {
         PalaLogger.debug('Web login error: $e');
+        _sendError(request, HttpStatus.internalServerError, 'Hiba a bejelentkezés során: $e');
+      }
+    } else if (request.method == 'GET' && path == '/api/login/kreta-url') {
+      final instituteCode = (request.uri.queryParameters['institute'] ?? '').trim();
+      if (instituteCode.isEmpty) {
+        _sendError(request, HttpStatus.badRequest, 'Add meg az intézmény kódját!');
+        return;
+      }
+      _sendJson(request, {'url': KretaAPI.authorizeUrl(instituteCode: instituteCode)});
+    } else if (request.method == 'POST' && path == '/api/login/code') {
+      try {
+        final data = jsonDecode(await utf8.decodeStream(request)) as Map<String, dynamic>;
+        final instituteCode = (data['instituteCode'] ?? '').toString().trim();
+        final code = (data['code'] ?? '').toString().trim();
+        if (instituteCode.isEmpty || code.isEmpty) {
+          _sendError(request, HttpStatus.badRequest, 'Add meg az intézmény kódját és a Kréta oldaláról kimásolt kódot!');
+          return;
+        }
+        final newClient = KretaClient(instituteCode: instituteCode);
+        if (await newClient.webLogin(code)) {
+          await _finishLogin(request, newClient, instituteCode);
+        } else {
+          _sendError(request, HttpStatus.unauthorized, 'A kód érvénytelen vagy lejárt. Jelentkezz be újra a Kréta oldalán!');
+        }
+      } catch (e) {
+        PalaLogger.debug('Web code login error: $e');
         _sendError(request, HttpStatus.internalServerError, 'Hiba a bejelentkezés során: $e');
       }
     } else if (request.method == 'POST' && path == '/api/logout') {
@@ -403,6 +429,14 @@ class PalaWebServer {
       ..headers.set('X-Content-Type-Options', 'nosniff')
       ..write(jsonEncode(data));
     await request.response.close();
+  }
+
+  Future<void> _finishLogin(HttpRequest request, KretaClient newClient, String fallbackName) async {
+    client = newClient;
+    final student = await newClient.getStudentData(silent: true);
+    final name = student?.name ?? fallbackName;
+    _saveWebAuth(name, newClient.instituteCode, newClient.accessToken, newClient.refreshToken);
+    _sendJson(request, {'success': true, 'name': name});
   }
 
   Future<void> _sendError(HttpRequest request, int code, String message) async {

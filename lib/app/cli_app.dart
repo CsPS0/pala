@@ -1,8 +1,12 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
+import 'dart:math';
 
+import 'package:dart_console/dart_console.dart';
 import 'package:http/http.dart' as http;
 import 'package:interact/interact.dart';
+import 'package:pala/api/api.dart';
 import 'package:pala/api/client.dart';
 import 'package:pala/api/demo_client.dart';
 import 'package:pala/models/models.dart';
@@ -14,6 +18,10 @@ import 'package:pala/web/pala_web_server.dart';
 import 'package:pala/app/components/custom_menu.dart';
 import 'package:pala/app/components/utf8_input.dart';
 import 'package:pala/app/theme.dart';
+import 'package:pala/app/tui/key_input.dart';
+import 'package:pala/app/tui/screen_buffer.dart';
+import 'package:pala/app/tui/tui_state.dart';
+import 'package:pala/app/tui/tui_views.dart';
 import 'package:pala/utils/logger.dart';
 import 'package:pala/utils/win32_console.dart';
 import 'package:pala/version.dart';
@@ -153,7 +161,7 @@ class PalaApp {
       print('\x1B[1;33m  [!] KARBANTARTÁS: A Kréta szervere jelenleg nem elérhető (HTTP ${_client!.maintenanceStatusCode}). A korábban mentett (gyorsítótárazott) adatokat látod.\x1B[0m\n');
     }
     if (!AppState.instance.showAsciiBanner) return;
-    
+
     final color = PalaTheme.primary;
     print(color);
     print(r'''
@@ -164,9 +172,21 @@ class PalaApp {
 ██║     ██║  ██║███████╗██║  ██║
 ╚═╝     ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝''');
     print(PalaTheme.reset);
-    if (isDemo) {
-      print('\x1B[1;33m  >>> DEMÓ ÜZEMMÓD: Teszt Elek (Offline) <<<\x1B[0m\n');
+    final statusBadge = isDemo
+        ? '${PalaTheme.primaryBold}● DEMÓ: Teszt Elek${PalaTheme.reset}'
+        : (AppState.instance.isOffline
+            ? '${PalaTheme.grade1Fg}● OFFLINE${PalaTheme.reset}'
+            : '${PalaTheme.grade5Fg}● ONLINE${PalaTheme.reset}');
+    final boxLines = TuiScreenBuffer.drawRoundedBox(
+      width: 56,
+      lines: [
+        '${PalaTheme.textBright}Pala Kréta TUI v$appVersion${PalaTheme.reset}  │  $statusBadge  │  ${PalaTheme.muted}[d] Élő TUI${PalaTheme.reset}',
+      ],
+    );
+    for (final line in boxLines) {
+      print(line);
     }
+    print('');
   }
 
   Future<void> runDemo({bool startInDashboard = false}) async {
@@ -258,7 +278,15 @@ class PalaApp {
     _client!.onTokenRefreshed = () async {
       await _saveAuth();
     };
-    if (await _client!.login(username, password)) {
+    bool loggedIn;
+    try {
+      loggedIn = await _client!.login(username, password);
+    } on InteractiveLoginRequired catch (e) {
+      print('$e');
+      print('Indítsd a Pala-t paraméterek nélkül, és válaszd a webes bejelentkezést.');
+      exit(1);
+    }
+    if (loggedIn) {
       await _saveAuth();
       await _checkForUpdates();
       if (startInDashboard) {
@@ -291,21 +319,21 @@ class PalaApp {
       }
 
       final layout = [
-        {'type': 'separator', 'label': '------------------'},
+        {'type': 'separator', 'label': '──────────────────────'},
+        {'type': 'action', 'id': -2, 'label': 'Dashboard (Élő nézet)', 'key': 'd'},
         {'type': 'action', 'id': 10, 'label': 'Pala Wrapped (Év végi összefoglaló)', 'key': 'w'},
         {'type': 'action', 'id': 0, 'label': 'Tanulói adatlap'},
         {'type': 'action', 'id': 2, 'label': 'Órarend', 'key': 'o'},
-        {'type': 'separator', 'label': '------------------'},
+        {'type': 'separator', 'label': '──────────────────────'},
         {'type': 'action', 'id': 1, 'label': 'Legutóbbi jegyek', 'key': 'g'},
         {'type': 'action', 'id': 4, 'label': 'Tantárgyi átlagok', 'key': 'a'},
-        {'type': 'separator', 'label': '------------------'},
+        {'type': 'separator', 'label': '──────────────────────'},
         {'type': 'action', 'id': 3, 'label': 'Mulasztások', 'key': 'm'},
         {'type': 'action', 'id': 5, 'label': 'Számonkérések'},
         {'type': 'action', 'id': 6, 'label': 'Házi feladatok'},
         {'type': 'action', 'id': 7, 'label': 'Üzenetek'},
-        {'type': 'separator', 'label': '------------------'},
+        {'type': 'separator', 'label': '──────────────────────'},
         {'type': 'action', 'id': 8, 'label': 'Keresés', 'key': '/'},
-        {'type': 'action', 'id': -2, 'label': 'Dashboard (Élő nézet)', 'key': 'd'},
         {'type': 'action', 'id': -3, 'label': 'Pala Webes felület (Web UI)'},
         {'type': 'action', 'id': -4, 'label': 'Pala Asztali Alkalmazás (Desktop UI)'},
         {'type': 'action', 'id': 9, 'label': 'Beállítások', 'key': 'b'},
@@ -336,16 +364,16 @@ class PalaApp {
 
       List<int> unselectable = [];
       for (int i = 0; i < displayOptions.length; i++) {
-        if (displayOptions[i] == '------------------') {
+        if (displayOptions[i].startsWith('──')) {
           unselectable.add(i);
         }
       }
 
       final promptText = isDemo 
-          ? 'Pala Főmenü \x1B[1;33m[DEMÓ: Teszt Elek]\x1B[0m \x1B[90m(↑/↓ vagy j/k, [1-9], q: kilépés)\x1B[0m' 
+          ? 'Pala Főmenü \x1B[1;33m[DEMÓ: Teszt Elek]\x1B[0m \x1B[90m(↑/↓ vagy j/k, [1-9], d: Élő TUI, q: kilépés)\x1B[0m' 
           : (AppState.instance.isOffline 
-              ? 'Pala Főmenü \x1B[1;31m[OFFLINE MÓD]\x1B[0m \x1B[90m(↑/↓ vagy j/k, [1-9], q: kilépés)\x1B[0m' 
-              : 'Pala Főmenü \x1B[90m(↑/↓ vagy j/k, [1-9], q: kilépés)\x1B[0m');
+              ? 'Pala Főmenü \x1B[1;31m[OFFLINE MÓD]\x1B[0m \x1B[90m(↑/↓ vagy j/k, [1-9], d: Élő TUI, q: kilépés)\x1B[0m' 
+              : 'Pala Főmenü \x1B[90m(↑/↓ vagy j/k, [1-9], d: Élő TUI, q: kilépés)\x1B[0m');
 
       if (_lastMainMenuIndex >= displayOptions.length) {
         _lastMainMenuIndex = 0;
@@ -420,29 +448,7 @@ class PalaApp {
           _clearScreen();
           break;
         case -2:
-          _clearScreen();
-          final List<String> args;
-          final String exe;
-          if (Platform.resolvedExecutable.endsWith('dart') || Platform.resolvedExecutable.endsWith('dart.exe')) {
-            exe = Platform.resolvedExecutable;
-            args = [Platform.script.toFilePath(), 'dash'];
-          } else {
-            exe = Platform.resolvedExecutable;
-            args = ['dash'];
-          }
-          final process = await Process.start(
-            exe,
-            args,
-            mode: ProcessStartMode.inheritStdio,
-          );
-          await process.exitCode;
-          try {
-            if (stdin.hasTerminal) {
-              stdin.echoMode = true;
-              stdin.lineMode = true;
-            }
-          } catch (_) {}
-          forceRestoreConsoleMode();
+          await _showDashboard();
           _clearScreen();
           break;
         case -3:

@@ -59,20 +59,8 @@ extension PalaAppAbsencesView on PalaApp {
             final dateStr = absence.date?.toString().split(' ').first.split('T').first ?? '';
             final subject = absence.subject;
             final status = absence.status;
-            
-            String coloredStatus = status;
-            final sLower = status.toLowerCase();
-            final tLower = absence.type?.toLowerCase() ?? '';
-            
-            if (tLower == 'késés' || sLower == 'késés') {
-              coloredStatus = '\x1B[38;5;208m$status\x1B[0m';
-            } else if (sLower == 'igazolt') {
-              coloredStatus = '\x1B[92m$status\x1B[0m';
-            } else if (sLower == 'igazolando' || sLower == 'igazolandó') {
-              coloredStatus = '\x1B[33m$status\x1B[0m';
-            } else if (sLower == 'igazolatlan') {
-              coloredStatus = '\x1B[31m$status\x1B[0m';
-            }
+            final coloredStatus =
+                '${PalaTheme.absenceColor(status, type: absence.type)}$status${PalaTheme.reset}';
             
             print('[$dateStr] $subject ($coloredStatus)');
           }
@@ -280,14 +268,6 @@ extension PalaAppAbsencesView on PalaApp {
               1: '1 (Elégtelen)',
             };
             
-            final gradeColors = {
-              5: '\x1B[94m', // Blue
-              4: '\x1B[92m', // Green
-              3: '\x1B[93m', // Yellow
-              2: '\x1B[38;5;208m', // Orange
-              1: '\x1B[91m', // Red
-            };
-            
             for (int grade = 5; grade >= 1; grade--) {
               final count = distribution[grade] ?? 0;
               final percent = validGradesCount > 0 ? (count / validGradesCount * 100) : 0.0;
@@ -297,7 +277,7 @@ extension PalaAppAbsencesView on PalaApp {
                 barWidth = ((count / validGradesCount) * 30).round();
               }
               final bar = '█' * barWidth;
-              final color = gradeColors[grade] ?? '\x1B[0m';
+              final color = PalaTheme.gradeColor(grade);
               
               final label = gradeLabels[grade]!;
               final countStr = '$count db'.padLeft(5);
@@ -412,9 +392,9 @@ extension PalaAppAbsencesView on PalaApp {
                 final last3 = subjGrades.take(3).toList();
                 final last3Avg = last3.map((g) => g.numericValue!).reduce((a, b) => a + b) / last3.length;
                 if (last3Avg > val + 0.1) {
-                  trendStr = '\x1B[92m↗\x1B[0m';
+                  trendStr = '\x1B[92m↑\x1B[0m';
                 } else if (last3Avg < val - 0.1) {
-                  trendStr = '\x1B[31m↘\x1B[0m';
+                  trendStr = '\x1B[31m↓\x1B[0m';
                 }
               }
 

@@ -1,10 +1,6 @@
 import '../models/models.dart';
 
 class IcsExporter {
-  static String exportTimetable(List<TimetableEntry> timetable) {
-    return generate(timetable, []);
-  }
-
   static String generate(List<TimetableEntry> timetable, List<Exam> exams) {
     final buffer = StringBuffer();
     buffer.writeln('BEGIN:VCALENDAR');
@@ -22,17 +18,31 @@ class IcsExporter {
       final end = lesson.endTime?.toUtc();
       if (start == null || end == null) continue;
 
-      final subject = lesson.subject;
-      final theme = lesson.theme ?? '';
       final uid = 'lesson-${lesson.uid ?? start.millisecondsSinceEpoch}@pala';
+      final room = lesson.room ?? '';
+
+      final descriptionParts = <String>[];
+      if (lesson.teacher != null && lesson.teacher!.isNotEmpty) {
+        descriptionParts.add('Tanár: ${lesson.teacher}');
+      }
+      if (lesson.substituteTeacher != null && lesson.substituteTeacher!.isNotEmpty) {
+        descriptionParts.add('Helyettesítő tanár: ${lesson.substituteTeacher}');
+      }
+      if (lesson.theme != null && lesson.theme!.isNotEmpty) {
+        descriptionParts.add('Téma: ${lesson.theme}');
+      }
 
       buffer.writeln('BEGIN:VEVENT');
       buffer.writeln('UID:$uid');
       buffer.writeln('DTSTAMP:$dtstamp');
       buffer.writeln('DTSTART:${_formatDate(start)}');
       buffer.writeln('DTEND:${_formatDate(end)}');
-      buffer.writeln('SUMMARY:$subject');
-      buffer.writeln('DESCRIPTION:$theme');
+      buffer.writeln('SUMMARY:${_escape(lesson.subject)}');
+      if (room.isNotEmpty) buffer.writeln('LOCATION:${_escape(room)}');
+      if (descriptionParts.isNotEmpty) {
+        buffer.writeln('DESCRIPTION:${_escape(descriptionParts.join('\n'))}');
+      }
+      buffer.writeln('STATUS:${lesson.isCancelled ? 'CANCELLED' : 'CONFIRMED'}');
       buffer.writeln('END:VEVENT');
     }
 
@@ -49,13 +59,22 @@ class IcsExporter {
       buffer.writeln('UID:$uid');
       buffer.writeln('DTSTAMP:$dtstamp');
       buffer.writeln('DTSTART;VALUE=DATE:${_formatDateOnly(date)}');
-      buffer.writeln('SUMMARY:[$type] $subject');
-      buffer.writeln('DESCRIPTION:$theme');
+      buffer.writeln('SUMMARY:${_escape('[$type] $subject')}');
+      if (theme.isNotEmpty) buffer.writeln('DESCRIPTION:${_escape(theme)}');
       buffer.writeln('END:VEVENT');
     }
 
     buffer.writeln('END:VCALENDAR');
     return buffer.toString();
+  }
+
+  /// RFC 5545 TEXT escaping: backslash first, then ; , and newlines.
+  static String _escape(String text) {
+    return text
+        .replaceAll(r'\', r'\\')
+        .replaceAll(';', r'\;')
+        .replaceAll(',', r'\,')
+        .replaceAll('\n', r'\n');
   }
 
   static String _formatDate(DateTime dt) {

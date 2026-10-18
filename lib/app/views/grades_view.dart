@@ -163,14 +163,7 @@ extension PalaAppGradesView on PalaApp {
               
               String coloredVal = val.toString();
               if (grade.numericValue != null && grade.numericValue! > 0 && grade.numericValue! <= 5) {
-                switch (grade.numericValue) {
-                  case 1: coloredVal = '\x1B[31m$val\x1B[0m'; break;
-                  case 2: coloredVal = '\x1B[38;5;208m$val\x1B[0m'; break;
-                  case 3: coloredVal = '\x1B[33m$val\x1B[0m'; break;
-                  case 4: coloredVal = '\x1B[92m$val\x1B[0m'; break;
-                  case 5: coloredVal = '\x1B[94m$val\x1B[0m'; break;
-                  default: break;
-                }
+                coloredVal = '${PalaTheme.gradeColor(grade.numericValue)}$val${PalaTheme.reset}';
               } else if (grade.numericValue != null && grade.numericValue! > 5) {
                 coloredVal = '$val%';
               } else if (coloredVal.toLowerCase() == 'nem írt') {

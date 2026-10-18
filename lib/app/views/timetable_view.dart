@@ -168,7 +168,7 @@ extension PalaAppTimetableView on PalaApp {
             if (colWidth > 28) colWidth = 28;
             if (colWidth < 12) colWidth = 12;
   
-            String headerTop = '┌─────';
+            String headerTop = '╭─────';
             String headerMid = '│ Óra ';
             String headerBot = '├─────';
   
@@ -177,7 +177,7 @@ extension PalaAppTimetableView on PalaApp {
               headerMid += '│ ' + days[w - 1].padRight(colWidth - 1);
               headerBot += '┼' + '─' * colWidth;
             }
-            headerTop += '┐';
+            headerTop += '╮';
             headerMid += '│';
             headerBot += '┤';
   
@@ -265,11 +265,11 @@ extension PalaAppTimetableView on PalaApp {
               }
             }
   
-            String footer = '└─────';
+            String footer = '╰─────';
             for (int w = 1; w <= maxWeekday; w++) {
               footer += '┴' + '─' * colWidth;
             }
-            footer += '┘';
+            footer += '╯';
             print(footer);
           }
         } else {

@@ -4,274 +4,422 @@ extension PalaAppDashboardView on PalaApp {
   Future<void> _showDashboard() async {
     if (!await _ensureClientReady()) return;
 
-    stdout.write('\x1B[2J\x1B[H');
-    stdout.write('\x1B[?25l');
+    final state = TuiWorkspaceState()..isDemo = isDemo;
+    final screenBuffer = TuiScreenBuffer();
+    final console = Console();
+    final client = _client!;
 
-    print('Adatok betöltése a Dashboard-hoz...');
-    
-    final now = DateTime.now();
-    final gradesFuture = _client!.getGrades();
-    final timetableFuture = _client!.getTimetable(
-      DateTime(now.year, now.month, now.day), 
-      DateTime(now.year, now.month, now.day).add(Duration(days: 1))
-    );
-    final averagesFuture = _client!.getAverages();
-    final absencesFuture = _client!.getAbsences();
-    final examsFuture = _client!.getExams();
-    final homeworkFuture = _client!.getHomework();
-    final studentFuture = _client!.getStudentData(silent: true);
+    // Fetches run in the background while keys keep being handled. A newer
+    // request bumps its generation, so an older one finishing late is dropped.
+    var syncGeneration = 0;
+    var timetableGeneration = 0;
+    var inFlight = 0;
+    var dirty = true;
 
-    final results = await Future.wait([gradesFuture, timetableFuture, averagesFuture, absencesFuture, examsFuture, homeworkFuture, studentFuture]);
-    final grades = results[0] as List<Grade>? ?? [];
-    final timetable = results[1] as List<TimetableEntry>? ?? [];
-    final averages = (results[2] as List<dynamic>?)?.map((e) => e as Map<String, dynamic>).toList() ?? [];
-    final absences = results[3] as List<Absence>? ?? [];
-    final exams = results[4] as List<Exam>? ?? [];
-    final homeworks = results[5] as List<Homework>? ?? [];
-    final student = results[6] as Student?;
+    Future<void> loadDashboardData({bool timetableOnly = false}) async {
+      final sync = timetableOnly ? syncGeneration : ++syncGeneration;
+      final timetable = ++timetableGeneration;
+      inFlight++;
+      state.isLoading = true;
+      state.statusBannerMessage = 'Adatok szinkronizálása a Kréta szerverrel...';
+      dirty = true;
 
-    final todayLessons = timetable.where((l) {
-      if (l.date == null) return false;
-      return l.date!.year == now.year && l.date!.month == now.month && l.date!.day == now.day;
-    }).toList();
-    todayLessons.sort((a, b) => (a.lessonNumber).compareTo(b.lessonNumber));
+      final now = DateTime.now();
+      final midnight = DateTime(now.year, now.month, now.day);
+      final startOfWeek = midnight.subtract(Duration(days: now.weekday - 1));
+      final endOfNextWeek = startOfWeek.add(
+        const Duration(days: 13, hours: 23, minutes: 59, seconds: 59),
+      );
 
-    grades.sort((a, b) {
-      final dateA = a.date ?? DateTime(2000);
-      final dateB = b.date ?? DateTime(2000);
-      return dateB.compareTo(dateA);
-    });
-
-    stdout.write('\x1B[2J\x1B[H');
-    
-    bool running = true;
-    
-    try {
-      if (stdin.hasTerminal) {
-        stdin.echoMode = false;
-        stdin.lineMode = false;
-      }
-    } catch (e) {
-      PalaLogger.debug('Failed to set terminal raw mode: $e');
-    }
-
-    final subscription = stdin.listen((List<int> bytes) {
-      for (var byte in bytes) {
-        if (byte == 113 || byte == 81 || byte == 27 || byte == 3) {
-          running = false;
-        }
-      }
-    });
-
-    while (running) {
-      stdout.write('\x1B[H');
-      final width = stdout.hasTerminal ? stdout.terminalColumns : 80;
-      final halfWidth = (width / 2).floor() - 2;
-
-      // Header
-      print('\x1B[1;36mPala Élő Dashboard\x1B[0m - Frissítve: ${DateTime.now().toString().split('.')[0]}');
-      print('Nyomj \x1B[33mq\x1B[0m-t a kilépéshez a főmenübe.');
-      if (_client != null && _client!.isMaintenanceMode) {
-        print('\x1B[1;33m[!] KARBANTARTÁS: A Kréta szervere jelenleg nem elérhető (HTTP ${_client!.maintenanceStatusCode}). Gyorsítótárazott adatok.\x1B[0m');
-      }
-      print('');
-
-      // Countdown Widget
-      String countdownWidget = '';
-      final nowTime = DateTime.now();
-      
-      if (todayLessons.isNotEmpty) {
-        todayLessons.sort((a, b) => (a.startTime ?? DateTime(2000)).compareTo(b.startTime ?? DateTime(2000)));
-        
-        TimetableEntry? currentLesson;
-        TimetableEntry? nextLesson;
-        
-        for (var lesson in todayLessons) {
-          if (lesson.startTime != null && lesson.endTime != null) {
-            if (nowTime.isAfter(lesson.startTime!) && nowTime.isBefore(lesson.endTime!)) {
-              currentLesson = lesson;
-              break;
-            }
-          }
-        }
-        
-        if (currentLesson != null) {
-          final diff = currentLesson.endTime!.difference(nowTime).inMinutes;
-          final sub = AppState.instance.applyAlias(currentLesson.subject);
-          countdownWidget = '\x1B[1;33m$sub órából hátra van: $diff perc\x1B[0m';
+      try {
+        if (timetableOnly) {
+          final tt = await client.getTimetable(
+            startOfWeek,
+            endOfNextWeek,
+            overrideAWeek: state.overrideAWeek,
+          );
+          final wt = await client.getWeekType(
+            startOfWeek,
+            overrideAWeek: state.overrideAWeek,
+          );
+          if (timetable != timetableGeneration) return;
+          state.timetable = tt ?? state.timetable;
+          state.weekTypeLabel = wt;
         } else {
-          for (var lesson in todayLessons) {
-            if (lesson.startTime != null && lesson.startTime!.isAfter(nowTime)) {
-              nextLesson = lesson;
-              break;
-            }
+          final results = await Future.wait([
+            client.getGrades(),
+            client.getTimetable(
+              startOfWeek,
+              endOfNextWeek,
+              overrideAWeek: state.overrideAWeek,
+            ),
+            client.getAverages(),
+            client.getGroupAverages(),
+            client.getAbsences(),
+            client.getExams(),
+            client.getHomework(),
+            client.getMessages(),
+            client.getStudentData(silent: true),
+            client.getWeekType(
+              startOfWeek,
+              overrideAWeek: state.overrideAWeek,
+            ),
+          ]);
+          if (sync != syncGeneration) return;
+
+          // A failed endpoint returns null: keep what is already on screen.
+          state.grades = (results[0] as List<Grade>?) ?? state.grades;
+          if (timetable == timetableGeneration) {
+            state.timetable = (results[1] as List<TimetableEntry>?) ?? state.timetable;
+            state.weekTypeLabel = results[9] as String?;
           }
-          if (nextLesson != null) {
-            final diff = nextLesson.startTime!.difference(nowTime).inMinutes;
-            final sub = AppState.instance.applyAlias(nextLesson.subject);
-            countdownWidget = '\x1B[1;36mKövetkező óra ($sub) kezdődik: $diff perc múlva\x1B[0m';
-          } else {
-            countdownWidget = '\x1B[1;32mA mai óráid véget értek! Szép estét!\x1B[0m';
+          final averages = results[2] as List<dynamic>?;
+          if (averages != null) {
+            state.averages = averages
+                .whereType<Map>()
+                .map((e) => Map<String, dynamic>.from(e))
+                .toList();
           }
-        }
-      } else {
-        countdownWidget = '\x1B[1;32mMa nincsenek tanítási óráid!\x1B[0m';
-      }
-      print('$countdownWidget\n');
-
-      // Maintenance Widget
-      if (student?.nextDowntime != null) {
-        print('\x1B[33m[!] Tervezett leállás: ${student!.nextDowntime!.toLocal()}\x1B[0m\n');
-      }
-
-      final leftLines = <String>[];
-      final rightLines = <String>[];
-
-      leftLines.add('\x1B[1;32m--- Mai Órarend ---\x1B[0m');
-      if (todayLessons.isEmpty) {
-        leftLines.add('Nincs több órád mára!');
-      } else {
-        for (var lesson in todayLessons) {
-          final isPast = lesson.endTime != null && lesson.endTime!.isBefore(DateTime.now());
-          final color = isPast ? '\x1B[90m' : '\x1B[0m';
-          final title = AppState.instance.applyAlias(lesson.subject);
-          final num = lesson.lessonNumber.toString();
-          final start = lesson.startTime != null ? '${lesson.startTime!.hour.toString().padLeft(2, '0')}:${lesson.startTime!.minute.toString().padLeft(2, '0')}' : '';
-          leftLines.add('$color$num. óra ($start): $title\x1B[0m');
-        }
-      }
-
-      leftLines.add('');
-      leftLines.add('\x1B[1;36m--- Közelgő Számonkérések ---\x1B[0m');
-      final upcomingExams = exams.where((e) => e.date != null && e.date!.isAfter(DateTime.now().subtract(Duration(days: 1)))).toList();
-      upcomingExams.sort((a, b) => a.date!.compareTo(b.date!));
-      if (upcomingExams.isEmpty) {
-        leftLines.add('Nincsenek bejelentett számonkérések.');
-      } else {
-        for (var exam in upcomingExams.take(3)) {
-          final dateStr = exam.date!.toString().split(' ').first.split('T').first;
-          final title = AppState.instance.applyAlias(exam.subject);
-          leftLines.add('[$dateStr] $title');
-        }
-      }
-
-      leftLines.add('');
-      leftLines.add('\x1B[1;34m--- Aktuális Házi Feladatok ---\x1B[0m');
-      final upcomingHw = homeworks.where((h) => h.deadline != null && h.deadline!.isAfter(DateTime.now().subtract(Duration(days: 1)))).toList();
-      upcomingHw.sort((a, b) => a.deadline!.compareTo(b.deadline!));
-      if (upcomingHw.isEmpty) {
-        leftLines.add('Nincs aktuális házi feladat.');
-      } else {
-        for (var hw in upcomingHw.take(3)) {
-          final dateStr = hw.deadline!.toString().split(' ').first.split('T').first;
-          final title = AppState.instance.applyAlias(hw.subject);
-          leftLines.add('[$dateStr] $title');
-        }
-      }
-
-      rightLines.add('\x1B[1;33m--- Legutóbbi Jegyek ---\x1B[0m');
-      if (grades.isEmpty) {
-        rightLines.add('Nincsenek jegyek.');
-      } else {
-        for (var grade in grades.take(5)) {
-          final subj = AppState.instance.applyAlias(grade.subject);
-          final val = grade.numericValue?.toString() ?? grade.textValue ?? '?';
-          
-          String c = '\x1B[0m';
-          if (grade.numericValue != null) {
-            if (grade.numericValue! == 1) c = '\x1B[31m';
-            else if (grade.numericValue! == 2) c = '\x1B[38;5;208m';
-            else if (grade.numericValue! == 3) c = '\x1B[33m';
-            else if (grade.numericValue! == 4) c = '\x1B[92m';
-            else if (grade.numericValue! == 5) c = '\x1B[94m';
+          final groupAverages = results[3] as List<dynamic>?;
+          if (groupAverages != null) {
+            state.groupAverages = groupAverages
+                .whereType<Map>()
+                .map((e) => Map<String, dynamic>.from(e))
+                .toList();
           }
-          rightLines.add('$subj: $c$val\x1B[0m');
+          state.absences = (results[4] as List<Absence>?) ?? state.absences;
+          state.exams = (results[5] as List<Exam>?) ?? state.exams;
+          state.homeworks = (results[6] as List<Homework>?) ?? state.homeworks;
+          state.messages = (results[7] as List<Message>?) ?? state.messages;
+          state.student = (results[8] as Student?) ?? state.student;
         }
-      }
 
-      rightLines.add('');
-      rightLines.add('\x1B[1;35m--- Tantárgyi Átlagok ---\x1B[0m');
-      if (averages.isEmpty) {
-        rightLines.add('Nincsenek átlagok.');
-      } else {
-        double bestAvg = 0;
-        String bestSubj = '';
-        double worstAvg = 5.0;
-        String worstSubj = '';
-        for (var a in averages) {
-          final valueStr = a['Ertek']?.toString() ?? '0';
-          final val = double.tryParse(valueStr.replaceAll(',', '.')) ?? 0.0;
-          final subj = a['Tantargy']?['Nev']?.toString() ?? '';
-          if (val > 0) {
-            if (val > bestAvg) { bestAvg = val; bestSubj = subj; }
-            if (val < worstAvg) { worstAvg = val; worstSubj = subj; }
-          }
+        state.isMaintenance = client.isMaintenanceMode;
+        state.maintenanceStatusCode = client.maintenanceStatusCode;
+        state.sessionExpired = client.sessionExpired;
+        state.isNetworkDown = client.isNetworkDown;
+        if (state.sessionExpired) {
+          state.statusBannerMessage =
+              'A munkamenet lejárt, a mentett adatokat látod. Lépj ki (q) és jelentkezz be újra.';
+        } else if (state.isNetworkDown) {
+          state.statusBannerMessage =
+              'Nincs kapcsolat a Kréta szerverrel, a mentett adatokat látod. Újrapróbálás: [r]';
+        } else if (state.isMaintenance) {
+          state.statusBannerMessage =
+              'A Kréta karbantartás alatt áll, a mentett adatokat látod. Újrapróbálás: [r]';
+        } else {
+          state.lastSync = DateTime.now();
+          state.statusBannerMessage = timetableOnly
+              ? 'Órarend frissítve (${state.weekTypeLabel ?? "Alapértelmezett"}).'
+              : 'Sikeres szinkronizálás.';
         }
-        if (bestAvg > 0) {
-          rightLines.add('Legjobb: ${AppState.instance.applyAlias(bestSubj)} (${PalaTheme.primary}${bestAvg.toStringAsFixed(2)}${PalaTheme.reset})');
-          rightLines.add('Legrosszabb: ${AppState.instance.applyAlias(worstSubj)} (\x1B[31m${worstAvg.toStringAsFixed(2)}\x1B[0m)');
+      } catch (e) {
+        PalaLogger.debug('Dashboard sync failed: $e');
+        if (sync == syncGeneration && timetable == timetableGeneration) {
+          state.statusBannerMessage =
+              'Hiba a szinkronizálás közben, a mentett adatokat látod. Újrapróbálás: [r]';
         }
-      }
-
-      rightLines.add('');
-      rightLines.add('\x1B[1;31m--- Mulasztások ---\x1B[0m');
-      if (absences.isEmpty) {
-        rightLines.add('Tiszta a lapod, nincs mulasztás!');
-      } else {
-        int totalHours = absences.where((a) => a.type?.toLowerCase() != 'késés').length;
-        int unexcused = absences.where((a) => a.status.toLowerCase() == 'igazolatlan').length;
-        
-        String totalColor = '\x1B[0m';
-        if (totalHours > 200) totalColor = '\x1B[1;31m';
-        else if (totalHours > 100) totalColor = '\x1B[33m';
-        
-        rightLines.add('Összes hiányzás: $totalColor$totalHours óra\x1B[0m');
-        if (unexcused > 0) {
-          rightLines.add('Igazolatlan: \x1B[31m$unexcused óra\x1B[0m');
-        }
-        
-        final Map<String, int> missedBySubject = {};
-        for (var a in absences) {
-          if (a.type?.toLowerCase() != 'késés' && a.subject.isNotEmpty) {
-            missedBySubject[a.subject] = (missedBySubject[a.subject] ?? 0) + 1;
-          }
-        }
-        if (missedBySubject.isNotEmpty) {
-          final sortedMissed = missedBySubject.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
-          final topMissed = sortedMissed.first;
-          rightLines.add('Legtöbbet hiányzott: ${AppState.instance.applyAlias(topMissed.key)} (${topMissed.value} óra)');
-        }
-      }
-
-      final maxLines = leftLines.length > rightLines.length ? leftLines.length : rightLines.length;
-      for (int i = 0; i < maxLines; i++) {
-        final leftStr = i < leftLines.length ? leftLines[i] : '';
-        final rightStr = i < rightLines.length ? rightLines[i] : '';
-        
-        final leftLen = leftStr.replaceAll(RegExp(r'\x1B\[[0-9;]*[a-zA-Z]'), '').length;
-        
-        final padding = halfWidth - leftLen;
-        final padStr = padding > 0 ? ' ' * padding : ' ';
-        
-        print('$leftStr$padStr│ $rightStr');
-      }
-
-      for (int i = 0; i < 300 && running; i++) {
-        await Future.delayed(Duration(milliseconds: 100));
+      } finally {
+        inFlight--;
+        state.isLoading = inFlight > 0;
+        dirty = true;
       }
     }
 
-    await subscription.cancel();
+    // The client prints its offline/limit notices; inside the alternate screen
+    // those would scroll the frame, so they go to the debug log instead. The
+    // zone follows the fetch even if it finishes after the dashboard closed.
+    void startLoad({bool timetableOnly = false}) {
+      runZoned(
+        () => unawaited(loadDashboardData(timetableOnly: timetableOnly)),
+        zoneSpecification: ZoneSpecification(
+          print: (self, parent, zone, line) => PalaLogger.debug(line),
+        ),
+      );
+    }
 
+    screenBuffer.enter();
     try {
-      if (stdin.hasTerminal) {
-        stdin.echoMode = true;
-        stdin.lineMode = true;
+      // Raw for the whole session, so keys pressed during a fetch are queued
+      // instead of being echoed into the frame.
+      if (stdin.hasTerminal) console.rawMode = true;
+      startLoad();
+      if (!stdin.hasTerminal) {
+        while (inFlight > 0) {
+          await Future.delayed(const Duration(milliseconds: 20));
+        }
       }
-    } catch (e) {
-      PalaLogger.debug('Failed to restore terminal mode: $e');
+
+      var lastCols = 0;
+      var lastRows = 0;
+      var running = true;
+      while (running) {
+        // Re-read every tick: Windows has no SIGWINCH, and polling covers resizes everywhere.
+        final cols = stdout.hasTerminal ? stdout.terminalColumns : 100;
+        final rows = stdout.hasTerminal ? stdout.terminalLines : 32;
+        if (dirty || cols != lastCols || rows != lastRows) {
+          screenBuffer.render(
+            TuiViews.buildScreen(state, width: cols, height: rows),
+            width: cols,
+            height: rows,
+          );
+          dirty = false;
+          lastCols = cols;
+          lastRows = rows;
+        }
+
+        if (!stdin.hasTerminal) {
+          break;
+        }
+
+        final key = readKeyNonBlocking();
+        if (key == null) {
+          await Future.delayed(const Duration(milliseconds: 30));
+          continue;
+        }
+        dirty = true;
+        state.statusBannerMessage = null;
+
+        if (key.isControl) {
+          switch (key.controlChar) {
+            case ControlCharacter.tab:
+              state.togglePane();
+              break;
+            case ControlCharacter.arrowUp:
+              if (state.activePane == TuiPane.left) {
+                final prev =
+                    (state.activeTab - 1 + TuiWorkspaceState.tabTitles.length) %
+                        TuiWorkspaceState.tabTitles.length;
+                state.switchTab(prev);
+              } else {
+                state.currentScroll = state.currentScroll - 1;
+              }
+              break;
+            case ControlCharacter.arrowDown:
+              if (state.activePane == TuiPane.left) {
+                final next =
+                    (state.activeTab + 1) % TuiWorkspaceState.tabTitles.length;
+                state.switchTab(next);
+              } else {
+                state.currentScroll = state.currentScroll + 1;
+              }
+              break;
+            case ControlCharacter.pageUp:
+              state.currentScroll = state.currentScroll - 10;
+              break;
+            case ControlCharacter.pageDown:
+              state.currentScroll = state.currentScroll + 10;
+              break;
+            case ControlCharacter.arrowLeft:
+              if (state.ghostDrawerOpen) {
+                final subjs = state.availableSubjects;
+                if (subjs.isNotEmpty) {
+                  state.ghostSubjectIndex =
+                      (state.ghostSubjectIndex - 1 + subjs.length) %
+                          subjs.length;
+                }
+              } else if (state.activeTab == 2 && state.timetableSubMode == 1) {
+                state.timetableDayOffset = max(0, state.timetableDayOffset - 1);
+              } else {
+                final prev =
+                    (state.activeTab - 1 + TuiWorkspaceState.tabTitles.length) %
+                        TuiWorkspaceState.tabTitles.length;
+                state.switchTab(prev);
+              }
+              break;
+            case ControlCharacter.arrowRight:
+              if (state.ghostDrawerOpen) {
+                final subjs = state.availableSubjects;
+                if (subjs.isNotEmpty) {
+                  state.ghostSubjectIndex =
+                      (state.ghostSubjectIndex + 1) % subjs.length;
+                }
+              } else if (state.activeTab == 2 && state.timetableSubMode == 1) {
+                state.timetableDayOffset = state.timetableDayOffset + 1;
+              } else {
+                final next =
+                    (state.activeTab + 1) % TuiWorkspaceState.tabTitles.length;
+                state.switchTab(next);
+              }
+              break;
+            case ControlCharacter.enter:
+              if (state.ghostDrawerOpen) {
+                state.addCurrentGhostGrade();
+              } else if (state.activePane == TuiPane.left) {
+                state.activePane = TuiPane.right;
+              }
+              break;
+            case ControlCharacter.escape:
+              if (state.ghostDrawerOpen) {
+                state.ghostDrawerOpen = false;
+              } else {
+                running = false;
+              }
+              break;
+            case ControlCharacter.ctrlC:
+              running = false;
+              break;
+            default:
+              break;
+          }
+          continue;
+        }
+
+        final ch = key.char;
+        if (ch.isEmpty) continue;
+        final lower = ch.toLowerCase();
+
+        // When Szellem Jegy drawer is open, 1-5 sets the simulated grade value
+        if (state.ghostDrawerOpen &&
+            (ch == '1' || ch == '2' || ch == '3' || ch == '4' || ch == '5')) {
+          state.ghostGradeValue = int.parse(ch);
+          continue;
+        }
+
+        switch (lower) {
+          case '1':
+            state.switchTab(0);
+            break;
+          case '2':
+            state.switchTab(1);
+            break;
+          case '3':
+            state.switchTab(2);
+            break;
+          case '4':
+            state.switchTab(3);
+            break;
+          case 'j':
+            if (state.activePane == TuiPane.left) {
+              state.switchTab(
+                (state.activeTab + 1) % TuiWorkspaceState.tabTitles.length,
+              );
+            } else {
+              state.currentScroll = state.currentScroll + 1;
+            }
+            break;
+          case 'k':
+            if (state.activePane == TuiPane.left) {
+              state.switchTab(
+                (state.activeTab - 1 + TuiWorkspaceState.tabTitles.length) %
+                    TuiWorkspaceState.tabTitles.length,
+              );
+            } else {
+              state.currentScroll = state.currentScroll - 1;
+            }
+            break;
+          case 'h':
+            if (state.ghostDrawerOpen) {
+              final subjs = state.availableSubjects;
+              if (subjs.isNotEmpty) {
+                state.ghostSubjectIndex =
+                    (state.ghostSubjectIndex - 1 + subjs.length) % subjs.length;
+              }
+            } else if (state.activeTab == 2 && state.timetableSubMode == 1) {
+              state.timetableDayOffset = max(0, state.timetableDayOffset - 1);
+            } else {
+              state.switchTab(
+                (state.activeTab - 1 + TuiWorkspaceState.tabTitles.length) %
+                    TuiWorkspaceState.tabTitles.length,
+              );
+            }
+            break;
+          case 'l':
+            if (state.ghostDrawerOpen) {
+              final subjs = state.availableSubjects;
+              if (subjs.isNotEmpty) {
+                state.ghostSubjectIndex =
+                    (state.ghostSubjectIndex + 1) % subjs.length;
+              }
+            } else if (state.activeTab == 2 && state.timetableSubMode == 1) {
+              state.timetableDayOffset = state.timetableDayOffset + 1;
+            } else {
+              state.switchTab(
+                (state.activeTab + 1) % TuiWorkspaceState.tabTitles.length,
+              );
+            }
+            break;
+          case 'r':
+            if (!state.isLoading) startLoad();
+            break;
+          case 's':
+            state.ghostDrawerOpen = !state.ghostDrawerOpen;
+            break;
+          case 'c':
+            state.clearGhostGrades();
+            break;
+          case 'v':
+            state.gradesSubMode = (state.gradesSubMode + 1) % 2;
+            state.currentScroll = 0;
+            break;
+          case 'w':
+            if (state.ghostDrawerOpen) {
+              state.ghostWeightIndex =
+                  (state.ghostWeightIndex + 1) %
+                      TuiWorkspaceState.weightPresets.length;
+            } else {
+              state.timetableSubMode = (state.timetableSubMode + 1) % 2;
+              state.currentScroll = 0;
+            }
+            break;
+          case 'a':
+            final curA = state.overrideAWeek ??
+                (state.weekTypeLabel?.toLowerCase().startsWith('a') ?? true);
+            state.overrideAWeek = !curA;
+            startLoad(timetableOnly: true);
+            break;
+          case '0':
+            state.timetableDayOffset = 0;
+            break;
+          case 'e':
+            if (state.timetable.isNotEmpty || state.exams.isNotEmpty) {
+              try {
+                final icsContent =
+                    IcsExporter.generate(state.timetable, state.exams);
+                final home = Platform.environment['USERPROFILE'] ??
+                    Platform.environment['HOME'] ??
+                    '.';
+                final desktop = Directory(p.join(home, 'Desktop'));
+                final outDir = desktop.existsSync() ? desktop.path : home;
+                final file = File(p.join(outDir, 'pala_naptar.ics'));
+                await file.writeAsString(icsContent);
+                state.statusBannerMessage =
+                    'Naptár exportálva: ${file.path}';
+              } catch (err) {
+                state.statusBannerMessage = 'Export hiba: $err';
+              }
+            } else {
+              state.statusBannerMessage = 'Nincs exportálható órarendi adat.';
+            }
+            break;
+          case 'f':
+            state.absenceFilter = (state.absenceFilter + 1) %
+                TuiWorkspaceState.absenceFilterLabels.length;
+            state.currentScroll = 0;
+            break;
+          case 'q':
+            running = false;
+            break;
+          default:
+            break;
+        }
+      }
+    } finally {
+      screenBuffer.exit();
+      try {
+        if (stdin.hasTerminal) console.rawMode = false;
+      } catch (e) {
+        PalaLogger.debug('Failed to leave raw mode: $e');
+      }
+      try {
+        if (stdin.hasTerminal) {
+          stdin.echoMode = true;
+          stdin.lineMode = true;
+        }
+      } catch (e) {
+        PalaLogger.debug('Failed to restore terminal mode: $e');
+      }
+      forceRestoreConsoleMode();
     }
-    stdout.write('\x1B[?25h');
-    stdout.write('\x1B[2J\x1B[H');
   }
 }
