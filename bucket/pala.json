@@ -6,7 +6,7 @@
     "architecture": {
         "64bit": {
             "url": "https://github.com/CsPS0/pala/releases/download/test/pala.exe",
-            "hash": "4a4ba72e49048a14181b6e5edadcaa5279e14ea81d2476c922ee160b6fb409b5"
+            "hash": "79ce4b8f9ad33b49d74f6b036b2cb4f3d6de8dc93f06c5a39e8f007dbd5906c3"
         }
     },
     "bin": "pala.exe",

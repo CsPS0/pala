@@ -17,6 +17,7 @@ void main(List<String> arguments) async {
   final parser = ArgParser()
     ..addOption('institute', abbr: 'i', help: 'Az intézmény kódja (pl. intezmeny123)')
     ..addOption('username', abbr: 'u', help: 'Felhasználónév (oktatási azonosító)')
+    ..addOption('password', abbr: 'p', help: 'Jelszó')
     ..addCommand('setup')
     ..addCommand('install')
     ..addFlag('setup', negatable: false, help: 'Interaktív komponens-telepítő és beállító varázsló indítása')
