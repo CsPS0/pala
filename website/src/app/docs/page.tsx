@@ -438,14 +438,14 @@ export function DocsView({ initialPage = "installation" }: { initialPage?: strin
                         <div className="px-3.5 py-2 bg-bg border-b border-border text-[11px] font-mono text-muted flex items-center justify-between">
                           <span>„C” Opció: Scoop Csomagkezelő</span>
                           <button
-                            onClick={() => handleCopy("scoop bucket add pala https://github.com/CsPS0/pala-bucket; scoop install pala", "win-scoop")}
+                            onClick={() => handleCopy("scoop bucket add pala https://github.com/CsPS0/pala; scoop install pala", "win-scoop")}
                             className="hover:text-fg transition-colors"
                           >
                             {copiedKey === "win-scoop" ? <Check size={13} className="text-primary" /> : <Copy size={13} />}
                           </button>
                         </div>
                         <div className="p-3.5 font-mono text-xs text-primary space-y-1 overflow-x-auto">
-                          <div>scoop bucket add pala https://github.com/CsPS0/pala-bucket</div>
+                          <div>scoop bucket add pala https://github.com/CsPS0/pala</div>
                           <div>scoop install pala</div>
                         </div>
                       </div>

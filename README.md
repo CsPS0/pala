@@ -82,7 +82,7 @@ Gyorsabb indításhoz lefordíthatod natívan is: `dart compile exe bin/pala.dar
   ```
 - Scoop:
   ```powershell
-  scoop bucket add pala https://github.com/CsPS0/pala-bucket
+  scoop bucket add pala https://github.com/CsPS0/pala
   scoop install pala
   ```
 
