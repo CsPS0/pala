@@ -11,3 +11,16 @@ SHA1: 2d48a25cc3381cd3d1368156f04973e9d9140461
 MD5sum: 43c257d5afd2c767b142972210789038
 Description: Terminal-based client for the Hungarian Kréta electronic school diary system.
 
+Package: pala
+Version: 0.0.0+pala.release.test
+Architecture: amd64
+Maintainer: Solti Csongor Péter <csps0@users.noreply.github.com>
+Priority: optional
+Section: utils
+Filename: pool/main/p/pala/pala_0.0.0+pala.release.test_amd64.deb
+Size: 2819954
+SHA256: 944cba42ed727e218cad20548d264b14a3b269385b2396eb62dd940bbd307606
+SHA1: 468d27bce0af15dfc2e8f6476cbd720d65fd25bf
+MD5sum: c13e3eefb361784236929065c1ae7e85
+Description: Interaktív terminálos felület (TUI) a Kréta e-napló rendszerhez.
+
