@@ -4,10 +4,10 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pala/app/state/app_state.dart';
 import 'package:pala/utils/encryption.dart';
-import 'shells/desktop_shell.dart';
-import 'shells/mobile_shell.dart';
+import 'core/adaptive/adaptive_scaffold.dart';
+import 'core/theme/m3_theme.dart';
 import 'state/app_model.dart';
-import 'theme/pala_theme.dart';
+import 'state/session_store.dart';
 import 'views/login_view.dart';
 
 void main() async {
@@ -23,6 +23,7 @@ void main() async {
     EncryptionUtil.configDirOverride = dir.path;
     AppState.cacheDirOverride = '${(await getTemporaryDirectory()).path}/pala';
   }
+  await SessionStore.initKey();
 
   await initializeDateFormatting('hu_HU', null);
   final appModel = AppModel();
@@ -42,7 +43,7 @@ class PalaMobileApp extends StatelessWidget {
         return MaterialApp(
           title: 'Pala',
           debugShowCheckedModeBanner: false,
-          theme: appModel.isDarkMode ? PalaTheme.getDarkTheme() : PalaTheme.getLightTheme(),
+          theme: appModel.isDarkMode ? M3Theme.darkTheme : M3Theme.lightTheme,
           home: appModel.isAuthenticated
               ? PalaShell(appModel: appModel)
               : LoginView(appModel: appModel),
@@ -52,11 +53,7 @@ class PalaMobileApp extends StatelessWidget {
   }
 }
 
-/// Picks the platform-appropriate shell. Desktop OSes (and any wide window,
-/// e.g. a resized desktop build) get [DesktopShell]; Android/iOS and narrow
-/// windows get [MobileShell]. Each shell owns its own navigation, screen
-/// list, and layout — see the "shells" package doc comments for why they're
-/// kept separate instead of one widget branching internally.
+/// Unified adaptive shell delegating to [AdaptiveScaffold] to evaluate the 600dp breakpoint.
 class PalaShell extends StatelessWidget {
   final AppModel appModel;
 
@@ -64,11 +61,6 @@ class PalaShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isDesktop = constraints.maxWidth >= 800;
-        return isDesktop ? DesktopShell(appModel: appModel) : MobileShell(appModel: appModel);
-      },
-    );
+    return AdaptiveScaffold(appModel: appModel);
   }
 }

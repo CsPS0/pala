@@ -50,7 +50,7 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
                   Expanded(
                     child: Text(
                       msg.subject.isNotEmpty ? msg.subject : 'Üzenet',
-                      style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700),
+                      style: TextStyle(color: PalaTheme.text, fontSize: 17, fontWeight: FontWeight.w700),
                     ),
                   ),
                   IconButton(
@@ -129,7 +129,7 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
             unselectedLabelColor: PalaTheme.textMuted,
             labelStyle: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
             tabs: const [
-              Tab(text: 'Házi Feladatok'),
+              Tab(text: 'Házi'),
               Tab(text: 'Dolgozatok'),
               Tab(text: 'Üzenetek'),
             ],
@@ -169,7 +169,7 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
                             title: Text(
                               widget.appModel.getDisplaySubject(h.subject),
                               style: TextStyle(
-                                color: isDone ? PalaTheme.textMuted : Colors.white,
+                                color: isDone ? PalaTheme.textMuted : PalaTheme.text,
                                 fontWeight: FontWeight.w700,
                                 fontSize: 14,
                                 decoration: isDone ? TextDecoration.lineThrough : null,
@@ -220,7 +220,9 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: PalaTheme.border),
                         ),
-                        child: Row(
+                        // Type badge above the subject: beside it, long Kréta types
+                        // ("Írásbeli témazáró dolgozat") squeezed the subject column.
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
@@ -234,14 +236,13 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
                                 style: TextStyle(color: primary, fontSize: 11, fontWeight: FontWeight.w700),
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
+                            const SizedBox(height: 8),
+                            Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     widget.appModel.getDisplaySubject(e.subject),
-                                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14),
+                                    style: TextStyle(color: PalaTheme.text, fontWeight: FontWeight.w700, fontSize: 14),
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
@@ -255,7 +256,6 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
                                   ),
                                 ],
                               ),
-                            ),
                           ],
                         ),
                       );
@@ -295,7 +295,7 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
                           children: [
                             Text(
                               'Kréta Üzenetküldés',
-                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Colors.white),
+                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: PalaTheme.text),
                             ),
                             SizedBox(height: 2),
                             Text(
@@ -337,7 +337,7 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
                         child: ListTile(
                           title: Text(
                             m.subject.isNotEmpty ? m.subject : '(Nincs tárgy)',
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14),
+                            style: TextStyle(color: PalaTheme.text, fontWeight: FontWeight.w700, fontSize: 14),
                           ),
                           subtitle: Text(
                             '${m.senderName} • ${m.sentDate != null ? DateFormat('yyyy.MM.dd').format(m.sentDate!) : "-"}',

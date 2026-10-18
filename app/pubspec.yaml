@@ -38,6 +38,13 @@ dependencies:
   path_provider: ^2.0.15
   workmanager: ^0.10.10
   awesome_notifications: ^0.12.1
+  webview_flutter: ^4.14.1
+  flutter_secure_storage: ^10.0.0
+# The shared core pins ffi ^1 and win32 ^2 through interact/dart_console (TUI only, never
+# imported by the app); flutter_secure_storage_windows needs current ffi/win32.
+dependency_overrides:
+  ffi: ^2.1.0
+  win32: ^5.5.4
 dev_dependencies:
   flutter_test:
     sdk: flutter

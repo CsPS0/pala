@@ -54,27 +54,92 @@ class EncryptionUtil {
     final keyFile = File('$_configDir/.pala_keyfile');
 
     if (keyFile.existsSync()) {
-      final raw = keyFile.readAsStringSync().trim();
-      final bytes = base64.decode(raw);
-      if (bytes.length == 32) {
-        return Key(Uint8List.fromList(bytes));
-      }
+      final existing = _parseKey(keyFile.readAsStringSync());
+      if (existing != null) return existing;
       // Corrupt/unexpected keyfile: fall through and regenerate below.
     }
 
-    final random = Random.secure();
-    final keyBytes = Uint8List.fromList(List<int>.generate(32, (_) => random.nextInt(256)));
-    keyFile.writeAsStringSync(base64.encode(keyBytes));
+    final key = _randomKey();
+    keyFile.writeAsStringSync(base64.encode(key.bytes));
     if (Platform.isLinux || Platform.isMacOS) {
       try {
         Process.runSync('chmod', ['600', keyFile.path]);
       } catch (_) {}
     }
-    return Key(keyBytes);
+    return key;
+  }
+
+  /// Set by [useKeyStore]; while non-null the keyfile is not used.
+  static Key? _storeKey;
+
+  /// Keyfile key that data written before [useKeyStore] may still need, see
+  /// its `keepKeyFile` parameter.
+  static Key? _fallbackKey;
+
+  static Key? _parseKey(String? raw) {
+    if (raw == null) return null;
+    try {
+      final bytes = base64.decode(raw.trim());
+      return bytes.length == 32 ? Key(Uint8List.fromList(bytes)) : null;
+    } on FormatException {
+      return null;
+    }
+  }
+
+  /// Moves this process to a key kept in an OS secure store (the Flutter app
+  /// passes flutter_secure_storage here) instead of the plaintext keyfile.
+  /// Must run before any [encrypt]/[decrypt].
+  ///
+  /// An existing keyfile is migrated: copied into the store, read back,
+  /// checked with a test decrypt, and only then deleted, so whatever it
+  /// encrypted keeps working. With [keepKeyFile] (the keyfile is shared with
+  /// the CLI, which still needs it) it is left alone instead: the store gets
+  /// its own key, and [decrypt] falls back to the keyfile for older data.
+  ///
+  /// Throws when the store fails; this process then keeps using the keyfile.
+  static Future<void> useKeyStore({
+    required Future<String?> Function() read,
+    required Future<void> Function(String value) write,
+    bool keepKeyFile = false,
+  }) async {
+    _storeKey = null;
+    _fallbackKey = null;
+    final keyFile = File('$_configDir/.pala_keyfile');
+    final fileKey = _parseKey(keyFile.existsSync() ? keyFile.readAsStringSync() : null);
+    var stored = _parseKey(await read());
+
+    // A keyfile left on disk is what the current data was encrypted with
+    // (an older version, or a launch where the store failed), so it wins.
+    final migrate = fileKey != null && !keepKeyFile;
+    if (migrate || stored == null) {
+      final key = migrate ? fileKey : _randomKey();
+      await write(base64.encode(key.bytes));
+      stored = _parseKey(await read());
+      if (stored == null) throw StateError('A kulcs nem került be a biztonságos tárolóba.');
+      // AES-GCM authentication makes this throw if the stored key differs.
+      final iv = IV.fromSecureRandom(16);
+      Encrypter(AES(stored, mode: AESMode.gcm))
+          .decrypt(Encrypter(AES(key, mode: AESMode.gcm)).encrypt('pala', iv: iv), iv: iv);
+    }
+
+    _storeKey = stored;
+    if (keepKeyFile) _fallbackKey = fileKey;
+    if (migrate) {
+      try {
+        keyFile.deleteSync();
+      } on FileSystemException catch (_) {
+        // The other process (app or background worker) deleted it first.
+      }
+    }
+  }
+
+  static Key _randomKey() {
+    final random = Random.secure();
+    return Key(Uint8List.fromList(List<int>.generate(32, (_) => random.nextInt(256))));
   }
 
   static Encrypter _getEncrypter() {
-    return Encrypter(AES(_getMachineKey(), mode: AESMode.gcm));
+    return Encrypter(AES(_storeKey ?? _getMachineKey(), mode: AESMode.gcm));
   }
 
   /// Encrypts plaintext using AES-GCM with a per-installation random key and
@@ -102,7 +167,12 @@ class EncryptionUtil {
       if (parts.length == 3) {
         final iv = IV.fromBase64(parts[1]);
         final encrypted = Encrypted.fromBase64(parts[2]);
-        return _getEncrypter().decrypt(encrypted, iv: iv);
+        try {
+          return _getEncrypter().decrypt(encrypted, iv: iv);
+        } catch (_) {
+          if (_fallbackKey == null) rethrow;
+          return Encrypter(AES(_fallbackKey!, mode: AESMode.gcm)).decrypt(encrypted, iv: iv);
+        }
       }
     }
 

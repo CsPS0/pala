@@ -37,6 +37,7 @@ Future<void> checkForUpdatesAndNotify() async {
     EncryptionUtil.configDirOverride = dir.path;
     AppState.cacheDirOverride = '${(await getTemporaryDirectory()).path}/pala';
   }
+  await SessionStore.initKey();
 
   final session = await SessionStore.load();
   if (session == null) return;

@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import '../state/app_model.dart';
 import '../theme/pala_theme.dart';
-import 'wrapped_view.dart';
+import '../features/wrapped/presentation/pala_wrapped_view.dart';
 
 class SettingsView extends StatefulWidget {
   final AppModel appModel;
@@ -181,7 +181,9 @@ class _SettingsViewState extends State<SettingsView> with SingleTickerProviderSt
                         ? [Text('Nincsenek elérhető gondviselői adatok.', style: TextStyle(color: PalaTheme.textMuted, fontSize: 13))]
                         : student.guardians.map((g) {
                             final gName = g['Nev'] ?? g['nev'] ?? g['name'] ?? 'Gondviselő';
-                            final gType = g['Tipus'] ?? g['tipus'] ?? g['type'] ?? 'Gondviselő';
+                            final rawType = g['Tipus'] ?? g['tipus'] ?? g['type'];
+                            // Kréta sends the type as a {Nev: ...} object, not a plain string.
+                            final gType = (rawType is Map ? rawType['Nev'] : rawType) ?? 'Gondviselő';
                             final gEmail = g['EmailCim'] ?? g['email'] ?? '';
                             final gPhone = g['Telefonszam'] ?? g['phone'] ?? '';
 
@@ -190,7 +192,7 @@ class _SettingsViewState extends State<SettingsView> with SingleTickerProviderSt
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(gName.toString(), style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white, fontSize: 14)),
+                                  Text(gName.toString(), style: TextStyle(fontWeight: FontWeight.w700, color: PalaTheme.text, fontSize: 14)),
                                   const SizedBox(height: 2),
                                   Text('$gType • $gEmail • $gPhone', style: TextStyle(color: PalaTheme.textMuted, fontSize: 12)),
                                 ],
@@ -435,15 +437,15 @@ class _SettingsViewState extends State<SettingsView> with SingleTickerProviderSt
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFF8800).withValues(alpha: 0.15),
+                        color: PalaTheme.accent.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Icon(Icons.auto_awesome, color: Color(0xFFFF8800), size: 20),
+                      child: Icon(Icons.auto_awesome, color: PalaTheme.accent, size: 20),
                     ),
                     title: Text('Pala Wrapped', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
                     subtitle: Text('Nézd meg az idei tanéved összesítőjét!', style: TextStyle(color: PalaTheme.textMuted, fontSize: 12)),
                     trailing: Icon(Icons.chevron_right, size: 20, color: PalaTheme.textMuted),
-                    onTap: () => WrappedModal.show(context, widget.appModel),
+                    onTap: () => PalaWrappedView.show(context, widget.appModel),
                   ),
                   Divider(height: 16),
 
@@ -623,7 +625,7 @@ class _SettingsViewState extends State<SettingsView> with SingleTickerProviderSt
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
+            Text(title, style: TextStyle(color: PalaTheme.text, fontSize: 15, fontWeight: FontWeight.w700)),
             const SizedBox(height: 12),
             ...children,
           ],
@@ -649,7 +651,7 @@ class _SettingsViewState extends State<SettingsView> with SingleTickerProviderSt
               value.isNotEmpty ? value : '-',
               textAlign: TextAlign.end,
               style: TextStyle(
-                color: highlight ? primary : Colors.white,
+                color: highlight ? primary : PalaTheme.text,
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
               ),

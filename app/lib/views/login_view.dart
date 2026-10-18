@@ -2,10 +2,13 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pala/api/api.dart';
 import 'package:pala/api/client.dart';
+import 'package:pala/web/pala_web_server.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../state/app_model.dart';
 import '../theme/pala_theme.dart';
+import 'kreta_web_login_view.dart';
 
 class LoginView extends StatefulWidget {
   final AppModel appModel;
@@ -117,27 +120,113 @@ class _LoginViewState extends State<LoginView> {
       return;
     }
 
-    final success = await widget.appModel.login(
-      instituteCode: inst,
-      username: user,
-      password: pass,
-    );
+    final bool success;
+    try {
+      success = await widget.appModel.login(
+        instituteCode: inst,
+        username: user,
+        password: pass,
+      );
+    } on InteractiveLoginRequired catch (e) {
+      // Captcha or two-factor login is the user's choice: finish on Kréta's page.
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      await _loginOnKretaPage();
+      return;
+    }
 
     if (success) {
       TextInput.finishAutofillContext(); // lets the password manager offer to save
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_lastInstituteKey, inst);
       await prefs.setString(_lastUsernameKey, user);
+    } else {
+      _showLoginError();
+    }
+  }
+
+  void _showLoginError() {
+    if (!mounted || widget.appModel.errorMessage == null) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(widget.appModel.errorMessage!),
+        backgroundColor: PalaTheme.danger,
+      ),
+    );
+  }
+
+  /// Login on Kréta's own page: in a WebView where the platform has one,
+  /// otherwise in the system browser with the code pasted back by hand.
+  Future<void> _loginOnKretaPage() async {
+    final inst = _instituteController.text.trim();
+    if (inst.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Előbb add meg az intézmény kódját!')),
+      );
+      return;
     }
 
-    if (!success && mounted && widget.appModel.errorMessage != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(widget.appModel.errorMessage!),
-          backgroundColor: PalaTheme.danger,
-        ),
-      );
+    final hasWebView = Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
+    final code = hasWebView
+        ? await Navigator.of(context).push<String>(
+            MaterialPageRoute(builder: (_) => KretaWebLoginView(instituteCode: inst)),
+          )
+        : await _pasteCodeFromBrowser(inst);
+    if (code == null || code.trim().isEmpty) return;
+
+    final success = await widget.appModel.loginWithCode(instituteCode: inst, code: code);
+    if (success) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_lastInstituteKey, inst);
+    } else {
+      _showLoginError();
     }
+  }
+
+  /// Windows/Linux: no WebView, so open Kréta in the browser and let the user
+  /// paste the redirect link (or its code) back.
+  Future<String?> _pasteCodeFromBrowser(String instituteCode) {
+    final url = KretaAPI.authorizeUrl(instituteCode: instituteCode);
+    PalaWebServer.openBrowser(url);
+    var pasted = '';
+    return showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Bejelentkezés a Kréta oldalán'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Megnyitottuk a Kréta bejelentkezési oldalát a böngészőben. Jelentkezz be ott '
+              '(ha kéri, ott oldd meg a CAPTCHA-t és add meg a kétlépcsős azonosítás kódját).\n\n'
+              'Amikor egy "mobil.e-kreta.hu" kezdetű oldalra jutsz, másold ki a teljes linket a címsorból, és illeszd be ide.',
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              autofocus: true,
+              decoration: const InputDecoration(hintText: 'Link vagy a "code=" utáni kód'),
+              onChanged: (value) => pasted = value,
+              onSubmitted: (value) => Navigator.of(context).pop(value),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => PalaWebServer.openBrowser(url),
+            child: const Text('Oldal újranyitása'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Mégse'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(pasted),
+            child: const Text('Belépés'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -162,9 +251,7 @@ class _LoginViewState extends State<LoginView> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [primary, primary.withValues(alpha: 0.8)],
-                        ),
+                        color: primary,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
@@ -182,8 +269,8 @@ class _LoginViewState extends State<LoginView> {
                   Center(
                     child: Text(
                       (Platform.isWindows || Platform.isLinux || Platform.isMacOS) ? 'Kréta Desktop Kliens' : 'Kréta Mobil Kliens',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: PalaTheme.text,
                         fontWeight: FontWeight.w700,
                         fontSize: 20,
                       ),
@@ -432,6 +519,14 @@ class _LoginViewState extends State<LoginView> {
                                     child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
                                   )
                                 : Text('Bejelentkezés'),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextButton(
+                          onPressed: widget.appModel.isLoading ? null : _loginOnKretaPage,
+                          child: const Text(
+                            'Bejelentkezés a Kréta oldalán (CAPTCHA vagy kétlépcsős azonosítás esetén)',
+                            textAlign: TextAlign.center,
                           ),
                         ),
                       ],

@@ -158,7 +158,7 @@ class _ComposeMessageModalState extends State<ComposeMessageModal> {
             children: [
               Text(
                 'Új Üzenet Küldése Tanárnak',
-                style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700),
+                style: TextStyle(color: PalaTheme.text, fontSize: 17, fontWeight: FontWeight.w700),
               ),
               IconButton(
                 icon: Icon(Icons.close, size: 20),
@@ -184,7 +184,7 @@ class _ComposeMessageModalState extends State<ComposeMessageModal> {
                   value: allTeachers.contains(_recipientController.text) ? _recipientController.text : null,
                   hint: Text(
                     _recipientController.text.isNotEmpty ? _recipientController.text : 'Válassz tanárt a listából...',
-                    style: TextStyle(fontSize: 13, color: Colors.white70),
+                    style: TextStyle(fontSize: 13, color: PalaTheme.textMuted),
                   ),
                   isExpanded: true,
                   dropdownColor: PalaTheme.card,

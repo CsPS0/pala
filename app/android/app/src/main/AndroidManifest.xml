@@ -8,10 +8,14 @@
     <!-- Lets WorkManager reschedule the background Kréta check after a reboot. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
+    <!-- No auto backup: a restored flutter_secure_storage blob can't be
+         decrypted without this device's Keystore key, and the backup would
+         otherwise carry the encrypted session off the device. -->
     <application
         android:label="Pala"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false">
         <activity
             android:name=".MainActivity"
             android:exported="true"

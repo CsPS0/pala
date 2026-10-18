@@ -24,7 +24,6 @@ class AppModel extends ChangeNotifier {
   bool _isDemo = false;
   bool _isAuthenticated = false;
   bool _isLoading = false;
-  bool _isSidebarCollapsed = false;
   String? _errorMessage;
   bool _isDarkMode = true;
 
@@ -56,7 +55,6 @@ class AppModel extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get isDarkMode => _isDarkMode;
-  bool get isSidebarCollapsed => _isSidebarCollapsed;
 
   Student? get student => _student;
   List<Grade> get grades => _grades;
@@ -104,7 +102,6 @@ class AppModel extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     _isDarkMode = prefs.getBool('pala_dark_mode') ?? true;
     PalaTheme.isLight = !_isDarkMode;
-    _isSidebarCollapsed = prefs.getBool('pala_sidebar_collapsed') ?? false;
     _showWeekType = prefs.getBool('pala_show_week_type') ?? true;
     _parentalQuota = prefs.getInt('pala_parental_quota') ?? 5;
     
@@ -172,20 +169,39 @@ class AppModel extends ChangeNotifier {
     );
   }
 
+  /// Password login. Throws [InteractiveLoginRequired] when the account has
+  /// captcha or two-factor login; the view then sends the user to Kréta's
+  /// own page and finishes with [loginWithCode].
   Future<bool> login({
     required String instituteCode,
     required String username,
     required String password,
-  }) async {
+  }) =>
+      _loginWith(instituteCode, (c) => c.login(username, password),
+          'Nem sikerült bejelentkezni. Ellenőrizd az adataidat!');
+
+  /// Finishes a login done on Kréta's own page (redirect URL or bare code).
+  Future<bool> loginWithCode({
+    required String instituteCode,
+    required String code,
+  }) =>
+      _loginWith(instituteCode, (c) => c.webLogin(code),
+          'A kód érvénytelen vagy lejárt. Jelentkezz be újra a Kréta oldalán!');
+
+  Future<bool> _loginWith(
+    String instituteCode,
+    Future<bool> Function(KretaClient client) authenticate,
+    String failureMessage,
+  ) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
       final kClient = KretaClient(instituteCode: instituteCode);
-      final loggedIn = await kClient.login(username, password);
+      final loggedIn = await authenticate(kClient);
       if (!loggedIn) {
-        throw Exception('Nem sikerült bejelentkezni. Ellenőrizd az adataidat!');
+        throw Exception(failureMessage);
       }
       SessionStore.attach(kClient);
       _client = kClient;
@@ -200,6 +216,7 @@ class AppModel extends ChangeNotifier {
       _isLoading = false;
       _errorMessage = e.toString().replaceAll('Exception: ', '');
       notifyListeners();
+      if (e is InteractiveLoginRequired) rethrow;
       return false;
     }
   }
@@ -292,7 +309,10 @@ class AppModel extends ChangeNotifier {
       _teachers = (futures[8] as List<Map<String, dynamic>>?) ?? [];
       _notes = (futures[9] as List<Note>?) ?? [];
       _weekType = futures[10] as String?;
-      _errorMessage = null;
+      // The client answers from its disk cache when Kréta is unreachable.
+      _errorMessage = (!_isDemo && _client!.isNetworkDown)
+          ? 'Nincs kapcsolat a Krétával, a legutóbb mentett adatokat látod.'
+          : null;
     } catch (e) {
       _errorMessage = 'Hiba az adatok lekérésekor: $e';
     } finally {
@@ -413,13 +433,6 @@ class AppModel extends ChangeNotifier {
     await prefs.setBool('pala_show_week_type', show);
   }
 
-  Future<void> toggleSidebarCollapsed() async {
-    _isSidebarCollapsed = !_isSidebarCollapsed;
-    notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('pala_sidebar_collapsed', _isSidebarCollapsed);
-  }
-
   Future<void> setParentalQuota(int quota) async {
     _parentalQuota = quota;
     notifyListeners();
@@ -504,54 +517,30 @@ class AppModel extends ChangeNotifier {
     return map;
   }
 
-  // Target Average Calculator
-  int calculateRequiredFives(String subject, double targetAvg, {int weight = 100}) {
-    double currentSum = 0;
-    double currentWeight = 0;
-
-    for (final g in _grades) {
-      if (getDisplaySubject(g.subject) == subject && g.numericValue != null && g.numericValue! >= 1 && g.numericValue! <= 5) {
-        final w = g.weight / 100.0;
-        currentSum += g.numericValue! * w;
-        currentWeight += w;
-      }
-    }
-
-    if (currentWeight == 0) return 1;
-    final curAvg = currentSum / currentWeight;
-    if (curAvg >= targetAvg) return 0;
-    if (targetAvg >= 5.0) return 99; // impossible if there's any non-5
-
-    final w5 = weight / 100.0;
-    int needed = 0;
-    double simSum = currentSum;
-    double simWeight = currentWeight;
-
-    while ((simSum / simWeight) < targetAvg && needed < 50) {
-      needed++;
-      simSum += 5.0 * w5;
-      simWeight += w5;
-    }
-    return needed;
-  }
-
   // Absence breakdown
   int get totalMissedHours => _absences.where((a) => a.type?.toLowerCase() != 'késés').length;
   
-  int get justifiedHours => _absences.where((a) {
-    final s = a.status.toLowerCase();
-    return s.contains('igazolt') && !s.contains('igazolatlan') && a.type?.toLowerCase() != 'késés';
-  }).length;
+  // Status classifiers shared by the counters and the absences list filter.
+  // Late arrivals (késés) are not missed hours and match none of them.
+  static bool _isLate(Absence a) => a.type?.toLowerCase() == 'késés';
 
-  int get unjustifiedHours => _absences.where((a) {
+  static bool isJustified(Absence a) {
     final s = a.status.toLowerCase();
-    return s.contains('igazolatlan') && a.type?.toLowerCase() != 'késés';
-  }).length;
+    return s.contains('igazolt') && !s.contains('igazolatlan') && !_isLate(a);
+  }
 
-  int get pendingHours => _absences.where((a) {
+  static bool isUnjustified(Absence a) => a.status.toLowerCase().contains('igazolatlan') && !_isLate(a);
+
+  static bool isPending(Absence a) {
     final s = a.status.toLowerCase();
-    return (s.contains('igazolando') || s.contains('igazolandó') || s.contains('fuggoben') || s.contains('függőben')) && a.type?.toLowerCase() != 'késés';
-  }).length;
+    return (s.contains('igazolando') || s.contains('igazolandó') || s.contains('fuggoben') || s.contains('függőben')) && !_isLate(a);
+  }
+
+  int get justifiedHours => _absences.where(isJustified).length;
+
+  int get unjustifiedHours => _absences.where(isUnjustified).length;
+
+  int get pendingHours => _absences.where(isPending).length;
 
   int get totalDelayMinutes {
     int sum = 0;
@@ -583,12 +572,6 @@ class AppModel extends ChangeNotifier {
       }
     }
     return map;
-  }
-
-  // Excuse note generator
-  String generateExcuseText({required String studentName, required DateTime date, required String reason}) {
-    final dateStr = '${date.year}. ${date.month.toString().padLeft(2, '0')}. ${date.day.toString().padLeft(2, '0')}.';
-    return 'Tisztelt Osztályfőnök!\n\nAlulírott gondviselő igazolom, hogy $studentName nevű gyermekem $dateStr napon $reason miatt nem tudott megjelenni a tanítási órákon.\n\nKérem a hiányzás szülői igazolásként való elfogadását!\n\nKöszönettel,\nGondviselő';
   }
 
   // Pala Wrapped Stats

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:pala/api/client.dart';
 import 'package:pala/app/state/app_state.dart';
 import 'package:pala/utils/encryption.dart';
@@ -10,6 +11,27 @@ import 'package:pala/utils/encryption.dart';
 /// notification worker can restore a session without the app being open.
 class SessionStore {
   static String get _path => '${AppState.instance.configDir}/mobile_session.dat';
+
+  /// Moves the encryption key from the plaintext keyfile into the OS secure
+  /// store (Android Keystore, Keychain, DPAPI, libsecret), migrating an
+  /// existing keyfile. Call after the config dir is set and before any
+  /// [load]/[save], in every process (the app and the background worker).
+  static Future<void> initKey() async {
+    const storage = FlutterSecureStorage();
+    const name = 'pala_encryption_key';
+    try {
+      await EncryptionUtil.useKeyStore(
+        read: () => storage.read(key: name),
+        write: (value) => storage.write(key: name, value: value),
+        // On Windows/Linux the app shares ~/.config/pala, and its keyfile,
+        // with the CLI.
+        keepKeyFile: Platform.isWindows || Platform.isLinux,
+      );
+    } catch (_) {
+      // No usable secure store (e.g. no keyring on Linux, or an unsigned
+      // macOS build): keep using the keyfile rather than losing the session.
+    }
+  }
 
   static Future<void> save(KretaClient client) async {
     if (client.accessToken == null) return;

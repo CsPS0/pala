@@ -19,6 +19,8 @@ class TimetableView extends StatefulWidget {
 class _TimetableViewState extends State<TimetableView> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final List<String> _days = ['Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek'];
+  // Standard Hungarian day abbreviations for phones too narrow for full names.
+  static const _shortDays = ['H', 'K', 'Sze', 'Cs', 'P'];
   bool _isMatrixView = false;
 
   @override
@@ -94,7 +96,11 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
+                    // Scrolls instead of overflowing on narrow phones (week label + A/B badge).
+                    Flexible(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
                       children: [
                         IconButton(
                           tooltip: 'Előző hét',
@@ -108,7 +114,7 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                                 ? 'Aktuális hét'
                                 : (widget.appModel.weekOffset > 0 ? '+${widget.appModel.weekOffset}. hét' : '${widget.appModel.weekOffset}. hét'),
                             style: TextStyle(
-                              color: widget.appModel.weekOffset == 0 ? primary : Colors.white,
+                              color: widget.appModel.weekOffset == 0 ? primary : PalaTheme.text,
                               fontWeight: FontWeight.w700,
                               fontSize: 14,
                             ),
@@ -154,6 +160,9 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                         ],
                       ],
                     ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     Row(
                       children: [
                         if (isDesktop) ...[
@@ -206,7 +215,16 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                             ),
                           ),
                         ],
-                        OutlinedButton.icon(
+                        // Icon-only on phones so the week label and A/B badge keep their room.
+                        if (!isDesktop)
+                          IconButton(
+                            tooltip: 'Naptár export (.ics)',
+                            color: primary,
+                            icon: const Icon(Icons.calendar_month_outlined, size: 20),
+                            onPressed: _exportIcs,
+                          )
+                        else
+                          OutlinedButton.icon(
                           style: OutlinedButton.styleFrom(
                             foregroundColor: primary,
                             side: BorderSide(color: primary.withValues(alpha: 0.4)),
@@ -215,7 +233,7 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                           ),
                           onPressed: _exportIcs,
                           icon: Icon(Icons.calendar_month_outlined, size: 15),
-                          label: Text(isDesktop ? 'Naptár (.ics)' : '.ics', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                          label: Text('Naptár (.ics)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
                         ),
                       ],
                     ),
@@ -267,7 +285,7 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                                           style: TextStyle(
                                             fontWeight: FontWeight.w800,
                                             fontSize: 13,
-                                            color: isToday ? primary : Colors.white,
+                                            color: isToday ? primary : PalaTheme.text,
                                           ),
                                         ),
                                         if (dateStr.isNotEmpty)
@@ -337,7 +355,10 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                     labelColor: primary,
                     unselectedLabelColor: PalaTheme.textMuted,
                     labelStyle: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
-                    tabs: _days.map((d) => Tab(text: d)).toList(),
+                    tabs: [
+                      for (var i = 0; i < _days.length; i++)
+                        Tab(text: constraints.maxWidth < 420 ? _shortDays[i] : _days[i]),
+                    ],
                   ),
                 ),
 
@@ -358,7 +379,7 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                                 const SizedBox(height: 14),
                                 Text(
                                   'Nincs tanóra ezen a napon (${_days[idx]}).',
-                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15),
+                                  style: TextStyle(color: PalaTheme.text, fontWeight: FontWeight.w700, fontSize: 15),
                                   textAlign: TextAlign.center,
                                 ),
                                 const SizedBox(height: 6),
@@ -428,13 +449,13 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
             height: compact ? 26 : 32,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: isNow ? primary : Colors.white.withValues(alpha: 0.05),
+              color: isNow ? primary : PalaTheme.text.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
               '${l.lessonNumber}.',
               style: TextStyle(
-                color: isNow ? Colors.black : Colors.white,
+                color: isNow ? Colors.black : PalaTheme.text,
                 fontWeight: FontWeight.w800,
                 fontSize: compact ? 12 : 14,
               ),
@@ -450,7 +471,7 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                 Text(
                   widget.appModel.getDisplaySubject(l.subject),
                   style: TextStyle(
-                    color: Colors.white,
+                    color: PalaTheme.text,
                     fontWeight: FontWeight.w700,
                     fontSize: compact ? 13 : 15,
                     decoration: isCancelled ? TextDecoration.lineThrough : null,
@@ -554,7 +575,7 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                     child: Text(
                       days[dayIdx],
                       style: TextStyle(
-                        color: isToday ? primary : Colors.white,
+                        color: isToday ? primary : PalaTheme.text,
                         fontWeight: FontWeight.w800,
                         fontSize: 13,
                       ),
@@ -602,7 +623,7 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                             border: Border.all(color: PalaTheme.border.withValues(alpha: 0.3)),
                           ),
                           alignment: Alignment.center,
-                          child: Text('—', style: TextStyle(color: Colors.white10, fontSize: 12)),
+                          child: Text('—', style: TextStyle(color: PalaTheme.border, fontSize: 12)),
                         ),
                       );
                     }
@@ -636,7 +657,7 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
-                                color: isCancelled ? PalaTheme.danger : Colors.white,
+                                color: isCancelled ? PalaTheme.danger : PalaTheme.text,
                                 decoration: isCancelled ? TextDecoration.lineThrough : null,
                               ),
                               maxLines: 1,

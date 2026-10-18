@@ -18,13 +18,11 @@ namespace {
 
 constexpr const wchar_t kWindowClassName[] = L"FLUTTER_RUNNER_WIN32_WINDOW";
 
-// Smallest the window is allowed to shrink to, in logical pixels. Kept above
-// the 800px breakpoint (see app/lib/main.dart's PalaShell) so a native
-// desktop window can never be resized down into the mobile bottom-nav
-// layout, and stays roomy enough for the desktop sidebar (250px) plus a
-// usable content pane.
-constexpr int kMinWindowWidth = 900;
-constexpr int kMinWindowHeight = 600;
+// Smallest the window is allowed to shrink to, in logical pixels. Lowered to
+// 360px so developers and users can resize down into the compact mobile layout
+// (< 600dp) to test and use the phone navigation bar on desktop.
+constexpr int kMinWindowWidth = 360;
+constexpr int kMinWindowHeight = 500;
 
 /// Registry key for app theme preference.
 ///
