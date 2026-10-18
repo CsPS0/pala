@@ -68,6 +68,21 @@ A CI a Dart és Flutter ellenőrzéseket minden `main`-re történő pushnál é
 
 Gyors kézi próba: `dart run bin/pala.dart --demo` bejelentkezés és hálózat nélkül, fiktív adatokkal indítja a TUI-t.
 
+## Weboldal előnézeti képek
+
+A weboldal nyitóoldalán látható képek (`website/public/previews/*.webp`) a valódi alkalmazásokról készülnek, demó módban. Ha valamelyik kliens felülete megváltozik, készítsd el őket újra:
+
+```bash
+cd app && flutter test test/preview_capture_test.dart --dart-define=CAPTURE_PREVIEWS=true && cd ..
+node scripts/previews/capture_extension.mjs
+python scripts/previews/to_webp.py
+```
+
+- Az első parancs az asztali és a telefonos nézetet rögzíti (sötét és világos téma), a második a bővítmény felugró ablakát egy Chromium-alapú böngészővel (Edge, Chrome vagy Brave), a harmadik WebP-be alakítja és átméretezi a képeket.
+- A nyers PNG-k a `build/previews/` mappába kerülnek (gitignore alatt).
+- A képek a futtatás napjának órarendjét mutatják: hétköznap, tanítási időben futtatva a vezérlőpult a következő órát jeleníti meg.
+- A `to_webp.py` a Pillow csomagot igényli (`pip install pillow`).
+
 ## Build és kiadás
 
 A natív terminálos bináris előállítása:
@@ -87,6 +102,13 @@ A Windows Feladatütemezőből háttérben indított példány (`--daemon`) lát
   - a böngésző-kiterjesztés zip fájlját,
   - az APT tárolót, és frissíti a Scoop (`bucket/pala.json`) és Homebrew (`Formula/pala.rb`) manifesteket.
 - **aur.yml**: az AUR `pala-bin` csomagot a `packaging/PKGBUILD` alapján frissíti, a beállított SSH kulccsal.
+
+### Asztali build előfeltételek
+
+A `flutter_secure_storage` miatt az asztali alkalmazás buildjéhez kell:
+
+- **Windows:** a Visual Studio (vagy Build Tools) „C++ ATL for latest build tools” összetevője (`Microsoft.VisualStudio.Component.VC.ATL`), különben a build `atlstr.h` hibával leáll.
+- **Linux:** a `libsecret-1-dev` csomag, futáskor pedig egy kulcstartó szolgáltatás (például GNOME Keyring vagy KWallet).
 
 ### Android aláíró kulcs
 

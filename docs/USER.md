@@ -4,6 +4,7 @@ A **Pala** egy interaktív terminálos Kréta e-napló kliens (TUI). Ez a dokume
 
 ## 1. Bejelentkezés és Demó Üzemmód
 - **Normál bejelentkezés**: Az első indításkor meg kell adni az intézmény kódját (pl. `bmszc-neumann`). Ha nem tudod a kódot, használd a beépített keresőt az iskola neve alapján. A bejelentkezéshez az oktatási azonosítóra és a jelszóra van szükség.
+- **CAPTCHA és kétlépcsős azonosítás**: Ha a Kréta fiókodon be van kapcsolva a CAPTCHA vagy a kétlépcsős azonosítás, a Pala ezt felismeri, és a Kréta saját bejelentkezési oldalára visz. Ott te magad oldod meg a CAPTCHA-t és adod meg az ellenőrző kódot; a Pala ezeket nem kerüli meg és nem is látja, csak a sikeres belépés végén kapott kódot váltja be. Telefonon és macOS-en ez egy beépített ablakban történik. Windowson, Linuxon, a parancssoros felületen és a Webes Felületen a böngésző nyílik meg: belépés után másold ki a `mobil.e-kreta.hu` kezdetű linket (vagy a `code=` utáni részt) a címsorból, és illeszd be a Palába. A bővítmény mindig a Kréta oldalán jelentkeztet be, ott nincs teendő. Ezt a lépést csak bejelentkezéskor kell elvégezni, a munkamenet utána a szokásos módon frissül.
 - **[DEMÓ] Demó / Teszt üzemmód (Teszt Elek)**: Ha a Kréta szerverei éppen nem érhetők el (pl. nyári karbantartás alatt), vagy csak tesztelni szeretnéd a funkciókat, indítsd az alkalmazást a `pala --demo` paranccsal, vagy válaszd a bejelentkező képernyőn a *Demó profil betöltése* opciót. Ez teljes, élethű fiktív adatbázissal (szeptember 1-től június 21-ig tartó jegyek, órarend, házi feladatok, üzenetek, mulasztások) futtatja az alkalmazást internetkapcsolat nélkül.
 
 ## 2. Főmenü Funkciók és Kimutatások
@@ -55,7 +56,7 @@ A Pala teljes komponenskezelési támogatással rendelkezik a parancssorból és
 
 ## 7. Pala Böngésző Kiterjesztés (Browser Extension)
 
-A Pala böngésző kiterjesztése (Manifest V3) a Chromium alapú böngészőkben (Google Chrome, Brave, Microsoft Edge) nyújt közvetlen, villámgyors hozzáférést a Kréta rendszeréhez.
+A Pala böngésző kiterjesztése (Manifest V3) a Chromium alapú böngészőkben (Google Chrome, Brave, Microsoft Edge) nyújt közvetlen hozzáférést a Kréta rendszeréhez.
 
 ### 7.1. Felépítés: Mini Gyorsnézet és Teljes Vezérlőpult
 - **Mini Gyorsnézet (Popup)**: Az eszköztáron található Pala ikonra kattintva azonnal megjelenik az aktuális/következő tanóra, a visszaszámlálás a szünetre/órára, a mai órarend, a legfrissebb jegyek és a közelgő feladatok/dolgozatok.

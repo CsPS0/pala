@@ -27,6 +27,7 @@ Weboldal: [pala-app.hu](https://pala-app.hu)
 - **Pala Wrapped**: éves statisztika a tanévedről.
 - **Export**: naptár (`.ics`) és táblázat (CSV).
 - **Demó mód**: kipróbálható bejelentkezés nélkül, fiktív adatokkal.
+- **CAPTCHA és kétlépcsős azonosítás**: ha a fiókodon be van kapcsolva, a bejelentkezést a Kréta saját oldalán fejezed be.
 
 A böngésző-kiterjesztés ezen felül a háttérben megújítja a Kréta munkamenetet, így 40-60 perc után sem léptet ki. Az összes funkció részletesen: [Felhasználói kézikönyv](docs/USER.md).
 
