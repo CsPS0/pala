@@ -6,7 +6,7 @@
     "architecture": {
         "64bit": {
             "url": "https://github.com/CsPS0/pala/releases/download/v1.2.3/pala.exe",
-            "hash": "d4feb763d146f478d9917cf3a91ae4ea959acb49fae3f0cfaa7278061d33187f"
+            "hash": "62695492c5389fed8c99ae2413f42fc36a1e473f9ca6730eeab9bec08e13fe36"
         }
     },
     "bin": "pala.exe",
