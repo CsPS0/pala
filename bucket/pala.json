@@ -1,12 +1,12 @@
 {
-    "version": "1.2.3",
+    "version": "test",
     "description": "Interaktív terminálos felület (TUI) a Kréta e-napló rendszerhez",
     "homepage": "https://github.com/CsPS0/pala",
     "license": "MIT",
     "architecture": {
         "64bit": {
-            "url": "https://github.com/CsPS0/pala/releases/download/v1.2.3/pala.exe",
-            "hash": "62695492c5389fed8c99ae2413f42fc36a1e473f9ca6730eeab9bec08e13fe36"
+            "url": "https://github.com/CsPS0/pala/releases/download/test/pala.exe",
+            "hash": "49eca62097e386323cb3b1482bdad368b8f9bde27a1cbfc0ad2ff253512be4ac"
         }
     },
     "bin": "pala.exe",
