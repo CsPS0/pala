@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
 html {
+  /* Keep anchor targets clear of the 68px fixed navbar */
+  scroll-padding-top: 72px;
   scrollbar-gutter: stable;
   overflow-x: clip;
 }
@@ -18,14 +20,72 @@ html {
   --primary-rgb: 255, 136, 0;
   --text: #f3f3f6;
   --text-muted: #8c8c94;
-  --text-subtle: #5f5f67;
+  --text-subtle: #85858d;
   --success: #30d158;
   --warning: #ffd60a;
   --danger: #ff453a;
   --info: #0a84ff;
   --purple: #bf5af2;
+  /* Grade 4 and ghost grade colors, shared with the TUI and the extension */
+  --grade-good: #78e08f;
+  --ghost: #32ade6;
+  /* Solid orange fills keep the bright orange and dark text in both themes */
+  --primary-fill: #ff8800;
+  --primary-fill-hover: #ffa033;
+  --on-primary: #0e0e11;
   --radius: 12px;
   --radius-lg: 20px;
+  color-scheme: dark;
+}
+
+/* Light theme, matching the apps' light palettes; set on <html> by the script in layout.tsx */
+[data-theme="light"] {
+  --bg: #f4f4f7;
+  --sidebar: #ffffff;
+  --card: #ffffff;
+  --card-hover: #efeff4;
+  --card-alt: #f8f8fb;
+  --border: #e1e1e6;
+  --border-focus: #964a00;
+  --primary: #964a00;
+  --primary-hover: #7a3c00;
+  --primary-rgb: 150, 74, 0;
+  --text: #18181b;
+  --text-muted: #686872;
+  --text-subtle: #6e6e78;
+  --success: #1b7f3b;
+  --warning: #8a6100;
+  --danger: #c62828;
+  --info: #0b5cc2;
+  --purple: #8e24aa;
+  --grade-good: #2e7d32;
+  --ghost: #00739e;
+  color-scheme: light;
+}
+
+/* Expose the tokens as Tailwind colors (bg-card, text-muted, border-border, ...) */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-sidebar: var(--sidebar);
+  --color-card: var(--card);
+  --color-card-hover: var(--card-hover);
+  --color-card-alt: var(--card-alt);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-fill: var(--primary-fill);
+  --color-primary-fill-hover: var(--primary-fill-hover);
+  --color-on-primary: var(--on-primary);
+  --color-fg: var(--text);
+  --color-muted: var(--text-muted);
+  --color-subtle: var(--text-subtle);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
+  --color-purple: var(--purple);
+  --color-grade-good: var(--grade-good);
+  --color-ghost: var(--ghost);
 }
 
 body {
@@ -41,6 +101,23 @@ body {
 
 *, *::before, *::after {
   box-sizing: border-box;
+}
+
+/* Visible keyboard focus on the dark theme (WCAG 2.4.7) */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+}
+
+/* Used by horizontally scrolling tab strips */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 /* Respect reduced motion preference (WCAG 2.3.3) */
@@ -70,4 +147,17 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary);
+}
+
+/* Theme-specific images (hero preview screenshots): show only the one matching the active theme */
+.only-light {
+  display: none;
+}
+
+[data-theme="light"] .only-light {
+  display: block;
+}
+
+[data-theme="light"] .only-dark {
+  display: none;
 }

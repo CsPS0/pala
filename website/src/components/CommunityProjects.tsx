@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import {
   ExternalLink,
   Terminal,
@@ -10,12 +11,10 @@ import {
   Globe,
   Archive,
   History,
-  Sparkles,
   Zap,
   Home,
   Code,
   Users,
-  BookOpen,
   GraduationCap,
 } from "lucide-react";
 
@@ -44,7 +43,7 @@ const PROJECTS: CommunityProject[] = [
     image: "/community/qwit-development_firka.png",
     title: "Firka",
     author: "QwIT Development",
-    description: "A modern nyílt forráskódú Kréta kliens fejlesztések egyik meghatározó alapköve és elődje.",
+    description: "A QwIT csapat Flutter alapú Kréta kliense, 2025 óta fejlesztik.",
     url: "https://github.com/QwIT-Development/firka",
     websiteUrl: "https://firka.app/",
     repo: "QwIT-Development/firka",
@@ -56,7 +55,7 @@ const PROJECTS: CommunityProject[] = [
     image: "/community/qwit-development_app-legacy.png",
     title: "app-legacy (refilc)",
     author: "reFilc / QwIT Development",
-    description: "A klasszikus reFilc Android és Flutter alapú mobil Kréta kliens nyílt kódbázisa.",
+    description: "A Filc utódjaként indult reFilc továbbfejlesztett változata (Flutter).",
     url: "https://github.com/QwIT-Development/app-legacy",
     repo: "QwIT-Development/app-legacy",
     category: "kreta",
@@ -66,8 +65,8 @@ const PROJECTS: CommunityProject[] = [
     icon: Smartphone,
     image: "/community/zan1456_folio.png",
     title: "Folio",
-    author: "Folio Team / Zan1456",
-    description: "Modern, nyílt forráskódú Kréta kliens Material You dizájnnal és fejlett átlagszámítással.",
+    author: "Zan1456",
+    description: "A Firka korábbi (legacy) kódjának felfrissített változata, 2026-tól (Flutter).",
     url: "https://github.com/Zan1456/folio",
     websiteUrl: "https://folio.zan1456.dev/",
     repo: "Zan1456/folio",
@@ -79,7 +78,7 @@ const PROJECTS: CommunityProject[] = [
     image: "/community/jarjk_rsfilc.png",
     title: "RozsdásFilc (rsfilc)",
     author: "jarjk",
-    description: "KRÉTA kliens Rust nyelven, villámgyors és memóriahatékony parancssori és TUI felülettel.",
+    description: "Parancssori Kréta kliens Rust nyelven, 2024 óta.",
     url: "https://github.com/jarjk/rsfilc",
     repo: "jarjk/rsfilc",
     category: "kreta",
@@ -89,11 +88,12 @@ const PROJECTS: CommunityProject[] = [
     icon: Monitor,
     image: "/community/doomhyena_toll.png",
     title: "Toll",
-    author: "Anasztázia (doomhyena)",
-    description: "Natív asztali KRÉTA kliens Windows, Linux és macOS rendszerekre jegyekkel és órarenddel.",
+    author: "doomhyena",
+    description: "Asztali Kréta kliens Windowsra, Linuxra és macOS-re (Go, Wails, React). 2026-ban archiválták.",
     url: "https://github.com/doomhyena/toll",
     repo: "doomhyena/toll",
     category: "kreta",
+    isArchived: true,
     badge: "Asztali",
   },
   {
@@ -101,11 +101,10 @@ const PROJECTS: CommunityProject[] = [
     image: "/community/coware-apps_ellenorzo.png",
     title: "Arisztokréta",
     author: "Coware Apps",
-    description: "Nyílt forráskódú alternatív ellenőrző alkalmazás TypeScript és Ionic keretrendszerben.",
+    description: "Nem hivatalos, KRÉTA-kompatibilis ellenőrző alkalmazás (TypeScript), 2020-ban indult.",
     url: "https://github.com/Coware-Apps/ellenorzo",
     repo: "Coware-Apps/ellenorzo",
     category: "kreta",
-    isArchived: true,
     status: "Megszűnt / Archivált",
   },
   {
@@ -113,7 +112,7 @@ const PROJECTS: CommunityProject[] = [
     image: "/community/coware-apps_naplo.png",
     title: "Napló+ (Tanári Napló)",
     author: "Coware Apps",
-    description: "Független KRÉTA-kompatibilis tanári napló pedagógusok számára, hiányzás- és jegykezeléssel.",
+    description: "Független, KRÉTA-kompatibilis tanári napló alkalmazás (2019–2021).",
     url: "https://github.com/Coware-Apps/naplo",
     repo: "Coware-Apps/naplo",
     category: "kreta",
@@ -125,9 +124,9 @@ const PROJECTS: CommunityProject[] = [
     image: "/community/filc_filc.png",
     title: "Filc",
     author: "Filc Team",
-    description: "A magyar diákközösség legelső és legnépszerűbb nyílt forráskódú alternatív Kréta kliense.",
-    url: "https://github.com/filc/filc",
-    repo: "filc/filc",
+    description: "Nem hivatalos e-napló alkalmazás a Kréta rendszerhez (2020–2023), mobilon és asztalon.",
+    url: "https://github.com/filc/naplo-archive",
+    repo: "filc/naplo-archive",
     isArchived: true,
     status: "Megszűnt / Archivált",
     category: "kreta",
@@ -137,7 +136,7 @@ const PROJECTS: CommunityProject[] = [
     image: "/community/boapps_szivacs-naplo.png",
     title: "Szivacs-Naplo",
     author: "boapps",
-    description: "A legendás korai Androidos e-Kréta kliens, a közösségi kliensfejlesztés egyik úttörője.",
+    description: "Multiplatform kliensalkalmazás az e-napló rendszerhez (2018–2020).",
     url: "https://github.com/boapps/Szivacs-Naplo",
     repo: "boapps/Szivacs-Naplo",
     isArchived: true,
@@ -150,8 +149,8 @@ const PROJECTS: CommunityProject[] = [
     icon: Zap,
     image: "/community/rozsadomb_neptun-powerup.png",
     title: "Neptun PowerUp! Next & NG",
-    author: "rozsadomb & l1pz",
-    description: "TypeScript és React alapú modern átirat a 2024–2026 között bevezetett megújult Neptun felülethez.",
+    author: "rozsadomb",
+    description: "A Neptun PowerUp! új változata a megújult Neptun webes felülethez (TypeScript).",
     url: "https://github.com/rozsadomb/neptun-powerup",
     websiteUrl: "https://neptun-powerup.com/",
     repo: "rozsadomb/neptun-powerup",
@@ -159,22 +158,11 @@ const PROJECTS: CommunityProject[] = [
     badge: "Új felület",
   },
   {
-    icon: Zap,
-    image: "/community/letsupdate_csn.png",
-    title: "CSN — Captcha Solver",
-    author: "LetsUpdate",
-    description: "Kliensoldali OCR képfelismerő kiegészítő a tárgyfelvételi biztonsági kódok automatikus kitöltésére.",
-    url: "https://github.com/LetsUpdate/CSN",
-    repo: "LetsUpdate/CSN",
-    category: "neptun",
-    badge: "OCR motor",
-  },
-  {
     icon: Monitor,
     image: "/community/davidsusu_szaturn.png",
     title: "Szaturn",
     author: "davidsusu",
-    description: "Modern kártyás, reszponzív felületi motor a Neptun nehézkes ASP.NET WebForms táblázatainak kiváltására.",
+    description: "Böngészőbővítmény, amely átláthatóbb felületet ad a Neptunnak.",
     url: "https://github.com/davidsusu/szaturn",
     repo: "davidsusu/szaturn",
     category: "neptun",
@@ -184,8 +172,8 @@ const PROJECTS: CommunityProject[] = [
     icon: Archive,
     image: "/community/solymosi_npu.png",
     title: "Neptun PowerUp! (NPU)",
-    author: "Solymosi Máté (szalio)",
-    description: "A legendás egyetemi kiegészítő: automatikus munkamenet-védelem (Keep-Alive), KKI-kalkulátor és helyfigyelő.",
+    author: "Solymosi Máté",
+    description: "Böngészőbővítmény a régi Neptun felülethez (2014–2024), ma archivált.",
     url: "https://github.com/solymosi/npu",
     repo: "solymosi/npu",
     category: "neptun",
@@ -197,7 +185,7 @@ const PROJECTS: CommunityProject[] = [
     image: "/community/nanda070_karmin.png",
     title: "Karmin (ELTE Mobil)",
     author: "Nanda070",
-    description: "Független, nyílt forráskódú Flutter mobilalkalmazás ELTE hallgatóknak gyors órarenddel és vizsgafelülettel.",
+    description: "Nem hivatalos Neptun mobilkliens ELTE hallgatóknak (Flutter), archivált.",
     url: "https://github.com/Nanda070/karmin",
     repo: "Nanda070/karmin",
     category: "neptun",
@@ -211,7 +199,7 @@ const PROJECTS: CommunityProject[] = [
     image: "/community/majorcs_kreta-homeassistant.png",
     title: "Kréta Okosotthon",
     author: "majorcs",
-    description: "Kréta integráció Home Assistanthez: másnapi első óra, házi feladatok és órarend fali okoskijelzőkre.",
+    description: "Nem hivatalos Kréta integráció a Home Assistant okosotthon-rendszerhez.",
     url: "https://github.com/majorcs/kreta-homeassistant",
     repo: "majorcs/kreta-homeassistant",
     category: "tools",
@@ -220,9 +208,9 @@ const PROJECTS: CommunityProject[] = [
   {
     icon: Code,
     image: "/community/bczsalba_ekreta-docs-v3.png",
-    title: "e-Kréta Docs v3 & Asztal",
+    title: "e-Kréta API dokumentáció",
     author: "bczsalba",
-    description: "A Kréta v2 és v3 REST API nyilvános specifikációja, hitelesítési leírása és minimalista Python kliense.",
+    description: "Nem hivatalos dokumentáció a Kréta API 2-es és újabb verzióihoz (Python példákkal).",
     url: "https://github.com/bczsalba/ekreta-docs-v3",
     repo: "bczsalba/ekreta-docs-v3",
     category: "tools",
@@ -233,39 +221,39 @@ const PROJECTS: CommunityProject[] = [
 function getCategoryStyles(category: ProjectCategory, isArchived?: boolean) {
   if (isArchived) {
     return {
-      card: "bg-[#151518]/70 border border-dashed border-[#ff453a]/30 hover:border-[#ff453a]/70 hover:bg-[#18181c] opacity-85 hover:opacity-100 shadow-[0_0_20px_rgba(255,69,58,0.04)]",
-      iconBg: "bg-[#ff453a]/10 text-[#ff453a] border-[#ff453a]/25",
-      badge: "bg-[#ff453a]/15 text-[#ff453a] border-[#ff453a]/35",
-      author: "text-[#8c8c94]",
-      linkHover: "hover:text-[#f3f3f6]",
+      card: "bg-sidebar/70 border border-dashed border-primary/30 hover:border-primary/70 hover:bg-card-alt opacity-85 hover:opacity-100",
+      iconBg: "bg-primary/10 text-primary border-primary/25",
+      badge: "bg-primary/15 text-primary border-primary/35",
+      author: "text-muted",
+      linkHover: "hover:text-fg",
     };
   }
 
   switch (category) {
     case "neptun":
       return {
-        card: "bg-[#1b1b1f] border border-[#28282d] hover:border-[#0a84ff] hover:bg-[#1b1e28]",
-        iconBg: "bg-[#0a84ff]/10 text-[#0a84ff] border-[#0a84ff]/25",
-        badge: "bg-[#0a84ff]/10 text-[#0a84ff] border-[#0a84ff]/25 text-[#0a84ff]",
-        author: "text-[#0a84ff]",
-        linkHover: "hover:text-[#0a84ff]",
+        card: "bg-card border border-border hover:border-primary hover:bg-card-alt",
+        iconBg: "bg-primary/10 text-primary border-primary/25",
+        badge: "bg-primary/10 text-primary border-primary/25 text-primary",
+        author: "text-primary",
+        linkHover: "hover:text-primary",
       };
     case "tools":
       return {
-        card: "bg-[#1b1b1f] border border-[#28282d] hover:border-[#30d158] hover:bg-[#1a231d]",
-        iconBg: "bg-[#30d158]/10 text-[#30d158] border-[#30d158]/25",
-        badge: "bg-[#30d158]/10 text-[#30d158] border-[#30d158]/25 text-[#30d158]",
-        author: "text-[#30d158]",
-        linkHover: "hover:text-[#30d158]",
+        card: "bg-card border border-border hover:border-primary hover:bg-card-alt",
+        iconBg: "bg-primary/10 text-primary border-primary/25",
+        badge: "bg-primary/10 text-primary border-primary/25 text-primary",
+        author: "text-primary",
+        linkHover: "hover:text-primary",
       };
     case "kreta":
     default:
       return {
-        card: "bg-[#1b1b1f] border border-[#28282d] hover:border-[#ff8800] hover:bg-[#222227]",
-        iconBg: "bg-[#ff8800]/10 text-[#ff8800] border-[#ff8800]/20",
-        badge: "bg-[#ff8800]/10 text-[#ff8800] border-[#ff8800]/20 text-[#ff8800]",
-        author: "text-[#ff8800]",
-        linkHover: "hover:text-[#ff8800]",
+        card: "bg-card border border-border hover:border-primary hover:bg-card-hover",
+        iconBg: "bg-primary/10 text-primary border-primary/20",
+        badge: "bg-primary/10 text-primary border-primary/20 text-primary",
+        author: "text-primary",
+        linkHover: "hover:text-primary",
       };
   }
 }
@@ -284,28 +272,29 @@ function ProjectCard({
 
   return (
     <div
-      className={`p-4 sm:p-5 rounded-2xl flex flex-col justify-between transition-all hover:-translate-y-0.5 group ${styles.card}`}
+      className={`p-4 sm:p-5 rounded-2xl flex flex-col justify-between transition-all group ${styles.card}`}
     >
       <div>
         <div className="flex items-start justify-between gap-3 mb-2.5">
           <div className="flex items-center gap-3 min-w-0">
             <div
-              className={`w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center shrink-0 border bg-[#111114] ${styles.iconBg}`}
+              className={`w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center shrink-0 border bg-bg ${styles.iconBg}`}
             >
               {project.image && !imageError ? (
-                <img
+                <Image
                   src={project.image}
                   alt={project.title}
+                  width={40}
+                  height={40}
                   className="w-full h-full object-cover rounded-xl"
                   onError={() => setImageError(true)}
-                  loading="lazy"
                 />
               ) : (
                 <IconComp size={18} />
               )}
             </div>
             <div className="min-w-0">
-              <h4 className="text-sm sm:text-base font-bold text-[#f3f3f6] truncate group-hover:text-white">
+              <h4 className="text-sm sm:text-base font-bold text-fg truncate group-hover:text-fg">
                 {project.title}
               </h4>
               <p className={`text-[11px] font-semibold truncate ${styles.author}`}>
@@ -316,7 +305,7 @@ function ProjectCard({
 
           <div className="shrink-0 flex items-center gap-1.5">
             {isArchived ? (
-              <span className="text-[10px] font-bold bg-[#ff453a]/15 text-[#ff453a] border border-[#ff453a]/35 px-2 py-0.5 rounded-full whitespace-nowrap">
+              <span className="text-[10px] font-bold bg-primary/15 text-primary border border-primary/35 px-2 py-0.5 rounded-full whitespace-nowrap">
                 {project.status || "Archivált"}
               </span>
             ) : (
@@ -329,7 +318,7 @@ function ProjectCard({
                   </span>
                 )}
                 {versionTag && (
-                  <span className="text-[10px] font-bold bg-[#151518] text-[#ff8800] border border-[#28282d] px-2 py-0.5 rounded-full font-mono whitespace-nowrap">
+                  <span className="text-[10px] font-bold bg-sidebar text-primary border border-border px-2 py-0.5 rounded-full font-mono whitespace-nowrap">
                     {versionTag}
                   </span>
                 )}
@@ -338,13 +327,13 @@ function ProjectCard({
           </div>
         </div>
 
-        <p className="text-xs text-[#8c8c94] leading-relaxed mb-3 line-clamp-2">
+        <p className="text-xs text-muted leading-relaxed mb-3 line-clamp-2">
           {project.description}
         </p>
       </div>
 
-      <div className="pt-2.5 border-t border-[#28282d]/70 flex items-center justify-between text-xs gap-2">
-        <span className="text-[11px] font-mono text-[#55555c] truncate max-w-[130px]">
+      <div className="pt-2.5 border-t border-border/70 flex items-center justify-between text-xs gap-2">
+        <span className="text-[11px] font-mono text-subtle truncate max-w-[130px]">
           {project.repo}
         </span>
         <div className="flex items-center gap-2.5 shrink-0">
@@ -353,7 +342,7 @@ function ProjectCard({
               href={project.websiteUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className={`inline-flex items-center gap-1 text-[11px] font-bold transition-colors text-[#f3f3f6] ${styles.linkHover}`}
+              className={`inline-flex items-center gap-1 text-[11px] font-bold transition-colors text-fg ${styles.linkHover}`}
               title={`${project.title} hivatalos weboldala`}
             >
               <Globe size={12} />
@@ -364,7 +353,7 @@ function ProjectCard({
             href={project.url}
             target="_blank"
             rel="noopener noreferrer"
-            className={`inline-flex items-center gap-1 text-[11px] font-bold transition-colors text-[#8c8c94] ${styles.linkHover}`}
+            className={`inline-flex items-center gap-1 text-[11px] font-bold transition-colors text-muted ${styles.linkHover}`}
           >
             <span>GitHub</span>
             <ExternalLink size={12} />
@@ -451,23 +440,23 @@ export function CommunityProjects() {
   return (
     <section id="kozosseg" className="py-12 sm:py-16 px-4 sm:px-6 max-w-7xl mx-auto w-full overflow-hidden">
       <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1b1b1f] border border-[#28282d] text-[#8c8c94] text-xs font-semibold mb-4">
-          <Users size={13} className="text-[#ff8800]" />
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-card border border-border text-muted text-xs font-semibold mb-4">
+          <Users size={13} className="text-primary" />
           <span>Nyílt forráskódú ökoszisztéma</span>
         </div>
-        <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-3 text-[#f3f3f6]">Közösségi Projektek</h2>
-        <p className="text-[#8c8c94] text-base">
-          A magyar nyílt forráskódú diák- és egyetemi közösség figyelemre méltó Kréta- és Neptun-fejlesztései.
+        <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-3 text-fg">Közösségi Projektek</h2>
+        <p className="text-muted text-base">
+          Más nyílt forráskódú Kréta- és Neptun-projektek a magyar diákközösségtől.
         </p>
 
         {/* View filters */}
-        <div className="flex items-center justify-center gap-2 mt-6">
+        <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
           <button
             onClick={() => setFilterMode("all")}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
               filterMode === "all"
-                ? "bg-[#ff8800] text-black border-[#ff8800] shadow-[0_0_15px_rgba(255,136,0,0.25)]"
-                : "bg-[#1b1b1f] text-[#8c8c94] border-[#28282d] hover:border-[#38383e] hover:text-[#f3f3f6]"
+                ? "bg-primary-fill text-on-primary border-primary"
+                : "bg-card text-muted border-border hover:border-border hover:text-fg"
             }`}
           >
             <span>Összes projekt</span>
@@ -477,8 +466,8 @@ export function CommunityProjects() {
             onClick={() => setFilterMode("active")}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
               filterMode === "active"
-                ? "bg-[#30d158] text-black border-[#30d158] shadow-[0_0_15px_rgba(48,209,88,0.25)]"
-                : "bg-[#1b1b1f] text-[#8c8c94] border-[#28282d] hover:border-[#38383e] hover:text-[#f3f3f6]"
+                ? "bg-primary-fill text-on-primary border-primary"
+                : "bg-card text-muted border-border hover:border-border hover:text-fg"
             }`}
           >
             <span>Csak aktívak</span>
@@ -488,8 +477,8 @@ export function CommunityProjects() {
             onClick={() => setFilterMode("archived")}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
               filterMode === "archived"
-                ? "bg-[#ff453a] text-white border-[#ff453a] shadow-[0_0_15px_rgba(255,69,58,0.25)]"
-                : "bg-[#1b1b1f] text-[#8c8c94] border-[#28282d] hover:border-[#ff453a]/50 hover:text-[#ff453a]"
+                ? "bg-primary-fill text-on-primary border-primary"
+                : "bg-card text-muted border-border hover:border-primary/50 hover:text-primary"
             }`}
           >
             <span>Csak archiváltak</span>
@@ -502,23 +491,23 @@ export function CommunityProjects() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Bal oszlop: Kréta Kliensek */}
         <div className="flex flex-col space-y-3.5">
-          <div className="p-4 rounded-2xl bg-[#141417] border border-[#28282d] border-t-2 border-t-[#ff8800] flex items-center justify-between shadow-sm">
+          <div className="p-4 rounded-2xl bg-sidebar border border-border border-t-2 border-t-primary flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#ff8800]/10 text-[#ff8800] border border-[#ff8800]/25 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary border border-primary/25 flex items-center justify-center">
                 <Smartphone size={18} />
               </div>
               <div>
-                <h3 className="text-base font-black text-[#f3f3f6]">Kréta Kliensek</h3>
-                <p className="text-[11px] text-[#8c8c94]">Mobil, asztali és terminálos alkalmazások</p>
+                <h3 className="text-base font-black text-fg">Kréta Kliensek</h3>
+                <p className="text-[11px] text-muted">Mobil, asztali és terminálos alkalmazások</p>
               </div>
             </div>
-            <span className="text-xs font-mono font-bold bg-[#ff8800]/10 text-[#ff8800] border border-[#ff8800]/25 px-2.5 py-1 rounded-lg">
+            <span className="text-xs font-mono font-bold bg-primary/10 text-primary border border-primary/25 px-2.5 py-1 rounded-lg">
               {kretaProjects.length}
             </span>
           </div>
 
           {kretaProjects.length === 0 ? (
-            <div className="p-6 rounded-2xl bg-[#141417] border border-[#28282d] text-center text-xs text-[#8c8c94]">
+            <div className="p-6 rounded-2xl bg-sidebar border border-border text-center text-xs text-muted">
               Nincs megjeleníthető projekt ebben a szűrésben.
             </div>
           ) : (
@@ -530,23 +519,23 @@ export function CommunityProjects() {
 
         {/* Középső oszlop: Egyetem / Neptun */}
         <div className="flex flex-col space-y-3.5">
-          <div className="p-4 rounded-2xl bg-[#141417] border border-[#28282d] border-t-2 border-t-[#0a84ff] flex items-center justify-between shadow-sm">
+          <div className="p-4 rounded-2xl bg-sidebar border border-border border-t-2 border-t-primary flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#0a84ff]/10 text-[#0a84ff] border border-[#0a84ff]/25 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary border border-primary/25 flex items-center justify-center">
                 <GraduationCap size={18} />
               </div>
               <div>
-                <h3 className="text-base font-black text-[#f3f3f6]">Egyetem / Neptun</h3>
-                <p className="text-[11px] text-[#8c8c94]">Egyetemi kiegészítők és OCR motorok</p>
+                <h3 className="text-base font-black text-fg">Egyetem / Neptun</h3>
+                <p className="text-[11px] text-muted">Egyetemi kiegészítők és OCR motorok</p>
               </div>
             </div>
-            <span className="text-xs font-mono font-bold bg-[#0a84ff]/10 text-[#0a84ff] border border-[#0a84ff]/25 px-2.5 py-1 rounded-lg">
+            <span className="text-xs font-mono font-bold bg-primary/10 text-primary border border-primary/25 px-2.5 py-1 rounded-lg">
               {neptunProjects.length}
             </span>
           </div>
 
           {neptunProjects.length === 0 ? (
-            <div className="p-6 rounded-2xl bg-[#141417] border border-[#28282d] text-center text-xs text-[#8c8c94]">
+            <div className="p-6 rounded-2xl bg-sidebar border border-border text-center text-xs text-muted">
               Nincs megjeleníthető projekt ebben a szűrésben.
             </div>
           ) : (
@@ -558,23 +547,23 @@ export function CommunityProjects() {
 
         {/* Jobb oszlop: Eszközök & IoT */}
         <div className="flex flex-col space-y-3.5">
-          <div className="p-4 rounded-2xl bg-[#141417] border border-[#28282d] border-t-2 border-t-[#30d158] flex items-center justify-between shadow-sm">
+          <div className="p-4 rounded-2xl bg-sidebar border border-border border-t-2 border-t-primary flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#30d158]/10 text-[#30d158] border border-[#30d158]/25 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary border border-primary/25 flex items-center justify-center">
                 <Home size={18} />
               </div>
               <div>
-                <h3 className="text-base font-black text-[#f3f3f6]">Eszközök & IoT</h3>
-                <p className="text-[11px] text-[#8c8c94]">Okosotthon és fejlesztői API eszközök</p>
+                <h3 className="text-base font-black text-fg">Eszközök & IoT</h3>
+                <p className="text-[11px] text-muted">Okosotthon és fejlesztői API eszközök</p>
               </div>
             </div>
-            <span className="text-xs font-mono font-bold bg-[#30d158]/10 text-[#30d158] border border-[#30d158]/25 px-2.5 py-1 rounded-lg">
+            <span className="text-xs font-mono font-bold bg-primary/10 text-primary border border-primary/25 px-2.5 py-1 rounded-lg">
               {toolsProjects.length}
             </span>
           </div>
 
           {toolsProjects.length === 0 ? (
-            <div className="p-6 rounded-2xl bg-[#141417] border border-[#28282d] text-center text-xs text-[#8c8c94]">
+            <div className="p-6 rounded-2xl bg-sidebar border border-border text-center text-xs text-muted">
               Nincs megjeleníthető projekt ebben a szűrésben.
             </div>
           ) : (
@@ -583,40 +572,17 @@ export function CommunityProjects() {
             ))
           )}
 
-          {/* Kiegészítő információs kártya: Teljes történet */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-[#141417] border border-[#28282d] flex flex-col justify-between space-y-3">
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2 text-xs font-bold text-[#ff8800]">
-                <BookOpen size={14} />
-                <span>Részletes történelem</span>
-              </div>
-              <h4 className="text-sm font-bold text-[#f3f3f6]">
-                A Kréta- és Neptun-kliensek fejlődése
-              </h4>
-              <p className="text-xs text-[#8c8c94] leading-relaxed">
-                Tekintsd meg az interaktív idővonalat a papíralapú ellenőrzőktől a modern kliensekig a Dokumentációban.
-              </p>
-            </div>
-            <a
-              href="/docs#tortenet"
-              className="inline-flex items-center justify-between text-xs font-bold py-2 px-3.5 rounded-xl bg-[#1b1b1f] border border-[#28282d] text-[#f3f3f6] hover:border-[#ff8800] hover:text-[#ff8800] transition-colors"
-            >
-              <span>Idővonal megnyitása</span>
-              <ExternalLink size={13} />
-            </a>
-          </div>
-
           {/* Kiegészítő információs kártya: Projekt beküldése */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-[#141417] border border-[#28282d] flex flex-col justify-between space-y-3">
+          <div className="p-4 sm:p-5 rounded-2xl bg-sidebar border border-border flex flex-col justify-between space-y-3">
             <div className="space-y-1.5">
-              <div className="flex items-center gap-2 text-xs font-bold text-[#30d158]">
+              <div className="flex items-center gap-2 text-xs font-bold text-primary">
                 <Code size={14} />
                 <span>Hiányzik egy projekt?</span>
               </div>
-              <h4 className="text-sm font-bold text-[#f3f3f6]">
+              <h4 className="text-sm font-bold text-fg">
                 Közösségi projekt beküldése
               </h4>
-              <p className="text-xs text-[#8c8c94] leading-relaxed">
+              <p className="text-xs text-muted leading-relaxed">
                 Készítettél egy nyílt forráskódú Kréta- vagy Neptun-eszközt? Nyiss egy hibajegyet GitHubon a hozzáadáshoz!
               </p>
             </div>
@@ -624,7 +590,7 @@ export function CommunityProjects() {
               href="https://github.com/CsPS0/pala/issues"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-between text-xs font-bold py-2 px-3.5 rounded-xl bg-[#1b1b1f] border border-[#28282d] text-[#f3f3f6] hover:border-[#30d158] hover:text-[#30d158] transition-colors"
+              className="inline-flex items-center justify-between text-xs font-bold py-2 px-3.5 rounded-xl bg-card border border-border text-fg hover:border-primary hover:text-primary transition-colors"
             >
               <span>Projekt beküldése</span>
               <ExternalLink size={13} />

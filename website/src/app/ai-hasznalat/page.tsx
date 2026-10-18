@@ -12,16 +12,16 @@ export const metadata: Metadata = {
 
 export default function AiUsagePage() {
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[#f3f3f6] flex flex-col pt-[68px]">
+    <div className="min-h-screen bg-[var(--bg)] text-fg flex flex-col pt-[68px]">
       <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-12 sm:py-16">
         <h1 className="text-2xl sm:text-3xl font-black tracking-tight mb-2">
           AI használat
         </h1>
-        <p className="text-xs text-[#5f5f67] mb-10">
+        <p className="text-xs text-subtle mb-10">
           Utolsó frissítés: 2026. szeptember
         </p>
 
-        <div className="space-y-6 text-sm text-[#c5c5cc] leading-relaxed">
+        <div className="space-y-6 text-sm text-fg leading-relaxed">
           <p>
             A Palát gyakorlatilag egyedül fejlesztem, és ehhez sokat használok
             AI-t/LLM-eket — ezt nem titkolom, és nem is gondolom, hogy
@@ -53,7 +53,7 @@ export default function AiUsagePage() {
               href="https://github.com/QwIT-Development/firka"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#ff8800] hover:underline"
+              className="text-primary hover:underline"
             >
               Firka
             </a>
@@ -62,7 +62,7 @@ export default function AiUsagePage() {
               href="https://github.com/Zan1456/folio"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#ff8800] hover:underline"
+              className="text-primary hover:underline"
             >
               Folio
             </a>{" "}
@@ -71,7 +71,7 @@ export default function AiUsagePage() {
               href="https://github.com/jarjk/rsfilc"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#ff8800] hover:underline"
+              className="text-primary hover:underline"
             >
               rsfilc
             </a>{" "}

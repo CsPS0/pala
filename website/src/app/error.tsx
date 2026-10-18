@@ -65,39 +65,39 @@ export default function ErrorPage({
   )}`;
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[#f3f3f6] flex flex-col font-sans selection:bg-[#ff8800]/30 selection:text-[#ff8800] overflow-x-hidden pt-[68px]">
+    <div className="min-h-screen bg-[var(--bg)] text-fg flex flex-col font-sans selection:bg-primary/30 selection:text-primary overflow-x-hidden pt-[68px]">
       {/* Main Error Content */}
       <main className="flex-1 flex flex-col items-center justify-center text-center px-4 sm:px-6 py-14 sm:py-20 max-w-2xl mx-auto w-full">
         {/* Error Icon Badge */}
-        <div className="w-16 h-16 rounded-3xl bg-[#ff453a]/10 border border-[#ff453a]/30 flex items-center justify-center text-[#ff453a] mb-6 shadow-[0_0_30px_rgba(255,69,58,0.15)]">
+        <div className="w-16 h-16 rounded-3xl bg-danger/10 border border-danger/30 flex items-center justify-center text-danger mb-6">
           <AlertTriangle size={30} />
         </div>
 
-        <div className="inline-flex items-center gap-2 bg-[#ff453a]/10 border border-[#ff453a]/30 px-4 py-1.5 rounded-full text-xs font-bold text-[#ff453a] mb-4">
+        <div className="inline-flex items-center gap-2 bg-danger/10 border border-danger/30 px-4 py-1.5 rounded-full text-xs font-bold text-danger mb-4">
           <span>FUTÁSI HIBA</span> • <span>500 ERROR</span>
         </div>
 
-        <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-[#f3f3f6] mb-3">
+        <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-fg mb-3">
           Váratlan hiba történt a felület betöltésekor
         </h1>
 
-        <p className="text-sm sm:text-base text-[#8c8c94] leading-relaxed max-w-lg mb-6">
+        <p className="text-sm sm:text-base text-muted leading-relaxed max-w-lg mb-6">
           A weboldal egy nem várt kivételbe ütközött. Próbáld meg újratölteni a lapot, törölni a helyi gyorsítótárat, vagy jelezd a hibát a fejlesztőknek.
         </p>
 
         {/* Digest identifier pill if available */}
         {error.digest && (
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#171214] border border-[#ff453a]/30 mb-8 max-w-md">
-            <span className="text-[11px] font-mono text-[#8c8c94]">Hibakód:</span>
-            <code className="text-xs font-mono font-bold text-[#ff453a] truncate max-w-[200px]">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-sidebar border border-danger/30 mb-8 max-w-md">
+            <span className="text-[11px] font-mono text-muted">Hibakód:</span>
+            <code className="text-xs font-mono font-bold text-danger truncate max-w-[200px]">
               {error.digest}
             </code>
             <button
               onClick={copyDigest}
-              className="p-1 rounded-md text-[#8c8c94] hover:text-[#f3f3f6] hover:bg-[#28282d] transition-colors cursor-pointer"
+              className="p-1 rounded-md text-muted hover:text-fg hover:bg-border transition-colors cursor-pointer"
               title="Hibakód másolása"
             >
-              {copied ? <Check size={12} className="text-[#30d158]" /> : <Copy size={12} />}
+              {copied ? <Check size={12} className="text-success" /> : <Copy size={12} />}
             </button>
           </div>
         )}
@@ -112,7 +112,7 @@ export default function ErrorPage({
                 reset();
               }
             }}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#ff8800] hover:bg-[#ffa033] text-black font-extrabold text-sm sm:text-base px-6 sm:px-8 py-3.5 rounded-2xl transition-all shadow-[0_0_25px_rgba(255,136,0,0.25)] hover:-translate-y-0.5 cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-primary-fill hover:bg-primary-fill-hover text-on-primary font-extrabold text-sm sm:text-base px-6 sm:px-8 py-3.5 rounded-2xl transition-all cursor-pointer"
           >
             <RefreshCw size={16} />
             <span>Újratöltés</span>
@@ -120,9 +120,9 @@ export default function ErrorPage({
 
           <button
             onClick={handleClearCacheAndReload}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#1b1b1f] hover:bg-[#222227] text-[#f3f3f6] border border-[#28282d] hover:border-[#ff8800] font-bold text-sm sm:text-base px-5 sm:px-6 py-3.5 rounded-2xl transition-all hover:-translate-y-0.5 cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-card hover:bg-card-hover text-fg border border-border hover:border-primary font-bold text-sm sm:text-base px-5 sm:px-6 py-3.5 rounded-2xl transition-all cursor-pointer"
           >
-            <Trash2 size={16} className="text-[#ff8800]" />
+            <Trash2 size={16} className="text-primary" />
             <span>Gyorsítótár ürítése</span>
           </button>
         </div>
@@ -133,13 +133,13 @@ export default function ErrorPage({
             href={issueUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-[#8c8c94] hover:text-[#ff8800] transition-colors"
+            className="inline-flex items-center gap-1.5 text-muted hover:text-primary transition-colors"
           >
             <span>Hibajelentés beküldése GitHubon</span>
             <ExternalLink size={12} />
           </a>
-          <span className="text-[#38383e]">•</span>
-          <Link href="/" className="text-[#8c8c94] hover:text-[#f3f3f6] transition-colors">
+          <span className="text-border">•</span>
+          <Link href="/" className="text-muted hover:text-fg transition-colors">
             Vissza a főoldalra
           </Link>
         </div>

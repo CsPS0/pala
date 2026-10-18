@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const dynamic = "force-static";
-export const alt = "Pala — A Modern, Nyílt Forráskódú Kréta Kliens";
+export const alt = "Pala — Nyílt forráskódú Kréta kliens";
 export const size = {
   width: 1200,
   height: 630,
@@ -16,7 +16,7 @@ export default async function Image() {
       const data = await res.json();
       if (data.tag_name) tag = data.tag_name;
     }
-  } catch (_) {}
+  } catch {}
 
   return new ImageResponse(
     (
@@ -29,14 +29,12 @@ export default async function Image() {
           alignItems: "center",
           justifyContent: "center",
           backgroundColor: "#09090c",
-          backgroundImage:
-            "radial-gradient(circle at 50% 35%, rgba(255, 136, 0, 0.22) 0%, rgba(9, 9, 12, 1) 75%)",
           color: "#f3f3f6",
           padding: "50px 60px",
           position: "relative",
         }}
       >
-        {/* Glow accent pill */}
+        {/* Accent pill */}
         <div
           style={{
             display: "flex",

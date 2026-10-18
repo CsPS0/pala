@@ -12,14 +12,14 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[#f3f3f6] flex flex-col pt-[68px]">
+    <div className="min-h-screen bg-[var(--bg)] text-fg flex flex-col pt-[68px]">
       <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-12 sm:py-16">
         <h1 className="text-2xl sm:text-3xl font-black tracking-tight mb-2">Adatvédelmi tájékoztató</h1>
-        <p className="text-xs text-[#5f5f67] mb-10">Utolsó frissítés: 2026. szeptember</p>
+        <p className="text-xs text-subtle mb-10">Utolsó frissítés: 2026. szeptember</p>
 
-        <div className="space-y-10 text-sm text-[#c5c5cc] leading-relaxed">
+        <div className="space-y-10 text-sm text-fg leading-relaxed">
           <section>
-            <h2 className="text-lg font-bold text-[#f3f3f6] mb-3">Kinek szól ez a tájékoztató</h2>
+            <h2 className="text-lg font-bold text-fg mb-3">Kinek szól ez a tájékoztató</h2>
             <p>
               A Pala egy nem hivatalos, nyílt forráskódú kliens az e-Kréta rendszerhez. Nincs saját
               szervere, saját felhasználói fiókja vagy adatbázisa. Ez az oldal azt írja le, hogy a
@@ -29,7 +29,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-[#f3f3f6] mb-3">A bejelentkezési adataid</h2>
+            <h2 className="text-lg font-bold text-fg mb-3">A bejelentkezési adataid</h2>
             <p className="mb-3">
               Amikor bejelentkezel a Pala alkalmazásba vagy a bővítménybe, az a hivatalos e-Kréta
               szerverekkel kommunikál közvetlenül, TLS titkosítással. A Pala nem lát rá erre a
@@ -44,19 +44,19 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-[#f3f3f6] mb-3">A böngészőbővítmény</h2>
+            <h2 className="text-lg font-bold text-fg mb-3">A böngészőbővítmény</h2>
             <p>
-              A bővítmény a <code className="text-[#ff8800] font-mono text-xs">storage</code> engedélyt
+              A bővítmény a <code className="text-primary font-mono text-xs">storage</code> engedélyt
               a beállításaid és a Krétából lekért adatok (órarend, jegyek, üzenetek) helyi tárolására
-              használja, kizárólag a böngésződben. A <code className="text-[#ff8800] font-mono text-xs">tabs</code> és{" "}
-              <code className="text-[#ff8800] font-mono text-xs">webNavigation</code> engedély azt teszi
+              használja, kizárólag a böngésződben. A <code className="text-primary font-mono text-xs">tabs</code> és{" "}
+              <code className="text-primary font-mono text-xs">webNavigation</code> engedély azt teszi
               lehetővé, hogy a bővítmény felismerje, mikor vagy az e-Kréta oldalon. Egyik adat sem
               hagyja el az eszközödet a Kréta szerverein kívül.
             </p>
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-[#f3f3f6] mb-3">Ez a weboldal</h2>
+            <h2 className="text-lg font-bold text-fg mb-3">Ez a weboldal</h2>
             <p>
               A pala-app.hu nem használ követő sütit és nem futtat analitikát. A letölthető verzió
               számának megjelenítéséhez a böngésződ egy nyilvános, személyes adatot nem tartalmazó
@@ -66,26 +66,26 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-[#f3f3f6] mb-3">Adattörlés</h2>
+            <h2 className="text-lg font-bold text-fg mb-3">Adattörlés</h2>
             <p>
               Mivel minden adat helyben, a te eszközödön tárolódik, a törléshez elég kijelentkezni az
-              alkalmazásból, vagy törölni a konfigurációs mappát (<code className="text-[#ff8800] font-mono text-xs">~/.config/pala</code>{" "}
+              alkalmazásból, vagy törölni a konfigurációs mappát (<code className="text-primary font-mono text-xs">~/.config/pala</code>{" "}
               Linuxon és macOS-en, illetve a Windows-os felhasználói profilban) és a gyorsítótár-mappát
-              (<code className="text-[#ff8800] font-mono text-xs">~/.cache/pala</code>, Windows-on{" "}
-              <code className="text-[#ff8800] font-mono text-xs">%LOCALAPPDATA%\pala</code>). Nincs központi
+              (<code className="text-primary font-mono text-xs">~/.cache/pala</code>, Windows-on{" "}
+              <code className="text-primary font-mono text-xs">%LOCALAPPDATA%\pala</code>). Nincs központi
               fiók vagy szerver, amit ehhez értesíteni kellene.
             </p>
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-[#f3f3f6] mb-3">Kapcsolat</h2>
+            <h2 className="text-lg font-bold text-fg mb-3">Kapcsolat</h2>
             <p>
               Kérdés vagy hibabejelentés esetén nyiss egy issue-t a{" "}
               <a
                 href="https://github.com/CsPS0/pala/issues"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#ff8800] hover:underline"
+                className="text-primary hover:underline"
               >
                 GitHub repóban
               </a>

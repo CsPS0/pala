@@ -35,38 +35,38 @@ export function Features() {
     },
     {
       icon: Database,
-      title: "100% Offline Gyorsítótár & Titkosítás",
+      title: "Offline gyorsítótár és titkosítás",
       description:
         "Minden adat és hitelesítő adat helyben, AES-256 titkosítással tárolódik. Nincs köztes szerver, nincs telemetria és nincsenek hirdetések.",
     },
   ];
 
   return (
-    <section id="funkciok" className="py-12 sm:py-16 px-4 sm:px-6 max-w-6xl mx-auto w-full overflow-hidden space-y-16">
+    <section id="funkciok" className="py-12 sm:py-16 px-4 sm:px-6 max-w-6xl mx-auto w-full">
       {/* Feature Cards Grid */}
       <div>
-        <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
-          <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-3 text-[#f3f3f6]">
-            Minden, amire a tanév során szükséged van
+        <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-10">
+          <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-3 text-fg">
+            Funkciók
           </h2>
-          <p className="text-[#8c8c94] text-base">
-            A Pala nem csupán egy kliens, hanem egy intelligens tanulói asszisztens az összes eszközödön.
+          <p className="text-muted text-base">
+            Ugyanazok a funkciók asztalon, telefonon és a böngészőben.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {features.map((item, idx) => {
             const IconComp = item.icon;
             return (
               <div
                 key={idx}
-                className="bg-[#1b1b1f] border border-[#28282d] hover:border-[#ff8800] p-5 sm:p-7 rounded-2xl sm:rounded-3xl transition-all hover:-translate-y-1 hover:bg-[#222227] group"
+                className="bg-card border border-border p-5 rounded-xl"
               >
-                <div className="w-12 h-12 rounded-2xl bg-[#ff8800]/10 text-[#ff8800] border border-[#ff8800]/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center mb-4">
                   <IconComp size={22} />
                 </div>
-                <h3 className="text-lg font-bold text-[#f3f3f6] mb-2.5">{item.title}</h3>
-                <p className="text-sm text-[#8c8c94] leading-relaxed">{item.description}</p>
+                <h3 className="text-base font-bold text-fg mb-2">{item.title}</h3>
+                <p className="text-sm text-muted leading-relaxed">{item.description}</p>
               </div>
             );
           })}
