@@ -223,6 +223,13 @@ class PalaApp {
     PalaTheme.configureInteractTheme();
     _showBanner();
 
+    if (!AppState.instance.isSetupCompleted &&
+        !AppState.instance.hasAuth() &&
+        stdin.hasTerminal &&
+        stdout.hasTerminal) {
+      await runSetupWizard(isFirstRun: true);
+    }
+
     print('Keresem a mentett bejelentkezést...');
     if (await _tryAutoLogin()) {
       print('Sikeres automatikus bejelentkezés!\n');
@@ -475,50 +482,388 @@ class PalaApp {
     }
   }
 
+  String? _findInstalledDesktopExe() {
+    if (Platform.isWindows) {
+      final localAppData = Platform.environment['LOCALAPPDATA'] ?? '';
+      final userProfile = Platform.environment['USERPROFILE'] ?? '';
+      final candidates = [
+        '$localAppData\\Programs\\Pala\\desktop\\palapp.exe',
+        '$localAppData\\Programs\\Pala\\desktop\\pala.exe',
+        '$localAppData\\Programs\\Pala\\palapp.exe',
+        '$localAppData\\Programs\\Pala\\pala.exe',
+        '$localAppData\\Pala\\desktop\\palapp.exe',
+        '$localAppData\\Pala\\desktop\\pala.exe',
+        'app\\build\\windows\\x64\\runner\\Release\\palapp.exe',
+        'app\\build\\windows\\x64\\runner\\Release\\pala.exe',
+        '$userProfile\\scoop\\apps\\pala\\current\\pala.exe',
+      ];
+      for (final c in candidates) {
+        if (File(c).existsSync()) return c;
+      }
+    } else if (Platform.isLinux) {
+      final home = Platform.environment['HOME'] ?? '';
+      final candidates = [
+        '$home/.local/share/pala/Pala.AppImage',
+        '$home/.local/bin/pala-desktop',
+      ];
+      for (final c in candidates) {
+        if (File(c).existsSync()) return c;
+      }
+    } else if (Platform.isMacOS) {
+      if (Directory('/Applications/Pala.app').existsSync()) {
+        return '/Applications/Pala.app';
+      }
+    }
+    return null;
+  }
+
+  Future<bool> _downloadFile(String url, File destination) async {
+    try {
+      final client = http.Client();
+      try {
+        final request = http.Request('GET', Uri.parse(url));
+        request.followRedirects = true;
+        request.maxRedirects = 10;
+        final response = await client.send(request);
+        if (response.statusCode == 200) {
+          final sink = destination.openWrite();
+          await response.stream.pipe(sink);
+          await sink.close();
+          if (destination.existsSync() && destination.lengthSync() > 1000) {
+            return true;
+          }
+        }
+      } finally {
+        client.close();
+      }
+    } catch (e) {
+      PalaLogger.debug('Download error via http: $e');
+    }
+
+    try {
+      if (Platform.isWindows) {
+        final res = await Process.run('powershell', [
+          '-NoProfile',
+          '-Command',
+          'Invoke-WebRequest -Uri "$url" -OutFile "${destination.path}" -MaximumRedirection 10'
+        ]);
+        if (res.exitCode == 0 && destination.existsSync() && destination.lengthSync() > 1000) {
+          return true;
+        }
+      } else {
+        final res = await Process.run('curl', ['-fsSL', '-o', destination.path, url]);
+        if (res.exitCode == 0 && destination.existsSync() && destination.lengthSync() > 1000) {
+          return true;
+        }
+      }
+    } catch (e) {
+      PalaLogger.debug('Download fallback error: $e');
+    }
+    return false;
+  }
+
+  Future<bool> installDesktopApp() async {
+    print('\x1B[33m[+] Pala Desktop letöltése és telepítése...\x1B[0m');
+    if (Platform.isWindows) {
+      final tempDir = Directory.systemTemp.path;
+      final tempSetup = File('$tempDir\\Pala-Setup.exe');
+      const setupUrl = 'https://github.com/CsPS0/pala/releases/latest/download/Pala-Setup.exe';
+      print('    Letöltés: $setupUrl');
+      final success = await _downloadFile(setupUrl, tempSetup);
+      if (success) {
+        print('    [+] Háttérbeli telepítés indítása...');
+        final res = await Process.run(tempSetup.path, ['/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART']);
+        if (res.exitCode == 0) {
+          print('\x1B[32m    [OK] Pala Desktop sikeresen telepítve!\x1B[0m');
+          try { if (tempSetup.existsSync()) tempSetup.deleteSync(); } catch (_) {}
+          return true;
+        } else {
+          print('\x1B[33m    [!] A telepítő kilépési kódja: ${res.exitCode}\x1B[0m');
+        }
+        try { if (tempSetup.existsSync()) tempSetup.deleteSync(); } catch (_) {}
+      } else {
+        print('\x1B[31m    [!] A Pala-Setup.exe letöltése sikertelen.\x1B[0m');
+      }
+    } else if (Platform.isLinux) {
+      final home = Platform.environment['HOME'] ?? '';
+      final appDir = Directory('$home/.local/share/pala');
+      if (!appDir.existsSync()) appDir.createSync(recursive: true);
+      final appImageFile = File('${appDir.path}/Pala.AppImage');
+      const url = 'https://github.com/CsPS0/pala/releases/latest/download/Pala-x86_64.AppImage';
+      print('    Letöltés: $url');
+      final success = await _downloadFile(url, appImageFile);
+      if (success) {
+        Process.runSync('chmod', ['+x', appImageFile.path]);
+        final binDir = Directory('$home/.local/bin');
+        if (!binDir.existsSync()) binDir.createSync(recursive: true);
+        Process.runSync('ln', ['-sf', appImageFile.path, '${binDir.path}/pala-desktop']);
+        print('\x1B[32m    [OK] Pala AppImage sikeresen telepítve: ${appImageFile.path}\x1B[0m');
+        return true;
+      } else {
+        print('\x1B[31m    [!] Az AppImage letöltése sikertelen.\x1B[0m');
+      }
+    } else if (Platform.isMacOS) {
+      const url = 'https://github.com/CsPS0/pala/releases/latest/download/Pala-macOS.dmg';
+      final tempDmg = File('/tmp/Pala-macOS.dmg');
+      print('    Letöltés: $url');
+      final success = await _downloadFile(url, tempDmg);
+      if (success) {
+        final mountRes = Process.runSync('hdiutil', ['attach', tempDmg.path, '-nobrowse']);
+        if (mountRes.exitCode == 0) {
+          Process.runSync('cp', ['-R', '/Volumes/Pala/Pala.app', '/Applications/']);
+          Process.runSync('hdiutil', ['detach', '/Volumes/Pala']);
+          Process.runSync('xattr', ['-rd', 'com.apple.quarantine', '/Applications/Pala.app']);
+          print('\x1B[32m    [OK] Pala.app sikeresen telepítve az /Applications mappába!\x1B[0m');
+          try { if (tempDmg.existsSync()) tempDmg.deleteSync(); } catch (_) {}
+          return true;
+        }
+        try { if (tempDmg.existsSync()) tempDmg.deleteSync(); } catch (_) {}
+      } else {
+        print('\x1B[31m    [!] A Pala DMG letöltése sikertelen.\x1B[0m');
+      }
+    }
+    return false;
+  }
+
+  Future<void> _createWindowsShortcut({
+    required String target,
+    required String shortcutPath,
+    required String description,
+    String? workingDirectory,
+  }) async {
+    final workingDir = workingDirectory ?? File(target).parent.path;
+    final psCmd = '''
+\$ws = New-Object -ComObject WScript.Shell
+\$s = \$ws.CreateShortcut('$shortcutPath')
+\$s.TargetPath = '$target'
+\$s.WorkingDirectory = '$workingDir'
+\$s.Description = '$description'
+\$s.Save()
+''';
+    await Process.run('powershell', ['-NoProfile', '-Command', psCmd]);
+  }
+
+  Future<void> installStartMenuShortcut() async {
+    if (Platform.isWindows) {
+      final appData = Platform.environment['APPDATA'] ?? '';
+      final programs = '$appData\\Microsoft\\Windows\\Start Menu\\Programs';
+      final progDir = Directory(programs);
+      if (!progDir.existsSync()) progDir.createSync(recursive: true);
+
+      final desktopExe = _findInstalledDesktopExe();
+      if (desktopExe != null) {
+        await _createWindowsShortcut(
+          target: desktopExe,
+          shortcutPath: '$programs\\Pala Desktop.lnk',
+          description: 'Pala Desktop - Modern Kréta Kliens',
+        );
+        print('\x1B[32m    [OK] Start menü parancsikon létrehozva: Pala Desktop\x1B[0m');
+      }
+
+      final currentExe = Platform.resolvedExecutable;
+      await _createWindowsShortcut(
+        target: currentExe,
+        shortcutPath: '$programs\\Pala CLI (Terminál).lnk',
+        description: 'Pala CLI & TUI - Kréta Kliens',
+      );
+      print('\x1B[32m    [OK] Start menü parancsikon létrehozva: Pala CLI (Terminál)\x1B[0m');
+    } else if (Platform.isLinux) {
+      final appDir = Directory('${Platform.environment['HOME']}/.local/share/applications');
+      if (!appDir.existsSync()) appDir.createSync(recursive: true);
+      final desktopFile = File('${appDir.path}/pala.desktop');
+      final appImagePath = '${Platform.environment['HOME']}/.local/share/pala/Pala.AppImage';
+      final execTarget = File(appImagePath).existsSync() ? appImagePath : Platform.resolvedExecutable;
+      desktopFile.writeAsStringSync('''[Desktop Entry]
+Name=Pala Desktop
+Comment=Modern, nyílt forráskódú Kréta kliens
+Exec=$execTarget
+Icon=pala
+Terminal=false
+Type=Application
+Categories=Education;Utility;
+StartupNotify=true
+''');
+      Process.runSync('chmod', ['+x', desktopFile.path]);
+      print('\x1B[32m    [OK] Linux .desktop alkalmazásindító létrehozva: ${desktopFile.path}\x1B[0m');
+    } else {
+      print('A Start menü / alkalmazásindító parancsikon létrehozása Windows és Linux rendszereken támogatott.');
+    }
+  }
+
+  Future<void> installDesktopShortcut() async {
+    if (Platform.isWindows) {
+      final userProfile = Platform.environment['USERPROFILE'] ?? '';
+      final desktopDir = Directory('$userProfile\\Desktop');
+      if (desktopDir.existsSync()) {
+        final targetExe = _findInstalledDesktopExe() ?? Platform.resolvedExecutable;
+        await _createWindowsShortcut(
+          target: targetExe,
+          shortcutPath: '${desktopDir.path}\\Pala.lnk',
+          description: 'Pala - Modern Kréta Kliens',
+        );
+        print('\x1B[32m    [OK] Asztali parancsikon létrehozva a munkaasztalon.\x1B[0m');
+      }
+    } else if (Platform.isLinux) {
+      final home = Platform.environment['HOME'] ?? '';
+      final desktopDir = Directory('$home/Desktop');
+      if (desktopDir.existsSync()) {
+        final appDir = Directory('$home/.local/share/applications');
+        final desktopFile = File('${appDir.path}/pala.desktop');
+        if (desktopFile.existsSync()) {
+          desktopFile.copySync('${desktopDir.path}/pala.desktop');
+          Process.runSync('chmod', ['+x', '${desktopDir.path}/pala.desktop']);
+          print('\x1B[32m    [OK] Asztali parancsikon létrehozva a munkaasztalon.\x1B[0m');
+        }
+      }
+    }
+  }
+
+  Future<void> removeStartMenuShortcut() async {
+    if (Platform.isWindows) {
+      final appData = Platform.environment['APPDATA'] ?? '';
+      final programs = '$appData\\Microsoft\\Windows\\Start Menu\\Programs';
+      final startDeskLink = File('$programs\\Pala Desktop.lnk');
+      final startCliLink = File('$programs\\Pala CLI (Terminál).lnk');
+      final userProfile = Platform.environment['USERPROFILE'] ?? '';
+      final deskLink = File('$userProfile\\Desktop\\Pala.lnk');
+      final deskDeskLink = File('$userProfile\\Desktop\\Pala Desktop.lnk');
+
+      bool removed = false;
+      for (final link in [startDeskLink, startCliLink, deskLink, deskDeskLink]) {
+        if (link.existsSync()) {
+          try {
+            link.deleteSync();
+            print('\x1B[32m[OK] Parancsikon törölve: ${link.path}\x1B[0m');
+            removed = true;
+          } catch (_) {}
+        }
+      }
+      if (!removed) {
+        print('Nem található eltávolítandó Pala parancsikon a rendszerben.');
+      }
+    } else if (Platform.isLinux) {
+      final desktopFile = File('${Platform.environment['HOME']}/.local/share/applications/pala.desktop');
+      final deskLink = File('${Platform.environment['HOME']}/Desktop/pala.desktop');
+      bool removed = false;
+      if (desktopFile.existsSync()) {
+        desktopFile.deleteSync();
+        print('\x1B[32m[OK] Linux .desktop bejegyzés törölve.\x1B[0m');
+        removed = true;
+      }
+      if (deskLink.existsSync()) {
+        deskLink.deleteSync();
+        print('\x1B[32m[OK] Asztali parancsikon törölve.\x1B[0m');
+        removed = true;
+      }
+      if (!removed) {
+        print('Nem található eltávolítandó pala.desktop bejegyzés.');
+      }
+    }
+  }
+
+  Future<void> runSetupWizard({bool isFirstRun = false}) async {
+    print(PalaTheme.primary);
+    print(r'''
+=============================================================
+ Pala — Telepítő és Beállító Varázsló
+=============================================================
+''');
+    print(PalaTheme.reset);
+    print('Használat: Nyilak [Fel/Le], [Szóköz] kijelölés, [Enter] megerősítés\n');
+
+    final desktopInstalled = _findInstalledDesktopExe() != null;
+    final desktopLabel = desktopInstalled
+        ? 'Pala Desktop (Grafikus Flutter asztali alkalmazás — újratelepítés)'
+        : 'Pala Desktop (Grafikus Flutter asztali alkalmazás)';
+
+    final options = [
+      desktopLabel,
+      'Hozzáadás a felhasználói PATH környezeti változóhoz',
+      'Start menü / alkalmazásindító parancsikon létrehozása',
+      'Asztali parancsikon létrehozása',
+    ];
+
+    final defaults = [
+      !desktopInstalled,
+      true,
+      true,
+      false,
+    ];
+
+    List<int> selections = [];
+    try {
+      selections = MultiSelect(
+        prompt: 'Válaszd ki a telepítendő / konfigurálandó komponenseket',
+        options: options,
+        defaults: defaults,
+      ).interact();
+    } catch (_) {
+      print('Válaszd ki a telepítendő komponenseket (I/n):');
+      for (int i = 0; i < options.length; i++) {
+        final def = defaults[i] ? 'I' : 'n';
+        stdout.write('${options[i]} (I/n) [$def]: ');
+        final line = stdin.readLineSync()?.trim().toLowerCase();
+        if (line == 'i' || line == 'y' || (line == '' && defaults[i])) {
+          selections.add(i);
+        }
+      }
+    }
+
+    if (selections.isEmpty) {
+      print('\x1B[33mNem választottál ki egyetlen komponenst sem.\x1B[0m\n');
+    } else {
+      print('\n\x1B[36mBeállítások alkalmazása...\x1B[0m');
+
+      if (selections.contains(0)) {
+        await installDesktopApp();
+      }
+      if (selections.contains(1)) {
+        await addToUserPath();
+      }
+      if (selections.contains(2)) {
+        await installStartMenuShortcut();
+      }
+      if (selections.contains(3)) {
+        await installDesktopShortcut();
+      }
+
+      print('\x1B[32m\n[OK] A kiválasztott komponensek sikeresen beállítva!\x1B[0m\n');
+    }
+
+    AppState.instance.markSetupCompleted();
+
+    if (!isFirstRun) {
+      _pause('Nyomj Enter-t a kilépéshez...');
+    } else {
+      print('\x1B[90mFolytatás az alkalmazás indításához...\x1B[0m\n');
+    }
+  }
+
   Future<void> runDesktop() async {
     print('Pala Asztali Alkalmazás indítása...');
 
+    final installedExe = _findInstalledDesktopExe();
+    if (installedExe != null) {
+      if (Platform.isMacOS && installedExe.endsWith('.app')) {
+        print('Asztali alkalmazás indítása: $installedExe');
+        await Process.start('open', [installedExe], mode: ProcessStartMode.detached);
+      } else {
+        print('Asztali alkalmazás indítása: $installedExe');
+        await Process.start(installedExe, [], mode: ProcessStartMode.detached);
+      }
+      return;
+    }
+
     String repoRoot = Directory.current.path;
+    String appFolder = 'app';
     if (!Directory('$repoRoot/app').existsSync() && !Directory('$repoRoot/mobile').existsSync()) {
       final scriptDir = File(Platform.script.toFilePath()).parent.parent.path;
       if (Directory('$scriptDir/app').existsSync() || Directory('$scriptDir/mobile').existsSync()) {
         repoRoot = scriptDir;
       }
     }
-
-    final appFolder = Directory('$repoRoot/app').existsSync() ? 'app' : 'mobile';
-
-    if (Platform.isWindows) {
-      // palapp is the current name; pala_app/pala_mobile are kept as
-      // fallbacks so an already-built binary from before the rename still launches.
-      for (final buildType in ['Release', 'Debug']) {
-        for (final exeName in ['palapp.exe', 'pala_app.exe', 'pala_mobile.exe']) {
-          final exe = File('$repoRoot/$appFolder/build/windows/x64/runner/$buildType/$exeName');
-          if (exe.existsSync()) {
-            print('Asztali alkalmazás indítása: ${exe.path}');
-            await Process.start(exe.path, [], mode: ProcessStartMode.detached);
-            return;
-          }
-        }
-      }
-    } else if (Platform.isLinux) {
-      for (final binName in ['palapp', 'pala_app', 'pala_mobile']) {
-        final exe = File('$repoRoot/$appFolder/build/linux/x64/release/bundle/$binName');
-        if (exe.existsSync()) {
-          print('Asztali alkalmazás indítása: ${exe.path}');
-          await Process.start(exe.path, [], mode: ProcessStartMode.detached);
-          return;
-        }
-      }
-    } else if (Platform.isMacOS) {
-      for (final appName in ['palapp.app', 'pala_app.app', 'pala_mobile.app']) {
-        final macApp = Directory('$repoRoot/$appFolder/build/macos/Build/Products/Release/$appName');
-        if (macApp.existsSync()) {
-          print('Asztali alkalmazás indítása: ${macApp.path}');
-          await Process.start('open', [macApp.path], mode: ProcessStartMode.detached);
-          return;
-        }
-      }
+    if (!Directory('$repoRoot/app').existsSync() && Directory('$repoRoot/mobile').existsSync()) {
+      appFolder = 'mobile';
     }
 
     final flutterAppDir = Directory('$repoRoot/$appFolder');
@@ -529,80 +874,18 @@ class PalaApp {
       return;
     }
 
-    print('Nem található a Pala Desktop futtatható állománya.');
-    print('Kérjük, fordítsd le a Flutter asztali alkalmazást az app/ mappában.');
-  }
-
-  Future<void> installStartMenuShortcut() async {
-    if (Platform.isWindows) {
-      String repoRoot = Directory.current.path;
-      if (!Directory('$repoRoot/app').existsSync() && !Directory('$repoRoot/mobile').existsSync()) {
-        final scriptDir = File(Platform.script.toFilePath()).parent.parent.path;
-        if (Directory('$scriptDir/app').existsSync() || Directory('$scriptDir/mobile').existsSync()) {
-          repoRoot = scriptDir;
+    print('A Pala Desktop még nincs telepítve a gépedre.');
+    stdout.write('Szeretnéd most letölteni és telepíteni? (I/n) [I]: ');
+    final ans = stdin.readLineSync()?.trim().toLowerCase();
+    if (ans == 'i' || ans == 'y' || ans == '') {
+      final ok = await installDesktopApp();
+      if (ok) {
+        final newExe = _findInstalledDesktopExe();
+        if (newExe != null) {
+          print('Pala Desktop indítása...');
+          await Process.start(newExe, [], mode: ProcessStartMode.detached);
+          return;
         }
-      }
-      final script = File('$repoRoot/scripts/install_start_menu_shortcut.ps1');
-      if (script.existsSync()) {
-        final result = await Process.run('pwsh', ['-ExecutionPolicy', 'Bypass', '-File', script.path]);
-        if (result.exitCode != 0) {
-          final res2 = await Process.run('powershell', ['-ExecutionPolicy', 'Bypass', '-File', script.path]);
-          stdout.write(res2.stdout);
-        } else {
-          stdout.write(result.stdout);
-        }
-      } else {
-        print('Nem található a shortcut telepítő parancsfájl.');
-      }
-    } else if (Platform.isLinux) {
-      final appDir = Directory('${Platform.environment['HOME']}/.local/share/applications');
-      if (!appDir.existsSync()) appDir.createSync(recursive: true);
-      final desktopFile = File('${appDir.path}/pala.desktop');
-      desktopFile.writeAsStringSync('''[Desktop Entry]
-Name=Pala Desktop
-Comment=Modern, nyílt forráskódú Kréta kliens
-Exec=pala --desktop
-Icon=utilities-terminal
-Terminal=false
-Type=Application
-Categories=Education;Utility;
-StartupNotify=true
-''');
-      print('\x1B[32m[OK] Linux .desktop alkalmazásindító létrehozva: ${desktopFile.path}\x1B[0m');
-    } else {
-      print('A Start menü / asztali parancsikon létrehozása Windows és Linux rendszereken támogatott.');
-    }
-  }
-
-  Future<void> removeStartMenuShortcut() async {
-    if (Platform.isWindows) {
-      final appData = Platform.environment['APPDATA'] ?? '';
-      final programs = '$appData\\Microsoft\\Windows\\Start Menu\\Programs';
-      final startLink = File('$programs\\Pala Desktop.lnk');
-      final userProfile = Platform.environment['USERPROFILE'] ?? '';
-      final deskLink = File('$userProfile\\Desktop\\Pala Desktop.lnk');
-
-      bool removed = false;
-      if (startLink.existsSync()) {
-        startLink.deleteSync();
-        print('\x1B[32m[OK] Start menü parancsikon törölve.\x1B[0m');
-        removed = true;
-      }
-      if (deskLink.existsSync()) {
-        deskLink.deleteSync();
-        print('\x1B[32m[OK] Asztali parancsikon törölve.\x1B[0m');
-        removed = true;
-      }
-      if (!removed) {
-        print('Nem található eltávolítandó Pala parancsikon a Start menüben.');
-      }
-    } else if (Platform.isLinux) {
-      final desktopFile = File('${Platform.environment['HOME']}/.local/share/applications/pala.desktop');
-      if (desktopFile.existsSync()) {
-        desktopFile.deleteSync();
-        print('\x1B[32m[OK] Linux .desktop bejegyzés törölve.\x1B[0m');
-      } else {
-        print('Nem található eltávolítandó pala.desktop bejegyzés.');
       }
     }
   }

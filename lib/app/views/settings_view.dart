@@ -382,6 +382,7 @@ extension PalaAppSettingsView on PalaApp {
       print('Kezeld az asztali és terminálos komponenseket:\n');
 
       final layout = [
+        {'type': 'action', 'id': 6, 'label': 'Telepítő Varázsló indítása (Komponensek & Integráció)'},
         {'type': 'action', 'id': 0, 'label': 'Start menü / Alkalmazásindító létrehozása'},
         {'type': 'action', 'id': 1, 'label': 'Start menü / Asztali parancsikonok eltávolítása'},
         {'type': 'action', 'id': 2, 'label': 'Pala hozzáadása a felhasználói PATH-hoz'},
@@ -412,7 +413,9 @@ extension PalaAppSettingsView on PalaApp {
       _clearScreen();
       _showMainMenuBanner();
 
-      if (action == 0) {
+      if (action == 6) {
+        await runSetupWizard();
+      } else if (action == 0) {
         print('\nStart menü / Asztali parancsikon létrehozása...');
         await installStartMenuShortcut();
         _pause();

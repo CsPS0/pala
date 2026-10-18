@@ -36,4 +36,18 @@ void main() {
 
     expect(File('${cache.path}/cache.json').existsSync(), isFalse);
   });
+
+  test('isSetupCompleted defaults to false and becomes true when marked', () {
+    expect(AppState.instance.isSetupCompleted, isFalse);
+    AppState.instance.markSetupCompleted();
+    expect(AppState.instance.isSetupCompleted, isTrue);
+  });
+
+  test('hasAuth checks if authFile exists', () {
+    expect(AppState.instance.hasAuth(), isFalse);
+    AppState.instance.authFile.writeAsStringSync('{}');
+    expect(AppState.instance.hasAuth(), isTrue);
+    AppState.instance.authFile.deleteSync();
+    expect(AppState.instance.hasAuth(), isFalse);
+  });
 }

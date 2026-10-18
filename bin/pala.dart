@@ -17,7 +17,10 @@ void main(List<String> arguments) async {
   final parser = ArgParser()
     ..addOption('institute', abbr: 'i', help: 'Az intézmény kódja (pl. intezmeny123)')
     ..addOption('username', abbr: 'u', help: 'Felhasználónév (oktatási azonosító)')
-    ..addOption('password', abbr: 'p', help: 'Jelszó')
+    ..addCommand('setup')
+    ..addCommand('install')
+    ..addFlag('setup', negatable: false, help: 'Interaktív komponens-telepítő és beállító varázsló indítása')
+    ..addFlag('install', negatable: false, help: 'Interaktív komponens-telepítő és beállító varázsló indítása')
     ..addFlag('web', abbr: 'w', negatable: false, help: 'Pala grafikus Webes Felület (Web UI) indítása a böngészőben')
     ..addFlag('desktop', abbr: 'g', negatable: false, help: 'Pala grafikus Asztali Alkalmazás (Desktop UI) indítása')
     ..addFlag('install-shortcut', negatable: false, help: 'Windows / Linux Start menü parancsikon létrehozása a Pala Desktophoz')
@@ -72,6 +75,16 @@ void main(List<String> arguments) async {
   }
 
   final app = PalaApp();
+
+  if (argResults.command?.name == 'setup' ||
+      argResults.command?.name == 'install' ||
+      argResults['setup'] == true ||
+      argResults['install'] == true ||
+      argResults.rest.contains('setup') ||
+      argResults.rest.contains('install')) {
+    await app.runSetupWizard();
+    exit(0);
+  }
 
   if (argResults['web']) {
     if (argResults['demo']) {

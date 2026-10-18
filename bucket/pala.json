@@ -6,10 +6,11 @@
     "architecture": {
         "64bit": {
             "url": "https://github.com/CsPS0/pala/releases/download/test/pala.exe",
-            "hash": "49eca62097e386323cb3b1482bdad368b8f9bde27a1cbfc0ad2ff253512be4ac"
+            "hash": "4a4ba72e49048a14181b6e5edadcaa5279e14ea81d2476c922ee160b6fb409b5"
         }
     },
     "bin": "pala.exe",
+    "notes": "Telepítés után futtasd a 'pala' vagy 'pala setup' parancsot a grafikus felület és parancsikonok beállításához.",
     "checkver": "github",
     "autoupdate": {
         "architecture": {

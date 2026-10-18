@@ -163,6 +163,21 @@ class AppState {
     _save(stateFile, data);
   }
 
+  bool get isSetupCompleted {
+    final state = getAppState();
+    return state['setupCompleted'] == true;
+  }
+
+  void markSetupCompleted() {
+    final state = getAppState();
+    state['setupCompleted'] = true;
+    saveAppState(state);
+  }
+
+  bool hasAuth() {
+    return authFile.existsSync();
+  }
+
   File get aliasesFile {
     _ensureConfigDir();
     return File('$configDir/aliases.json');
