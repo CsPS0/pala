@@ -39,22 +39,73 @@ folio-cli-macos
 *.env*
 private.key
 
-# Agent Files
+# Agent & AI Files
 .agents/
 .serena/
 .claude/
+.claude-mem/
+.claudecode/
+.ponytail/
+.cursor/
+.cursorrules
+.cursorignore
+.windsurf/
+.windsurfrules
+.copilot/
+copilot-instructions.md
+.github/copilot-instructions.md
 AGENTS.md
 CLAUDE.md
 GEMINI.md
+CHATGPT.md
+COPILOT.md
+PROMPT.md
+superpowers/
+.superpowers/
+**/superpowers/
 
-# Test / Scratch files
+# Development, Planning & Audit Documents
+TODO.md
+TODO*.md
+todo.md
+NOTES.md
+NOTES*.md
+notes.md
+PLAN.md
+PLAN*.md
+plan.md
+AUDIT*.md
+audit*.md
+*audit*.md
+SPECS*.md
+specs*.md
+DEV_NOTES.md
+/DEV.md
+/DEVELOPMENT.md
+
+# Test, Scratch & Temporary files
 bin/test_*.dart
 fix_encoding.dart
 student_data_search.txt
 scratch/
+temp/
+tmp/
+*.tmp
+*.log
+*.bak
 docs/PUBLISHING_GUIDE.md
-*debug*.html
+*debug*
 *.csv
+
+# IDE & Editor Files
+.vscode/
+*.code-workspace
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
 
 # Node / Next.js
 node_modules/
