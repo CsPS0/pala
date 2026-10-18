@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pala — Kréta Oldalsáv</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <!-- Sticky Top Header -->
+  <header class="sp-header">
+    <div class="sp-profile-wrap">
+      <button id="sp-profile-btn" class="sp-profile-btn" type="button" title="Tanulói profil váltása">
+        <img src="../icons/icon-32.png" alt="Pala" class="sp-brand-logo">
+        <div class="sp-profile-meta">
+          <div class="sp-profile-name-row">
+            <span id="sp-student-name" class="sp-student-name">Betöltés...</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+          <span id="sp-student-school" class="sp-student-school">Pala Kréta Kliens</span>
+        </div>
+      </button>
+
+      <!-- Profile Switcher Dropdown -->
+      <div id="sp-profile-menu" class="sp-profile-menu" style="display: none;">
+        <div class="sp-profile-menu-title">Fiókok &amp; Profilok</div>
+        <div id="sp-profile-list" class="sp-profile-list"></div>
+      </div>
+    </div>
+
+    <div class="sp-header-actions">
+      <span id="sp-status-badge" class="badge badge-sync">
+        <span class="status-dot"></span>
+        <span id="sp-status-text">Szinkron...</span>
+      </span>
+      <button id="sp-btn-theme" class="btn btn-icon" type="button" title="Téma váltása (Sötét / Világos)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+      <button id="sp-btn-refresh" class="btn btn-icon" type="button" title="Adatok frissítése">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+      </button>
+      <button id="sp-btn-full-dashboard" class="btn btn-icon" type="button" title="Teljes Vezérlőpult megnyitása új lapon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <line x1="10" y1="14" x2="21" y2="3"></line>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Primary 4-Tab Navigation Bar -->
+  <nav class="sp-tabs" aria-label="Oldalsáv navigáció">
+    <button class="sp-tab active" data-tab="view-sp-dashboard" type="button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+      <span>Vezérlőpult</span>
+    </button>
+    <button class="sp-tab" data-tab="view-sp-timetable" type="button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+      <span>Órarend</span>
+    </button>
+    <button class="sp-tab" data-tab="view-sp-grades" type="button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+      <span>Jegymátrix</span>
+    </button>
+    <button class="sp-tab" data-tab="view-sp-absences" type="button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+      <span>Hiányzások</span>
+    </button>
+  </nav>
+
+  <!-- Maintenance Banner -->
+  <div id="sp-maint-banner" class="sp-maint-banner" style="display: none;">
+    <span id="sp-maint-text">A Kréta szerverei most nem érhetők el. Mentett adatokat látsz.</span>
+    <button id="sp-btn-maint-retry" class="btn btn-secondary btn-xs" type="button">Újra</button>
+  </div>
+
+  <!-- Main Scrollable Viewport -->
+  <main class="sp-main">
+    <!-- TAB 1: DASHBOARD (Vezérlőpult) -->
+    <section id="view-sp-dashboard" class="sp-view active">
+      <!-- Live Class Countdown Hero Card -->
+      <div id="sp-live-card" class="sp-live-card">
+        <div class="sp-live-top">
+          <span id="sp-live-tag" class="sp-live-tag">AKTUÁLIS TANÓRA</span>
+          <span id="sp-live-room" class="room-pill" style="display: none;">--</span>
+        </div>
+        <div id="sp-live-subject" class="sp-live-subject">Órarend betöltése...</div>
+        <div id="sp-live-details" class="sp-live-details"></div>
+        <div id="sp-live-sub-banner" class="sub-alert-banner" style="display: none;"></div>
+        <div id="sp-live-progress-wrap" class="progress-bar-container" style="display: none;">
+          <div id="sp-live-progress-fill" class="progress-bar-fill" style="width: 0%;"></div>
+        </div>
+        <div id="sp-live-countdown" class="sp-live-countdown"></div>
+      </div>
+
+      <!-- 2x2 KPI Summary Grid -->
+      <div class="sp-kpi-grid">
+        <div class="sp-card sp-kpi-card" data-goto="view-sp-grades">
+          <span class="sp-kpi-label">Tanulmányi átlag</span>
+          <strong id="sp-kpi-gpa" class="sp-kpi-val primary">--</strong>
+          <span id="sp-kpi-gpa-sub" class="sp-kpi-sub">Súlyozott átlag</span>
+        </div>
+        <div class="sp-card sp-kpi-card" data-goto="view-sp-timetable">
+          <span class="sp-kpi-label">Mai tanórák</span>
+          <strong id="sp-kpi-lessons" class="sp-kpi-val">--</strong>
+          <span id="sp-kpi-lessons-sub" class="sp-kpi-sub">Napi órarend</span>
+        </div>
+        <div class="sp-card sp-kpi-card" data-goto="view-sp-absences">
+          <span class="sp-kpi-label">Mulasztott órák</span>
+          <strong id="sp-kpi-absences" class="sp-kpi-val success">--</strong>
+          <span id="sp-kpi-absences-sub" class="sp-kpi-sub">250 órás keret</span>
+        </div>
+        <div class="sp-card sp-kpi-card">
+          <span class="sp-kpi-label">Közelgő feladatok</span>
+          <strong id="sp-kpi-tasks" class="sp-kpi-val info">--</strong>
+          <span id="sp-kpi-tasks-sub" class="sp-kpi-sub">Házi &amp; dolgozat</span>
+        </div>
+      </div>
+
+      <!-- Recent Grades Section -->
+      <div class="sp-section-header">
+        <h2>Legutóbbi érdemjegyek</h2>
+        <button class="btn-link" data-goto="view-sp-grades" type="button">Jegymátrix megnyitása</button>
+      </div>
+      <div id="sp-recent-grades" class="sp-stack-list"></div>
+
+      <!-- Upcoming Homework & Exams -->
+      <div class="sp-section-header" style="margin-top: 16px;">
+        <h2>Közelgő számonkérések &amp; házik</h2>
+      </div>
+      <div id="sp-upcoming-tasks" class="sp-stack-list"></div>
+    </section>
+
+    <!-- TAB 2: FULL TIMETABLE (Órarend) -->
+    <section id="view-sp-timetable" class="sp-view">
+      <div class="sp-toolbar">
+        <div id="sp-day-tabs" class="sp-day-tabs">
+          <button type="button" class="chip-btn" data-day="0">Hétfő</button>
+          <button type="button" class="chip-btn" data-day="1">Kedd</button>
+          <button type="button" class="chip-btn" data-day="2">Szerda</button>
+          <button type="button" class="chip-btn" data-day="3">Csütörtök</button>
+          <button type="button" class="chip-btn" data-day="4">Péntek</button>
+          <button type="button" class="chip-btn active" data-day="all">Heti nézet</button>
+        </div>
+        <div class="sp-toolbar-right">
+          <button id="sp-btn-ab-week" type="button" class="badge badge-week" style="cursor: pointer;">A hét</button>
+          <button id="sp-btn-export-ics" type="button" class="btn btn-secondary btn-xs" title="Órarend exportálása (.ics)">.ICS export</button>
+        </div>
+      </div>
+
+      <div id="sp-timetable-container" class="sp-stack-list"></div>
+    </section>
+
+    <!-- TAB 3: GRADE MATRIX (Jegymátrix) -->
+    <section id="view-sp-grades" class="sp-view">
+      <!-- Search & Export Row -->
+      <div class="sp-search-row">
+        <input type="text" id="sp-grade-search" class="sp-search-input" placeholder="Tantárgy szűrése (ékezetfüggetlen)..." autocomplete="off">
+        <button id="sp-btn-export-csv" type="button" class="btn btn-secondary btn-sm" title="Jegyek exportálása CSV fájlba">CSV</button>
+      </div>
+
+      <!-- Inline Ghost Grade Simulator Card -->
+      <details class="sp-card sp-ghost-card">
+        <summary class="sp-ghost-summary">
+          <span>Szellem Jegy Szimulátor</span>
+          <span id="sp-ghost-badge" class="badge badge-demo">Élő kalkuláció</span>
+        </summary>
+        <div class="sp-ghost-body">
+          <div class="sp-ghost-grid">
+            <select id="sp-ghost-subject" class="sp-select"></select>
+            <select id="sp-ghost-grade" class="sp-select">
+              <option value="5">5 (Jeles)</option>
+              <option value="4">4 (Jó)</option>
+              <option value="3">3 (Közepes)</option>
+              <option value="2">2 (Elégséges)</option>
+              <option value="1">1 (Elégtelen)</option>
+            </select>
+            <select id="sp-ghost-weight" class="sp-select">
+              <option value="50">50% súly</option>
+              <option value="100" selected>100% súly</option>
+              <option value="200">200% (TZ)</option>
+            </select>
+          </div>
+          <div id="sp-ghost-output" class="sp-ghost-output">Válassz tantárgyat a szimulációhoz.</div>
+        </div>
+      </details>
+
+      <!-- Subject-by-Subject Grade Matrix -->
+      <div id="sp-grade-matrix" class="sp-stack-list"></div>
+    </section>
+
+    <!-- TAB 4: ABSENCES (Hiányzások & 250-Hour Limit) -->
+    <section id="view-sp-absences" class="sp-view">
+      <!-- 250-Hour Statutory Limit Gauge Card -->
+      <div id="sp-absence-gauge-card" class="sp-card sp-gauge-card">
+        <div class="sp-gauge-header">
+          <span id="sp-absence-zone-badge" class="badge badge-online">BIZTONSÁGOS ZÓNA</span>
+          <strong id="sp-absence-pct" class="sp-gauge-pct">0.0%</strong>
+        </div>
+        <div class="sp-gauge-numbers">
+          <strong id="sp-absence-total-title" class="sp-gauge-main">0 / 250 óra</strong>
+          <span id="sp-absence-remaining" class="sp-gauge-rem">Még 250 óra maradt</span>
+        </div>
+        <div class="progress-bar-container" style="height: 9px; margin: 10px 0;">
+          <div id="sp-absence-progress" class="progress-bar-fill" style="width: 0%;"></div>
+        </div>
+        <p class="sp-gauge-note">
+          A jogszabály szerint 250 igazolt vagy igazolatlan mulasztott óra felett év végi osztályozó vizsga rendelhető el.
+        </p>
+      </div>
+
+      <!-- Category Breakdown Grid -->
+      <div class="sp-absence-cats">
+        <div class="sp-card sp-cat-tile">
+          <span class="sp-cat-label">Igazolt</span>
+          <strong id="sp-abs-excused" class="sp-cat-val" style="color: var(--success);">0 óra</strong>
+        </div>
+        <div class="sp-card sp-cat-tile">
+          <span class="sp-cat-label">Igazolatlan</span>
+          <strong id="sp-abs-unexcused" class="sp-cat-val" style="color: var(--danger);">0 óra</strong>
+        </div>
+        <div class="sp-card sp-cat-tile">
+          <span class="sp-cat-label">Késések</span>
+          <strong id="sp-abs-late" class="sp-cat-val" style="color: var(--warning);">0 perc</strong>
+        </div>
+      </div>
+
+      <!-- Filter Chips -->
+      <div id="sp-absence-filters" class="filter-chips-row" style="margin: 10px 0 8px 0;">
+        <button type="button" class="chip-btn active" data-filter="all">Mind</button>
+        <button type="button" class="chip-btn" data-filter="excused">Igazolt</button>
+        <button type="button" class="chip-btn" data-filter="unexcused">Igazolatlan</button>
+        <button type="button" class="chip-btn" data-filter="late">Késés</button>
+      </div>
+
+      <!-- Detailed Absence List -->
+      <div id="sp-absences-list" class="sp-stack-list"></div>
+    </section>
+  </main>
+
+  <script src="../shared/kreta_api.js"></script>
+  <script src="sidepanel.js"></script>
+</body>
+</html>

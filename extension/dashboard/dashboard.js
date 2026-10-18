@@ -7,6 +7,17 @@ let fullState = {
 };
 
 let aliasCategory = "subject"; // "subject" | "teacher"
+let currentTaskFilter = "all"; // "all" | "exam" | "hw"
+let currentAbsenceFilter = "all"; // "all" | "unexcused" | "justified" | "delays"
+let isGradesMatrixView = false;
+let gradesSearchQuery = "";
+
+const dashGhostState = {
+  selectedSubject: "",
+  selectedGrade: 5,
+  selectedWeight: 100,
+  items: []
+};
 
 /** Applies dark (default) or light mode by setting/removing data-theme on <html>. */
 function applyThemeMode(isDark) {
@@ -24,12 +35,42 @@ function getDisplaySubject(name) {
   return fullState.aliases?.[name] || name;
 }
 
+function getInitials(name) {
+  if (!name) return "PA";
+  const parts = String(name).trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "PA";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
 /** Collapses the sidebar to icons-only, or restores the full labeled view. */
 function applySidebarCollapsed(collapsed) {
   const sidebar = document.querySelector(".sidebar");
   sidebar?.classList.toggle("collapsed", collapsed);
   const btn = document.getElementById("btn-toggle-sidebar");
   if (btn) btn.title = collapsed ? "Oldalsáv kinyitása" : "Oldalsáv összecsukása";
+}
+
+function switchDashboardTab(targetId) {
+  const items = document.querySelectorAll(".nav-item");
+  let activeLabel = "Vezérlőpult";
+  items.forEach(btn => {
+    const isMatch = btn.getAttribute("data-tab") === targetId;
+    btn.classList.toggle("active", isMatch);
+    if (isMatch) activeLabel = btn.textContent.trim();
+  });
+
+  document.querySelectorAll(".view-panel").forEach(p => {
+    p.classList.toggle("active", p.id === targetId);
+  });
+
+  document.title = `Pala // ${activeLabel}`;
+  const topbarTitle = document.getElementById("topbar-view-title");
+  if (topbarTitle) topbarTitle.innerText = activeLabel;
+
+  if (targetId === "view-messages") {
+    syncMessagesIfEmpty();
+  }
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -42,6 +83,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     const dark = e.target.checked;
     applyThemeMode(dark);
     await chrome.storage.local.set({ pala_dark_mode: dark });
+  });
+
+  document.getElementById("btn-topbar-theme")?.addEventListener("click", async () => {
+    const store = await chrome.storage.local.get("pala_dark_mode");
+    const nextDark = store.pala_dark_mode === false;
+    applyThemeMode(nextDark);
+    await chrome.storage.local.set({ pala_dark_mode: nextDark });
   });
 
   // Kréta labels weeks per school, not per class; let a class without a rotation hide it.
@@ -66,6 +114,40 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   setupSidebarNavigation();
   setupAccountSubtabs();
+  setupDashProfileSwitcher();
+  setupGlobalSearch();
+  setupDashboardGhostSimulator();
+  setupViewFiltersAndToggles();
+
+  document.getElementById("btn-dash-goto-timetable")?.addEventListener("click", () => {
+    switchDashboardTab("view-timetable");
+  });
+  document.getElementById("btn-dash-goto-tasks")?.addEventListener("click", () => {
+    switchDashboardTab("view-tasks");
+  });
+  document.getElementById("btn-topbar-ghost")?.addEventListener("click", () => {
+    const dashActive = document.getElementById("view-dashboard")?.classList.contains("active");
+    if (dashActive) {
+      document.getElementById("dash-quick-ghost-card")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    } else {
+      switchDashboardTab("view-grades");
+      const details = document.getElementById("grades-ghost-details");
+      if (details) details.open = true;
+    }
+  });
+  document.getElementById("btn-dash-open-sidepanel")?.addEventListener("click", async () => {
+    try {
+      const win = await chrome.windows.getCurrent();
+      if (chrome.sidePanel?.open && win?.id) {
+        await chrome.sidePanel.open({ windowId: win.id });
+        return;
+      }
+      const res = await chrome.runtime.sendMessage({ type: "pala_open_sidepanel", windowId: win?.id });
+      if (res?.ok) return;
+    } catch (_) {}
+    chrome.tabs.create({ url: chrome.runtime.getURL("sidepanel/sidepanel.html") });
+  });
+
   document.getElementById("btn-reload")?.addEventListener("click", async () => {
     await loadDashboardData(true);
   });
@@ -186,7 +268,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("btn-timetable-toggle")?.addEventListener("click", () => {
     isMatrixView = !isMatrixView;
     const btn = document.getElementById("btn-timetable-toggle");
-    if (btn) btn.innerText = isMatrixView ? "Napi Lista" : "7-napos Mátrix";
+    if (btn) btn.innerText = isMatrixView ? "5-napos Oszlopok" : "7-napos Mátrix";
     const listGrid = document.getElementById("weekly-timetable-grid");
     const mxGrid = document.getElementById("matrix-timetable-grid");
     if (listGrid) listGrid.style.display = isMatrixView ? "none" : "grid";
@@ -225,7 +307,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Save Popup Customization Settings from Dashboard
   document.getElementById("btn-save-dash-popup-settings")?.addEventListener("click", async () => {
     const newSettings = {
-      defaultTab: document.getElementById("dash-popup-pref-default-tab")?.value || "tab-today",
+      defaultTab: document.getElementById("dash-popup-pref-default-tab")?.value || "tab-grades",
       showHeroCard: document.getElementById("dash-popup-pref-show-hero")?.checked !== false,
       compactMode: document.getElementById("dash-popup-pref-compact")?.checked === true,
       popupSize: document.getElementById("dash-popup-pref-size")?.value || "medium",
@@ -254,7 +336,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.body.removeChild(a);
   };
 
-  document.getElementById("btn-export-grades")?.addEventListener("click", () => {
+  const exportGradesCsv = () => {
     if (!fullState.data?.grades) return alert("Nincsenek elérhető jegyek.");
     let csv = "Tantárgy,Típus,Érték,Súly,Dátum,Téma\n";
     fullState.data.grades.forEach(g => {
@@ -268,9 +350,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       csv += `${sub},${type},${val},${weight}%,${date},${theme}\n`;
     });
     downloadCSV("jegyek_export.csv", csv);
-  });
+  };
 
-  document.getElementById("btn-export-absences")?.addEventListener("click", () => {
+  const exportAbsencesCsv = () => {
     if (!fullState.data?.absences) return alert("Nincsenek elérhető mulasztások.");
     let csv = "Tantárgy,Dátum,Típus,Állapot,Késés (perc)\n";
     fullState.data.absences.forEach(a => {
@@ -282,7 +364,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       csv += `${sub},${date},${type},${state},${delay}\n`;
     });
     downloadCSV("mulasztasok_export.csv", csv);
-  });
+  };
+
+  document.getElementById("btn-export-grades")?.addEventListener("click", exportGradesCsv);
+  document.getElementById("btn-export-grades-header")?.addEventListener("click", exportGradesCsv);
+  document.getElementById("btn-export-absences")?.addEventListener("click", exportAbsencesCsv);
+  document.getElementById("btn-export-absences-header")?.addEventListener("click", exportAbsencesCsv);
 
   // iCalendar (.ics) Timetable Export
   document.getElementById("btn-export-ics")?.addEventListener("click", () => {
@@ -373,13 +460,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (e.key === "Escape" && aliasOrigBox) aliasOrigBox.style.display = "none";
   });
   aliasOrigInput?.addEventListener("blur", () => {
-    // Small delay so a mousedown-select on a suggestion still registers first.
     setTimeout(() => { if (aliasOrigBox) aliasOrigBox.style.display = "none"; }, 150);
   });
 
   // Listen for background login or sync updates.
-  // Use forceRefresh=true when the session itself changes (new login) so the
-  // fresh token is used to fetch data immediately instead of serving stale cache.
   chrome.storage.onChanged?.addListener((changes, area) => {
     if (area !== "local") return;
     if (changes.pala_dark_mode) {
@@ -392,7 +476,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     } else if (changes.pala_popup_settings) {
       const s = changes.pala_popup_settings.newValue || {};
       const tabEl = document.getElementById("dash-popup-pref-default-tab");
-      if (tabEl) tabEl.value = s.defaultTab || "tab-today";
+      if (tabEl) tabEl.value = s.defaultTab || "tab-grades";
       const heroEl = document.getElementById("dash-popup-pref-show-hero");
       if (heroEl) heroEl.checked = s.showHeroCard !== false;
       const compactEl = document.getElementById("dash-popup-pref-compact");
@@ -408,7 +492,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  // Listen for broadcast messages from service worker (session changed, data updated)
   chrome.runtime.onMessage?.addListener((msg) => {
     if (msg?.type === "pala_session_changed" || msg?.type === "pala_data_updated") {
       loadDashboardData(true);
@@ -416,23 +499,374 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   await loadDashboardData();
+
+  // Live countdown ticker every 30 seconds
+  setInterval(() => {
+    if (!fullState.data?.timetable) return;
+    const todayIso = localDateKey(new Date());
+    const todayLessons = (fullState.data.timetable || []).filter(item => {
+      if (!item.KezdetIdopont) return false;
+      return localDateKey(item.KezdetIdopont) === todayIso;
+    });
+    renderDashboardHero(todayLessons);
+    renderDashboardTodayTimeline(todayLessons);
+  }, 30000);
 });
 
 function setupSidebarNavigation() {
   const items = document.querySelectorAll(".nav-item");
   items.forEach(btn => {
     btn.addEventListener("click", () => {
-      items.forEach(i => i.classList.remove("active"));
-      document.querySelectorAll(".view-panel").forEach(p => p.classList.remove("active"));
-
-      btn.classList.add("active");
-      document.title = `Pala // ${btn.textContent.trim()}`;
       const target = btn.getAttribute("data-tab");
-      document.getElementById(target)?.classList.add("active");
+      if (target) switchDashboardTab(target);
+    });
+  });
+}
 
-      if (target === "view-messages") {
-        syncMessagesIfEmpty();
+function setupDashProfileSwitcher() {
+  const btn = document.getElementById("dash-profile-switcher-btn");
+  const menu = document.getElementById("dash-profile-dropdown-menu");
+  const addBtn = document.getElementById("btn-dash-add-profile");
+
+  btn?.addEventListener("click", async (e) => {
+    e.stopPropagation();
+    if (!menu) return;
+    const isVisible = menu.style.display !== "none";
+    if (isVisible) {
+      menu.style.display = "none";
+      return;
+    }
+    await renderDashProfileDropdown();
+    menu.style.display = "block";
+  });
+
+  addBtn?.addEventListener("click", () => {
+    if (menu) menu.style.display = "none";
+    switchDashboardTab("view-account");
+    document.getElementById("account-tab-settings")?.click();
+    setTimeout(() => document.getElementById("dash-login-institute")?.focus(), 100);
+  });
+
+  document.addEventListener("click", (e) => {
+    if (menu && menu.style.display !== "none" && !menu.contains(e.target) && !btn?.contains(e.target)) {
+      menu.style.display = "none";
+    }
+  });
+}
+
+async function renderDashProfileDropdown() {
+  const listEl = document.getElementById("dash-profile-list");
+  const menu = document.getElementById("dash-profile-dropdown-menu");
+  if (!listEl) return;
+  listEl.innerHTML = "";
+
+  const profiles = await SecureSession.listProfiles();
+  profiles.forEach(p => {
+    const row = document.createElement("button");
+    row.type = "button";
+    row.className = `profile-item-row ${!fullState.isDemo && p.isActive ? "active" : ""}`;
+    row.innerHTML = `
+      <div style="min-width:0; flex:1;">
+        <div style="font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(p.user || "Diák")}</div>
+        <div style="font-size:0.66rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(p.instituteName || p.institute || "")}</div>
+      </div>
+      ${!fullState.isDemo && p.isActive ? '<span style="font-weight:900; color:var(--primary);">&#10003;</span>' : ""}
+    `;
+    row.addEventListener("click", async () => {
+      if (menu) menu.style.display = "none";
+      await SecureSession.switchProfile(p.id);
+      await loadDashboardData(true);
+    });
+    listEl.appendChild(row);
+  });
+
+  const demoRow = document.createElement("button");
+  demoRow.type = "button";
+  demoRow.className = `profile-item-row ${fullState.isDemo ? "active" : ""}`;
+  demoRow.innerHTML = `
+    <div style="min-width:0; flex:1;">
+      <div style="font-weight:800;">Teszt Elek (Demó)</div>
+      <div style="font-size:0.66rem; color:var(--text-muted);">Pala Minta Gimnázium</div>
+    </div>
+    ${fullState.isDemo ? '<span style="font-weight:900; color:var(--primary);">&#10003;</span>' : ""}
+  `;
+  demoRow.addEventListener("click", async () => {
+    if (menu) menu.style.display = "none";
+    await SecureSession.switchProfile("demo");
+    await loadDashboardData(true);
+  });
+  listEl.appendChild(demoRow);
+}
+
+function setupGlobalSearch() {
+  const input = document.getElementById("global-search-input");
+  const resultsBox = document.getElementById("global-search-results");
+  if (!input || !resultsBox) return;
+
+  // Ctrl+K / Cmd+K shortcut
+  document.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+      e.preventDefault();
+      input.focus();
+      input.select();
+    } else if (e.key === "Escape" && document.activeElement === input) {
+      resultsBox.style.display = "none";
+      input.blur();
+    }
+  });
+
+  const runSearch = () => {
+    const rawQ = input.value.trim();
+    if (!rawQ) {
+      resultsBox.style.display = "none";
+      resultsBox.innerHTML = "";
+      return;
+    }
+    const q = KretaApi.normalizeHu(rawQ);
+    const d = fullState.data || {};
+    const hits = [];
+
+    // 1. Subjects
+    getKnownSubjectNames().forEach(sub => {
+      const disp = getDisplaySubject(sub);
+      if (KretaApi.normalizeHu(sub).includes(q) || KretaApi.normalizeHu(disp).includes(q)) {
+        hits.push({
+          category: "Tantárgy",
+          title: disp,
+          sub: `${(d.grades || []).filter(g => (g.Tantargy?.Nev || g.Tantargy) === sub).length} db érdemjegy`,
+          action: () => {
+            gradesSearchQuery = disp;
+            const gInput = document.getElementById("grades-search-input");
+            if (gInput) gInput.value = disp;
+            switchDashboardTab("view-grades");
+            renderAllGradesView(d.grades || [], d.groupAverages || []);
+            renderGradesMatrixTable(d.grades || [], d.groupAverages || []);
+          }
+        });
       }
+    });
+
+    // 2. Grades by topic
+    (d.grades || []).slice(0, 80).forEach(g => {
+      const sub = getDisplaySubject(g.Tantargy?.Nev || g.Tantargy || "Tantárgy");
+      const topic = g.Tema || g.Tipus?.Leiras || "";
+      const parsed = KretaApi.parseGrade(g);
+      if (KretaApi.normalizeHu(`${sub} ${topic}`).includes(q)) {
+        hits.push({
+          category: `Jegy (${parsed.displayValue})`,
+          title: `${sub} — ${topic || "Értékelés"}`,
+          sub: `Súly: ${parsed.weightPercent}%`,
+          action: () => {
+            currentSubjectFilter = g.Tantargy?.Nev || g.Tantargy || "all";
+            switchDashboardTab("view-dashboard");
+            renderDashboard();
+            document.getElementById("dash-grades-table")?.scrollIntoView({ behavior: "smooth" });
+          }
+        });
+      }
+    });
+
+    // 3. Timetable rooms / teachers
+    const seenLessons = new Set();
+    (d.timetable || []).forEach(l => {
+      const sub = getDisplaySubject(l.Tantargy?.Nev || l.Nev || "Tanóra");
+      const room = l.TeremNeve || "";
+      const teacher = l.HelyettesTanarNeve || l.TanarNeve || "";
+      const key = `${sub}|${room}|${teacher}`;
+      if (seenLessons.has(key)) return;
+      if (KretaApi.normalizeHu(`${sub} ${room} ${teacher}`).includes(q)) {
+        seenLessons.add(key);
+        hits.push({
+          category: "Órarend",
+          title: `${sub} (${room ? "Terem: " + room : "Tanóra"})`,
+          sub: teacher || "",
+          action: () => switchDashboardTab("view-timetable")
+        });
+      }
+    });
+
+    // 4. Tasks & Exams
+    (d.exams || []).forEach(ex => {
+      const sub = getDisplaySubject(ex.Tantargy?.Nev || ex.Tantargy || "Dolgozat");
+      const tema = ex.Tema || "Számonkérés";
+      if (KretaApi.normalizeHu(`${sub} ${tema}`).includes(q)) {
+        hits.push({
+          category: "Számonkérés",
+          title: `${sub}: ${tema}`,
+          sub: (ex.Datum || "").split("T")[0],
+          action: () => switchDashboardTab("view-tasks")
+        });
+      }
+    });
+    (d.homework || []).forEach(hw => {
+      const sub = getDisplaySubject(hw.Tantargy?.Nev || hw.Tantargy || "Házi");
+      const text = hw.Szoveg || hw.Feladat || "";
+      if (KretaApi.normalizeHu(`${sub} ${text}`).includes(q)) {
+        hits.push({
+          category: "Házi feladat",
+          title: `${sub}: ${text.slice(0, 50)}`,
+          sub: (hw.HataridoDatuma || hw.Hatarido || "").split("T")[0],
+          action: () => switchDashboardTab("view-tasks")
+        });
+      }
+    });
+
+    // 5. Messages
+    (d.messages || []).forEach(m => {
+      const title = m.title || m.subject || "Üzenet";
+      const sender = m.sender || "";
+      if (KretaApi.normalizeHu(`${title} ${sender} ${kretaHtmlToText(m.content)}`).includes(q)) {
+        hits.push({
+          category: "Üzenet",
+          title,
+          sub: sender,
+          action: () => {
+            switchDashboardTab("view-messages");
+            openMessageViewer(m);
+          }
+        });
+      }
+    });
+
+    resultsBox.innerHTML = "";
+    if (hits.length === 0) {
+      resultsBox.innerHTML = `<div style="padding:12px; font-size:0.78rem; color:var(--text-muted); text-align:center;">Nincs találat erre: "${escapeHtml(rawQ)}"</div>`;
+      resultsBox.style.display = "block";
+      return;
+    }
+
+    hits.slice(0, 10).forEach(hit => {
+      const row = document.createElement("div");
+      row.className = "search-result-item";
+      row.innerHTML = `
+        <div style="min-width:0; flex:1;">
+          <div style="font-size:0.8rem; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(hit.title)}</div>
+          <div style="font-size:0.68rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(hit.sub || "")}</div>
+        </div>
+        <span class="search-cat-tag">${escapeHtml(hit.category)}</span>
+      `;
+      row.addEventListener("click", () => {
+        resultsBox.style.display = "none";
+        input.value = "";
+        hit.action();
+      });
+      resultsBox.appendChild(row);
+    });
+    resultsBox.style.display = "block";
+  };
+
+  input.addEventListener("input", runSearch);
+  input.addEventListener("focus", () => {
+    if (input.value.trim()) runSearch();
+  });
+  document.addEventListener("click", (e) => {
+    if (!input.contains(e.target) && !resultsBox.contains(e.target)) {
+      resultsBox.style.display = "none";
+    }
+  });
+}
+
+function setupDashboardGhostSimulator() {
+  const quickSubSelect = document.getElementById("dash-quick-ghost-subject");
+  const gradeBtns = document.querySelectorAll("#dash-quick-grade-btns .ghost-pill-btn");
+  const weightBtns = document.querySelectorAll("#dash-quick-weight-btns .weight-pill-btn");
+  const addQuickBtn = document.getElementById("btn-dash-ghost-add");
+  const clearQuickBtn = document.getElementById("btn-dash-ghost-clear");
+  const addGradesViewBtn = document.getElementById("btn-grades-add-ghost");
+
+  quickSubSelect?.addEventListener("change", (e) => {
+    dashGhostState.selectedSubject = e.target.value;
+    const gradesSelect = document.getElementById("ghost-subject");
+    if (gradesSelect) gradesSelect.value = dashGhostState.selectedSubject;
+    refreshGhostSimulations();
+  });
+
+  gradeBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      dashGhostState.selectedGrade = parseInt(btn.getAttribute("data-grade") || "5", 10);
+      gradeBtns.forEach(b => b.classList.toggle("active", b === btn));
+      const gIn = document.getElementById("ghost-grade");
+      if (gIn) gIn.value = String(dashGhostState.selectedGrade);
+    });
+  });
+
+  weightBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      dashGhostState.selectedWeight = parseInt(btn.getAttribute("data-weight") || "100", 10);
+      weightBtns.forEach(b => b.classList.toggle("active", b === btn));
+      const wIn = document.getElementById("ghost-weight");
+      if (wIn) wIn.value = String(dashGhostState.selectedWeight);
+    });
+  });
+
+  addQuickBtn?.addEventListener("click", () => {
+    if (!dashGhostState.selectedSubject) return;
+    dashGhostState.items.push({
+      id: `${Date.now()}_${Math.random()}`,
+      subject: dashGhostState.selectedSubject,
+      grade: dashGhostState.selectedGrade,
+      weight: dashGhostState.selectedWeight
+    });
+    refreshGhostSimulations();
+  });
+
+  addGradesViewBtn?.addEventListener("click", () => {
+    const sub = document.getElementById("ghost-subject")?.value || dashGhostState.selectedSubject;
+    const grade = Math.min(5, Math.max(1, parseInt(document.getElementById("ghost-grade")?.value || "5", 10)));
+    const weight = Math.min(400, Math.max(1, parseInt(document.getElementById("ghost-weight")?.value || "100", 10)));
+    if (!sub) return;
+    dashGhostState.selectedSubject = sub;
+    dashGhostState.items.push({
+      id: `${Date.now()}_${Math.random()}`,
+      subject: sub,
+      grade,
+      weight
+    });
+    refreshGhostSimulations();
+  });
+
+  clearQuickBtn?.addEventListener("click", () => {
+    dashGhostState.items = [];
+    refreshGhostSimulations();
+  });
+}
+
+function setupViewFiltersAndToggles() {
+  // Grades Search & Matrix Toggle
+  const gradesSearchInput = document.getElementById("grades-search-input");
+  gradesSearchInput?.addEventListener("input", (e) => {
+    gradesSearchQuery = e.target.value || "";
+    renderAllGradesView(fullState.data?.grades || [], fullState.data?.groupAverages || []);
+    renderGradesMatrixTable(fullState.data?.grades || [], fullState.data?.groupAverages || []);
+  });
+
+  const gradesViewToggle = document.getElementById("btn-grades-view-toggle");
+  gradesViewToggle?.addEventListener("click", () => {
+    isGradesMatrixView = !isGradesMatrixView;
+    gradesViewToggle.innerText = isGradesMatrixView ? "Kártyás nézet" : "Jegymátrix nézet";
+    const cardsGrid = document.getElementById("all-grades-grid");
+    const matrixBox = document.getElementById("grades-matrix-container");
+    if (cardsGrid) cardsGrid.style.display = isGradesMatrixView ? "none" : "grid";
+    if (matrixBox) matrixBox.style.display = isGradesMatrixView ? "block" : "none";
+  });
+
+  // Tasks Filter Chips
+  const taskBtns = document.querySelectorAll("#tasks-filter-chips .chip-btn");
+  taskBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      currentTaskFilter = btn.getAttribute("data-task-filter") || "all";
+      taskBtns.forEach(b => b.classList.toggle("active", b === btn));
+      renderTasksView(fullState.data?.homework || [], fullState.data?.exams || []);
+    });
+  });
+
+  // Absences Filter Chips
+  const absBtns = document.querySelectorAll("#absences-filter-chips .chip-btn");
+  absBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      currentAbsenceFilter = btn.getAttribute("data-abs-filter") || "all";
+      absBtns.forEach(b => b.classList.toggle("active", b === btn));
+      renderAbsencesView(fullState.data?.absences || []);
     });
   });
 }
@@ -500,11 +934,8 @@ async function loadDashboardData(force = false) {
   } else {
     fullState.isDemo = false;
 
-    // Auto-force a live fetch when session exists but no cached data is available
-    // (e.g. right after a fresh login where the first background fetch failed).
     if (!force && !store.pala_cached_data) {
       force = true;
-      // Show a loading state so the user knows a fetch is in progress.
       const nameEl = document.getElementById("student-name");
       if (nameEl) nameEl.innerText = "Adatok betöltése...";
       const instEl = document.getElementById("inst-name");
@@ -523,7 +954,6 @@ async function loadDashboardData(force = false) {
       if (store.pala_cached_data) {
         fullState.data = { ...store.pala_cached_data, isMaintenance: true };
       } else {
-        // No cache and no network: show a user-visible error card.
         fullState.data = null;
         fullState.fetchError = e;
       }
@@ -535,6 +965,19 @@ async function loadDashboardData(force = false) {
 
 let currentSubjectFilter = "all";
 
+function setStatusBadge(className, text) {
+  const demoBadge = document.getElementById("demo-indicator");
+  const demoText = document.getElementById("demo-indicator-text");
+  if (demoBadge) {
+    demoBadge.className = `badge status-pill-badge ${className}`;
+    if (demoText) {
+      demoText.innerText = text;
+    } else {
+      demoBadge.innerText = text;
+    }
+  }
+}
+
 function renderDashboard() {
   const d = fullState.data;
   const maintBanner = document.getElementById("dash-maintenance-banner");
@@ -544,7 +987,6 @@ function renderDashboard() {
   // Handle Maintenance state
   if (fullState.isMaintenance) {
     if (!d) {
-      // Full maintenance screen (no cached data available)
       if (maintView) {
         maintView.style.display = "block";
         maintView.classList.add("active");
@@ -554,15 +996,9 @@ function renderDashboard() {
         dashView.style.display = "none";
         dashView.classList.remove("active");
       }
-
-      const demoBadge = document.getElementById("demo-indicator");
-      if (demoBadge) {
-        demoBadge.className = "badge badge-maintenance";
-        demoBadge.innerText = "Központi Karbantartás";
-      }
+      setStatusBadge("badge-maintenance", "Központi Karbantartás");
       return;
     } else {
-      // Offline cached view with alert banner
       if (maintBanner) maintBanner.style.display = "block";
       if (maintView) {
         maintView.style.display = "none";
@@ -572,12 +1008,7 @@ function renderDashboard() {
         dashView.style.display = "block";
         dashView.classList.add("active");
       }
-
-      const demoBadge = document.getElementById("demo-indicator");
-      if (demoBadge) {
-        demoBadge.className = "badge badge-maintenance";
-        demoBadge.innerText = "Karbantartás • Offline Gyorsítótár";
-      }
+      setStatusBadge("badge-maintenance", "Karbantartás • Offline Gyorsítótár");
     }
   } else {
     if (maintBanner) maintBanner.style.display = "none";
@@ -586,18 +1017,12 @@ function renderDashboard() {
 
   if (!d) {
     if (fullState.fetchError) {
-      // Session is valid but the server is unreachable: show a user-friendly error.
       const nameEl = document.getElementById("student-name");
       if (nameEl) nameEl.innerText = "Betöltés sikertelen";
       const instEl = document.getElementById("inst-name");
       if (instEl) instEl.innerText = "Kréta szerver nem érhető el";
-      const demoBadge = document.getElementById("demo-indicator");
-      if (demoBadge) {
-        demoBadge.className = "badge badge-figyelmeztetes";
-        demoBadge.innerText = "Szerver hiba";
-      }
+      setStatusBadge("badge-maintenance", "Szerver hiba");
 
-      // Inject an error card into the Home view (view-dashboard).
       const homeView = document.getElementById("view-dashboard");
       if (homeView) {
         const existingCard = document.getElementById("pala-fetch-error-card");
@@ -605,13 +1030,13 @@ function renderDashboard() {
           const errCard = document.createElement("div");
           errCard.id = "pala-fetch-error-card";
           errCard.className = "card";
-          errCard.style.cssText = "margin:16px; border-left:3px solid var(--danger); background:rgba(255,69,58,0.06);";
+          errCard.style.cssText = "margin-bottom:18px; border-left:3px solid var(--danger); background:rgba(255,69,58,0.06);";
           const errTitle = document.createElement("div");
           errTitle.style.cssText = "font-weight:700; color:var(--danger); margin-bottom:8px;";
           errTitle.innerText = "Nem sikerült adatot betölteni";
           const errBody = document.createElement("div");
           errBody.style.cssText = "font-size:0.82rem; color:var(--text-muted); margin-bottom:14px;";
-          errBody.innerText = "Nem sikerült adatot betölteni a Kréta szerverről. Kérlek ellenőrizd, hogy a Kréta elérhető-e, majd kattints a Frissítés gombra.";
+          errBody.innerText = "Nem sikerült adatot betölteni a Kréta szerverről. Kérlek ellenőrizd, hogy a Kréta elérhető-e, majd kattints a Szinkronizálás gombra.";
           const errBtn = document.createElement("button");
           errBtn.className = "btn btn-primary btn-sm";
           errBtn.innerText = "Újra próbálom";
@@ -630,23 +1055,19 @@ function renderDashboard() {
       const nameEl = document.getElementById("student-name");
       if (nameEl) nameEl.innerText = "Bejelentkezés szükséges";
       const instEl = document.getElementById("inst-name");
-      if (instEl) instEl.innerText = "Kattints a Beállítások menüpontra a bejelentkezéshez!";
-      const demoBadge = document.getElementById("demo-indicator");
-      if (demoBadge) {
-        demoBadge.className = "badge badge-figyelmeztetes";
-        demoBadge.innerText = "Munkamenet lejárt";
-      }
-      const todayCard = document.getElementById("today-lessons-count");
-      if (todayCard) todayCard.innerText = "0";
-      const gradeAvg = document.getElementById("student-grade-average");
-      if (gradeAvg) gradeAvg.innerText = "--";
+      if (instEl) instEl.innerText = "Kattints a Beállítások menüpontra";
+      setStatusBadge("badge-maintenance", "Munkamenet lejárt");
     }
     return;
   }
 
   // Header & Student info
+  const studentName = d.student?.Nev || "Diák";
   const nameEl = document.getElementById("student-name");
-  if (nameEl) nameEl.innerText = d.student?.Nev || "Diák";
+  if (nameEl) nameEl.innerText = studentName;
+
+  const avatarEl = document.getElementById("dash-avatar-initials");
+  if (avatarEl) avatarEl.innerText = getInitials(studentName);
 
   const instEl = document.getElementById("inst-name");
   if (instEl) {
@@ -658,29 +1079,20 @@ function renderDashboard() {
 
   // Demo / Online status badge
   if (!fullState.isMaintenance) {
-    const demoBadge = document.getElementById("demo-indicator");
-    if (demoBadge) {
-      if (fullState.isDemo) {
-        demoBadge.className = "badge badge-demo";
-        demoBadge.innerText = "Demó Mód (Teszt Elek)";
-      } else {
-        demoBadge.className = "badge";
-        demoBadge.style.color = "var(--success)";
-        demoBadge.style.borderColor = "rgba(48,209,88,0.4)";
-        demoBadge.style.background = "rgba(48,209,88,0.12)";
-        demoBadge.innerText = "Online • Élő Kréta Adatok";
-      }
+    if (fullState.isDemo) {
+      setStatusBadge("badge-demo", "Demó Mód (Teszt Elek)");
+    } else {
+      setStatusBadge("badge-online", "Online • Élő Kréta Adatok");
     }
   }
 
-  // 1. Calculate GPA & Stats using robust parser
+  // 1. Calculate GPA & Stats using the shared parser
   let totalWeight = 0;
   let weightedSum = 0;
   const subjectMap = {};
 
   (d.grades || []).forEach(g => {
     const parsed = KretaApi.parseGrade(g);
-    // Include valid 1..5 grades; skip summary and non-numeric evaluations
     if (parsed.numericGrade !== null && !parsed.isSummary) {
       weightedSum += parsed.numericGrade * parsed.weight;
       totalWeight += parsed.weight;
@@ -691,7 +1103,6 @@ function renderDashboard() {
     subjectMap[sub].push(g);
   });
 
-  // Fallback: if no mid-term grades exist, include summary grades
   if (totalWeight === 0) {
     (d.grades || []).forEach(g => {
       const parsed = KretaApi.parseGrade(g);
@@ -711,11 +1122,10 @@ function renderDashboard() {
   const totalBadge = document.getElementById("dash-subjects-total-badge");
   if (totalBadge) totalBadge.innerText = `${uniqueSubjects.length} tantárgy rögzítve`;
 
-  // Wire 'View All Subjects' button
   const viewAllBtn = document.getElementById("btn-view-all-subjects");
   if (viewAllBtn) {
     viewAllBtn.onclick = () => {
-      document.querySelector('[data-tab="view-grades"]')?.click();
+      switchDashboardTab("view-grades");
     };
   }
 
@@ -748,7 +1158,7 @@ function renderDashboard() {
   let worstAvg = 99;
 
   for (const sub of uniqueSubjects) {
-    if (subjectMap[sub].length >= 3) {
+    if (subjectMap[sub].length >= 2) {
       let subWeight = 0;
       let subSum = 0;
       subjectMap[sub].forEach(g => {
@@ -777,7 +1187,7 @@ function renderDashboard() {
   if (bestValEl && bestNameEl) {
     if (bestSub) {
       bestValEl.innerText = bestAvg.toFixed(2);
-      bestNameEl.innerText = bestSub;
+      bestNameEl.innerText = getDisplaySubject(bestSub);
     } else {
       bestValEl.innerText = "--";
       bestNameEl.innerText = "Nincs elég jegy";
@@ -789,7 +1199,7 @@ function renderDashboard() {
   if (worstValEl && worstNameEl) {
     if (worstSub) {
       worstValEl.innerText = worstAvg.toFixed(2);
-      worstNameEl.innerText = worstSub;
+      worstNameEl.innerText = getDisplaySubject(worstSub);
     } else {
       worstValEl.innerText = "--";
       worstNameEl.innerText = "Nincs elég jegy";
@@ -801,7 +1211,7 @@ function renderDashboard() {
   const unexcusedSubMap = {};
   (d.absences || []).forEach(a => {
     const status = (a.IgazolasAllapota || "").toLowerCase();
-    if (!status.includes("igazolt") && a.KesesPercben === 0) {
+    if (!status.includes("igazolt") && (a.KesesPercben || 0) === 0) {
       unexcusedCount++;
       const sub = a.Tantargy?.Nev || a.Tantargy || "Tanóra";
       unexcusedSubMap[sub] = (unexcusedSubMap[sub] || 0) + 1;
@@ -819,16 +1229,39 @@ function renderDashboard() {
 
   const unexValEl = document.getElementById("dash-unexcused-val");
   const unexNameEl = document.getElementById("dash-unexcused-name");
+  const unexBadgeEl = document.getElementById("dash-unexcused-badge");
   if (unexValEl && unexNameEl) {
     unexValEl.innerText = `${unexcusedCount} óra`;
-    unexNameEl.innerText = topUnexcusedSub ? `Legtöbb: ${topUnexcusedSub}` : "Nincs igazolatlan";
+    unexValEl.className = "stat-val " + (unexcusedCount === 0 ? "green" : (unexcusedCount >= 10 ? "danger" : "orange"));
+    unexNameEl.innerText = topUnexcusedSub ? `Legtöbb: ${getDisplaySubject(topUnexcusedSub)}` : "Nincs igazolatlan hiányzás";
+  }
+  if (unexBadgeEl) {
+    if (unexcusedCount >= 30) {
+      unexBadgeEl.className = "badge badge-warning-soft";
+      unexBadgeEl.innerText = "30h felett!";
+    } else if (unexcusedCount >= 10) {
+      unexBadgeEl.className = "badge badge-maintenance";
+      unexBadgeEl.innerText = "10h felett";
+    } else {
+      unexBadgeEl.className = "badge badge-success-soft";
+      unexBadgeEl.innerText = "Rendben";
+    }
   }
 
-  // Active / Upcoming Lesson Hero Banner
-  try { renderDashboardHero(todayLessons); } catch (e) { console.error("Error rendering hero:", e); }
+  // Active / Upcoming Lesson Hero Banner + Today Timeline
+  try {
+    renderDashboardHero(todayLessons);
+    renderDashboardTodayTimeline(todayLessons);
+  } catch (e) { console.error("Error rendering hero:", e); }
 
   // Recent Grades Table with Filter Chips
   try { renderRecentGradesTable(d.grades || [], subjectMap); } catch (e) { console.error("Error rendering recent grades:", e); }
+
+  // Quick Ghost Simulator & Upcoming Tasks on Dashboard
+  try {
+    refreshGhostSimulations(subjectMap);
+    renderDashboardUpcomingTasks(d.homework || [], d.exams || []);
+  } catch (e) { console.error("Error rendering dashboard widgets:", e); }
 
   // Subject Averages Cards Grid on Dashboard
   try { renderDashboardSubjectCards(subjectMap); } catch (e) { console.error("Error rendering subject cards:", e); }
@@ -836,46 +1269,75 @@ function renderDashboard() {
   // View 2: Weekly Timetable Grid
   try { renderWeeklyTimetable(d.timetable || []); } catch (e) { console.error("Error rendering timetable:", e); }
 
-  // View 3: Full Subject Breakdown & Grades
+  // View 3: Full Subject Breakdown, Grades & Matrix
   try {
     renderGhostGradesAndPlanner(subjectMap);
     renderAllGradesView(d.grades || [], d.groupAverages || []);
+    renderGradesMatrixTable(d.grades || [], d.groupAverages || []);
   } catch (e) { console.error("Error rendering all grades:", e); }
 
   // View 4: Tasks & Homework
   try { renderTasksView(d.homework || [], d.exams || []); } catch (e) { console.error("Error rendering tasks:", e); }
 
-  // View 5: Messages & e-Ügyintézés (Üzenetek)
+  // View 5: Messages & e-Ügyintézés
   const msgs = Array.isArray(d.messages) ? d.messages : [];
   const quests = Array.isArray(d.questionnaires) ? d.questionnaires : [];
   try { renderMessagesView(msgs, quests); } catch (e) { console.error("Error rendering messages:", e); }
 
-  // View 6: 250h Absence Danger Zone (Mulasztások)
+  // View 6: 250h Absence Danger Zone
   try { renderAbsencesView(d.absences || []); } catch (e) { console.error("Error rendering absences:", e); }
 
-  // View 7: Student Profile
+  // View 7: Student Profile & Settings
   try { renderStudentView(d.student); } catch (e) { console.error("Error rendering student:", e); }
-
-  // View 8: Settings (Beállítások)
   try { renderSettingsView(); } catch (e) { console.error("Error rendering settings:", e); }
 }
 
 function renderDashboardHero(todayLessons) {
   const card = document.getElementById("dash-hero-card");
   const tagEl = document.getElementById("dash-hero-tag");
+  const roomEl = document.getElementById("dash-hero-room");
   const subjectEl = document.getElementById("dash-hero-subject");
   const detailsEl = document.getElementById("dash-hero-details");
   const timeEl = document.getElementById("dash-hero-time");
   const statusEl = document.getElementById("dash-hero-status");
   const progressTrack = document.getElementById("dash-hero-progress-track");
   const progressFill = document.getElementById("dash-hero-progress-fill");
+  const subBanner = document.getElementById("dash-hero-sub-banner");
   if (!card || !tagEl || !subjectEl || !detailsEl || !timeEl || !statusEl) return;
+
+  card.style.display = "flex";
+
+  const sorted = [...(todayLessons || [])].sort(
+    (a, b) => new Date(a.KezdetIdopont) - new Date(b.KezdetIdopont)
+  );
+
+  // Check for any substitution or cancellation today
+  const anomaly = sorted.find(l => {
+    const st = (l.Allapot?.Nev || l.Allapot || "").toLowerCase();
+    return st.includes("elmaradt") || !!l.HelyettesTanarNeve;
+  });
+
+  if (subBanner) {
+    if (anomaly) {
+      const st = (anomaly.Allapot?.Nev || anomaly.Allapot || "").toLowerCase();
+      const isCanc = st.includes("elmaradt");
+      const subName = getDisplaySubject(anomaly.Tantargy?.Nev || anomaly.Nev || "Tanóra");
+      const slot = anomaly.Oraszam ? `${anomaly.Oraszam}. óra` : "";
+      subBanner.style.display = "block";
+      subBanner.className = isCanc ? "hero-sub-alert cancelled" : "hero-sub-alert";
+      subBanner.innerText = isCanc
+        ? `Elmaradó óra ma: ${slot} ${subName}`
+        : `Helyettesítés ma: ${slot} ${subName} (${anomaly.HelyettesTanarNeve})`;
+    } else {
+      subBanner.style.display = "none";
+    }
+  }
 
   const now = new Date();
   let active = null;
   let next = null;
 
-  for (const l of todayLessons) {
+  for (const l of sorted) {
     const s = new Date(l.KezdetIdopont);
     const e = new Date(l.VegIdopont);
     if (now >= s && now <= e) {
@@ -886,28 +1348,27 @@ function renderDashboardHero(todayLessons) {
     }
   }
 
-  if (!active && !next) {
-    card.style.display = "none";
-    return;
-  }
-  card.style.display = "block";
-
   if (active) {
-    const sub = active.Tantargy?.Nev || active.Nev || "Tanóra";
-    const room = active.TeremNeve ? `Terem: ${active.TeremNeve}` : "";
-    const teacher = active.TanarNeve || "";
+    const sub = getDisplaySubject(active.Tantargy?.Nev || active.Nev || "Tanóra");
+    const room = active.TeremNeve ? `Terem: ${active.TeremNeve}` : "Terem: --";
+    const teacher = active.HelyettesTanarNeve || active.TanarNeve || "";
     const start = new Date(active.KezdetIdopont);
     const end = new Date(active.VegIdopont);
     const minsLeft = Math.max(0, Math.ceil((end - now) / 60000));
 
     tagEl.innerText = "FOLYAMATBAN";
-    tagEl.style.background = "var(--primary)";
-    tagEl.style.color = "#000";
+    tagEl.style.background = "var(--primary-fill)";
+    tagEl.style.color = "var(--on-primary)";
+    if (roomEl) roomEl.innerText = room;
     subjectEl.innerText = sub;
-    detailsEl.innerText = [room, teacher].filter(Boolean).join(" • ");
-    timeEl.innerText = active.Oraszam != null ? `${active.Oraszam}. tanóra` : "";
-    statusEl.innerText = `Hátra van még: ${minsLeft} perc`;
-    statusEl.style.color = "var(--text-muted)";
+    detailsEl.innerText = [
+      `${formatLocalTime(start)} - ${formatLocalTime(end)}`,
+      teacher,
+      active.Tema || ""
+    ].filter(Boolean).join(" • ");
+    timeEl.innerText = active.Oraszam != null ? `${active.Oraszam}. tanóra` : "Tanóra";
+    statusEl.innerText = `${minsLeft} perc van hátra`;
+    statusEl.style.color = "var(--primary)";
 
     if (progressTrack && progressFill) {
       const elapsed = now - start;
@@ -916,24 +1377,310 @@ function renderDashboardHero(todayLessons) {
       progressFill.style.width = `${pct}%`;
       progressTrack.style.display = "block";
     }
-  } else {
-    const sub = next.Tantargy?.Nev || next.Nev || "Tanóra";
-    const room = next.TeremNeve ? `Terem: ${next.TeremNeve}` : "";
+  } else if (next) {
+    const sub = getDisplaySubject(next.Tantargy?.Nev || next.Nev || "Tanóra");
+    const room = next.TeremNeve ? `Terem: ${next.TeremNeve}` : "Terem: --";
+    const teacher = next.HelyettesTanarNeve || next.TanarNeve || "";
     const s = new Date(next.KezdetIdopont);
-    const timeStr = formatLocalTime(s);
+    const e = new Date(next.VegIdopont);
     const minsUntil = Math.max(0, Math.ceil((s - now) / 60000));
 
-    tagEl.innerText = "KÖVETKEZŐ ÓRA";
-    tagEl.style.background = "rgba(255, 214, 10, 0.15)";
+    tagEl.innerText = "SZÜNET • KÖVETKEZŐ ÓRA";
+    tagEl.style.background = "rgba(255, 214, 10, 0.16)";
     tagEl.style.color = "var(--warning)";
+    if (roomEl) roomEl.innerText = room;
     subjectEl.innerText = sub;
-    detailsEl.innerText = [room, next.Oraszam != null ? `${next.Oraszam}. tanóra` : ""].filter(Boolean).join(" • ");
-    timeEl.innerText = timeStr;
-    statusEl.innerText = `${minsUntil} perc múlva`;
+    detailsEl.innerText = [
+      `${formatLocalTime(s)} - ${formatLocalTime(e)}`,
+      teacher,
+      next.Tema || ""
+    ].filter(Boolean).join(" • ");
+    timeEl.innerText = next.Oraszam != null ? `${next.Oraszam}. tanóra` : formatLocalTime(s);
+    statusEl.innerText = `${minsUntil} perc múlva kezdődik`;
     statusEl.style.color = "var(--warning)";
 
     if (progressTrack) progressTrack.style.display = "none";
+  } else {
+    tagEl.innerText = sorted.length > 0 ? "MAI TANÍTÁS VÉGET ÉRT" : "TANÍTÁS NÉLKÜLI NAP";
+    tagEl.style.background = "rgba(48, 209, 88, 0.16)";
+    tagEl.style.color = "var(--success)";
+    if (roomEl) roomEl.innerText = `${sorted.length} tanóra ma`;
+    subjectEl.innerText = sorted.length > 0 ? "Mára nincs több tanórád" : "Nincs rögzített tanóra";
+    detailsEl.innerText = "Tekintsd át a közelgő számonkéréseket vagy próbáld ki a Szellem Jegy Szimulátort.";
+    timeEl.innerText = new Date().toLocaleDateString("hu-HU", { weekday: "long" });
+    statusEl.innerText = "Szabadidő";
+    statusEl.style.color = "var(--success)";
+
+    if (progressTrack) progressTrack.style.display = "none";
   }
+}
+
+function renderDashboardTodayTimeline(todayLessons) {
+  const listEl = document.getElementById("dash-today-timeline");
+  const badgeEl = document.getElementById("dash-today-date-badge");
+  if (!listEl) return;
+  listEl.innerHTML = "";
+
+  let lessonsToShow = [...(todayLessons || [])].sort(
+    (a, b) => new Date(a.KezdetIdopont) - new Date(b.KezdetIdopont)
+  );
+  let isFallbackDay = false;
+
+  // If today has no lessons (e.g. weekend), show Monday's lessons as preview
+  if (lessonsToShow.length === 0 && fullState.data?.timetable?.length > 0) {
+    const allSorted = [...fullState.data.timetable].sort(
+      (a, b) => new Date(a.KezdetIdopont) - new Date(b.KezdetIdopont)
+    );
+    const firstDateKey = allSorted[0]?.KezdetIdopont ? localDateKey(allSorted[0].KezdetIdopont) : null;
+    if (firstDateKey) {
+      lessonsToShow = allSorted.filter(l => l.KezdetIdopont && localDateKey(l.KezdetIdopont) === firstDateKey);
+      isFallbackDay = true;
+    }
+  }
+
+  if (badgeEl) {
+    badgeEl.innerText = isFallbackDay
+      ? `Következő tanítási nap (${lessonsToShow.length} óra)`
+      : `Ma (${lessonsToShow.length} óra)`;
+  }
+
+  if (lessonsToShow.length === 0) {
+    listEl.innerHTML = `<div style="padding:18px; text-align:center; font-size:0.78rem; color:var(--text-muted);">Nincs rögzített órarendi adat.</div>`;
+    return;
+  }
+
+  const nowMs = Date.now();
+  lessonsToShow.forEach((l, idx) => {
+    const sub = getDisplaySubject(l.Tantargy?.Nev || l.Nev || "Tanóra");
+    const room = l.TeremNeve || "";
+    const slot = l.Oraszam ?? (idx + 1);
+    const startMs = l.KezdetIdopont ? new Date(l.KezdetIdopont).getTime() : 0;
+    const endMs = l.VegIdopont ? new Date(l.VegIdopont).getTime() : 0;
+    const stateRaw = (l.Allapot?.Nev || l.Allapot || "").toLowerCase();
+    const isCanc = stateRaw.includes("elmaradt");
+    const isSub = !isCanc && !!l.HelyettesTanarNeve;
+    const isActive = !isFallbackDay && startMs > 0 && endMs > 0 && nowMs >= startMs && nowMs <= endMs;
+
+    let cls = "timeline-mini-item";
+    if (isActive) cls += " active";
+    else if (isCanc) cls += " cancelled";
+    else if (isSub) cls += " substitute";
+
+    let tagHtml = room ? `<span class="room-pill">${escapeHtml(room)}</span>` : "";
+    if (isCanc) {
+      tagHtml = `<span class="badge badge-warning-soft">Elmaradt</span>`;
+    } else if (isSub) {
+      tagHtml = `<span class="badge badge-maintenance">Helyettesítés</span>`;
+    } else if (isActive) {
+      tagHtml = `<span class="badge banner-tag">Élő</span>`;
+    }
+
+    const timeRange = l.KezdetIdopont && l.VegIdopont
+      ? `${formatLocalTime(l.KezdetIdopont)}-${formatLocalTime(l.VegIdopont)}`
+      : "";
+
+    const row = document.createElement("div");
+    row.className = cls;
+    row.innerHTML = `
+      <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
+        <span class="lesson-slot-badge" style="width:22px; height:22px; font-size:0.7rem;">${escapeHtml(slot)}</span>
+        <div style="min-width:0; flex:1;">
+          <div style="font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; ${isCanc ? 'text-decoration:line-through; color:var(--text-muted);' : ''}">${escapeHtml(sub)}</div>
+          <div style="font-size:0.66rem; color:var(--text-muted);">${escapeHtml(timeRange)}</div>
+        </div>
+      </div>
+      ${tagHtml}
+    `;
+    listEl.appendChild(row);
+  });
+}
+
+function renderDashboardUpcomingTasks(homework, exams) {
+  const listEl = document.getElementById("dash-upcoming-tasks-list");
+  if (!listEl) return;
+  listEl.innerHTML = "";
+
+  const combined = [
+    ...(exams || []).map(e => ({
+      isExam: true,
+      sub: getDisplaySubject(e.Tantargy?.Nev || e.Tantargy || "Számonkérés"),
+      title: e.Tema || e.Tipus?.Leiras || "Bejelentett számonkérés",
+      date: e.Datum || e.OraKezdete || ""
+    })),
+    ...(homework || []).map(h => ({
+      isExam: false,
+      sub: getDisplaySubject(h.Tantargy?.Nev || h.Tantargy || "Házi feladat"),
+      title: h.Szoveg || h.Feladat || "Házi feladat",
+      date: h.HataridoDatuma || h.HataridoIdopontja || h.Hatarido || ""
+    }))
+  ].sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+
+  if (combined.length === 0) {
+    listEl.innerHTML = `<div style="padding:16px; text-align:center; font-size:0.78rem; color:var(--text-muted);">Nincs közelgő számonkérés vagy házi feladat.</div>`;
+    return;
+  }
+
+  combined.slice(0, 4).forEach(item => {
+    const row = document.createElement("div");
+    row.className = "compact-task-row";
+    const badgeCls = item.isExam ? "badge-warning-soft" : "badge-subtle";
+    const badgeLabel = item.isExam ? "Dolgozat" : "Házi";
+    const dateStr = item.date ? item.date.split("T")[0] : "";
+
+    row.innerHTML = `
+      <div style="min-width:0; flex:1;">
+        <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
+          <span class="badge ${badgeCls}" style="font-size:0.62rem; padding:1px 6px;">${badgeLabel}</span>
+          <strong style="font-size:0.78rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(item.sub)}</strong>
+        </div>
+        <div style="font-size:0.72rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(item.title)}</div>
+      </div>
+      <span style="font-size:0.68rem; color:var(--text-muted); flex-shrink:0;">${escapeHtml(dateStr)}</span>
+    `;
+    listEl.appendChild(row);
+  });
+}
+
+function refreshGhostSimulations(providedSubjectMap = null) {
+  const grades = fullState.data?.grades || [];
+  const subjectMap = providedSubjectMap || {};
+  if (!providedSubjectMap) {
+    grades.forEach(g => {
+      const sub = g.Tantargy?.Nev || g.TantargyNev || g.Tantargy || "Egyéb tantárgy";
+      if (!subjectMap[sub]) subjectMap[sub] = [];
+      subjectMap[sub].push(g);
+    });
+  }
+
+  const subjects = Object.keys(subjectMap).sort();
+  if (subjects.length === 0) subjects.push("Matematika");
+  if (!dashGhostState.selectedSubject || !subjects.includes(dashGhostState.selectedSubject)) {
+    dashGhostState.selectedSubject = subjects[0];
+  }
+
+  // Sync Dashboard Quick Select
+  const quickSelect = document.getElementById("dash-quick-ghost-subject");
+  if (quickSelect) {
+    quickSelect.innerHTML = subjects
+      .map(s => `<option value="${escapeHtml(s)}">${escapeHtml(getDisplaySubject(s))}</option>`)
+      .join("");
+    quickSelect.value = dashGhostState.selectedSubject;
+  }
+
+  // Sync Topbar Ghost Badge & Clear Button
+  const topBadge = document.getElementById("topbar-ghost-badge");
+  if (topBadge) {
+    topBadge.style.display = dashGhostState.items.length > 0 ? "inline-flex" : "none";
+    topBadge.innerText = String(dashGhostState.items.length);
+  }
+  const clearBtn = document.getElementById("btn-dash-ghost-clear");
+  if (clearBtn) {
+    clearBtn.style.display = dashGhostState.items.length > 0 ? "inline-block" : "none";
+  }
+
+  // Render Chips in both Quick Card and Grades View
+  ["dash-quick-ghost-chips", "grades-view-ghost-chips"].forEach(cid => {
+    const wrap = document.getElementById(cid);
+    if (!wrap) return;
+    wrap.innerHTML = "";
+    dashGhostState.items.forEach(it => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "ghost-chip";
+      chip.title = "Kattints a szellem jegy törléséhez";
+      chip.innerText = `${getDisplaySubject(it.subject).slice(0, 14)}: ${it.grade} (${it.weight}%) ×`;
+      chip.addEventListener("click", () => {
+        dashGhostState.items = dashGhostState.items.filter(x => x.id !== it.id);
+        refreshGhostSimulations(subjectMap);
+      });
+      wrap.appendChild(chip);
+    });
+  });
+
+  // Compute Real vs Projected for selectedSubject and Overall GPA
+  let realSubSum = 0, realSubW = 0;
+  let realTotSum = 0, realTotW = 0;
+
+  grades.forEach(g => {
+    const parsed = KretaApi.parseGrade(g);
+    if (parsed.numericGrade !== null && !parsed.isSummary) {
+      const sub = g.Tantargy?.Nev || g.TantargyNev || g.Tantargy || "";
+      realTotSum += parsed.numericGrade * parsed.weight;
+      realTotW += parsed.weight;
+      if (sub === dashGhostState.selectedSubject) {
+        realSubSum += parsed.numericGrade * parsed.weight;
+        realSubW += parsed.weight;
+      }
+    }
+  });
+
+  let mockSubSum = 0, mockSubW = 0;
+  let mockTotSum = 0, mockTotW = 0;
+  dashGhostState.items.forEach(m => {
+    const w = m.weight / 100;
+    mockTotSum += m.grade * w;
+    mockTotW += w;
+    if (m.subject === dashGhostState.selectedSubject) {
+      mockSubSum += m.grade * w;
+      mockSubW += w;
+    }
+  });
+
+  const curSubAvg = realSubW > 0 ? realSubSum / realSubW : 0;
+  const projSubAvg = (realSubW + mockSubW) > 0 ? (realSubSum + mockSubSum) / (realSubW + mockSubW) : 0;
+  const subDelta = projSubAvg - curSubAvg;
+
+  const curGpa = realTotW > 0 ? realTotSum / realTotW : 0;
+  const projGpa = (realTotW + mockTotW) > 0 ? (realTotSum + mockTotSum) / (realTotW + mockTotW) : 0;
+  const gpaDelta = projGpa - curGpa;
+
+  const subAvgEl = document.getElementById("dash-ghost-sub-avg");
+  const subDeltaEl = document.getElementById("dash-ghost-sub-delta");
+  if (subAvgEl) {
+    subAvgEl.innerText = (realSubW + mockSubW) > 0
+      ? (mockSubW > 0 ? `${curSubAvg.toFixed(2)} → ${projSubAvg.toFixed(2)}` : curSubAvg.toFixed(2))
+      : "--";
+  }
+  if (subDeltaEl) {
+    if (mockSubW > 0 && Math.abs(subDelta) >= 0.005) {
+      subDeltaEl.innerText = `${subDelta >= 0 ? "+" : ""}${subDelta.toFixed(2)}`;
+      subDeltaEl.style.color = subDelta >= 0 ? "var(--success)" : "var(--danger)";
+    } else {
+      subDeltaEl.innerText = "";
+    }
+  }
+
+  const gpaAvgEl = document.getElementById("dash-ghost-gpa-avg");
+  const gpaDeltaEl = document.getElementById("dash-ghost-gpa-delta");
+  if (gpaAvgEl) {
+    gpaAvgEl.innerText = (realTotW + mockTotW) > 0
+      ? (mockTotW > 0 ? `${curGpa.toFixed(2)} → ${projGpa.toFixed(2)}` : curGpa.toFixed(2))
+      : "--";
+  }
+  if (gpaDeltaEl) {
+    if (mockTotW > 0 && Math.abs(gpaDelta) >= 0.005) {
+      gpaDeltaEl.innerText = `${gpaDelta >= 0 ? "+" : ""}${gpaDelta.toFixed(2)}`;
+      gpaDeltaEl.style.color = gpaDelta >= 0 ? "var(--success)" : "var(--danger)";
+    } else {
+      gpaDeltaEl.innerText = "";
+    }
+  }
+
+  // Also update main stat card delta badge if ghost grades exist
+  const dashAvgDeltaBadge = document.getElementById("dash-avg-delta-badge");
+  if (dashAvgDeltaBadge) {
+    if (mockTotW > 0 && Math.abs(gpaDelta) >= 0.005) {
+      dashAvgDeltaBadge.style.display = "inline-flex";
+      dashAvgDeltaBadge.innerText = `Szellem: ${projGpa.toFixed(2)} (${gpaDelta >= 0 ? "+" : ""}${gpaDelta.toFixed(2)})`;
+      dashAvgDeltaBadge.style.color = gpaDelta >= 0 ? "var(--success)" : "var(--danger)";
+    } else {
+      dashAvgDeltaBadge.style.display = "none";
+    }
+  }
+
+  renderGhostGradesAndPlanner(subjectMap);
+  renderAllGradesView(grades, fullState.data?.groupAverages || []);
+  renderGradesMatrixTable(grades, fullState.data?.groupAverages || []);
 }
 
 function renderRecentGradesTable(grades, subjectMap) {
@@ -1000,7 +1747,7 @@ function renderRecentGradesTable(grades, subjectMap) {
     row.className = "table-row";
     row.innerHTML = `
       <div style="display:flex; align-items:center; gap:12px;">
-        <div class="grade-badge ${parsed.badgeClass}">${parsed.displayValue}</div>
+        <div class="grade-badge ${parsed.badgeClass}">${escapeHtml(parsed.displayValue)}</div>
         <div>
           <div style="font-weight:700; font-size:0.88rem;">${escapeHtml(sub)}</div>
           <div style="font-size:0.75rem; color:var(--text-muted);">${escapeHtml(topic)} ${dateText ? "• " + dateText : ""}</div>
@@ -1062,7 +1809,7 @@ function renderDashboardSubjectCards(subjectMap) {
     let gradePills = "";
     subGrades.slice(0, 6).forEach(g => {
       const parsed = KretaApi.parseGrade(g);
-      gradePills += `<div class="grade-badge ${parsed.badgeClass}" style="height:22px; font-size:0.75rem;">${parsed.displayValue}</div>`;
+      gradePills += `<div class="grade-badge ${parsed.badgeClass}" style="height:22px; font-size:0.75rem;">${escapeHtml(parsed.displayValue)}</div>`;
     });
     if (subGrades.length > 6) {
       gradePills += `<span style="font-size:0.7rem; color:var(--text-muted); align-self:center;">+${subGrades.length - 6}</span>`;
@@ -1130,7 +1877,7 @@ function renderWeeklyTimetable(timetable) {
     const isToday = i === todayWeekday;
     const col = document.createElement("div");
     col.className = isToday ? "timetable-day-card today" : "timetable-day-card";
-    const todayBadge = isToday ? `<span class="badge" style="background:var(--primary); color:#000; font-weight:900; font-size:0.65rem; border:none;">Ma</span>` : "";
+    const todayBadge = isToday ? `<span class="badge" style="background:var(--primary-fill); color:var(--on-primary); font-weight:900; font-size:0.65rem; border:none;">Ma</span>` : "";
     col.innerHTML = `<div class="day-title" style="display:flex; justify-content:space-between; align-items:center;"><span>${dayNames[i - 1]}</span>${todayBadge}</div>`;
 
     const lessons = dayBuckets[i];
@@ -1170,7 +1917,7 @@ function renderWeeklyTimetable(timetable) {
 
         let statusBadgeHtml = "";
         if (isActive) {
-          statusBadgeHtml = `<span class="badge" style="background:var(--primary); color:#000; font-weight:900; font-size:0.65rem; border:none; flex-shrink:0;">Folyamatban</span>`;
+          statusBadgeHtml = `<span class="badge" style="background:var(--primary-fill); color:var(--on-primary); font-weight:900; font-size:0.65rem; border:none; flex-shrink:0;">Folyamatban</span>`;
         } else if (isCancelled) {
           statusBadgeHtml = `<span class="badge" style="background:rgba(255,69,58,0.15); color:var(--danger); border:1px solid rgba(255,69,58,0.35); font-size:0.65rem; flex-shrink:0;">Elmaradt</span>`;
         } else if (isSub) {
@@ -1188,7 +1935,7 @@ function renderWeeklyTimetable(timetable) {
 
         itemEl.innerHTML = `
           <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
-            <span class="lesson-slot-badge">${slotNum}</span>
+            <span class="lesson-slot-badge">${escapeHtml(slotNum)}</span>
             <div style="min-width:0; flex:1;">
               <div style="font-size:0.8rem; font-weight:700; ${titleStyle}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${sub}</div>
               <div style="font-size:0.68rem; color:var(--text-muted);">${timeSpan ? timeSpan + ' • ' : ''}${room}${substitute ? ' • ' + substitute : ''}</div>
@@ -1264,7 +2011,6 @@ function renderAllGradesView(grades, groupAverages = []) {
     return;
   }
 
-  // Class-average lookup, subject name -> OsztalyAtlag, for the comparison line on each card.
   const classAvgBySubject = {};
   (groupAverages || []).forEach(a => {
     const sub = a?.Tantargy?.Nev;
@@ -1272,7 +2018,6 @@ function renderAllGradesView(grades, groupAverages = []) {
     if (sub && !isNaN(val)) classAvgBySubject[sub] = val;
   });
 
-  // Group by Subject
   const subjectMap = {};
   grades.forEach(g => {
     const sub = g.Tantargy?.Nev || g.TantargyNev || g.Tantargy || "Egyéb tantárgy";
@@ -1280,7 +2025,20 @@ function renderAllGradesView(grades, groupAverages = []) {
     subjectMap[sub].push(g);
   });
 
-  Object.keys(subjectMap).sort().forEach(subName => {
+  const qNorm = KretaApi.normalizeHu(gradesSearchQuery || "");
+  const filteredSubjectNames = Object.keys(subjectMap).sort().filter(subName => {
+    if (!qNorm) return true;
+    const disp = getDisplaySubject(subName);
+    if (KretaApi.normalizeHu(subName).includes(qNorm) || KretaApi.normalizeHu(disp).includes(qNorm)) return true;
+    return subjectMap[subName].some(g => KretaApi.normalizeHu(g.Tema || "").includes(qNorm));
+  });
+
+  if (filteredSubjectNames.length === 0) {
+    container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-muted);">Nincs a keresésnek megfelelő tantárgy.</div>`;
+    return;
+  }
+
+  filteredSubjectNames.forEach(subName => {
     const subGrades = subjectMap[subName].sort((a, b) => {
       const d1 = new Date(a.KeszitesDatuma || a.RogzitesDatuma || a.Datum || 0);
       const d2 = new Date(b.KeszitesDatuma || b.RogzitesDatuma || b.Datum || 0);
@@ -1289,13 +2047,11 @@ function renderAllGradesView(grades, groupAverages = []) {
 
     let sum = 0;
     let weightSum = 0;
-    
-    // For trend arrow: calculate last 3 vs rest
     let sumLast3 = 0;
     let weightLast3 = 0;
     let sumRest = 0;
     let weightRest = 0;
-    
+
     const validGrades = [];
     subGrades.forEach(g => {
       const parsed = KretaApi.parseGrade(g);
@@ -1305,7 +2061,7 @@ function renderAllGradesView(grades, groupAverages = []) {
         weightSum += parsed.weight;
       }
     });
-    
+
     if (weightSum === 0) {
       subGrades.forEach(g => {
         const parsed = KretaApi.parseGrade(g);
@@ -1317,9 +2073,20 @@ function renderAllGradesView(grades, groupAverages = []) {
       });
     }
 
+    // Include ghost grades for this subject
+    const subGhostItems = dashGhostState.items.filter(m => m.subject === subName);
+    let ghostSum = 0;
+    let ghostW = 0;
+    subGhostItems.forEach(m => {
+      const w = m.weight / 100;
+      ghostSum += m.grade * w;
+      ghostW += w;
+    });
+
     const numAvg = weightSum > 0 ? (sum / weightSum) : 0;
-    const avg = weightSum > 0 ? numAvg.toFixed(2) : "-";
-    const avgColor = numAvg >= 4.5 ? "var(--success)" : (numAvg >= 3.5 ? "var(--info)" : (numAvg >= 2.5 ? "var(--warning)" : "var(--danger)"));
+    const projNumAvg = (weightSum + ghostW) > 0 ? ((sum + ghostSum) / (weightSum + ghostW)) : numAvg;
+    const avg = (weightSum + ghostW) > 0 ? projNumAvg.toFixed(2) : "-";
+    const avgColor = projNumAvg >= 4.5 ? "var(--success)" : (projNumAvg >= 3.5 ? "var(--info)" : (projNumAvg >= 2.5 ? "var(--warning)" : "var(--danger)"));
 
     let trendArrow = "→";
     if (validGrades.length > 3) {
@@ -1327,7 +2094,7 @@ function renderAllGradesView(grades, groupAverages = []) {
       const rest = validGrades.slice(0, -3);
       last3.forEach(g => { sumLast3 += g.grade * g.weight; weightLast3 += g.weight; });
       rest.forEach(g => { sumRest += g.grade * g.weight; weightRest += g.weight; });
-      
+
       if (weightLast3 > 0 && weightRest > 0) {
         const avgLast3 = sumLast3 / weightLast3;
         const avgRest = sumRest / weightRest;
@@ -1337,18 +2104,17 @@ function renderAllGradesView(grades, groupAverages = []) {
     }
 
     let warningHtml = "";
-    if (numAvg > 0) {
-      const rounded = Math.round(numAvg);
-      if (Math.abs(numAvg - rounded) <= 0.3 && numAvg !== rounded) {
+    if (projNumAvg > 0) {
+      const rounded = Math.round(projNumAvg);
+      if (Math.abs(projNumAvg - rounded) <= 0.3 && projNumAvg !== rounded) {
         warningHtml = `<span class="badge" style="background: rgba(255,214,10,0.15); color: var(--warning); border: none; font-size: 0.7rem; margin-left: 8px;">Közel a ${rounded}-hez/höz!</span>`;
       }
     }
 
-    // Class-average comparison line, when we have both our own average and the class one.
     let classAvgHtml = "";
     const classAvg = classAvgBySubject[subName];
-    if (classAvg !== undefined && numAvg > 0) {
-      const delta = numAvg - classAvg;
+    if (classAvg !== undefined && projNumAvg > 0) {
+      const delta = projNumAvg - classAvg;
       const deltaColor = delta > 0.05 ? "var(--success)" : (delta < -0.05 ? "var(--danger)" : "var(--text-muted)");
       const deltaText = delta > 0.05 ? `+${delta.toFixed(2)}` : (delta < -0.05 ? delta.toFixed(2) : "±0.00");
       classAvgHtml = `
@@ -1360,13 +2126,19 @@ function renderAllGradesView(grades, groupAverages = []) {
 
     const card = document.createElement("div");
     card.className = "card grade-subject-card";
-    card.style.marginBottom = "14px";
 
     let badgesHtml = "";
     subGrades.forEach(g => {
       const parsed = KretaApi.parseGrade(g);
-      badgesHtml += `<div class="grade-badge ${parsed.badgeClass}" style="height:28px; border-radius:8px; font-size:0.8rem; font-weight:800;" title="${escapeHtml(g.Tema || '')} (${parsed.weightPercent}%)">${parsed.displayValue}</div>`;
+      badgesHtml += `<div class="grade-badge ${parsed.badgeClass}" style="height:28px; border-radius:8px; font-size:0.8rem; font-weight:800;" title="${escapeHtml(g.Tema || '')} (${parsed.weightPercent}%)">${escapeHtml(parsed.displayValue)}</div>`;
     });
+    subGhostItems.forEach(m => {
+      badgesHtml += `<div class="grade-badge grade-${m.grade} ghost-preview-pill" style="height:28px; border-radius:8px; font-size:0.8rem; font-weight:800;" title="Szellem jegy (${m.weight}%)">${m.grade}</div>`;
+    });
+
+    const ghostTagHtml = ghostW > 0
+      ? `<span class="badge badge-demo" style="font-size:0.65rem;">Szimulált (${numAvg.toFixed(2)} → ${projNumAvg.toFixed(2)})</span>`
+      : "";
 
     const sparklineHtml = createSparklineSvg(validGrades);
 
@@ -1375,6 +2147,7 @@ function renderAllGradesView(grades, groupAverages = []) {
         <div style="display:flex; align-items:center; flex-wrap: wrap; gap: 6px;">
           <strong style="font-size:0.95rem; color:var(--text);">${escapeHtml(getDisplaySubject(subName))}</strong>
           <span style="font-size:0.75rem; color:var(--text-muted);">${subGrades.length} jegy</span>
+          ${ghostTagHtml}
           ${warningHtml}
         </div>
         <div style="text-align: right;">
@@ -1394,9 +2167,95 @@ function renderAllGradesView(grades, groupAverages = []) {
   });
 }
 
+function renderGradesMatrixTable(grades, groupAverages = []) {
+  const container = document.getElementById("grades-matrix-container");
+  if (!container) return;
+  container.innerHTML = "";
+
+  if (!grades || grades.length === 0) {
+    container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted);">Nincsenek rögzített érdemjegyek.</div>`;
+    return;
+  }
+
+  const classAvgBySubject = {};
+  (groupAverages || []).forEach(a => {
+    const sub = a?.Tantargy?.Nev;
+    const val = parseFloat(a?.OsztalyAtlag ?? a?.OsztalyCsoportAtlag ?? a?.Atlag ?? a?.Ertek);
+    if (sub && !isNaN(val)) classAvgBySubject[sub] = val;
+  });
+
+  const subjectMap = {};
+  grades.forEach(g => {
+    const sub = g.Tantargy?.Nev || g.TantargyNev || g.Tantargy || "Egyéb tantárgy";
+    if (!subjectMap[sub]) subjectMap[sub] = [];
+    subjectMap[sub].push(g);
+  });
+
+  const qNorm = KretaApi.normalizeHu(gradesSearchQuery || "");
+  const subjects = Object.keys(subjectMap).sort().filter(subName => {
+    if (!qNorm) return true;
+    const disp = getDisplaySubject(subName);
+    return KretaApi.normalizeHu(subName).includes(qNorm) || KretaApi.normalizeHu(disp).includes(qNorm);
+  });
+
+  let html = `
+    <table style="width:100%; border-collapse:collapse; font-size:0.82rem;">
+      <thead>
+        <tr style="border-bottom:2px solid var(--border); text-align:left; color:var(--text-muted); font-size:0.75rem;">
+          <th style="padding:10px 12px; width:220px;">Tantárgy</th>
+          <th style="padding:10px 12px;">Rögzített & Szimulált Érdemjegyek</th>
+          <th style="padding:10px 12px; text-align:center; width:110px;">Osztályátlag</th>
+          <th style="padding:10px 12px; text-align:right; width:110px;">Saját Átlag</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  subjects.forEach(subName => {
+    const subGrades = subjectMap[subName];
+    let sum = 0, wSum = 0;
+    let pillsHtml = "";
+
+    subGrades.forEach(g => {
+      const parsed = KretaApi.parseGrade(g);
+      if (parsed.numericGrade !== null && !parsed.isSummary) {
+        sum += parsed.numericGrade * parsed.weight;
+        wSum += parsed.weight;
+      }
+      pillsHtml += `<span class="grade-badge ${parsed.badgeClass}" style="width:26px; height:26px; font-size:0.78rem; margin-right:5px; margin-bottom:4px;" title="${escapeHtml(g.Tema || '')} (${parsed.weightPercent}%)">${escapeHtml(parsed.displayValue)}</span>`;
+    });
+
+    const ghostItems = dashGhostState.items.filter(m => m.subject === subName);
+    ghostItems.forEach(m => {
+      const w = m.weight / 100;
+      sum += m.grade * w;
+      wSum += w;
+      pillsHtml += `<span class="grade-badge grade-${m.grade} ghost-preview-pill" style="width:26px; height:26px; font-size:0.78rem; margin-right:5px; margin-bottom:4px;" title="Szellem jegy (${m.weight}%)">${m.grade}</span>`;
+    });
+
+    const avgVal = wSum > 0 ? (sum / wSum) : 0;
+    const avgStr = wSum > 0 ? avgVal.toFixed(2) : "-";
+    const avgColor = avgVal >= 4.5 ? "var(--success)" : (avgVal >= 3.5 ? "var(--info)" : (avgVal >= 2.5 ? "var(--warning)" : "var(--danger)"));
+    const classAvg = classAvgBySubject[subName];
+    const classAvgStr = classAvg !== undefined ? classAvg.toFixed(2) : "-";
+
+    html += `
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:10px 12px; font-weight:800;">${escapeHtml(getDisplaySubject(subName))}</td>
+        <td style="padding:10px 12px;">${pillsHtml}</td>
+        <td style="padding:10px 12px; text-align:center; color:var(--text-muted); font-weight:700;">${classAvgStr}</td>
+        <td style="padding:10px 12px; text-align:right; font-weight:900; font-size:0.95rem; color:${avgColor};">${avgStr}</td>
+      </tr>
+    `;
+  });
+
+  html += `</tbody></table>`;
+  container.innerHTML = html;
+}
+
 function createSparklineSvg(validGrades) {
   if (!validGrades || validGrades.length === 0) return "";
-  
+
   if (validGrades.length === 1) {
     const g = validGrades[0].grade;
     const y = 45 - ((g - 1) / 4) * 30 - 6;
@@ -1449,7 +2308,7 @@ function createSparklineSvg(validGrades) {
 
     circlesSvg += `
       <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="${cColor}" stroke="var(--card)" stroke-width="1.5">
-        <title>${p.grade} (${p.date}${p.theme ? ' - ' + p.theme : ''})</title>
+        <title>${p.grade} (${escapeHtml(p.date)}${p.theme ? ' - ' + escapeHtml(p.theme) : ''})</title>
       </circle>`;
   });
 
@@ -1461,7 +2320,7 @@ function createSparklineSvg(validGrades) {
   return `
     <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06);">
       <div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:4px; display:flex; justify-content:space-between;">
-        <span>Időbeli alakulás (${dateRangeStr})</span>
+        <span>Időbeli alakulás (${escapeHtml(dateRangeStr)})</span>
         <span style="font-weight:600;">${validGrades.length} jegy</span>
       </div>
       <svg viewBox="0 0 ${width} ${height}" style="width:100%; height:44px; overflow:visible; display:block;">
@@ -1471,11 +2330,9 @@ function createSparklineSvg(validGrades) {
             <stop offset="100%" stop-color="var(--primary)" stop-opacity="0.0"/>
           </linearGradient>
         </defs>
-        <!-- Horizontal grid guides -->
         <line x1="${padX}" y1="${padY}" x2="${width - padX}" y2="${padY}" stroke="rgba(255,255,255,0.06)" stroke-dasharray="2,2" stroke-width="1"/>
         <line x1="${padX}" y1="${(padY + plotH / 2).toFixed(1)}" x2="${width - padX}" y2="${(padY + plotH / 2).toFixed(1)}" stroke="rgba(255,255,255,0.06)" stroke-dasharray="2,2" stroke-width="1"/>
         <line x1="${padX}" y1="${(padY + plotH).toFixed(1)}" x2="${width - padX}" y2="${(padY + plotH).toFixed(1)}" stroke="rgba(255,255,255,0.06)" stroke-dasharray="2,2" stroke-width="1"/>
-        
         <path d="${areaD}" fill="url(#${gradId})"/>
         <path d="${pathD}" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         ${circlesSvg}
@@ -1488,19 +2345,25 @@ function renderTasksView(homework, exams) {
   if (!container) return;
   container.innerHTML = "";
 
-  const items = [
+  const allItems = [
     ...exams.map(e => ({ type: "exam", sub: escapeHtml(getDisplaySubject(e.Tantargy?.Nev || e.Tantargy || "Dolgozat")), title: escapeHtml(e.Tema || e.Tipus?.Leiras || "Számonkérés"), date: e.Datum })),
     ...homework.map(h => ({ type: "hw", sub: escapeHtml(getDisplaySubject(h.Tantargy?.Nev || h.Tantargy || "Házi feladat")), title: escapeHtml(h.Szoveg || h.Feladat || "Házi feladat"), date: h.HataridoDatuma || h.HataridoIdopontja || h.Hatarido }))
   ];
 
+  const items = currentTaskFilter === "all"
+    ? allItems
+    : allItems.filter(it => it.type === currentTaskFilter);
+
   if (items.length === 0) {
-    container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-muted);">Nincs közelgő házi feladat vagy bejelentett dolgozat.</div>`;
+    container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-muted);">Nincs a szűrésnek megfelelő házi feladat vagy számonkérés.</div>`;
     return;
   }
 
   items.forEach(it => {
     const isExam = it.type === "exam";
-    const tag = isExam ? `<span style="color:var(--danger); font-weight:800; font-size:0.7rem;">DOLGOZAT</span>` : `<span style="color:var(--info); font-weight:800; font-size:0.7rem;">HÁZI</span>`;
+    const tag = isExam
+      ? `<span class="badge badge-warning-soft" style="font-size:0.68rem;">SZÁMONKÉRÉS</span>`
+      : `<span class="badge badge-subtle" style="color:var(--info); font-size:0.68rem;">HÁZI FELADAT</span>`;
 
     let dateText = "";
     if (it.date) {
@@ -1512,11 +2375,11 @@ function renderTasksView(homework, exams) {
     card.className = "card";
     card.style.marginBottom = "10px";
     card.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-        <div>${tag} <strong style="margin-left:6px; font-size:0.9rem;">${it.sub}</strong></div>
-        <span style="font-size:0.72rem; color:var(--text-muted);">${dateText}</span>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; gap:8px; flex-wrap:wrap;">
+        <div style="display:flex; align-items:center; gap:8px;">${tag} <strong style="font-size:0.92rem;">${it.sub}</strong></div>
+        <span style="font-size:0.74rem; color:var(--text-muted);">${dateText}</span>
       </div>
-      <div style="font-size:0.8rem; color:var(--text); margin-top:4px;">${it.title}</div>
+      <div style="font-size:0.84rem; color:var(--text); line-height:1.45;">${it.title}</div>
     `;
     container.appendChild(card);
   });
@@ -1574,7 +2437,7 @@ function renderAbsencesView(absences) {
 
   (absences || []).forEach(a => {
     const status = (a.IgazolasAllapota || "").toLowerCase();
-    if (!status.includes("igazolt") && a.KesesPercben === 0) {
+    if (!status.includes("igazolt") && (a.KesesPercben || 0) === 0) {
       unexcusedCount++;
     }
     if (a.KesesPercben && a.KesesPercben > 0) {
@@ -1592,7 +2455,7 @@ function renderAbsencesView(absences) {
 
   const unexcusedEl = document.getElementById("absences-unexcused-count");
   if (unexcusedEl) unexcusedEl.innerText = `${unexcusedCount}`;
-  
+
   const delayEl = document.getElementById("absences-delay-minutes");
   if (delayEl) delayEl.innerText = `${delayMinutes} perc`;
 
@@ -1611,7 +2474,7 @@ function renderAbsencesView(absences) {
       const remDays = Math.max(0, limit - usedDays);
       parentSub.innerText = `${remDays} nap felhasználható (${parentalCount} óra)`;
     }
-    
+
     const parentBar = document.getElementById("absences-parental-bar");
     if (parentBar) {
       const pPct = Math.min(100, (parentalCount / maxLessons) * 100);
@@ -1626,7 +2489,6 @@ function renderAbsencesView(absences) {
     return;
   }
 
-  // Count absences per subject to identify >= 20% course absence risk
   const subAbsenceCounts = {};
   absences.forEach(a => {
     const raw = a.Tantargy?.Nev || a.Tantargy || "Tanóra";
@@ -1644,7 +2506,22 @@ function renderAbsencesView(absences) {
     container.appendChild(riskBanner);
   }
 
-  absences.forEach(a => {
+  const filteredAbsences = absences.filter(a => {
+    const statusRaw = (a.IgazolasAllapota || "Igazolatlan").toLowerCase();
+    const isJustified = statusRaw.includes("igazolt");
+    const isDelay = (a.KesesPercben || 0) > 0;
+    if (currentAbsenceFilter === "unexcused") return !isJustified && !isDelay;
+    if (currentAbsenceFilter === "justified") return isJustified;
+    if (currentAbsenceFilter === "delays") return isDelay;
+    return true;
+  });
+
+  if (filteredAbsences.length === 0) {
+    container.innerHTML += `<div style="text-align:center; padding:32px; color:var(--text-muted);">Nincs a szűrőnek megfelelő mulasztás.</div>`;
+    return;
+  }
+
+  filteredAbsences.forEach(a => {
     const rawSub = a.Tantargy?.Nev || a.Tantargy || "Tanóra";
     const sub = escapeHtml(getDisplaySubject(rawSub));
     const totalInSub = subAbsenceCounts[rawSub] || 0;
@@ -1654,7 +2531,8 @@ function renderAbsencesView(absences) {
 
     const statusRaw = a.IgazolasAllapota || "Igazolatlan";
     const status = escapeHtml(statusRaw);
-    const type = escapeHtml(a.Tipus?.Leiras || a.Tipus || "Mulasztás");
+    const delayMins = a.KesesPercben || 0;
+    const type = escapeHtml(a.Tipus?.Leiras || a.Tipus || (delayMins > 0 ? `Késés (${delayMins} perc)` : "Mulasztás"));
     const isJustified = statusRaw.toLowerCase().includes("igazolt");
 
     let dateText = "";
@@ -1684,7 +2562,6 @@ function renderAbsencesView(absences) {
     `;
     container.appendChild(row);
   });
-
 }
 
 let currentMessageFilter = "all";
@@ -1884,7 +2761,7 @@ function openComposer(initialSubject = "", initialText = "") {
     } else {
       teachers.forEach(t => {
         const subStr = (t.subjects && t.subjects.length > 0) ? ` (${escapeHtml(t.subjects.join(", "))})` : "";
-        compSelect.innerHTML += `<option value="${t.id}">${escapeHtml(t.name)}${subStr}</option>`;
+        compSelect.innerHTML += `<option value="${escapeHtml(t.id)}">${escapeHtml(t.name)}${subStr}</option>`;
       });
     }
   }
@@ -1906,7 +2783,7 @@ function renderMessagesView(messages, questionnaires) {
         <div style="text-align:center; padding:40px; color:var(--text-muted);">
           <div style="font-size:1rem; font-weight:700; margin-bottom:8px;">Nincs jelenleg aktív kérdőív vagy adatbekérés.</div>
           <div style="font-size:0.82rem; margin-bottom:16px;">Az intézmény által kiküldött hivatalos adatbekéréseket közvetlenül az e-Ügyintézés felületén is megtekintheted.</div>
-          <a href="https://eugyintezes.e-kreta.hu/adatbekeresek" target="_blank" class="btn btn-primary" style="text-decoration:none; display:inline-block;">Kérdőívek megnyitása (e-Ügyintézés) ↗</a>
+          <a href="https://eugyintezes.e-kreta.hu/adatbekeresek" target="_blank" class="btn btn-primary" style="text-decoration:none; display:inline-block;">Kérdőívek megnyitása (e-Ügyintézés)</a>
         </div>
       `;
       return;
@@ -1917,7 +2794,7 @@ function renderMessagesView(messages, questionnaires) {
     tableWrapper.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
         <span style="font-size:0.85rem; font-weight:700; color:var(--text);">Kitöltendő és lezárt kérdőívek (${allQuests.length})</span>
-        <a href="https://eugyintezes.e-kreta.hu/adatbekeresek" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration:none; font-size:0.75rem;">Kérdőívek megnyitása a Krétán ↗</a>
+        <a href="https://eugyintezes.e-kreta.hu/adatbekeresek" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration:none; font-size:0.75rem;">Kérdőívek megnyitása a Krétán</a>
       </div>
       <table class="data-table" style="width:100%; border-collapse:collapse;">
         <thead>
@@ -2034,7 +2911,7 @@ function renderMessagesView(messages, questionnaires) {
         <span style="font-size: 0.75rem; color: var(--text-muted);">${dateText}</span>
       </div>
       <h3 style="font-size: 1rem; font-weight: 800; margin-bottom: 6px; color: var(--text);">${escapeHtml(m.title || m.subject || "Tájékoztató")}</h3>
-      <p style="font-size: 0.84rem; line-height: 1.5; color: var(--text-muted); margin: 0; white-space: pre-line; max-height: 48px; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(m.content || "(Kattints a részletek megtekintéséhez)")}</p>
+      <p style="font-size: 0.84rem; line-height: 1.5; color: var(--text-muted); margin: 0; white-space: pre-line; max-height: 48px; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(kretaHtmlToText(m.content) || "(Kattints a részletek megtekintéséhez)")}</p>
     `;
 
     card.addEventListener("click", () => {
@@ -2064,7 +2941,7 @@ async function openMessageViewer(msg) {
   if (badgeEl) badgeEl.innerText = msg.type || "e-Ügyintézés";
 
   if (contentEl) {
-    contentEl.innerText = msg.content || "Szövegtartalom betöltése...";
+    renderKretaContent(contentEl, msg.content || "Szövegtartalom betöltése...");
   }
 
   // If content is empty and it's an e-ugyintezes message, fetch full content
@@ -2074,7 +2951,7 @@ async function openMessageViewer(msg) {
       const token = await KretaApi.ensureValidToken(session);
       const fullText = await KretaApi.getMessageContent(token, msg.id);
       if (fullText && contentEl) {
-        contentEl.innerText = fullText;
+        renderKretaContent(contentEl, fullText);
         msg.content = fullText;
       }
     }
@@ -2218,10 +3095,10 @@ async function renderStudentView(student) {
   if (guardians.length > 0) {
     guardiansHtml = guardians.map(g => `
       <div style="background: var(--sidebar); border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-bottom: 8px;">
-        <strong style="font-size: 0.85rem;">${g.Nev || "-"}</strong>
+        <strong style="font-size: 0.85rem;">${escapeHtml(g.Nev || "-")}</strong>
         <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; display: flex; flex-direction: column; gap: 2px;">
-          <div>Email: ${g.Email || g.EmailCim || "Nincs megadva"}</div>
-          <div>Telefon: ${g.Telefonszam || "Nincs megadva"}</div>
+          <div>Email: ${escapeHtml(g.Email || g.EmailCim || "Nincs megadva")}</div>
+          <div>Telefon: ${escapeHtml(g.Telefonszam || "Nincs megadva")}</div>
         </div>
       </div>
     `).join("");
@@ -2331,31 +3208,31 @@ async function renderStudentView(student) {
     <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.85rem;">
       <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
         <span style="color: var(--text-muted);">Név:</span>
-        <strong>${studentName}</strong>
+        <strong>${escapeHtml(studentName)}</strong>
       </div>
       <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
         <span style="color: var(--text-muted);">Születési név:</span>
-        <strong>${birthName}</strong>
+        <strong>${escapeHtml(birthName)}</strong>
       </div>
       <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
         <span style="color: var(--text-muted);">Oktatási azonosító (OM):</span>
-        <strong style="color: var(--primary);">${omId}</strong>
+        <strong style="color: var(--primary);">${escapeHtml(omId)}</strong>
       </div>
       <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
         <span style="color: var(--text-muted);">Születési hely:</span>
-        <strong>${birthPlace}</strong>
+        <strong>${escapeHtml(birthPlace)}</strong>
       </div>
       <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
         <span style="color: var(--text-muted);">Születési idő:</span>
-        <strong>${birthDate}</strong>
+        <strong>${escapeHtml(birthDate)}</strong>
       </div>
       <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
         <span style="color: var(--text-muted);">Anyja neve:</span>
-        <strong>${motherName}</strong>
+        <strong>${escapeHtml(motherName)}</strong>
       </div>
       <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
         <span style="color: var(--text-muted);">Cím (Lakcím/Tartózkodási):</span>
-        <strong style="text-align: right; max-width: 60%;">${address}</strong>
+        <strong style="text-align: right; max-width: 60%;">${escapeHtml(address)}</strong>
       </div>
     </div>
   `;
@@ -2368,23 +3245,23 @@ async function renderStudentView(student) {
     <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.85rem; margin-bottom: 16px;">
       <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
         <span style="color: var(--text-muted);">Intézmény neve:</span>
-        <strong style="text-align: right; max-width: 65%; font-size: 0.82rem;">${instName}</strong>
+        <strong style="text-align: right; max-width: 65%; font-size: 0.82rem;">${escapeHtml(instName)}</strong>
       </div>
       <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
         <span style="color: var(--text-muted);">Intézmény kódja:</span>
-        <strong>${instCode}</strong>
+        <strong>${escapeHtml(instCode)}</strong>
       </div>
       <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
         <span style="color: var(--text-muted);">Osztály / Évfolyam:</span>
-        <strong>${classGrade}</strong>
+        <strong>${escapeHtml(classGrade)}</strong>
       </div>
       <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
         <span style="color: var(--text-muted);">Tanulói Email:</span>
-        <strong>${email}</strong>
+        <strong>${escapeHtml(email)}</strong>
       </div>
       <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
         <span style="color: var(--text-muted);">Telefonszám:</span>
-        <strong>${phone}</strong>
+        <strong>${escapeHtml(phone)}</strong>
       </div>
     </div>
     
@@ -2408,19 +3285,19 @@ async function renderStudentView(student) {
     <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.85rem; margin-bottom: 14px;">
       <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
         <span style="color: var(--text-muted);">Bankszámlaszám:</span>
-        <strong style="font-family: monospace; font-size: 0.88rem; letter-spacing: 0.5px;">${bankAccount}</strong>
+        <strong style="font-family: monospace; font-size: 0.88rem; letter-spacing: 0.5px;">${escapeHtml(bankAccount)}</strong>
       </div>
       <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
         <span style="color: var(--text-muted);">Számlavezető bank:</span>
-        <strong>${bankName}</strong>
+        <strong>${escapeHtml(bankName)}</strong>
       </div>
       <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
         <span style="color: var(--text-muted);">Bankszámla tulajdonos neve:</span>
-        <strong>${bankOwner}</strong>
+        <strong>${escapeHtml(bankOwner)}</strong>
       </div>
       <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
         <span style="color: var(--text-muted);">Bankszámla tulajdonosa:</span>
-        <strong style="text-transform: capitalize;">${bankOwnerType}</strong>
+        <strong style="text-transform: capitalize;">${escapeHtml(bankOwnerType)}</strong>
       </div>
     </div>
     <div style="background: rgba(255,136,0,0.08); border: 1px solid rgba(255,136,0,0.25); border-radius: 8px; padding: 10px 12px; font-size: 0.73rem; color: var(--text-muted); line-height: 1.4;">
@@ -2436,27 +3313,27 @@ async function renderStudentView(student) {
     <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.85rem;">
       <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
         <span style="color: var(--text-muted);">Adóazonosító jel:</span>
-        <strong style="font-family: monospace; font-size: 0.88rem; color: var(--primary);">${taxId}</strong>
+        <strong style="font-family: monospace; font-size: 0.88rem; color: var(--primary);">${escapeHtml(taxId)}</strong>
       </div>
       <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
         <span style="color: var(--text-muted);">TAJ-szám:</span>
-        <strong style="font-family: monospace; font-size: 0.88rem;">${tajNumber}</strong>
+        <strong style="font-family: monospace; font-size: 0.88rem;">${escapeHtml(tajNumber)}</strong>
       </div>
       <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
         <span style="color: var(--text-muted);">Igazolvány típusa:</span>
-        <strong>${idType}</strong>
+        <strong>${escapeHtml(idType)}</strong>
       </div>
       <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
         <span style="color: var(--text-muted);">Igazolvány száma:</span>
-        <strong>${idNumber}</strong>
+        <strong>${escapeHtml(idNumber)}</strong>
       </div>
       <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
         <span style="color: var(--text-muted);">Diákigazolvány száma:</span>
-        <strong>${studentCardNumber}</strong>
+        <strong>${escapeHtml(studentCardNumber)}</strong>
       </div>
       <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
         <span style="color: var(--text-muted);">Diákigazolvány kelte / érvényessége:</span>
-        <strong>${studentCardDate}</strong>
+        <strong>${escapeHtml(studentCardDate)}</strong>
       </div>
     </div>
   `;
@@ -2501,16 +3378,16 @@ async function renderStudentView(student) {
         <div style="font-size: 1.15rem; font-weight: 800; color: var(--success);">${count5}</div>
       </div>
       <div style="background: rgba(10,132,255,0.12); border: 1px solid rgba(10,132,255,0.3); border-radius: 8px; padding: 8px 4px;">
-        <div style="font-size: 0.75rem; font-weight: 700; color: #0a84ff;">4-es</div>
-        <div style="font-size: 1.15rem; font-weight: 800; color: #0a84ff;">${count4}</div>
+        <div style="font-size: 0.75rem; font-weight: 700; color: var(--info);">4-es</div>
+        <div style="font-size: 1.15rem; font-weight: 800; color: var(--info);">${count4}</div>
       </div>
       <div style="background: rgba(255,214,10,0.12); border: 1px solid rgba(255,214,10,0.3); border-radius: 8px; padding: 8px 4px;">
         <div style="font-size: 0.75rem; font-weight: 700; color: var(--warning);">3-as</div>
         <div style="font-size: 1.15rem; font-weight: 800; color: var(--warning);">${count3}</div>
       </div>
       <div style="background: rgba(255,159,10,0.12); border: 1px solid rgba(255,159,10,0.3); border-radius: 8px; padding: 8px 4px;">
-        <div style="font-size: 0.75rem; font-weight: 700; color: #ff9f0a;">2-es</div>
-        <div style="font-size: 1.15rem; font-weight: 800; color: #ff9f0a;">${count2}</div>
+        <div style="font-size: 0.75rem; font-weight: 700; color: var(--primary);">2-es</div>
+        <div style="font-size: 1.15rem; font-weight: 800; color: var(--primary);">${count2}</div>
       </div>
       <div style="background: rgba(255,69,58,0.12); border: 1px solid rgba(255,69,58,0.3); border-radius: 8px; padding: 8px 4px;">
         <div style="font-size: 0.75rem; font-weight: 700; color: var(--danger);">1-es</div>
@@ -2829,8 +3706,18 @@ function renderGhostGradesAndPlanner(subjectMap) {
     const newGrade = parseFloat(ghostGradeIn.value) || 5;
     const newWeight = parseFloat(ghostWeightIn.value) || 100;
     const w = newWeight / 100;
-    
-    const newAvg = (sum + newGrade * w) / (wSum + w);
+
+    let ghostSum = 0;
+    let ghostW = 0;
+    dashGhostState.items.filter(item => item.subject === sub).forEach(item => {
+      const gw = (item.weight || 100) / 100;
+      ghostSum += item.grade * gw;
+      ghostW += gw;
+    });
+
+    const newAvg = ghostW > 0
+      ? (sum + ghostSum) / (wSum + ghostW)
+      : (sum + newGrade * w) / (wSum + w);
     const diff = newAvg - currentAvg;
     const diffStr = diff >= 0 ? `+${diff.toFixed(2)}` : diff.toFixed(2);
     const diffColor = diff >= 0 ? "var(--success)" : "var(--danger)";
@@ -2856,7 +3743,7 @@ function renderGhostGradesAndPlanner(subjectMap) {
         <span style="color:${diffColor}; font-weight:700;">${diffStr}</span>
       </div>
       <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">
-        Jelenlegi: ${currentAvg.toFixed(2)} ➔ Új: ${newAvg.toFixed(2)}
+        Jelenlegi: ${currentAvg.toFixed(2)} &rarr; Szimulált: ${newAvg.toFixed(2)}
       </div>
       ${neededHtml}
     `;
@@ -2900,7 +3787,7 @@ function renderGhostGradesAndPlanner(subjectMap) {
       if (nNeeded > 0) {
         plannerHtml += `
           <tr style="border-bottom: 1px solid var(--border);">
-            <td style="padding: 8px; font-weight:700;">${sub}</td>
+            <td style="padding: 8px; font-weight:700;">${escapeHtml(sub)}</td>
             <td style="padding: 8px; text-align:center;">${currentAvg.toFixed(2)}</td>
             <td style="padding: 8px; text-align:center;">${target}.0</td>
             <td style="padding: 8px; text-align:center; font-weight:800; color:var(--primary);">${nNeeded} db</td>
@@ -3195,8 +4082,8 @@ function openWrappedModal() {
 
   content.innerHTML = `
     <div style="display: flex; flex-direction: column; gap: 14px;">
-      <div style="background: linear-gradient(135deg, rgba(255,136,0,0.15), rgba(255,136,0,0.04)); border: 1px solid rgba(255,136,0,0.3); border-radius: 12px; padding: 18px; text-align: center;">
-        <span class="badge" style="background: var(--primary); color: #000; font-weight: 800; margin-bottom: 8px;">HIVATALOS TANÉVZÁRÓ</span>
+      <div style="background: rgba(var(--primary-rgb), 0.08); border: 1px solid rgba(var(--primary-rgb), 0.3); border-radius: 12px; padding: 18px; text-align: center;">
+        <span class="badge" style="background: var(--primary-fill); color: var(--on-primary); font-weight: 800; margin-bottom: 8px;">HIVATALOS TANÉVZÁRÓ</span>
         <div style="font-size: 2.2rem; font-weight: 900; color: var(--primary); margin: 6px 0;">${overallGpa}</div>
         <div style="font-size: 0.85rem; color: var(--text-muted);">Súlyozott Tanulmányi Átlag</div>
         <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">Összesen <strong>${grades.length}</strong> rögzített érdemjegy alapján</div>

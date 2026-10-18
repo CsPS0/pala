@@ -3,58 +3,98 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pala</title>
+  <title>Pala — Kréta Kliens</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <!-- Header -->
+  <!-- Header: Active Student Profile Switcher, Sync Status Indicator & Quick Settings Gear -->
   <header class="header">
-    <div class="brand">
-      <img src="../icons/icon-32.png" alt="Pala" class="brand-icon">
-      <div style="min-width: 0;">
-        <div class="brand-title">PALA</div>
-        <div id="student-name" class="brand-subtitle" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">Betöltés...</div>
-        <div id="student-school" style="font-size: 0.65rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;"></div>
+    <div class="profile-switcher-wrap">
+      <button id="profile-switcher-btn" class="profile-switcher-btn" type="button" title="Tanulói profil váltása">
+        <img src="../icons/icon-32.png" alt="Pala" class="brand-icon">
+        <div class="profile-meta">
+          <div class="profile-name-row">
+            <span id="student-name" class="brand-title">Betöltés...</span>
+            <svg class="chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+          <div id="student-school" class="brand-subtitle">Pala Kréta Kliens</div>
+        </div>
+      </button>
+
+      <!-- Profile Switcher Dropdown -->
+      <div id="profile-dropdown-menu" class="profile-dropdown-menu" style="display: none;">
+        <div class="profile-dropdown-header">Fiókok &amp; Profilok</div>
+        <div id="profile-list-items" class="profile-list-items"></div>
+        <div class="profile-dropdown-footer">
+          <button id="btn-add-profile" type="button" class="btn btn-secondary btn-sm btn-block">+ Új Kréta fiók hozzáadása</button>
+        </div>
       </div>
     </div>
-    <div id="status-badge" class="badge">Betöltés...</div>
+
+    <div class="header-right">
+      <div id="status-badge" class="badge badge-sync">
+        <span class="status-dot"></span>
+        <span id="status-badge-text">Betöltés...</span>
+      </div>
+      <button id="btn-open-sidepanel" class="btn btn-icon" type="button" title="Oldalsáv megnyitása (Side Panel)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="15" y1="3" x2="15" y2="21"></line>
+        </svg>
+      </button>
+      <button id="btn-popup-settings" class="btn btn-icon" type="button" title="Gyorsbeállítások">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+      </button>
+    </div>
   </header>
 
   <!-- Maintenance Alert Banner (when viewing cached data during maintenance) -->
   <div id="maintenance-banner" class="maintenance-banner" style="display: none;">
-    <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
-      <div style="display:flex; align-items:center; gap:8px;">
-        <span class="badge badge-maintenance">Karbantartás</span>
-        <span id="maintenance-banner-text" style="font-size:0.68rem; line-height:1.2;">Kréta karbantartás alatt. Offline adatok.</span>
+    <div class="maintenance-banner-inner">
+      <div class="maintenance-banner-left">
+        <span class="badge badge-maintenance">Offline</span>
+        <span id="maintenance-banner-text">Kréta karbantartás alatt. Offline gyorsítótár.</span>
       </div>
-      <button id="btn-maintenance-retry" class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:0.65rem;">⟳ Újra</button>
+      <button id="btn-maintenance-retry" class="btn btn-secondary btn-xs" type="button">Újra</button>
     </div>
   </div>
 
-  <!-- Active Class Hero Card -->
-  <div id="active-class-card" class="active-card">
-    <div id="active-tag" class="active-tag">TANÓRA INFORMÁCIÓ</div>
+  <!-- Live Class Hero Card -->
+  <section id="active-class-card" class="active-card" aria-label="Aktuális és következő tanóra">
+    <div class="active-card-top">
+      <span id="active-tag" class="active-tag">TANÓRA INFORMÁCIÓ</span>
+      <span id="active-room-badge" class="room-pill" style="display: none;">--</span>
+    </div>
     <div id="active-subject" class="active-subject">Órarend betöltése...</div>
     <div id="active-details" class="active-details"></div>
-    <div id="active-progress-container" class="progress-bar-container" style="display:none;">
+
+    <!-- Substitution / Cancellation Alert Banner inside Live Card -->
+    <div id="active-sub-banner" class="sub-alert-banner" style="display: none;"></div>
+
+    <div id="active-progress-container" class="progress-bar-container" style="display: none;">
       <div id="active-progress-bar" class="progress-bar-fill" style="width: 0%;"></div>
     </div>
     <div id="active-countdown" class="active-countdown"></div>
-  </div>
+  </section>
 
   <!-- Navigation Tabs -->
-  <div id="popup-tab-bar" class="tab-bar">
-    <button class="tab-btn active" data-tab="tab-today">Mai Órák</button>
-    <button class="tab-btn" data-tab="tab-grades">Jegyek</button>
-    <button class="tab-btn" data-tab="tab-tasks">Feladatok</button>
-  </div>
+  <nav id="popup-tab-bar" class="tab-bar" aria-label="Popup fülek">
+    <button class="tab-btn active" data-tab="tab-grades" type="button">Jegyek</button>
+    <button class="tab-btn" data-tab="tab-today" type="button">Mai Órák</button>
+    <button class="tab-btn" data-tab="tab-tasks" type="button">Feladatok</button>
+  </nav>
 
   <!-- Content Panels -->
   <main class="content">
     <!-- Dedicated Full Maintenance View (When no cache is available) -->
     <div id="tab-maintenance" class="tab-panel" style="display: none;">
-      <div style="text-align:center; padding: 18px 10px;">
-        <div style="width:48px; height:48px; border-radius:12px; background:rgba(255,214,10,0.12); border:1px solid rgba(255,214,10,0.3); display:flex; align-items:center; justify-content:center; margin:0 auto 12px auto;">
+      <div class="maintenance-empty-state">
+        <div class="maintenance-icon-box">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
             <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
@@ -62,133 +102,217 @@
             <line x1="6" y1="18" x2="6.01" y2="18"></line>
           </svg>
         </div>
-        <h2 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 6px;">A KRÉTA karbantartás alatt áll</h2>
-        <p style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 14px;">
-          A Kréta szerverei tervezett vagy rendkívüli karbantartás miatt átmenetileg nem elérhetők.
-        </p>
-        <div style="background:var(--sidebar); border:1px solid var(--border); border-radius:8px; padding:10px; font-size:0.7rem; text-align:left; margin-bottom:14px;">
-          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-            <span style="color:var(--text-muted);">Szerver válasz:</span>
-            <strong style="color:var(--warning);">HTTP 503 / Karbantartás</strong>
-          </div>
-          <div style="display:flex; justify-content:space-between;">
-            <span style="color:var(--text-muted);">Állapot:</span>
-            <span>Helyi gyorsítótár nélkül</span>
-          </div>
+        <h2>A KRÉTA most nem érhető el</h2>
+        <p>A Kréta szerverei nem válaszolnak (karbantartás, túlterhelés vagy hálózati hiba).</p>
+        <div class="maintenance-meta-box">
+          <div><span>Szerver válasz:</span><strong style="color: var(--warning);">Hiba vagy időtúllépés</strong></div>
+          <div><span>Állapot:</span><span>Helyi gyorsítótár nélkül</span></div>
         </div>
-        <button id="btn-maint-retry" class="btn btn-primary btn-block" style="margin-bottom:8px;">Kapcsolat újrapróbálása ⟳</button>
-        <button id="btn-maint-demo" class="btn btn-secondary btn-block">Demó Mód megnyitása</button>
-      </div>
-    </div>
-    <!-- Panel 1: Today's Schedule -->
-    <div id="tab-today" class="tab-panel active">
-      <div id="popup-timetable-header" style="display:flex; justify-content:space-between; align-items:center; padding: 4px 6px 8px 6px; font-size: 0.76rem;">
-        <span style="font-weight: 700; color: var(--text);">Mai tanórák</span>
-        <span id="popup-ab-badge" class="badge" style="display: none; background: rgba(var(--primary-rgb), 0.15); color: var(--primary); font-size: 0.68rem; font-weight: 800; border: 1px solid rgba(var(--primary-rgb), 0.3);">A hét</span>
-      </div>
-      <div id="timetable-list" class="item-list">
-        <!-- Injected dynamically -->
+        <button id="btn-maint-retry" class="btn btn-primary btn-block" type="button" style="margin-bottom: 8px;">Kapcsolat újrapróbálása</button>
+        <button id="btn-maint-demo" class="btn btn-secondary btn-block" type="button">Demó Mód megnyitása</button>
       </div>
     </div>
 
-    <!-- Panel 2: Grades -->
-    <div id="tab-grades" class="tab-panel">
+    <!-- Panel 1: Compact Grade Feed -->
+    <div id="tab-grades" class="tab-panel active">
       <div class="stat-summary">
-        <div>
-          <span class="stat-label">Tanulmányi Átlag:</span>
+        <div class="stat-summary-left">
+          <span class="stat-label">Tanulmányi átlag</span>
           <span id="average-value" class="stat-value">--</span>
         </div>
         <span id="grade-count" class="badge">--</span>
       </div>
-      <div id="popup-subject-filters" class="filter-chips-row" style="margin-bottom: 8px;"></div>
-      <div id="grades-list" class="item-list">
-        <!-- Injected dynamically -->
+      <div id="popup-subject-filters" class="filter-chips-row"></div>
+      <div id="grades-list" class="item-list"></div>
+    </div>
+
+    <!-- Panel 2: Today's Schedule -->
+    <div id="tab-today" class="tab-panel">
+      <div id="popup-timetable-header" class="panel-subheader">
+        <span>Mai tanórák</span>
+        <span id="popup-ab-badge" class="badge badge-week" style="display: none;">A hét</span>
       </div>
+      <div id="timetable-list" class="item-list"></div>
     </div>
 
     <!-- Panel 3: Tasks & Homework -->
     <div id="tab-tasks" class="tab-panel">
-      <div id="tasks-list" class="item-list">
-        <!-- Injected dynamically -->
-      </div>
+      <div id="tasks-list" class="item-list"></div>
     </div>
   </main>
 
-  <!-- Login Modal Overlay (When not authenticated and not demo) -->
+  <!-- Quick-Expand "Szellem Jegy" (Ghost Grade) Calculator Drawer -->
+  <section id="ghost-calc-drawer" class="ghost-drawer" aria-label="Szellem jegy kalkulátor">
+    <button id="btn-toggle-ghost-drawer" class="ghost-drawer-handle" type="button">
+      <div class="ghost-drawer-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+          <line x1="8" y1="6" x2="16" y2="6"></line>
+          <line x1="8" y1="10" x2="8.01" y2="10"></line>
+          <line x1="12" y1="10" x2="12.01" y2="10"></line>
+          <line x1="16" y1="10" x2="16.01" y2="10"></line>
+          <line x1="8" y1="14" x2="8.01" y2="14"></line>
+          <line x1="12" y1="14" x2="12.01" y2="14"></line>
+          <line x1="16" y1="14" x2="16" y2="18"></line>
+          <line x1="8" y1="18" x2="8.01" y2="18"></line>
+          <line x1="12" y1="18" x2="12.01" y2="18"></line>
+        </svg>
+        <span>Szellem Jegy Kalkulátor</span>
+        <span id="ghost-count-pill" class="badge badge-demo" style="display: none;">0</span>
+      </div>
+      <svg id="ghost-drawer-chevron" class="ghost-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="18 15 12 9 6 15"></polyline>
+      </svg>
+    </button>
+
+    <div id="ghost-drawer-body" class="ghost-drawer-body" style="display: none;">
+      <div class="ghost-compare-grid">
+        <div class="ghost-compare-box">
+          <span class="ghost-compare-label">Tantárgyi átlag</span>
+          <div class="ghost-compare-val-row">
+            <strong id="ghost-sub-projected">--</strong>
+            <span id="ghost-sub-delta" class="ghost-delta"></span>
+          </div>
+          <span id="ghost-sub-current" class="ghost-compare-sub">Jelenlegi: --</span>
+        </div>
+        <div class="ghost-compare-box">
+          <span class="ghost-compare-label">Összesített átlag</span>
+          <div class="ghost-compare-val-row">
+            <strong id="ghost-gpa-projected">--</strong>
+            <span id="ghost-gpa-delta" class="ghost-delta"></span>
+          </div>
+          <span id="ghost-gpa-current" class="ghost-compare-sub">Jelenlegi: --</span>
+        </div>
+      </div>
+
+      <div class="ghost-controls-row">
+        <select id="popup-ghost-subject" class="ghost-select" aria-label="Tantárgy kiválasztása"></select>
+      </div>
+
+      <div class="ghost-pickers-row">
+        <div id="popup-ghost-grade-btns" class="ghost-grade-btns" role="group" aria-label="Érdemjegy">
+          <button type="button" class="ghost-grade-btn" data-val="1">1</button>
+          <button type="button" class="ghost-grade-btn" data-val="2">2</button>
+          <button type="button" class="ghost-grade-btn" data-val="3">3</button>
+          <button type="button" class="ghost-grade-btn" data-val="4">4</button>
+          <button type="button" class="ghost-grade-btn active" data-val="5">5</button>
+        </div>
+        <div id="popup-ghost-weight-btns" class="ghost-weight-btns" role="group" aria-label="Súlyozás">
+          <button type="button" class="ghost-weight-btn" data-weight="50">50%</button>
+          <button type="button" class="ghost-weight-btn active" data-weight="100">100%</button>
+          <button type="button" class="ghost-weight-btn" data-weight="200">200%</button>
+        </div>
+      </div>
+
+      <div class="ghost-actions-row">
+        <button id="btn-add-ghost-grade" type="button" class="btn btn-primary btn-sm" style="flex: 1;">+ Szellem jegy hozzáadása</button>
+        <button id="btn-clear-ghost-grades" type="button" class="btn btn-secondary btn-sm" style="display: none;">Törlés</button>
+      </div>
+
+      <div id="ghost-active-chips" class="ghost-active-chips"></div>
+    </div>
+  </section>
+
+  <!-- Footer Actions -->
+  <footer class="footer">
+    <div style="display: flex; gap: 6px;">
+      <button id="btn-open-dashboard" class="btn btn-secondary btn-sm" type="button">Teljes Vezérlőpult</button>
+      <button id="btn-footer-sidepanel" class="btn btn-secondary btn-sm" type="button">Oldalsáv</button>
+    </div>
+    <div style="display: flex; gap: 6px;">
+      <button id="btn-refresh" class="btn btn-icon" type="button" title="Adatok frissítése">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+      </button>
+      <button id="btn-account-switch" class="btn btn-icon" type="button" title="Fiókváltás / Bejelentkezés">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </button>
+    </div>
+  </footer>
+
+  <!-- Login Modal Overlay -->
   <div id="login-modal" class="modal">
     <div class="modal-content">
-      <img src="../icons/icon-48.png" alt="Pala" style="margin: 0 auto 12px auto; display: block;">
-      <h2 style="font-size: 1.1rem; text-align: center; margin-bottom: 4px;">Bejelentkezés</h2>
-      <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-bottom: 16px;">Közvetlen kapcsolat az e-Kréta szervereivel</p>
-      
+      <div class="modal-header-row">
+        <h2 style="font-size: 1rem; font-weight: 800; color: var(--primary);">Kréta Bejelentkezés</h2>
+        <button id="btn-close-login-modal" class="btn btn-secondary btn-xs" type="button">✕</button>
+      </div>
+      <p style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 12px;">Közvetlen, titkosított kapcsolat az e-Kréta szervereivel</p>
+
       <div class="input-group" style="position: relative;">
-        <label>Iskola keresése (név vagy kód):</label>
+        <label for="login-institute">Iskola keresése (név vagy kód):</label>
         <input type="text" id="login-institute" placeholder="pl. Neumann, Petőfi, bmszc..." autocomplete="off">
         <input type="hidden" id="login-institute-code" value="">
         <div id="school-dropdown" class="school-dropdown" style="display: none;"></div>
       </div>
-      <div id="selected-school-info" style="display: none; font-size: 0.72rem; color: var(--primary); margin: -4px 0 10px 2px; font-weight: 600;"></div>
+      <div id="selected-school-info" class="selected-school-info" style="display: none;"></div>
 
       <div id="login-error" class="login-error"></div>
 
-      <button id="btn-web-login" class="btn btn-primary btn-block" style="padding: 12px; font-weight: 700; font-size: 0.9rem;">Bejelentkezés a Kréta felületén</button>
-      <p style="font-size: 0.68rem; color: var(--text-muted); text-align: center; margin: 6px 0 10px 0; line-height: 1.4;">
-        Keresd meg az iskolád, majd kattints a gombra. A Kréta belépési oldal megnyílik, ott kell megadni a jelszavad. A bővítmény automatikusan elvégzi a többit.
+      <button id="btn-web-login" class="btn btn-primary btn-block" type="button" style="padding: 10px; font-weight: 700; font-size: 0.84rem;">Bejelentkezés a Kréta felületén</button>
+      <p style="font-size: 0.68rem; color: var(--text-muted); text-align: center; margin: 8px 0 12px 0; line-height: 1.4;">
+        Keresd meg az iskolád, majd kattints a gombra. A hivatalos Kréta belépési oldal megnyílik, a bővítmény pedig biztonságosan elmenti a munkameneted.
       </p>
-      <button id="btn-demo-mode" class="btn btn-secondary btn-block">Kipróbálás Demó Módban (Teszt Elek)</button>
+      <button id="btn-demo-mode" class="btn btn-secondary btn-block" type="button">Kipróbálás Demó Módban (Teszt Elek)</button>
     </div>
   </div>
 
   <!-- Modal: Popup Settings (Testreszabás) -->
   <div id="popup-settings-modal" class="modal">
-    <div class="modal-content" style="max-height: 85vh; overflow-y: auto;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <h2 style="font-size: 1rem; font-weight: 800; margin: 0; color: var(--primary);">Popup Testreszabása</h2>
-        <button id="btn-close-popup-settings" class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 0.75rem;">✕</button>
+    <div class="modal-content" style="max-height: 88vh; overflow-y: auto;">
+      <div class="modal-header-row">
+        <h2 style="font-size: 0.96rem; font-weight: 800; color: var(--primary);">Popup Testreszabása</h2>
+        <button id="btn-close-popup-settings" class="btn btn-secondary btn-xs" type="button">✕</button>
       </div>
 
-      <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.8rem;">
+      <div class="settings-form-stack">
         <div>
-          <label style="display: block; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Alapértelmezett kezdőlap:</label>
-          <select id="popup-pref-default-tab" style="width: 100%; background: var(--sidebar); border: 1px solid var(--border); padding: 6px 8px; border-radius: 6px; color: var(--text); font-size: 0.8rem;">
-            <option value="tab-today">Mai Órák</option>
+          <label class="settings-label" for="popup-pref-default-tab">Alapértelmezett kezdőlap:</label>
+          <select id="popup-pref-default-tab" class="settings-select">
             <option value="tab-grades">Jegyek</option>
+            <option value="tab-today">Mai Órák</option>
             <option value="tab-tasks">Feladatok</option>
           </select>
         </div>
 
         <div>
-          <label style="display: block; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Popup mérete:</label>
-          <select id="popup-pref-size" style="width: 100%; background: var(--sidebar); border: 1px solid var(--border); padding: 6px 8px; border-radius: 6px; color: var(--text); font-size: 0.8rem;">
-            <option value="small">Kicsi</option>
-            <option value="medium">Közepes</option>
-            <option value="large">Nagy</option>
+          <label class="settings-label" for="popup-pref-size">Popup mérete:</label>
+          <select id="popup-pref-size" class="settings-select">
+            <option value="small">Kompakt (340×500)</option>
+            <option value="medium" selected>Alapértelmezett (380×580)</option>
+            <option value="large">Tágas (460×600)</option>
           </select>
         </div>
 
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-top: 1px solid var(--border);">
-          <span style="color: var(--text);">Sötét mód</span>
-          <input type="checkbox" id="popup-dark-mode-toggle" checked style="width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer;">
+        <div class="settings-toggle-row">
+          <span>Sötét mód</span>
+          <input type="checkbox" id="popup-dark-mode-toggle" checked>
         </div>
 
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-top: 1px solid var(--border);">
-          <span style="color: var(--text);">Aktuális óra kártya</span>
-          <input type="checkbox" id="popup-pref-show-hero" checked style="width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer;">
+        <div class="settings-toggle-row">
+          <span>Élő tanóra kártya</span>
+          <input type="checkbox" id="popup-pref-show-hero" checked>
         </div>
 
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-top: 1px solid var(--border);">
-          <span style="color: var(--text);">Kompakt lista nézet</span>
-          <input type="checkbox" id="popup-pref-compact" style="width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer;">
+        <div class="settings-toggle-row">
+          <span>Kompakt lista nézet</span>
+          <input type="checkbox" id="popup-pref-compact">
         </div>
 
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-top: 1px solid var(--border);">
-          <span style="color: var(--text);">Tanulmányi átlag sáv</span>
-          <input type="checkbox" id="popup-pref-show-average" checked style="width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer;">
+        <div class="settings-toggle-row">
+          <span>Tanulmányi átlag sáv</span>
+          <input type="checkbox" id="popup-pref-show-average" checked>
         </div>
 
         <div style="padding-top: 6px; border-top: 1px solid var(--border);">
-          <label style="display: block; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Megjelenített jegyek száma:</label>
-          <select id="popup-pref-max-grades" style="width: 100%; background: var(--sidebar); border: 1px solid var(--border); padding: 6px 8px; border-radius: 6px; color: var(--text); font-size: 0.8rem;">
+          <label class="settings-label" for="popup-pref-max-grades">Megjelenített jegyek száma:</label>
+          <select id="popup-pref-max-grades" class="settings-select">
             <option value="3">3 db legutóbbi</option>
             <option value="5">5 db legutóbbi</option>
             <option value="10" selected>10 db legutóbbi</option>
@@ -198,8 +322,8 @@
         </div>
 
         <div>
-          <label style="display: block; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Megjelenített feladatok száma:</label>
-          <select id="popup-pref-max-tasks" style="width: 100%; background: var(--sidebar); border: 1px solid var(--border); padding: 6px 8px; border-radius: 6px; color: var(--text); font-size: 0.8rem;">
+          <label class="settings-label" for="popup-pref-max-tasks">Megjelenített feladatok száma:</label>
+          <select id="popup-pref-max-tasks" class="settings-select">
             <option value="3">3 db legközelebbi</option>
             <option value="5" selected>5 db legközelebbi</option>
             <option value="10">10 db</option>
@@ -208,31 +332,11 @@
         </div>
       </div>
 
-      <div style="margin-top: 16px;">
-        <button id="btn-save-popup-settings" class="btn btn-primary btn-block" style="padding: 9px; font-size: 0.82rem;">Beállítások mentése</button>
+      <div style="margin-top: 14px;">
+        <button id="btn-save-popup-settings" class="btn btn-primary btn-block" type="button" style="padding: 9px; font-size: 0.8rem;">Beállítások mentése</button>
       </div>
     </div>
   </div>
-
-  <!-- Footer Actions -->
-  <footer class="footer">
-    <button id="btn-open-dashboard" class="btn btn-secondary btn-sm">Teljes Vezérlőpult</button>
-    <div style="display: flex; gap: 6px;">
-      <button id="btn-refresh" class="btn btn-icon" title="Frissítés">⟳</button>
-      <button id="btn-popup-settings" class="btn btn-icon" title="Popup Testreszabása">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
-          <circle cx="12" cy="12" r="3"></circle>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-        </svg>
-      </button>
-      <button id="btn-account-switch" class="btn btn-icon" title="Fiókváltás / Bejelentkezés">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-          <circle cx="12" cy="7" r="4"></circle>
-        </svg>
-      </button>
-    </div>
-  </footer>
 
   <script src="../shared/kreta_api.js"></script>
   <script src="popup.js"></script>

@@ -18,6 +18,93 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
+const KRETA_HTML_ALLOWED = new Set(["P", "BR", "B", "STRONG", "I", "EM", "U", "S", "UL", "OL", "LI", "DIV", "SPAN", "BLOCKQUOTE", "A"]);
+const KRETA_HTML_DROPPED = new Set(["SCRIPT", "STYLE", "TEMPLATE", "NOSCRIPT", "IFRAME", "OBJECT", "EMBED", "SVG", "MATH", "TITLE"]);
+
+/**
+ * Turns Kréta message/notice HTML into a DocumentFragment that keeps only
+ * basic formatting. The markup is parsed in an inert DOMParser document (no
+ * scripts run, nothing loads); only allowlisted tags are recreated, with no
+ * attributes except an http(s) href on links. Everything else is unwrapped
+ * to its text, or dropped entirely for script-like elements.
+ */
+function sanitizeKretaHtml(html) {
+  const frag = document.createDocumentFragment();
+  const copy = (from, to) => {
+    for (const node of from.childNodes) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        to.append(node.data);
+        continue;
+      }
+      if (node.nodeType !== Node.ELEMENT_NODE) continue;
+      const tag = node.tagName.toUpperCase();
+      if (KRETA_HTML_DROPPED.has(tag)) continue;
+      if (!KRETA_HTML_ALLOWED.has(tag)) {
+        copy(node, to);
+        continue;
+      }
+      const el = document.createElement(tag.toLowerCase());
+      const href = tag === "A" ? (node.getAttribute("href") || "").trim() : "";
+      if (/^https?:\/\//i.test(href)) {
+        el.href = href;
+        el.target = "_blank";
+        el.rel = "noopener noreferrer";
+      }
+      copy(node, el);
+      to.append(el);
+    }
+  };
+  copy(new DOMParser().parseFromString(String(html ?? ""), "text/html").body, frag);
+  return frag;
+}
+
+function looksLikeHtml(value) {
+  return /<[a-z!/][^>]*>/i.test(String(value ?? ""));
+}
+
+/** Plain-text version of Kréta message HTML for previews and search. */
+function kretaHtmlToText(html) {
+  const s = String(html ?? "");
+  if (!looksLikeHtml(s)) return s;
+  return sanitizeKretaHtml(s.replace(/<br\s*\/?>|<\/(p|div|li)>/gi, "$&\n")).textContent.trim();
+}
+
+/** Renders message content into `el`: plain text as text, HTML through the allowlist sanitizer. */
+function renderKretaContent(el, content) {
+  if (looksLikeHtml(content)) {
+    el.replaceChildren(sanitizeKretaHtml(content));
+  } else {
+    el.innerText = String(content ?? "");
+  }
+}
+
+/** Hungarian notice shown above cached data while Kréta is unreachable. */
+function offlineNotice(data) {
+  const at = data?.cachedAt || data?.lastUpdated;
+  const when = at ? new Date(at).toLocaleString("hu-HU", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
+  return `A Kréta szerverei most nem érhetők el. ${when ? `Mentett adatok (${when}).` : "Mentett adatokat látsz."}`;
+}
+
+/**
+ * Error for Kréta 5xx answers, timeouts and network failures. Callers treat
+ * isMaintenance as "serve the cache", so an outage never wipes cached data
+ * or reads as an expired session.
+ */
+function outageError(status, cause) {
+  const err = new Error(status
+    ? `A Kréta szervere hibát adott (${status}).`
+    : "A Kréta szerverei nem válaszolnak (időtúllépés vagy hálózati hiba).");
+  err.status = status || 503;
+  err.isMaintenance = true;
+  err.cause = cause;
+  return err;
+}
+
+/** True for fetch failures that mean "unreachable" rather than "bad answer". */
+function isNetworkFailure(e) {
+  return e?.name === "TimeoutError" || e?.name === "AbortError" || e instanceof TypeError;
+}
+
 /** "HH:MM" in local time. Kréta timestamps are UTC, so never slice the ISO string. */
 function formatLocalTime(value) {
   const d = new Date(value);
@@ -278,6 +365,7 @@ const OAUTH_NONCE = "wylCrqT4oN6PPgQn2yQB0euKei9nJeZ6_ffJ-VpSKZU";
 const OAUTH_SCOPE = "openid email offline_access kreta-ellenorzo-webapi.public kreta-eugyintezes-webapi.public kreta-fileservice-webapi.public kreta-mobile-global-webapi.public kreta-dkt-webapi.public kreta-ier-webapi.public";
 const USER_AGENT = "eKretaStudent/264745 CFNetwork/1494.0.7 Darwin/23.4.0";
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes safe cache TTL
+const AUTH_TIMEOUT_MS = 15000;
 
 /**
  * Encrypts the OAuth session (access/refresh tokens) at rest using a
@@ -363,14 +451,29 @@ class SecureSession {
     }
   }
 
-  /** Encrypts and writes the session to chrome.storage.local under pala_session. */
+  /** Encrypts and writes the session to chrome.storage.local under pala_session and registers it in pala_profiles. */
   static async save(session) {
     if (session === null || session === undefined) {
       await chrome.storage.local.set({ pala_session: null });
       return;
     }
-    const encrypted = await this.encrypt(session);
-    await chrome.storage.local.set({ pala_session: encrypted });
+    const profileId = session.id || `${session.institute || "klik"}_${(session.user || "diak").replace(/\s+/g, "_")}`;
+    const enriched = { ...session, id: profileId };
+    const encrypted = await this.encrypt(enriched);
+
+    const store = await chrome.storage.local.get("pala_profiles");
+    const profiles = Array.isArray(store.pala_profiles) ? store.pala_profiles : [];
+    const idx = profiles.findIndex(p => p.id === profileId || (p.institute === enriched.institute && p.user === enriched.user));
+    if (idx >= 0) {
+      profiles[idx] = encrypted;
+    } else {
+      profiles.push(encrypted);
+    }
+
+    await chrome.storage.local.set({
+      pala_session: encrypted,
+      pala_profiles: profiles
+    });
   }
 
   /** Reads and decrypts pala_session from chrome.storage.local. */
@@ -378,9 +481,63 @@ class SecureSession {
     const store = await chrome.storage.local.get("pala_session");
     return this.decrypt(store.pala_session);
   }
+
+  /** Returns all available profiles (saved encrypted profiles + Demo profile). */
+  static async listProfiles() {
+    const store = await chrome.storage.local.get(["pala_profiles", "pala_session", "pala_use_demo"]);
+    const useDemo = store.pala_use_demo !== false;
+    const activeSession = store.pala_session;
+    const rawProfiles = Array.isArray(store.pala_profiles) ? [...store.pala_profiles] : [];
+
+    if (activeSession && !rawProfiles.some(p => p.id === activeSession.id)) {
+      rawProfiles.unshift(activeSession);
+    }
+
+    const items = rawProfiles.map(p => ({
+      id: p.id || `${p.institute || "klik"}_${p.user || "diak"}`,
+      user: p.user || "Kréta Diák",
+      institute: p.institute || "",
+      isDemo: false,
+      isActive: !useDemo && activeSession && (activeSession.id === p.id || activeSession.institute === p.institute)
+    }));
+
+    items.push({
+      id: "demo",
+      user: "Teszt Elek (Demó)",
+      institute: "BMSZC Neumann",
+      isDemo: true,
+      isActive: useDemo || !activeSession
+    });
+
+    return items;
+  }
+
+  /** Switches active profile by id ("demo" or a saved profile id). */
+  static async switchProfile(profileId) {
+    if (profileId === "demo") {
+      await chrome.storage.local.set({ pala_use_demo: true, pala_simulate_maintenance: false });
+      return;
+    }
+    const store = await chrome.storage.local.get("pala_profiles");
+    const profiles = Array.isArray(store.pala_profiles) ? store.pala_profiles : [];
+    const target = profiles.find(p => (p.id || `${p.institute || "klik"}_${p.user || "diak"}`) === profileId);
+    if (target) {
+      await chrome.storage.local.remove(["pala_cached_data", "pala_last_fetch"]);
+      await chrome.storage.local.set({
+        pala_session: target,
+        pala_use_demo: false,
+        pala_simulate_maintenance: false
+      });
+    }
+  }
 }
 
 class KretaApi {
+  /** Lowercase, accent-free form for accent-insensitive Hungarian search. */
+  static normalizeHu(value) {
+    return String(value ?? "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  }
+
   /**
    * Searches schools by name or code using Kréta's official institute selector.
    */
@@ -388,7 +545,7 @@ class KretaApi {
     if (!query || query.trim().length < 2) return [];
     try {
       const url = `https://intezmenykereso.e-kreta.hu/instituteSelector/${encodeURIComponent(query.trim())}?showOnlyLive=true`;
-      const res = await fetch(url);
+      const res = await fetch(url, { signal: AbortSignal.timeout(AUTH_TIMEOUT_MS) });
       if (!res.ok) return [];
       const html = await res.text();
 
@@ -470,7 +627,8 @@ class KretaApi {
         "Content-Type": "application/x-www-form-urlencoded",
         "User-Agent": USER_AGENT
       },
-      body: body.toString()
+      body: body.toString(),
+      signal: AbortSignal.timeout(AUTH_TIMEOUT_MS)
     });
 
     if (!response.ok) {
@@ -497,15 +655,22 @@ class KretaApi {
       refresh_token: refreshToken
     });
 
-    const response = await fetch(tokenUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "User-Agent": USER_AGENT
-      },
-      body: body.toString()
-    });
+    let response;
+    try {
+      response = await fetch(tokenUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "User-Agent": USER_AGENT
+        },
+        body: body.toString(),
+        signal: AbortSignal.timeout(AUTH_TIMEOUT_MS)
+      });
+    } catch (e) {
+      throw isNetworkFailure(e) ? outageError(0, e) : e;
+    }
 
+    if (response.status >= 500) throw outageError(response.status);
     if (!response.ok) {
       throw new Error("A munkamenet lejárt. Kérlek jelentkezz be újra.");
     }
@@ -526,19 +691,44 @@ class KretaApi {
       throw new Error("Nincs bejelentkezett felhasználói munkamenet.");
     }
 
-    // Refresh if within 2 minutes of expiry
-    if (session.expires_at && Date.now() > session.expires_at - 120000 && session.refresh_token) {
-      try {
-        const refreshed = await this.refreshAccessToken(session.refresh_token);
-        session.token = refreshed.access_token;
-        session.refresh_token = refreshed.refresh_token;
-        session.expires_at = refreshed.expires_at;
-        await SecureSession.save(session);
-      } catch (e) {
-        console.warn("Token frissítési hiba:", e);
-      }
+    try {
+      await this.refreshSession(session);
+    } catch (e) {
+      if (e.isMaintenance) throw e;
+      console.warn("Token frissítési hiba:", e);
     }
     return session.token;
+  }
+
+  /**
+   * Refreshes `session` in place when its access token is within 2 minutes of
+   * expiry, or unconditionally with `force` (after a 401). Kréta refresh tokens
+   * are single-use, and the popup, side panel, dashboard and service worker can
+   * all refresh at once, so this runs under a Web Lock shared by every context
+   * of the extension origin. The stored session is the source of truth: if
+   * another context already rotated the tokens, they are adopted instead of
+   * redeeming the old (now burned) refresh token. Nothing is kept in module
+   * globals, so a service worker that slept just re-reads storage.
+   */
+  static async refreshSession(session, force = false) {
+    const run = async () => {
+      const stored = await SecureSession.load();
+      const rotated = !!stored?.refresh_token && stored.id === session.id && stored.refresh_token !== session.refresh_token;
+      if (rotated) {
+        session.token = stored.token;
+        session.refresh_token = stored.refresh_token;
+        session.expires_at = stored.expires_at;
+      }
+      const expiring = session.expires_at && Date.now() > session.expires_at - 120000;
+      if (!session.refresh_token || !(expiring || (force && !rotated))) return;
+
+      const refreshed = await this.refreshAccessToken(session.refresh_token);
+      session.token = refreshed.access_token;
+      session.refresh_token = refreshed.refresh_token;
+      session.expires_at = refreshed.expires_at;
+      await SecureSession.save(session);
+    };
+    return navigator.locks ? navigator.locks.request("pala_token_refresh", run) : run();
   }
 
   /**
@@ -665,18 +855,16 @@ class KretaApi {
           err.status = 401;
           throw err;
         }
-        if (res.status >= 502 && res.status <= 504) {
-          const err = new Error(`Kréta karbantartás (${res.status})`);
-          err.status = res.status;
-          err.isMaintenance = true;
-          throw err;
-        }
+        // Fail the whole load instead of returning null, so getCachedOrFetchData
+        // keeps the last good cache rather than overwriting it with gaps.
+        if (res.status >= 500) throw outageError(res.status);
         if (!res.ok) {
           return null;
         }
         return await res.json();
       } catch (e) {
         if (e.status === 401 || e.isMaintenance) throw e;
+        if (isNetworkFailure(e)) throw outageError(0, e);
         console.warn(`Hiba a(z) ${endpoint} lekérésekor:`, e);
         return null;
       }
@@ -1100,11 +1288,7 @@ class KretaApi {
       } catch (innerErr) {
         if (innerErr.status === 401 && session.refresh_token) {
           console.log("Token expired on server, refreshing...");
-          const refreshed = await this.refreshAccessToken(session.refresh_token);
-          session.token = refreshed.access_token;
-          session.refresh_token = refreshed.refresh_token;
-          session.expires_at = refreshed.expires_at;
-          await SecureSession.save(session);
+          await this.refreshSession(session, true);
           data = await this.getStudentData(session.institute, session.token);
         } else {
           throw innerErr;
@@ -1147,7 +1331,7 @@ class KretaApi {
   }
 
   /**
-   * Robust parser for Kréta evaluation objects.
+   * Parser for Kréta evaluation objects.
    * Differentiates standard 1..5 grades, percentages (>5%), text evaluations, "Nem írt", and summary grades.
    */
   static parseGrade(g) {
@@ -1209,7 +1393,9 @@ class KretaApi {
     }
 
     const weightRaw = g.SulySzazalekErteke || g.SulySzazalek || 100;
-    const weight = (typeof weightRaw === "number" ? weightRaw : (parseFloat(weightRaw) || 100)) / 100;
+    // Always a number: UIs interpolate it into markup and attributes.
+    const weightPercent = typeof weightRaw === "number" ? weightRaw : (parseFloat(weightRaw) || 100);
+    const weight = weightPercent / 100;
 
     return {
       raw: g,
@@ -1220,7 +1406,7 @@ class KretaApi {
       isPercentage,
       isNemIrt,
       weight,
-      weightPercent: weightRaw
+      weightPercent
     };
   }
 

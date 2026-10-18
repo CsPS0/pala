@@ -1,15 +1,53 @@
 // Pala Extension - Background Service Worker with Safeguards
 
-importScripts("../shared/kreta_api.js");
+if (typeof KretaApi === "undefined" && typeof importScripts === "function") {
+  importScripts("../shared/kreta_api.js");
+}
 
 // Tracks OAuth codes already processed to prevent duplicate handling when
 // both webNavigation.onBeforeNavigate and tabs.onUpdated fire for the same redirect.
+// Losing it when the worker sleeps is fine: both events fire within one wake, and
+// the single-use pala_pending_login state in storage is the real replay guard.
 const handledCodes = new Set();
 
 chrome.runtime.onInstalled.addListener(() => {
   console.log("Pala Extension installed successfully.");
-  // Setup safe 30-minute background check alarm
-  chrome.alarms.create("pala_grade_sync", { periodInMinutes: 30 });
+});
+
+// Alarms may be cleared on browser restart, so ensure the 30-minute sync alarm
+// on every worker start instead of only on install.
+chrome.alarms.get("pala_grade_sync").then((alarm) => {
+  if (!alarm) chrome.alarms.create("pala_grade_sync", { periodInMinutes: 30 });
+});
+
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg?.type === "pala_open_sidepanel") {
+    (async () => {
+      try {
+        if (chrome.sidePanel && typeof chrome.sidePanel.open === "function") {
+          const wins = await chrome.windows.getCurrent();
+          if (wins && wins.id !== undefined) {
+            await chrome.sidePanel.open({ windowId: wins.id });
+            sendResponse({ ok: true });
+            return;
+          }
+        }
+        if (typeof browser !== "undefined" && browser.sidebarAction?.open) {
+          await browser.sidebarAction.open();
+          sendResponse({ ok: true });
+          return;
+        }
+        // Fallback: open sidepanel in a new tab if browser API is unavailable
+        await chrome.tabs.create({ url: chrome.runtime.getURL("sidepanel/sidepanel.html") });
+        sendResponse({ ok: true });
+      } catch (err) {
+        console.warn("Could not open side panel directly, opening tab fallback:", err);
+        await chrome.tabs.create({ url: chrome.runtime.getURL("sidepanel/sidepanel.html") });
+        sendResponse({ ok: true });
+      }
+    })();
+    return true;
+  }
 });
 
 /**
@@ -148,28 +186,17 @@ async function checkForNewGrades(force = false) {
       return; // Skip poll outside active hours
     }
 
-    // Randomized jitter (0 to 30 seconds delay)
-    const jitterMs = Math.floor(Math.random() * 30000);
+    // Randomized jitter (0 to 10 seconds). A pending timer does not keep an MV3
+    // worker alive and it idles out after 30 s, so a longer wait could kill the sync.
+    const jitterMs = Math.floor(Math.random() * 10000);
     await new Promise(resolve => setTimeout(resolve, jitterMs));
   }
 
   try {
-    const token = await KretaApi.ensureValidToken(session);
-    const data = await KretaApi.getStudentData(session.institute, token);
-
-    if (!data) return;
-
-    // Cache updated data
-    await chrome.storage.local.set({
-      pala_cached_data: data,
-      pala_last_fetch: Date.now()
-    });
-
-    // Update student name in session if available
-    if (data.student?.Nev && session.user !== data.student.Nev) {
-      session.user = data.student.Nev;
-      await SecureSession.save(session);
-    }
+    // Shared path with the UI: locked token refresh, 401 retry, cache write,
+    // and cached fallback (isMaintenance) when Kréta is down.
+    const data = await KretaApi.getCachedOrFetchData(session, true);
+    if (!data || data.isMaintenance) return;
 
     // Broadcast data update to any open extension views
     chrome.runtime.sendMessage({ type: "pala_data_updated" }).catch(() => {});
