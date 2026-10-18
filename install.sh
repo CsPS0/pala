@@ -1,39 +1,25 @@
 #!/bin/bash
 set -e
 
-# Pala All-in-One Installer for Linux & macOS
-# Usage:
-#   Interactive: curl -fsSL https://raw.githubusercontent.com/CsPS0/pala/main/install.sh | bash
-#   Flags:       curl -fsSL https://raw.githubusercontent.com/CsPS0/pala/main/install.sh | bash -s -- --all
-#                curl -fsSL https://raw.githubusercontent.com/CsPS0/pala/main/install.sh | bash -s -- --cli
-#                curl -fsSL https://raw.githubusercontent.com/CsPS0/pala/main/install.sh | bash -s -- --desktop
+# =====================================================================
+# Pala — Modern All-in-One Telepito es Komponens Kezelo Linux & macOS
+# Hasznalat:
+#   Interaktiv: curl -fsSL https://raw.githubusercontent.com/CsPS0/pala/main/install.sh | bash
+#   Flagek:     curl -fsSL https://raw.githubusercontent.com/CsPS0/pala/main/install.sh | bash -s -- --all
+#               curl -fsSL https://raw.githubusercontent.com/CsPS0/pala/main/install.sh | bash -s -- --cli
+#               curl -fsSL https://raw.githubusercontent.com/CsPS0/pala/main/install.sh | bash -s -- --desktop
+# =====================================================================
 
 REPO="CsPS0/pala"
-INSTALL_CHOICE="all"
+USER_BIN="$HOME/.local/bin"
+mkdir -p "$USER_BIN"
 
-# Parse CLI flags if provided
-for arg in "$@"; do
-    case $arg in
-        --all)
-            INSTALL_CHOICE="all"
-            shift
-            ;;
-        --cli|--tui)
-            INSTALL_CHOICE="cli"
-            shift
-            ;;
-        --desktop|--gui)
-            INSTALL_CHOICE="desktop"
-            shift
-            ;;
-    esac
-done
+# Reconnect stdin to controlling terminal if piped via curl | bash
+if [ ! -t 0 ] && [ -e /dev/tty ]; then
+    exec < /dev/tty
+fi
 
-echo "============================================================="
-echo " Pala — Telepito Linux es macOS rendszerekre"
-echo "============================================================="
-
-# Detect OS
+# Detect OS & Arch
 OS="$(uname -s)"
 ARCH="$(uname -m)"
 
@@ -42,34 +28,152 @@ if [ "$OS" != "Linux" ] && [ "$OS" != "Darwin" ]; then
     exit 1
 fi
 
-# Query latest version from GitHub API
-echo "Legfrissebb verzio lekerdezese..."
-LATEST_RELEASE=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" | grep '"tag_name":' | head -n 1 | sed -E 's/.*"([^"]+)".*/\1/')
-if [ -z "$LATEST_RELEASE" ]; then
-    LATEST_RELEASE="v1.2.3"
+# Default component selections
+INSTALL_DESKTOP=1
+INSTALL_CLI=1
+DO_ADD_TO_PATH=1
+DO_START_MENU=1
+DO_DESKTOP_ICON=0
+CUSTOM_FLAGS=0
+
+# Parse CLI flags
+for arg in "$@"; do
+    case $arg in
+        --all)
+            INSTALL_DESKTOP=1
+            INSTALL_CLI=1
+            DO_ADD_TO_PATH=1
+            DO_START_MENU=1
+            DO_DESKTOP_ICON=1
+            CUSTOM_FLAGS=1
+            shift
+            ;;
+        --cli|--tui)
+            INSTALL_DESKTOP=0
+            INSTALL_CLI=1
+            DO_ADD_TO_PATH=1
+            DO_START_MENU=0
+            DO_DESKTOP_ICON=0
+            CUSTOM_FLAGS=1
+            shift
+            ;;
+        --desktop|--gui)
+            INSTALL_DESKTOP=1
+            INSTALL_CLI=0
+            DO_ADD_TO_PATH=0
+            DO_START_MENU=1
+            DO_DESKTOP_ICON=0
+            CUSTOM_FLAGS=1
+            shift
+            ;;
+        --help|-h)
+            echo "Hasznalat: install.sh [--all | --cli | --desktop]"
+            exit 0
+            ;;
+    esac
+done
+
+echo "============================================================="
+echo " Pala — Telepito es Komponens Kezelo ($OS $ARCH)"
+echo "============================================================="
+
+# Interactive terminal checkbox wizard if running in an interactive terminal without flags
+if [ "$CUSTOM_FLAGS" -eq 0 ] && [ -t 0 ]; then
+    labels=(
+        "Pala Desktop (Grafikus Flutter asztali alkalmazas)"
+        "Pala CLI / TUI (Terminalos parancssori kliens)"
+        "Hozzaadas a PATH kornyezeti valtozohoz"
+        "Start menu / Alkalmazasindito bejegyzes letrehozasa"
+        "Asztali parancsikon letrehozasa"
+    )
+    selected=(1 1 1 1 0)
+    cursor=0
+    count=${#labels[@]}
+
+    tput civis 2>/dev/null || true
+
+    cleanup_menu() {
+        tput cnorm 2>/dev/null || true
+        echo ""
+    }
+    trap cleanup_menu EXIT INT TERM
+
+    render_menu() {
+        for ((i=0; i<count+3; i++)); do
+            tput cuu1 2>/dev/null || true
+            tput el 2>/dev/null || true
+        done
+
+        echo -e "\033[1;36mPala Telepito Varazslo — Komponensek kivalasztasa\033[0m"
+        echo -e "\033[90mHasznalat: Nyilak [Fel/Le], [SZOKOZ] kijeloles, [ENTER] megerosites\033[0m"
+        echo -e "\033[90m-------------------------------------------------------------\033[0m"
+
+        for ((i=0; i<count; i++)); do
+            if [ "${selected[$i]}" -eq 1 ]; then
+                box="[*]"
+            else
+                box="[ ]"
+            fi
+
+            if [ "$i" -eq "$cursor" ]; then
+                echo -e "\033[1;33m > $box ${labels[$i]}\033[0m"
+            else
+                echo -e "\033[0m   $box \033[90m${labels[$i]}\033[0m"
+            fi
+        done
+    }
+
+    for ((i=0; i<count+3; i++)); do echo ""; done
+
+    while true; do
+        render_menu
+        IFS= read -rsn1 key
+        if [ "$key" = $'\x1b' ]; then
+            read -rsn2 -t 0.1 seq
+            if [ "$seq" = "[A" ]; then
+                if [ "$cursor" -gt 0 ]; then ((cursor--)); else cursor=$((count - 1)); fi
+            elif [ "$seq" = "[B" ]; then
+                if [ "$cursor" -lt $((count - 1)) ]; then ((cursor++)); else cursor=0; fi
+            fi
+        elif [ "$key" = " " ]; then
+            if [ "${selected[$cursor]}" -eq 1 ]; then
+                selected[$cursor]=0
+            else
+                selected[$cursor]=1
+            fi
+        elif [ "$key" = "" ]; then
+            break
+        elif [ "$key" = "q" ] || [ "$key" = "Q" ]; then
+            echo -e "\nTelepites megszakitva."
+            exit 0
+        fi
+    done
+
+    cleanup_menu
+    trap - EXIT INT TERM
+
+    INSTALL_DESKTOP=${selected[0]}
+    INSTALL_CLI=${selected[1]}
+    DO_ADD_TO_PATH=${selected[2]}
+    DO_START_MENU=${selected[3]}
+    DO_DESKTOP_ICON=${selected[4]}
 fi
-echo "Telepitendo verzio: $LATEST_RELEASE ($OS $ARCH)"
+
+if [ "$INSTALL_DESKTOP" -eq 0 ] && [ "$INSTALL_CLI" -eq 0 ]; then
+    echo "Nem valasztottal ki egyetlen komponenst sem a telepiteshez. Kilepes."
+    exit 0
+fi
+
+# Resolve latest release
+echo "Legfrissebb kiadas lekerdezese..."
+LATEST_TAG=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" | grep '"tag_name":' | head -n 1 | sed -E 's/.*"([^"]+)".*/\1/')
+if [ -z "$LATEST_TAG" ]; then
+    LATEST_TAG="latest"
+fi
+echo "Telepitendo kiadas: $LATEST_TAG"
 echo ""
 
-# Interactive prompt if running in interactive terminal and no explicit flag passed
-if [ -t 0 ] && [ "$#" -eq 0 ]; then
-    echo "Valaszd ki, mit szeretnel telepiteni:"
-    echo "  1) Teljes csomag: Pala Desktop + CLI a PATH-ban (Ajanlott)"
-    echo "  2) Csak Pala CLI / TUI (Terminalos parancssori eszkoz)"
-    echo "  3) Csak Pala Desktop (Grafikus asztali alkalmazas)"
-    read -p "Valasztasod [1-3, alapertelmezett: 1]: " USER_CHOICE
-    case $USER_CHOICE in
-        2) INSTALL_CHOICE="cli" ;;
-        3) INSTALL_CHOICE="desktop" ;;
-        *) INSTALL_CHOICE="all" ;;
-    esac
-    echo ""
-fi
-
-# Ensure ~/.local/bin exists and is in PATH
-USER_BIN="$HOME/.local/bin"
-mkdir -p "$USER_BIN"
-
+# Helper to add directory to PATH
 add_to_shell_path() {
     if [[ ":$PATH:" != *":$USER_BIN:"* ]]; then
         echo "A $USER_BIN hozzaadasa a PATH kornyezeti valtozohoz..."
@@ -83,11 +187,94 @@ add_to_shell_path() {
             echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.profile"
         fi
         export PATH="$USER_BIN:$PATH"
+        echo "    [OK] PATH frissitve: $USER_BIN"
     fi
 }
 
-# 1. Install CLI / TUI
-install_cli() {
+# 1. Desktop Installation
+if [ "$INSTALL_DESKTOP" -eq 1 ]; then
+    echo "[+] Pala Desktop telepitese..."
+    if [ "$OS" = "Linux" ]; then
+        DESKTOP_INSTALL_DIR="$HOME/.local/share/pala"
+        mkdir -p "$DESKTOP_INSTALL_DIR"
+        APPIMAGE_PATH="$DESKTOP_INSTALL_DIR/Pala.AppImage"
+        
+        APPIMAGE_URL="https://github.com/$REPO/releases/latest/download/Pala-x86_64.AppImage"
+        echo "    Letoltes: $APPIMAGE_URL"
+        if curl -fsSL -o "$APPIMAGE_PATH" "$APPIMAGE_URL"; then
+            chmod +x "$APPIMAGE_PATH"
+            ln -sf "$APPIMAGE_PATH" "$USER_BIN/pala-desktop"
+            echo "    [OK] Pala AppImage telepitve ide: $APPIMAGE_PATH"
+        else
+            echo "    [!] Figyelem: Az AppImage letoltese sikertelen."
+        fi
+
+        # Download icon
+        ICON_DIR="$HOME/.local/share/icons/hicolor/512x512/apps"
+        mkdir -p "$ICON_DIR"
+        curl -fsSL -o "$ICON_DIR/pala.png" "https://raw.githubusercontent.com/$REPO/main/assets/icons/pala_icon_512.png" 2>/dev/null || true
+
+        # Create Desktop launcher file
+        if [ "$DO_START_MENU" -eq 1 ]; then
+            APP_DIR="$HOME/.local/share/applications"
+            mkdir -p "$APP_DIR"
+            cat <<EOF > "$APP_DIR/pala.desktop"
+[Desktop Entry]
+Name=Pala Desktop
+Comment=Modern, nyilt forraskodu Kreta kliens
+Exec=$APPIMAGE_PATH
+Icon=pala
+Terminal=false
+Type=Application
+Categories=Education;Utility;
+StartupNotify=true
+EOF
+            chmod +x "$APP_DIR/pala.desktop"
+            echo "    [OK] Alkalmazasindito bejegyzes letrehozva: $APP_DIR/pala.desktop"
+            if command -v update-desktop-database >/dev/null 2>&1; then
+                update-desktop-database "$APP_DIR" >/dev/null 2>&1 || true
+            fi
+        fi
+
+        if [ "$DO_DESKTOP_ICON" -eq 1 ] && [ -d "$HOME/Desktop" ]; then
+            cp "$APP_DIR/pala.desktop" "$HOME/Desktop/pala.desktop" 2>/dev/null || true
+            chmod +x "$HOME/Desktop/pala.desktop" 2>/dev/null || true
+            echo "    [OK] Asztali parancsikon letrehozva: $HOME/Desktop/pala.desktop"
+        fi
+
+    elif [ "$OS" = "Darwin" ]; then
+        DMG_URL="https://github.com/$REPO/releases/latest/download/Pala-macOS.dmg"
+        TMP_DMG="/tmp/Pala-macOS.dmg"
+        echo "    Letoltes: $DMG_URL"
+        if curl -fsSL -o "$TMP_DMG" "$DMG_URL"; then
+            MOUNT_DIR=$(mktemp -d)
+            hdiutil attach "$TMP_DMG" -mountpoint "$MOUNT_DIR" -nobrowse -quiet
+            if [ -d "$MOUNT_DIR/Pala.app" ]; then
+                DEST_APP="/Applications/Pala.app"
+                if [ ! -w "/Applications" ]; then
+                    DEST_APP="$HOME/Applications/Pala.app"
+                    mkdir -p "$HOME/Applications"
+                fi
+                rm -rf "$DEST_APP"
+                cp -R "$MOUNT_DIR/Pala.app" "$DEST_APP"
+                xattr -cr "$DEST_APP" 2>/dev/null || true
+                echo "    [OK] Pala.app sikeresen telepitve ide: $DEST_APP"
+
+                if [ "$DO_DESKTOP_ICON" -eq 1 ] && [ -d "$HOME/Desktop" ]; then
+                    ln -sf "$DEST_APP" "$HOME/Desktop/Pala.app"
+                    echo "    [OK] Asztali parancsikon letrehozva: $HOME/Desktop/Pala.app"
+                fi
+            fi
+            hdiutil detach "$MOUNT_DIR" -quiet 2>/dev/null || true
+            rm -rf "$MOUNT_DIR" "$TMP_DMG"
+        else
+            echo "    [!] Figyelem: A macOS DMG letoltese sikertelen."
+        fi
+    fi
+fi
+
+# 2. CLI Installation
+if [ "$INSTALL_CLI" -eq 1 ]; then
     echo "[+] Pala CLI / TUI telepitese..."
     if [ "$OS" = "Linux" ]; then
         CLI_ASSET="pala-linux"
@@ -95,75 +282,41 @@ install_cli() {
         CLI_ASSET="pala-macos"
     fi
 
-    CLI_URL="https://github.com/$REPO/releases/download/$LATEST_RELEASE/$CLI_ASSET"
+    CLI_URL="https://github.com/$REPO/releases/latest/download/$CLI_ASSET"
     TMP_CLI="/tmp/pala_cli_$$"
     
     echo "    Letoltes: $CLI_URL"
     if curl -fsSL -o "$TMP_CLI" "$CLI_URL"; then
         chmod +x "$TMP_CLI"
         
-        # Try /usr/local/bin if writable, else ~/.local/bin
-        if [ -w "/usr/local/bin" ]; then
-            mv "$TMP_CLI" "/usr/local/bin/pala"
-            echo "    Sikeresen telepitve ide: /usr/local/bin/pala"
-        elif command -v sudo >/dev/null 2>&1; then
-            sudo mv "$TMP_CLI" "/usr/local/bin/pala"
-            echo "    Sikeresen telepitve ide: /usr/local/bin/pala (sudo)"
-        else
-            mv "$TMP_CLI" "$USER_BIN/pala"
-            add_to_shell_path
-            echo "    Sikeresen telepitve ide: $USER_BIN/pala"
+        TARGET_BIN="$USER_BIN/pala"
+        mv "$TMP_CLI" "$TARGET_BIN"
+        if [ "$OS" = "Darwin" ]; then
+            xattr -d com.apple.quarantine "$TARGET_BIN" 2>/dev/null || true
         fi
+        echo "    [OK] Pala CLI sikeresen telepitve ide: $TARGET_BIN"
     else
-        echo "    Figyelem: A CLI asset nem toltheto le kozvetlenul, ellenorizd a kiadasokat."
+        echo "    [!] Figyelem: A CLI binaris letoltese sikertelen."
     fi
-}
 
-# 2. Install Desktop App
-install_desktop() {
-    echo "[+] Pala Desktop telepitese..."
-    if [ "$OS" = "Linux" ]; then
-        DESKTOP_DIR="$HOME/.local/share/pala"
-        mkdir -p "$DESKTOP_DIR"
-        
-        # Create Desktop launcher file
-        APP_DIR="$HOME/.local/share/applications"
-        mkdir -p "$APP_DIR"
-        cat <<EOF > "$APP_DIR/pala.desktop"
-[Desktop Entry]
-Name=Pala Desktop
-Comment=Modern, nyilt forraskodu Kreta kliens
-Exec=$USER_BIN/pala --desktop
-Icon=utilities-terminal
-Terminal=false
-Type=Application
-Categories=Education;Utility;
-StartupNotify=true
-EOF
-        chmod +x "$APP_DIR/pala.desktop"
-        echo "    Start menu / alkalmazasindito bejegyzes letrehozva: $APP_DIR/pala.desktop"
-        if command -v update-desktop-database >/dev/null 2>&1; then
-            update-desktop-database "$APP_DIR" >/dev/null 2>&1 || true
-        fi
-    elif [ "$OS" = "Darwin" ]; then
-        echo "    macOS Desktop app beallitasa /Applications mappaba..."
+    if [ "$DO_ADD_TO_PATH" -eq 1 ]; then
+        add_to_shell_path
     fi
-}
-
-# Execute installation based on choice
-if [ "$INSTALL_CHOICE" = "cli" ]; then
-    install_cli
-elif [ "$INSTALL_CHOICE" = "desktop" ]; then
-    install_cli
-    install_desktop
-else
-    install_cli
-    install_desktop
 fi
 
 echo ""
 echo "============================================================="
-echo " Telepites sikeresen befejezodott!"
-echo " Inditsd el a 'pala' paranccsal a terminalban,"
-echo " vagy a 'pala --desktop' paranccsal grafikus modban!"
+echo " A telepites es beallitas sikeresen befejezodott!"
+echo " Inditas: "
+if [ "$INSTALL_CLI" -eq 1 ]; then
+    echo "   - Terminalban:       pala"
+fi
+if [ "$INSTALL_DESKTOP" -eq 1 ]; then
+    if [ "$OS" = "Linux" ]; then
+        echo "   - Alkalmazasbol:    Pala Desktop"
+        echo "   - Parancssorbol:     pala-desktop"
+    else
+        echo "   - Alkalmazasbol:    /Applications/Pala.app"
+    fi
+fi
 echo "============================================================="

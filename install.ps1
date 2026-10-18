@@ -14,6 +14,7 @@ param(
     [switch]$Desktop,
     [switch]$AddToPath,
     [switch]$StartMenu,
+    [switch]$DesktopIcon,
     [switch]$Uninstall,
     [string]$Version = ""
 )
@@ -75,12 +76,12 @@ function Uninstall-Pala {
     
     # Remove Shortcuts
     $StartShortcut = Join-Path $ProgramsFolder "Pala Desktop.lnk"
-    $DesktopShortcut = Join-Path $DesktopFolder "Pala Desktop.lnk"
+    $DesktopShortcut = Join-Path $DesktopFolder "Pala.lnk"
     $CliShortcut = Join-Path $ProgramsFolder "Pala CLI.lnk"
     
-    if (Test-Path $StartShortcut) { Remove-Item $StartShortcut -Force; Write-Host "    [OK] Start menü parancsikon eltávolítva." -ForegroundColor Green }
-    if (Test-Path $DesktopShortcut) { Remove-Item $DesktopShortcut -Force; Write-Host "    [OK] Asztali parancsikon eltávolítva." -ForegroundColor Green }
-    if (Test-Path $CliShortcut) { Remove-Item $CliShortcut -Force; Write-Host "    [OK] CLI parancsikon eltávolítva." -ForegroundColor Green }
+    if (Test-Path $StartShortcut) { Remove-Item $StartShortcut -Force; Write-Host "    [OK] Start menu parancsikon eltavolitva." -ForegroundColor Green }
+    if (Test-Path $DesktopShortcut) { Remove-Item $DesktopShortcut -Force; Write-Host "    [OK] Asztali parancsikon eltavolitva." -ForegroundColor Green }
+    if (Test-Path $CliShortcut) { Remove-Item $CliShortcut -Force; Write-Host "    [OK] CLI parancsikon eltavolitva." -ForegroundColor Green }
     
     # Remove from PATH
     Remove-PathFromUserEnv $BinDir
@@ -96,6 +97,103 @@ function Uninstall-Pala {
     return
 }
 
+function Show-CheckboxWizard {
+    param(
+        [string]$Title,
+        [System.Collections.Generic.List[PSObject]]$Items
+    )
+
+    $canUseRaw = $false
+    try {
+        if ($Host.UI.RawUI -and [Console]::WindowWidth -gt 0) {
+            $canUseRaw = $true
+        }
+    } catch {
+        $canUseRaw = $false
+    }
+
+    if (-not $canUseRaw) {
+        Write-Host $Title -ForegroundColor Cyan
+        Write-Host "Navigalj a szamokkal vagy fogadd el az alapertelmezettet:`n" -ForegroundColor DarkGray
+        foreach ($item in $Items) {
+            $def = if ($item.Selected) { "I" } else { "n" }
+            $ans = Read-Host "$($item.Label) (I/n) [$def]"
+            if ($ans -eq 'i' -or $ans -eq 'I' -or ($ans -eq '' -and $item.Selected)) {
+                $item.Selected = $true
+            } elseif ($ans -eq 'n' -or $ans -eq 'N' -or ($ans -eq '' -and -not $item.Selected)) {
+                $item.Selected = $false
+            }
+        }
+        return
+    }
+
+    $cursorIndex = 0
+    $count = $Items.Count
+    $startTop = [Console]::CursorTop
+
+    $neededLines = $count + 5
+    $bufferHeight = [Console]::BufferHeight
+    if (($startTop + $neededLines) -ge $bufferHeight) {
+        for ($i = 0; $i -lt $neededLines; $i++) { Write-Host "" }
+        $startTop = [Console]::CursorTop - $neededLines
+    }
+
+    function Redraw-Checklist {
+        [Console]::SetCursorPosition(0, $startTop)
+        Write-Host "=============================================================" -ForegroundColor DarkYellow
+        Write-Host " $Title" -ForegroundColor Yellow
+        Write-Host " Hasznalat: Nyilak [Fel/Le], [SZOKOZ] kijeloles, [ENTER] megerosites" -ForegroundColor DarkGray
+        Write-Host "-------------------------------------------------------------" -ForegroundColor DarkGray
+
+        for ($i = 0; $i -lt $count; $i++) {
+            $item = $Items[$i]
+            $pointer = if ($i -eq $cursorIndex) { " > " } else { "   " }
+            $box = if ($item.Selected) { "[*]" } else { "[ ]" }
+            
+            if ($i -eq $cursorIndex) {
+                Write-Host "$pointer$box " -NoNewline -ForegroundColor Yellow
+                Write-Host "$($item.Label)" -ForegroundColor Yellow
+            } else {
+                Write-Host "$pointer$box " -NoNewline -ForegroundColor White
+                Write-Host "$($item.Label)" -ForegroundColor Gray
+            }
+        }
+        Write-Host "=============================================================" -ForegroundColor DarkYellow
+    }
+
+    try { [Console]::CursorVisible = $false } catch {}
+
+    try {
+        while ($true) {
+            Redraw-Checklist
+            $keyInfo = [Console]::ReadKey($true)
+            switch ($keyInfo.Key) {
+                ([ConsoleKey]::UpArrow) {
+                    if ($cursorIndex -gt 0) { $cursorIndex-- } else { $cursorIndex = $count - 1 }
+                }
+                ([ConsoleKey]::DownArrow) {
+                    if ($cursorIndex -lt ($count - 1)) { $cursorIndex++ } else { $cursorIndex = 0 }
+                }
+                ([ConsoleKey]::Spacebar) {
+                    $Items[$cursorIndex].Selected = -not $Items[$cursorIndex].Selected
+                }
+                ([ConsoleKey]::Enter) {
+                    return
+                }
+                ([ConsoleKey]::Escape) {
+                    Write-Host "`nTelepites megszakitva." -ForegroundColor Red
+                    exit 0
+                }
+            }
+        }
+    } catch {
+        return
+    } finally {
+        try { [Console]::CursorVisible = $true } catch {}
+        Write-Host ""
+    }
+}
+
 if ($Uninstall) {
     Show-Banner
     Uninstall-Pala
@@ -104,7 +202,7 @@ if ($Uninstall) {
 
 Show-Banner
 
-# Determine components to install
+# Component selections
 $InstallDesktop = $false
 $InstallCli = $false
 $DoAddToPath = $true
@@ -116,6 +214,7 @@ if ($All) {
     $InstallCli = $true
     $DoAddToPath = $true
     $DoStartMenu = $true
+    $DoDesktopIcon = $DesktopIcon.IsPresent
 } elseif ($Cli) {
     $InstallCli = $true
     $DoAddToPath = $true
@@ -125,56 +224,25 @@ if ($All) {
     $DoStartMenu = $true
     $DoAddToPath = $false
 } else {
-    Write-Host "Valaszd ki a telepitendo komponenseket:" -ForegroundColor Cyan
-    Write-Host "  1) Teljes csomag: Pala Desktop + CLI a PATH-ban (Ajanlott)" -ForegroundColor White
-    Write-Host "  2) Csak Pala CLI / TUI (Terminalos eszkoz a PATH-ban)" -ForegroundColor White
-    Write-Host "  3) Csak Pala Desktop (Grafikus asztali alkalmazas)" -ForegroundColor White
-    Write-Host "  4) Egyeni valasztas (komponensek egyenkent)" -ForegroundColor White
-    Write-Host "  5) Pala eltavolitasa a rendszerbol (Uninstall)" -ForegroundColor DarkGray
-    
-    $Choice = Read-Host "Valasztasod [1-5, alapertelmezett: 1]"
-    if ([string]::IsNullOrWhiteSpace($Choice)) { $Choice = "1" }
-    
-    switch ($Choice) {
-        "2" {
-            $InstallCli = $true
-            $DoAddToPath = $true
-        }
-        "3" {
-            $InstallDesktop = $true
-            $DoStartMenu = $true
-        }
-        "4" {
-            $rDesk = Read-Host "Telepited a Pala Desktop grafikus alkalmazast? (I/n) [I]"
-            $InstallDesktop = ($rDesk -ne 'n' -and $rDesk -ne 'N')
-            
-            $rCli = Read-Host "Telepited a Pala CLI / TUI parancssori eszkozt? (I/n) [I]"
-            $InstallCli = ($rCli -ne 'n' -and $rCli -ne 'N')
-            
-            if ($InstallCli) {
-                $rPath = Read-Host "Hozzaadod a Pala-t a PATH kornyezeti valtozohoz? (I/n) [I]"
-                $DoAddToPath = ($rPath -ne 'n' -and $rPath -ne 'N')
-            }
-            
-            if ($InstallDesktop) {
-                $rStart = Read-Host "Letrehozol Start menü parancsikont? (I/n) [I]"
-                $DoStartMenu = ($rStart -ne 'n' -and $rStart -ne 'N')
-                
-                $rDeskIcon = Read-Host "Letrehozol Asztali parancsikont? (i/N) [N]"
-                $DoDesktopIcon = ($rDeskIcon -eq 'i' -or $rDeskIcon -eq 'I' -or $rDeskIcon -eq 'y' -or $rDeskIcon -eq 'Y')
-            }
-        }
-        "5" {
-            Uninstall-Pala
-            exit 0
-        }
-        Default {
-            $InstallDesktop = $true
-            $InstallCli = $true
-            $DoAddToPath = $true
-            $DoStartMenu = $true
-        }
-    }
+    $wizardItems = [System.Collections.Generic.List[PSObject]]::new()
+    $wizardItems.Add([PSCustomObject]@{ Id='desktop'; Label='Pala Desktop (Grafikus Flutter asztali alkalmazas)'; Selected=$true })
+    $wizardItems.Add([PSCustomObject]@{ Id='cli';     Label='Pala CLI / TUI (Terminalos parancssori kliens)';       Selected=$true })
+    $wizardItems.Add([PSCustomObject]@{ Id='path';    Label='Hozzaadas a PATH kornyezeti valtozohoz';             Selected=$true })
+    $wizardItems.Add([PSCustomObject]@{ Id='start';   Label='Start menu parancsikon letrehozasa';                 Selected=$true })
+    $wizardItems.Add([PSCustomObject]@{ Id='deskicon';Label='Asztali parancsikon letrehozasa';                  Selected=$false })
+
+    Show-CheckboxWizard -Title "Pala Telepito Varazslo — Komponensek kivalasztasa" -Items $wizardItems
+
+    $InstallDesktop = ($wizardItems | Where-Object { $_.Id -eq 'desktop' }).Selected
+    $InstallCli     = ($wizardItems | Where-Object { $_.Id -eq 'cli' }).Selected
+    $DoAddToPath    = ($wizardItems | Where-Object { $_.Id -eq 'path' }).Selected
+    $DoStartMenu    = ($wizardItems | Where-Object { $_.Id -eq 'start' }).Selected
+    $DoDesktopIcon  = ($wizardItems | Where-Object { $_.Id -eq 'deskicon' }).Selected
+}
+
+if (-not $InstallDesktop -and -not $InstallCli) {
+    Write-Host "Nem valasztottal ki egyetlen komponenst sem a telepiteshez. Kilepes." -ForegroundColor Yellow
+    exit 0
 }
 
 # Resolve version
@@ -184,7 +252,7 @@ if ([string]::IsNullOrWhiteSpace($Version)) {
         $ReleaseData = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/latest" -TimeoutSec 5 -ErrorAction Stop
         $Version = $ReleaseData.tag_name
     } catch {
-        $Version = "v1.2.3"
+        $Version = "latest"
     }
 }
 Write-Host "Telepitendo verzio: $Version" -ForegroundColor Cyan
@@ -197,9 +265,45 @@ if ($InstallDesktop) {
 }
 
 $RepoRoot = $PSScriptRoot
-if (-not $RepoRoot) { $RepoRoot = Directory.current.path }
+if (-not $RepoRoot) { $RepoRoot = (Get-Location).Path }
 
-# 1. CLI Installation
+# 1. Desktop Installation
+if ($InstallDesktop) {
+    Write-Host "[+] Pala Desktop telepitese..." -ForegroundColor Yellow
+    
+    $LocalDesktopExe = "$RepoRoot\app\build\windows\x64\runner\Release\pala.exe"
+    $DestDesktopExe = Join-Path $DesktopDir "pala.exe"
+    
+    if (Test-Path $LocalDesktopExe) {
+        $ReleaseDir = Split-Path -Parent $LocalDesktopExe
+        Copy-Item -Path "$ReleaseDir\*" -Destination $DesktopDir -Recurse -Force
+        Write-Host "    [OK] Helyi asztali alkalmazas masolva ide: $DesktopDir" -ForegroundColor Green
+    } else {
+        $SetupUrl = if ($Version -eq "latest") {
+            "https://github.com/$Repo/releases/latest/download/Pala-Setup.exe"
+        } else {
+            "https://github.com/$Repo/releases/download/$Version/Pala-Setup.exe"
+        }
+        $TempSetup = Join-Path $env:TEMP "Pala-Setup.exe"
+        Write-Host "    Letoltes: $SetupUrl" -ForegroundColor DarkGray
+        try {
+            Invoke-WebRequest -Uri $SetupUrl -OutFile $TempSetup -TimeoutSec 120
+            Write-Host "    [+] Asztali alkalmazas telepitese a hatterben..." -ForegroundColor Yellow
+            $proc = Start-Process -FilePath $TempSetup -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART" -Wait -PassThru
+            if ($proc.ExitCode -eq 0) {
+                Write-Host "    [OK] Pala Desktop sikeresen telepitve!" -ForegroundColor Green
+            } else {
+                Write-Host "    [!] A telepito kilepesi kodja: $($proc.ExitCode)" -ForegroundColor Yellow
+            }
+        } catch {
+            Write-Host "    [!] Figyelem: A Pala-Setup.exe letoltese sikertelen: $_" -ForegroundColor Red
+        } finally {
+            if (Test-Path $TempSetup) { Remove-Item $TempSetup -Force -ErrorAction SilentlyContinue }
+        }
+    }
+}
+
+# 2. CLI Installation
 if ($InstallCli) {
     Write-Host "[+] Pala CLI / TUI telepitese..." -ForegroundColor Yellow
     $LocalCli = Join-Path $RepoRoot "pala.exe"
@@ -209,13 +313,17 @@ if ($InstallCli) {
         Copy-Item -Path $LocalCli -Destination $DestCli -Force
         Write-Host "    [OK] Helyi pala.exe masolva ide: $DestCli" -ForegroundColor Green
     } else {
-        $CliDownloadUrl = "https://github.com/$Repo/releases/download/$Version/pala-windows.exe"
+        $CliDownloadUrl = if ($Version -eq "latest") {
+            "https://github.com/$Repo/releases/latest/download/pala.exe"
+        } else {
+            "https://github.com/$Repo/releases/download/$Version/pala.exe"
+        }
         Write-Host "    Letoltes: $CliDownloadUrl" -ForegroundColor DarkGray
         try {
-            Invoke-WebRequest -Uri $CliDownloadUrl -OutFile $DestCli -TimeoutSec 30
+            Invoke-WebRequest -Uri $CliDownloadUrl -OutFile $DestCli -TimeoutSec 60
             Write-Host "    [OK] Letoltve es telepitve: $DestCli" -ForegroundColor Green
         } catch {
-            Write-Host "    [!] Figyelem: A kiadasi binaris nem toltheto le, forditott helyi binaris hasznalata javasolt." -ForegroundColor Yellow
+            Write-Host "    [!] Figyelem: A CLI binaris letoltese sikertelen: $_" -ForegroundColor Red
         }
     }
     
@@ -224,46 +332,26 @@ if ($InstallCli) {
     }
 }
 
-# 2. Desktop Installation
-if ($InstallDesktop) {
-    Write-Host "[+] Pala Desktop telepitese..." -ForegroundColor Yellow
-    $LocalDesktopExe = "$RepoRoot\app\build\windows\x64\runner\Release\pala.exe"
-    if (-not (Test-Path $LocalDesktopExe)) {
-        $LocalDesktopExe = "$RepoRoot\app\build\windows\x64\runner\Release\palapp.exe"
+# 3. Shortcuts
+$InstalledDesktopExe = Join-Path $env:LOCALAPPDATA "Programs\Pala\pala.exe"
+if (-not (Test-Path $InstalledDesktopExe)) {
+    $InstalledDesktopExe = Join-Path $DesktopDir "pala.exe"
+}
+$InstalledCliExe = Join-Path $BinDir "pala.exe"
+
+if ($DoStartMenu) {
+    if ($InstallDesktop -and (Test-Path $InstalledDesktopExe)) {
+        Create-Shortcut -Target $InstalledDesktopExe -LinkPath (Join-Path $ProgramsFolder "Pala Desktop.lnk") -Description "Pala Desktop — Modern Kreta Kliens"
     }
-    if (-not (Test-Path $LocalDesktopExe)) {
-        $LocalDesktopExe = "$RepoRoot\app\build\windows\x64\runner\Release\pala_mobile.exe"
+    if ($InstallCli -and (Test-Path $InstalledCliExe)) {
+        Create-Shortcut -Target $InstalledCliExe -LinkPath (Join-Path $ProgramsFolder "Pala CLI.lnk") -Description "Pala CLI — Terminalos Kreta Kliens"
     }
-    if (-not (Test-Path $LocalDesktopExe)) {
-        $LocalDesktopExe = "$RepoRoot\mobile\build\windows\x64\runner\Release\pala_mobile.exe"
-    }
-    
-    $DestDesktopExe = Join-Path $DesktopDir "pala.exe"
-    
-    if (Test-Path $LocalDesktopExe) {
-        $ReleaseDir = Split-Path -Parent $LocalDesktopExe
-        Copy-Item -Path "$ReleaseDir\*" -Destination $DesktopDir -Recurse -Force
-        if (-not (Test-Path $DestDesktopExe)) {
-            $OrigName = Split-Path -Leaf $LocalDesktopExe
-            Copy-Item (Join-Path $DesktopDir $OrigName) $DestDesktopExe -Force
-        }
-        Write-Host "    [OK] Asztali alkalmazas fajlok masolva ide: $DesktopDir" -ForegroundColor Green
-    } else {
-        Write-Host "    [i] Desktop build keszitese vagy GitHub release letoltese..." -ForegroundColor DarkGray
-    }
-    
-    # Shortcuts
-    $IconPath = Join-Path $DesktopDir "data\flutter_assets\app_icon.ico"
-    if (-not (Test-Path $IconPath)) { $IconPath = "" }
-    
-    if ($DoStartMenu) {
-        $StartShortcut = Join-Path $ProgramsFolder "Pala Desktop.lnk"
-        Create-Shortcut -Target $DestDesktopExe -LinkPath $StartShortcut -Description "Pala Desktop — Modern Kreta Kliens" -WorkingDir $DesktopDir -IconLocation $IconPath
-    }
-    
-    if ($DoDesktopIcon) {
-        $DeskShortcut = Join-Path $DesktopFolder "Pala Desktop.lnk"
-        Create-Shortcut -Target $DestDesktopExe -LinkPath $DeskShortcut -Description "Pala Desktop — Modern Kreta Kliens" -WorkingDir $DesktopDir -IconLocation $IconPath
+}
+
+if ($DoDesktopIcon) {
+    $TargetExe = if ($InstallDesktop -and (Test-Path $InstalledDesktopExe)) { $InstalledDesktopExe } else { $InstalledCliExe }
+    if (Test-Path $TargetExe) {
+        Create-Shortcut -Target $TargetExe -LinkPath (Join-Path $DesktopFolder "Pala.lnk") -Description "Pala — Modern Kreta Kliens"
     }
 }
 
@@ -274,6 +362,8 @@ Write-Host "Pala eltavolitasa..." -ForegroundColor Yellow
 `$ProgramsFolder = [Environment]::GetFolderPath('Programs')
 `$DesktopFolder = [Environment]::GetFolderPath('Desktop')
 Remove-Item -Path (Join-Path `$ProgramsFolder "Pala Desktop.lnk") -Force -ErrorAction SilentlyContinue
+Remove-Item -Path (Join-Path `$ProgramsFolder "Pala CLI.lnk") -Force -ErrorAction SilentlyContinue
+Remove-Item -Path (Join-Path `$DesktopFolder "Pala.lnk") -Force -ErrorAction SilentlyContinue
 Remove-Item -Path (Join-Path `$DesktopFolder "Pala Desktop.lnk") -Force -ErrorAction SilentlyContinue
 `$CurrentPath = [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::User)
 if (`$CurrentPath) {
@@ -293,7 +383,6 @@ if ($InstallCli) {
 }
 if ($InstallDesktop) {
     Write-Host "   - Start menubol:     Pala Desktop" -ForegroundColor Cyan
-    Write-Host "   - Parancssorbol:     pala --desktop" -ForegroundColor Cyan
 }
 Write-Host " Eltavolitas barmikor:   $UninstallScript" -ForegroundColor DarkGray
 Write-Host "=============================================================" -ForegroundColor Green
