@@ -114,7 +114,7 @@ class TuiViews {
         '${state.lastSync.hour.toString().padLeft(2, '0')}:${state.lastSync.minute.toString().padLeft(2, '0')}:${state.lastSync.second.toString().padLeft(2, '0')}';
 
     final logoBadge =
-        '\x1B[48;5;208m\x1B[1;38;5;232m ◆ PALA TUI \x1B[0m ${PalaTheme.muted}v$appVersion${PalaTheme.reset}';
+        '\x1B[48;5;208m\x1B[1;38;5;232m ◆ PALA TUI \x1B[0m ${PalaTheme.muted}$appVersion${PalaTheme.reset}';
     final leftPart =
         '$logoBadge  ${PalaTheme.borderMuted}│${PalaTheme.reset}  ${PalaTheme.textBright}$userDisplay${PalaTheme.reset}';
     final rightPart =

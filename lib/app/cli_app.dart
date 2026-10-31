@@ -180,7 +180,7 @@ class PalaApp {
     final boxLines = TuiScreenBuffer.drawRoundedBox(
       width: 56,
       lines: [
-        '${PalaTheme.textBright}Pala Kréta TUI v$appVersion${PalaTheme.reset}  │  $statusBadge  │  ${PalaTheme.muted}[d] Élő TUI${PalaTheme.reset}',
+        '${PalaTheme.textBright}Pala Kréta TUI $appVersion${PalaTheme.reset}  │  $statusBadge  │  ${PalaTheme.muted}[d] Élő TUI${PalaTheme.reset}',
       ],
     );
     for (final line in boxLines) {

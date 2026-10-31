@@ -1,6 +1,6 @@
 name: pala
 description: Interaktív terminálos felület (TUI) a Kréta e-napló rendszerhez.
-version: 1.2.3
+version: 2.0.0
 # homepage: https://github.com/CsPS0/pala
 
 executables:

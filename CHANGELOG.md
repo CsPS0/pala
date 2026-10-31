@@ -5,6 +5,10 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) elvein al
 
 ## [Nem kiadott]
 
+## [2.0.0] - 2026-10-31
+
+Az első kiadás a Pala néven: TUI, asztali és Android-alkalmazás, böngésző-kiterjesztés.
+
 ### Hozzáadva
 - CI workflow (`ci.yml`): `dart analyze` + `dart test` a CLI-hez, `flutter analyze` a Desktop App-hoz, minden push/PR esetén.
 - Alap teszt lefedettség a `lib/models/` réteghez (`test/models_test.dart`).
@@ -17,6 +21,17 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) elvein al
 - A bejelentkezési folyamat (`lib/api/client.dart`) többé nem omlik össze null-check hibával, ha a Kréta IDP váratlan válaszfejlécet küld — helyette hibaüzenetet ír ki és leállítja a folyamatot.
 - `SECURITY.md` és `docs/DATA_SECURITY.md` javított, a kódbázissal már nem egyező állítások (verziószám, titkosítási kulcs származtatása) frissítve.
 - A Windows telepítő (`packaging/windows/pala_installer.iss`) verziószáma mostantól automatikusan frissül a kiadási CI folyamat részeként, a Scoop/Homebrew/AUR csomagokhoz hasonlóan.
+- Offline módban a tantárgyi átlagok többé nem írják felül a mentett jegyeket.
+- A félévi és az év végi jegyek nem számítanak bele az átlagba (asztali app, kiterjesztés).
+- Az üzenetküldés ismeretlen címzettnél hibát ad, és nem küld el semmit.
+- A kiterjesztés Wrapped összefoglalója valós átlagot és darabszámot mutat.
+- A Kréta túlterhelésekor (429) a kiterjesztés megtartja a mentett adatokat.
+- Kijelentkezéskor az asztali app és a kiterjesztés visszavonja a Kréta-munkamenetet; a kiterjesztés a profilt is törli.
+- A heti órarend-léptetés az óraátállításkor sem csúszik el.
+- A helyi webes felület és az asztali értesítések biztonsági javításokat kaptak.
+- A dokumentáció eltávolító parancsai a valódi adatmappákra mutatnak, a Homebrew-telepítés a `brew tap` lépéssel indul.
+- A kiterjesztés demóadatai csak kitalált neveket használnak.
+- A kiadási folyamat a csomagkezelők frissítése után teszi közzé az AUR-csomagot; a GitHub Actions lépések rögzített verzión futnak.
 
 ## [1.2.3]
 - Pala rebrand: TUI, Flutter Desktop App, böngésző-kiterjesztés (Manifest V3) és weboldal egy kiadás alatt.

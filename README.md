@@ -33,9 +33,6 @@ A böngésző-kiterjesztés ezen felül a háttérben megújítja a Kréta munka
 
 ## Telepítés
 
-> [!WARNING]
-> Az első `pala` kiadás még nem jelent meg, ezért a csomagkezelős és az egysoros telepítők egyelőre nem működnek: sikeres telepítést írnak ki, de a letöltés 404-es hibát ad ([#2](https://github.com/CsPS0/pala/issues/2)). Addig csak a forráskódból fordítás használható.
-
 ### Forráskódból
 
 Szükséges a [Dart SDK](https://dart.dev/get-dart), az asztali alkalmazáshoz a [Flutter SDK](https://flutter.dev) is.

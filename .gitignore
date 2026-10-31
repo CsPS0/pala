@@ -39,6 +39,9 @@ folio-cli-macos
 *.env*
 private.key
 
+# Private review notes (not for the public repo)
+pala-review/
+
 # Agent & AI Files
 .agents/
 .serena/

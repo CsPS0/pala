@@ -41,7 +41,7 @@ export interface ReleaseInfo {
 }
 
 const GITHUB_REPO = "CsPS0/pala";
-export const DEFAULT_FALLBACK_VERSION = "v1.2.3";
+export const DEFAULT_FALLBACK_VERSION = "v2.0.0";
 
 export const DEFAULT_ASSETS: ReleaseAssetMap = {
   windowsExe: `https://github.com/${GITHUB_REPO}/releases/latest/download/Pala-Setup.exe`,

@@ -9,7 +9,7 @@ export const size = {
 export const contentType = "image/png";
 
 export default async function Image() {
-  let tag = "v1.2.3";
+  let tag = "v2.0.0";
   try {
     const res = await fetch("https://api.github.com/repos/CsPS0/pala/releases/latest");
     if (res.ok) {
