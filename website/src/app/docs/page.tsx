@@ -1013,7 +1013,7 @@ dart run bin/pala.dart`}</pre>
                       </div>
                       <div className="p-3 space-y-1">
                         <strong className="text-fg block">Helyi adatok és tokenek törlése:</strong>
-                        <div className="font-mono text-primary">rm -rf ~/.config/pala ~/.local/share/pala</div>
+                        <div className="font-mono text-primary">rm -rf ~/.config/pala ~/.cache/pala ~/.local/share/pala</div>
                       </div>
                     </div>
                   </div>
@@ -1024,7 +1024,7 @@ dart run bin/pala.dart`}</pre>
               {installTab === "macos" && (
                 <div className="space-y-8">
                   <p className="text-xs text-muted">
-                    Telepítés Homebrew segítségével Apple Silicon (M1/M2/M3/M4) és Intel Mac számítógépekre.
+                    Telepítés Homebrew segítségével Apple Silicon (M1/M2/M3/M4) Mac számítógépekre.
                   </p>
 
                   {/* Step 1 */}
@@ -1035,21 +1035,22 @@ dart run bin/pala.dart`}</pre>
                         <h3 className="text-sm font-bold text-fg">Homebrew Telepítés</h3>
                       </div>
                       <p className="text-xs text-muted">
-                        Futtasd a brew parancsot a Terminálban a csomag letöltéséhez és aktiválásához.
+                        Futtasd a két brew parancsot a Terminálban: az első hozzáadja a Pala tárolóját, a második telepíti a csomagot.
                       </p>
                     </div>
                     <div className="lg:col-span-7 bg-sidebar border border-border rounded-2xl overflow-hidden">
                       <div className="px-3.5 py-2 bg-bg border-b border-border text-[11px] font-mono text-muted flex items-center justify-between">
                         <span>Terminal (zsh)</span>
                         <button
-                          onClick={() => handleCopy("brew install CsPS0/pala/pala", "mac-cmd")}
+                          onClick={() => handleCopy("brew tap CsPS0/pala https://github.com/CsPS0/pala && brew install CsPS0/pala/pala", "mac-cmd")}
                           className="hover:text-fg transition-colors"
                         >
                           {copiedKey === "mac-cmd" ? <Check size={13} className="text-primary" /> : <Copy size={13} />}
                         </button>
                       </div>
-                      <div className="p-3.5 font-mono text-xs text-primary overflow-x-auto">
-                        brew install CsPS0/pala/pala
+                      <div className="p-3.5 font-mono text-xs text-primary space-y-1 overflow-x-auto">
+                        <div>brew tap CsPS0/pala https://github.com/CsPS0/pala</div>
+                        <div>brew install CsPS0/pala/pala</div>
                       </div>
                     </div>
                   </div>
@@ -1062,7 +1063,7 @@ dart run bin/pala.dart`}</pre>
                         <h3 className="text-sm font-bold text-fg">Kompatibilitás & Rendszerkövetelmények</h3>
                       </div>
                       <p className="text-xs text-muted leading-relaxed">
-                        Támogatott macOS verziók és Apple Silicon / Intel processzorok.
+                        Támogatott macOS verziók és processzorok.
                       </p>
                     </div>
                     <div className="lg:col-span-7 bg-card border border-border rounded-2xl p-4 space-y-3 text-xs text-muted">
@@ -1072,7 +1073,7 @@ dart run bin/pala.dart`}</pre>
                       </div>
                       <div className="flex items-center justify-between border-b border-border pb-2">
                         <span className="text-fg font-semibold">Processzor Architektúrák:</span>
-                        <span>Natív Apple Silicon (M1, M2, M3, M4) és Intel 64-bit Core processzorok</span>
+                        <span>Natív Apple Silicon (M1, M2, M3, M4)</span>
                       </div>
                       <div className="flex items-center justify-between border-b border-border pb-2">
                         <span className="text-fg font-semibold">Terminál Környezet:</span>
@@ -1080,7 +1081,7 @@ dart run bin/pala.dart`}</pre>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-fg font-semibold">Adattárolás & Kulcstár:</span>
-                        <span className="font-mono text-primary">~/Library/Application Support/pala</span>
+                        <span className="font-mono text-primary">~/.config/pala, ~/Library/Caches/pala</span>
                       </div>
                     </div>
                   </div>
@@ -1126,7 +1127,7 @@ dart run bin/pala.dart`}</pre>
                       <div className="px-3.5 py-2 bg-bg border-b border-border text-[11px] font-mono text-muted flex items-center justify-between">
                         <span>Terminal (zsh)</span>
                         <button
-                          onClick={() => handleCopy("brew uninstall pala; rm -rf ~/Library/Application Support/pala", "mac-uninst")}
+                          onClick={() => handleCopy("brew uninstall pala; rm -rf ~/.config/pala ~/Library/Caches/pala", "mac-uninst")}
                           className="hover:text-fg transition-colors"
                         >
                           {copiedKey === "mac-uninst" ? <Check size={13} className="text-primary" /> : <Copy size={13} />}
@@ -1134,7 +1135,7 @@ dart run bin/pala.dart`}</pre>
                       </div>
                       <div className="p-3.5 font-mono text-xs text-primary space-y-1 overflow-x-auto">
                         <div>brew uninstall pala</div>
-                        <div>rm -rf ~/Library/Application Support/pala</div>
+                        <div>rm -rf ~/.config/pala ~/Library/Caches/pala</div>
                       </div>
                     </div>
                   </div>

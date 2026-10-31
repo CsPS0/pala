@@ -142,7 +142,7 @@ const DEMO_STUDENT = {
     { Nev: "Teszt Gábor", Email: "szulo@teszt.hu", Telefonszam: "+36 20 987 6543" },
     { Nev: "Minta Mária", Email: "anya@teszt.hu", Telefonszam: "+36 30 555 4444" }
   ],
-  Intezmeny: { Nev: "Budapesti Műszaki SZC Neumann János Informatikai Technikum", Kod: "bmszc-neumann" }
+  Intezmeny: { Nev: "Pala Minta Gimnázium és Technikum", Kod: "pala-minta" }
 };
 
 const DEMO_GRADES = [
@@ -522,7 +522,7 @@ class SecureSession {
     items.push({
       id: "demo",
       user: "Teszt Elek (Demó)",
-      institute: "BMSZC Neumann",
+      institute: "Pala Minta Gimnázium",
       isDemo: true,
       isActive: useDemo || !activeSession
     });
@@ -1501,7 +1501,7 @@ class KretaApi {
         {
           id: "m-1",
           type: "Beérkezett üzenet",
-          sender: "Dobronayné Csepeti Melinda (tanár)",
+          sender: "Dr. Számoló Szilárd (tanár)",
           title: "Érettségi büfé - köszönet",
           subject: "Érettségi büfé - köszönet",
           content: "Kedves Diákok! Nagyon szépen köszönöm a segítségeteket és a lelkiismeretes munkátokat az érettségi büfé lebonyolításában!",
@@ -1512,7 +1512,7 @@ class KretaApi {
         {
           id: "m-2",
           type: "Beérkezett üzenet",
-          sender: "Dobronayné Csepeti Melinda (tanár)",
+          sender: "Dr. Számoló Szilárd (tanár)",
           title: "Érettségi törzslap kivonatot leadott tanulók",
           subject: "Érettségi törzslap kivonatot leadott tanulók",
           content: "Kérem azokat a tanulókat, akik még nem adták le az érettségi törzslap kivonatukat, hogy sürgősen pótolják a titkárságon!",
@@ -1523,7 +1523,7 @@ class KretaApi {
         {
           id: "m-3",
           type: "Beérkezett üzenet",
-          sender: "Dobronayné Csepeti Melinda (tanár)",
+          sender: "Dr. Számoló Szilárd (tanár)",
           title: "50 óra közösségi szolgálat - szakmai érettségi",
           subject: "50 óra közösségi szolgálat - szakmai érettségi",
           content: "Fontos tájékoztatás: az érettségi bizonyítvány kiadásának feltétele az 50 óra igazolt közösségi szolgálat teljesítése.",
@@ -1534,7 +1534,7 @@ class KretaApi {
         {
           id: "m-4",
           type: "Beérkezett üzenet",
-          sender: "Dobronayné Csepeti Melinda (tanár)",
+          sender: "Dr. Számoló Szilárd (tanár)",
           title: "ÉRETTSÉGI BÜFÉ",
           subject: "ÉRETTSÉGI BÜFÉ",
           content: "Beosztás és feladatok megbeszélése a szóbeli érettségi vizsgák büféjéhez.",
@@ -1545,7 +1545,7 @@ class KretaApi {
         {
           id: "m-5",
           type: "Beérkezett üzenet",
-          sender: "Farkas-Szebenszki Emese (tanár)",
+          sender: "Smith John (tanár)",
           title: "Jövő évi idegen nyelvi órák",
           subject: "Jövő évi idegen nyelvi órák",
           content: "Tájékoztató a jövő évi idegen nyelvi csoportbontásokról és tankönyvekről.",
@@ -1556,7 +1556,7 @@ class KretaApi {
         {
           id: "m-6",
           type: "Beérkezett üzenet",
-          sender: "Kaufmann Péter (igazgató h.)",
+          sender: "Dr. Igazgató István (igazgató)",
           title: "12. ÉVFOLYAMOSOK IDEGENNYELVI ELŐREHALADÁSÁVAL KAPCSOLATOS 2026/2027-ES TANÉVRE VONATKOZÓ NYILATKOZAT",
           subject: "12. ÉVFOLYAMOSOK IDEGENNYELVI ELŐREHALADÁSÁVAL KAPCSOLATOS 2026/2027-ES TANÉVRE VONATKOZÓ NYILATKOZAT",
           content: "Kérjük a nyilatkozat kitöltését és visszaküldését a megadott határidőig az e-Ügyintézés felületén.",
@@ -1598,7 +1598,7 @@ class KretaApi {
         {
           id: "m-10",
           type: "Igazgatói megrovás",
-          sender: "Kaufmann Péter (igazgató h.)",
+          sender: "Dr. Igazgató István (igazgató)",
           title: "Igazgatói megrovás",
           content: "Az osztályfőnöki jelzés és a folytatódó igazolatlan mulasztások alapján az intézmény vezetése igazgatói megrovás fegyelmező intézkedést alkalmaz. Kérjük a Házirendben foglaltak betartását és a hiányzó igazolások pótlását.",
           date: "2026-06-12T11:00:00",
@@ -1607,18 +1607,18 @@ class KretaApi {
         }
       ],
       teachers: [
-        { id: 101, name: "Dobronayné Csepeti Melinda", subjects: ["Matematika", "Osztályfőnök"] },
-        { id: 102, name: "Kaufmann Péter", subjects: ["Igazgatóhelyettes"] },
-        { id: 103, name: "Farkas-Szebenszki Emese", subjects: ["Idegen nyelv"] },
-        { id: 104, name: "Zádori Gabriella", subjects: ["Magyar nyelv és irodalom"] },
-        { id: 105, name: "Stéberné Urbán Anna Ilona", subjects: ["Igazgatóhelyettes"] }
+        { id: 101, name: "Dr. Számoló Szilárd", subjects: ["Matematika", "Osztályfőnök"] },
+        { id: 102, name: "Dr. Igazgató István", subjects: ["Intézményvezető"] },
+        { id: 103, name: "Smith John", subjects: ["Idegen nyelv"] },
+        { id: 104, name: "Arany Jánosné", subjects: ["Magyar nyelv és irodalom"] },
+        { id: 105, name: "Teleki Pál", subjects: ["Földrajz"] }
       ],
       questionnaires: [
         {
           id: "q-1",
           title: "Jelentkezési lap - közösségi szolgálat - tanulói 2024/2025",
           status: "Kiküldve",
-          sender: "Kaufmann Péter",
+          sender: "Dr. Igazgató István",
           deadline: "2025. 06. 30.",
           feedback: "2025. 01. 29. 13:46"
         },
@@ -1642,7 +1642,7 @@ class KretaApi {
           id: "q-4",
           title: "Jelentkezési lap - közösségi szolgálat - tanulói 2025/2026",
           status: "Kiküldve",
-          sender: "Kaufmann Péter",
+          sender: "Dr. Igazgató István",
           deadline: "2026. 06. 15.",
           feedback: "2025. 11. 28. 10:31"
         },

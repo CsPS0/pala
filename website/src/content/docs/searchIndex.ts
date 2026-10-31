@@ -61,7 +61,7 @@ export const SEARCH_INDEX: SearchIndexItem[] = [
     tabId: "macos",
     title: "Telepítés macOS alatt",
     category: "Kezdő Lépések / Telepítés",
-    description: "Homebrew telepítés Apple Silicon és Intel Mac gépekre.",
+    description: "Homebrew telepítés Apple Silicon Mac gépekre.",
     keywords: ["macos", "mac", "apple", "silicon", "m1", "m2", "m3", "homebrew", "brew", "zsh"]
   },
   {
