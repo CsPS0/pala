@@ -330,7 +330,7 @@ jobs:
           path: deb_packages
           
       - name: Generate APT Repository
-        uses: smeinecke/apt-repo-action@f444ced102c5d453dea873186674c38d675afda8 # v2.1.4
+        uses: smeinecke/apt-repo-action@f7bfcf90edda137bd1c808863ae2bc24cea959df # v2.2.1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           repo_supported_arch: amd64
