@@ -81,9 +81,9 @@ class AppModel extends ChangeNotifier {
   bool get showWeekType => _showWeekType;
 
   DateTime get currentWeekMonday {
+    // Calendar arithmetic: a Duration step drifts an hour across DST changes.
     final now = DateTime.now();
-    final currentMonday = now.subtract(Duration(days: now.weekday - 1));
-    return currentMonday.add(Duration(days: _weekOffset * 7));
+    return DateTime(now.year, now.month, now.day - (now.weekday - 1) + _weekOffset * 7);
   }
 
   int get currentWeekNumber {
@@ -255,6 +255,8 @@ class AppModel extends ChangeNotifier {
   }
 
   Future<void> logout() async {
+    // Best effort: a revoked refresh token cannot be reused from a copied session.
+    await _client?.revokeToken().timeout(const Duration(seconds: 5), onTimeout: () => false);
     await SessionStore.clear();
     await clearLocalCache();
     _client = null;
@@ -328,6 +330,21 @@ class AppModel extends ChangeNotifier {
     }
   }
 
+  /// Kréta ID of the teacher named [name], or null when the name does not
+  /// match an addressable teacher. Never guess an ID: a wrong one sends the
+  /// message to someone else.
+  int? teacherIdFor(String name) {
+    for (final t in _teachers) {
+      final tName = (t['Nev'] ?? t['nev'] ?? t['name'])?.toString();
+      if (tName == name) {
+        final id = t['Azonosito'] ?? t['azonosito'] ?? t['id'] ?? t['Id'];
+        if (id is int) return id;
+        return id == null ? null : int.tryParse(id.toString());
+      }
+    }
+    return null;
+  }
+
   Future<bool> sendMessage({
     required String recipientName,
     required String subject,
@@ -335,18 +352,11 @@ class AppModel extends ChangeNotifier {
   }) async {
     if (_client == null) return false;
     try {
-      int teacherId = 1;
-      for (final t in _teachers) {
-        final name = (t['Nev'] ?? t['nev'] ?? t['name'])?.toString();
-        if (name == recipientName) {
-          final id = t['Azonosito'] ?? t['azonosito'] ?? t['id'] ?? t['Id'];
-          if (id is int) {
-            teacherId = id;
-          } else if (id != null) {
-            teacherId = int.tryParse(id.toString()) ?? 1;
-          }
-          break;
-        }
+      final teacherId = teacherIdFor(recipientName);
+      if (teacherId == null) {
+        _errorMessage = 'Ismeretlen címzett: válassz egy tanárt a listából.';
+        notifyListeners();
+        return false;
       }
 
       return await _client!.sendMessage(
@@ -364,12 +374,8 @@ class AppModel extends ChangeNotifier {
   Future<List<TimetableEntry>> _fetchTimetableForOffset(int offset) async {
     if (_client == null) return [];
     final now = DateTime.now();
-    final currentMonday = now.subtract(Duration(days: now.weekday - 1));
-    final targetMonday = currentMonday.add(Duration(days: offset * 7));
-    final targetFriday = targetMonday.add(const Duration(days: 4));
-
-    final start = DateTime(targetMonday.year, targetMonday.month, targetMonday.day, 0, 0, 0);
-    final end = DateTime(targetFriday.year, targetFriday.month, targetFriday.day, 23, 59, 59);
+    final start = DateTime(now.year, now.month, now.day - (now.weekday - 1) + offset * 7);
+    final end = DateTime(start.year, start.month, start.day + 4, 23, 59, 59);
 
     final entries = await _client!.getTimetable(start, end, overrideAWeek: _overrideAWeek);
     return entries ?? [];
@@ -472,7 +478,7 @@ class AppModel extends ChangeNotifier {
     double sum = 0;
     double count = 0;
     for (final g in _grades) {
-      if (g.numericValue != null && g.numericValue! >= 1 && g.numericValue! <= 5) {
+      if (!g.isSummaryGrade && g.numericValue != null && g.numericValue! >= 1 && g.numericValue! <= 5) {
         final w = g.weight / 100.0;
         sum += g.numericValue! * w;
         count += w;
@@ -486,7 +492,7 @@ class AppModel extends ChangeNotifier {
     final weights = <String, double>{};
 
     for (final g in _grades) {
-      if (g.numericValue != null && g.numericValue! >= 1 && g.numericValue! <= 5) {
+      if (!g.isSummaryGrade && g.numericValue != null && g.numericValue! >= 1 && g.numericValue! <= 5) {
         final sub = getDisplaySubject(g.subject);
         final w = g.weight / 100.0;
         sums[sub] = (sums[sub] ?? 0) + g.numericValue! * w;

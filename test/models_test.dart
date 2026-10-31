@@ -50,7 +50,10 @@ void main() {
         'Negyedévi',
         'Háromnegyedévi',
         'osztályozó vizsga',
-        'felevevi', // unaccented variant used by some Kréta responses
+        // Unaccented type keys used by Kréta responses.
+        'felevi_jegy_ertekeles',
+        'evvegi_jegy_ertekeles',
+        'osztalyozo_vizsga',
       ]) {
         expect(Grade(subject: 'X', type: type).isSummaryGrade, isTrue,
             reason: '"$type" should be treated as a summary grade');

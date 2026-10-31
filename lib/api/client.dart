@@ -364,14 +364,17 @@ class KretaClient {
     return {};
   }
 
-  String _getGenericCacheKey(String url) {
+  static String cacheKeyForUrl(String url) {
     final uri = Uri.parse(url);
     final path = uri.path;
     if (path.contains('TanuloAdatlap')) return 'student';
+    // Average paths live under Ertekelesek, so they must be matched first.
+    if (path.contains('TantargyiAtlagok')) return 'averages';
+    // Group averages differ per subject group, so they stay keyed by full URL.
+    if (path.contains('OsztalyAtlagok')) return url;
     if (path.contains('Ertekelesek')) return 'grades';
     if (path.contains('Mulasztasok')) return 'absences';
     if (path.contains('BejelentettSzamonkeresek')) return 'exams';
-    if (path.contains('TantargyiAtlagok')) return 'averages';
     if (path.contains('postaladaelemek/sajat')) return 'messages';
     final msgMatch = RegExp(r'postaladaelemek/(\d+)').firstMatch(path);
     if (msgMatch != null) return 'message_${msgMatch.group(1)}';
@@ -381,7 +384,7 @@ class KretaClient {
   }
 
   dynamic _loadCacheForUrl(String url) {
-    final key = _getGenericCacheKey(url);
+    final key = cacheKeyForUrl(url);
     final cache = _loadCache();
     if (!cache.containsKey(key)) return null;
 
@@ -426,7 +429,7 @@ class KretaClient {
   }
 
   void _saveCacheForUrl(String url, dynamic data) {
-    final key = _getGenericCacheKey(url);
+    final key = cacheKeyForUrl(url);
     final file = _getCacheFile();
     try {
       final cache = _loadCache();

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import '../utils/logger.dart';
+import 'loopback_host.dart';
 
 class WebComposerData {
   final String subject;
@@ -48,6 +49,15 @@ class WebComposerServer {
 
     server.listen((HttpRequest request) async {
       final path = request.uri.path;
+
+      if (!isLoopbackHost(request.headers.value(HttpHeaders.hostHeader), port)) {
+        request.response
+          ..statusCode = HttpStatus.forbidden
+          ..headers.contentType = ContentType.json
+          ..write(jsonEncode({'error': 'Érvénytelen Host fejléc'}));
+        await request.response.close();
+        return;
+      }
 
       // Validate session token for API requests to prevent CSRF / cross-origin tampering
       final requestToken = request.headers.value('x-pala-token') ?? request.uri.queryParameters['token'];

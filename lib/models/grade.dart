@@ -39,10 +39,11 @@ class Grade {
            t.contains('félévi') || 
            t.contains('negyedévi') || 
            t.contains('háromnegyedévi') ||
-           t.contains('vegi') || 
-           t.contains('felevevi') || 
-           t.contains('negyedevi') || 
-           t.contains('osztályozó');
+           t.contains('vegi') ||
+           t.contains('felevi') ||
+           t.contains('negyedevi') ||
+           t.contains('osztályozó') ||
+           t.contains('osztalyozo');
   }
 
   factory Grade.fromJson(Map<String, dynamic> json) {

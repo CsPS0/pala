@@ -476,6 +476,24 @@ class SecureSession {
     });
   }
 
+  /**
+   * Signs out the active profile: revokes its refresh token at Kréta (best
+   * effort) and removes it from pala_profiles, so the profile switcher cannot
+   * bring it back.
+   */
+  static async logout() {
+    const store = await chrome.storage.local.get(["pala_session", "pala_profiles"]);
+    const active = store.pala_session;
+    if (active) {
+      const session = await this.decrypt(active).catch(() => null);
+      if (session?.refresh_token) await KretaApi.revokeToken(session.refresh_token);
+      const profiles = Array.isArray(store.pala_profiles) ? store.pala_profiles : [];
+      const remaining = profiles.filter(p => !(p.id === active.id || (p.institute === active.institute && p.user === active.user)));
+      await chrome.storage.local.set({ pala_profiles: remaining });
+    }
+    await chrome.storage.local.set({ pala_session: null });
+  }
+
   /** Reads and decrypts pala_session from chrome.storage.local. */
   static async load() {
     const store = await chrome.storage.local.get("pala_session");
@@ -642,6 +660,29 @@ class KretaApi {
       refresh_token: data.refresh_token,
       expires_at: Date.now() + (data.expires_in || 1200) * 1000
     };
+  }
+
+  /** Revokes a refresh token at Kréta. Best effort: returns false on any failure. */
+  static async revokeToken(refreshToken) {
+    try {
+      const response = await fetch(`${KRETA_IDP}/connect/revocation`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "User-Agent": USER_AGENT
+        },
+        body: new URLSearchParams({
+          client_id: CLIENT_ID,
+          token: refreshToken,
+          token_type_hint: "refresh_token"
+        }),
+        signal: AbortSignal.timeout(AUTH_TIMEOUT_MS)
+      });
+      return response.ok;
+    } catch (e) {
+      console.warn("Nem sikerült visszavonni a tokent:", e);
+      return false;
+    }
   }
 
   /**
@@ -848,7 +889,10 @@ class KretaApi {
         });
         if (res.status === 429) {
           await chrome.storage.local.set({ pala_backoff_until: Date.now() + 2 * 60 * 1000 });
-          return null;
+          // Throw instead of returning null: an empty list would replace the cached data.
+          const err = new Error("A Kréta túl sok kérést kapott. Próbáld újra pár perc múlva.");
+          err.status = 429;
+          throw err;
         }
         if (res.status === 401) {
           const err = new Error("401 Unauthorized - A munkamenet lejárt.");
@@ -863,7 +907,7 @@ class KretaApi {
         }
         return await res.json();
       } catch (e) {
-        if (e.status === 401 || e.isMaintenance) throw e;
+        if (e.status === 401 || e.status === 429 || e.isMaintenance) throw e;
         if (isNetworkFailure(e)) throw outageError(0, e);
         console.warn(`Hiba a(z) ${endpoint} lekérésekor:`, e);
         return null;
@@ -1312,6 +1356,10 @@ class KretaApi {
 
       return data;
     } catch (err) {
+      // Rate limited: keep showing the last good data, as the backoff guard does.
+      if (err.status === 429 && store.pala_cached_data) {
+        return store.pala_cached_data;
+      }
       if (err.isMaintenance || err.status === 502 || err.status === 503 || err.status === 504) {
         await chrome.storage.local.set({
           pala_maintenance_mode: true,
@@ -1348,7 +1396,9 @@ class KretaApi {
                       typeStr.includes("háromnegyedévi") ||
                       typeStr.includes("vegi") ||
                       typeStr.includes("felevi") ||
-                      typeStr.includes("osztályozó");
+                      typeStr.includes("negyedevi") ||
+                      typeStr.includes("osztályozó") ||
+                      typeStr.includes("osztalyozo");
 
     // Check if "Nem írt" or absent
     const isNemIrt = text.toLowerCase() === "nem írt" || 

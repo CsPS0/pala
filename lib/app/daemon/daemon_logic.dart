@@ -87,27 +87,32 @@ extension PalaAppDaemonLogic on PalaApp {
     state.saveAuthData(authData);
   }
 
+  // The text comes from Kréta (subject and teacher names), so it is passed as
+  // data (environment variables or argv) and never spliced into script source.
   Future<void> _showToast(String title, String message) async {
-      final safeTitle = title.replaceAll("'", "''").replaceAll('"', '\\"');
-      final safeMessage = message.replaceAll("'", "''").replaceAll('"', '\\"');
-      
       if (Platform.isWindows) {
-        final script = '''
-  [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > \$null
-  \$template = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText02)
-  \$texts = \$template.GetElementsByTagName("text")
-  \$texts[0].AppendChild(\$template.CreateTextNode('$safeTitle')) > \$null
-  \$texts[1].AppendChild(\$template.CreateTextNode('$safeMessage')) > \$null
-  \$toast = [Windows.UI.Notifications.ToastNotification]::new(\$template)
-  \$notifier = [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("Pala")
-  \$notifier.Show(\$toast)
+        const script = r'''
+  [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > $null
+  $template = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText02)
+  $texts = $template.GetElementsByTagName("text")
+  $texts[0].AppendChild($template.CreateTextNode($env:PALA_TOAST_TITLE)) > $null
+  $texts[1].AppendChild($template.CreateTextNode($env:PALA_TOAST_MESSAGE)) > $null
+  $toast = [Windows.UI.Notifications.ToastNotification]::new($template)
+  $notifier = [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("Pala")
+  $notifier.Show($toast)
   ''';
-        await Process.run('powershell', ['-Command', script]);
+        await Process.run('powershell', ['-NoProfile', '-Command', script],
+            environment: {'PALA_TOAST_TITLE': title, 'PALA_TOAST_MESSAGE': message});
       } else if (Platform.isLinux) {
         await Process.run('notify-send', [title, message]);
       } else if (Platform.isMacOS) {
-        final script = 'display notification "$safeMessage" with title "$safeTitle"';
-        await Process.run('osascript', ['-e', script]);
+        await Process.run('osascript', [
+          '-e', 'on run argv',
+          '-e', 'display notification (item 1 of argv) with title (item 2 of argv)',
+          '-e', 'end run',
+          message,
+          title,
+        ]);
       }
     }
 

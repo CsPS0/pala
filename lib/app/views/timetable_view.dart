@@ -116,10 +116,11 @@ extension PalaAppTimetableView on PalaApp {
         }
 
         final offsetDays = action == 2 ? 7 : 0;
-        final midnight = DateTime(now.year, now.month, now.day);
-        final targetDate = midnight.add(Duration(days: offsetDays));
-        final startOfWeek = targetDate.subtract(Duration(days: targetDate.weekday - 1));
-        final endOfWeek = startOfWeek.add(Duration(days: 6, hours: 23, minutes: 59, seconds: 59));
+        // Calendar arithmetic, not Duration: a 7 * 24 h step lands an hour off
+        // across a daylight saving change.
+        final targetDate = DateTime(now.year, now.month, now.day + offsetDays);
+        final startOfWeek = DateTime(targetDate.year, targetDate.month, targetDate.day - (targetDate.weekday - 1));
+        final endOfWeek = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day + 6, 23, 59, 59);
   
         final futures = await Future.wait([
           _client!.getTimetable(startOfWeek, endOfWeek),

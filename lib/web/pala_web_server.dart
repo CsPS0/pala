@@ -9,6 +9,7 @@ import 'package:pala/api/demo_client.dart';
 import 'package:pala/app/state/app_state.dart';
 import 'package:pala/utils/encryption.dart';
 import 'package:pala/utils/logger.dart';
+import 'package:pala/utils/loopback_host.dart';
 import 'pala_web_html.dart';
 
 class PalaWebServer {
@@ -57,7 +58,28 @@ class PalaWebServer {
   Future<void> _handleRequest(HttpRequest request) async {
     final path = request.uri.path;
 
-    // 1. Static HTML page (Allow initial page load, which embeds the session token into JS)
+    if (!isLoopbackHost(request.headers.value(HttpHeaders.hostHeader), _server!.port)) {
+      request.response
+        ..statusCode = HttpStatus.forbidden
+        ..headers.contentType = ContentType.json
+        ..write(jsonEncode({'error': 'Érvénytelen Host fejléc'}));
+      await request.response.close();
+      return;
+    }
+
+    // Token check on every route. The page itself needs it too, because it
+    // embeds the token; the browser is opened with it in the URL (getUrl).
+    final reqToken = request.headers.value('x-pala-token') ?? request.uri.queryParameters['token'];
+    if (reqToken != sessionToken) {
+      request.response
+        ..statusCode = HttpStatus.forbidden
+        ..headers.contentType = ContentType.json
+        ..write(jsonEncode({'error': 'Invalid session token'}));
+      await request.response.close();
+      return;
+    }
+
+    // 1. Static HTML page
     if (request.method == 'GET' && (path == '/' || path == '/index.html')) {
       final student = await client?.getStudentData(silent: true);
       final isDemo = client is DemoKretaClient;
@@ -80,18 +102,7 @@ class PalaWebServer {
       return;
     }
 
-    // 2. Token check on all API routes (/api/*)
-    final reqToken = request.headers.value('x-pala-token') ?? request.uri.queryParameters['token'];
-    if (reqToken != sessionToken) {
-      request.response
-        ..statusCode = HttpStatus.forbidden
-        ..headers.contentType = ContentType.json
-        ..write(jsonEncode({'error': 'Invalid session token'}));
-      await request.response.close();
-      return;
-    }
-
-    // 3. API Routes
+    // 2. API Routes
     if (request.method == 'GET' && path == '/api/student') {
       if (client == null) {
         _sendJson(request, {
@@ -261,11 +272,10 @@ class PalaWebServer {
       final weekOffsetStr = request.uri.queryParameters['weekOffset'] ?? '0';
       final weekOffset = int.tryParse(weekOffsetStr) ?? 0;
 
-      final now = DateTime.now().add(Duration(days: weekOffset * 7));
-      final monday = now.subtract(Duration(days: now.weekday - 1));
-      final start = DateTime(monday.year, monday.month, monday.day, 0, 0, 0);
-      final friday = monday.add(const Duration(days: 4));
-      final end = DateTime(friday.year, friday.month, friday.day, 23, 59, 59);
+      // Calendar arithmetic: a Duration step drifts an hour across DST changes.
+      final now = DateTime.now();
+      final start = DateTime(now.year, now.month, now.day - (now.weekday - 1) + weekOffset * 7);
+      final end = DateTime(start.year, start.month, start.day + 4, 23, 59, 59);
 
       final timetable = await client?.getTimetable(start, end) ?? [];
       final list = timetable.map((l) => {

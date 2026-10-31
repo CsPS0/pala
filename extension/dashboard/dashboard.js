@@ -257,7 +257,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   document.getElementById("btn-dash-logout")?.addEventListener("click", async () => {
     abWeekOverride = null;
-    await SecureSession.save(null);
+    await SecureSession.logout();
     await chrome.storage.local.remove(["pala_cached_data", "pala_last_fetch", "pala_student_extra"]);
     await chrome.storage.local.set({ pala_use_demo: true });
     fullState.aliases = {};
@@ -4021,17 +4021,17 @@ function openWrappedModal() {
 
   grades.forEach(g => {
     const p = KretaApi.parseGrade(g);
-    if (p.numericValue === 5) total5s++;
-    if (p.numericValue === 1) total1s++;
+    if (p.numericGrade === 5) total5s++;
+    if (p.numericGrade === 1) total1s++;
 
-    if (p.numericValue && p.weightPercent) {
-      weightedSum += p.numericValue * p.weightPercent;
+    if (p.numericGrade && p.weightPercent) {
+      weightedSum += p.numericGrade * p.weightPercent;
       totalWeight += p.weightPercent;
 
       const rawSub = g.Tantargy?.Nev || g.Tantargy || "Egyéb";
       const sub = getDisplaySubject(rawSub);
       if (!subStats[sub]) subStats[sub] = { sum: 0, w: 0 };
-      subStats[sub].sum += p.numericValue * p.weightPercent;
+      subStats[sub].sum += p.numericGrade * p.weightPercent;
       subStats[sub].w += p.weightPercent;
     }
 
