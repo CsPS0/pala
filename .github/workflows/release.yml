@@ -29,10 +29,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Setup Dart
-        uses: dart-lang/setup-dart@v1
+        uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
 
       - name: Install dependencies
         run: dart pub get
@@ -82,7 +82,7 @@ jobs:
 
       - name: Upload .deb for APT Repo
         if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: debian-package
           path: ${{ env.DEB_VERSIONED }}
@@ -101,7 +101,7 @@ jobs:
         run: Compress-Archive -Path ${{ matrix.artifact_name }} -DestinationPath pala-windows-x64.zip
 
       - name: Upload Workflow Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: binary-${{ matrix.os }}
           path: ${{ matrix.artifact_name }}
@@ -109,7 +109,7 @@ jobs:
 
       - name: Upload Release Asset
         if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
           fail_on_unmatched_files: false
           files: |
@@ -124,8 +124,8 @@ jobs:
     name: Build Windows Installer (Pala-Setup.exe)
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           channel: stable
 
@@ -145,7 +145,7 @@ jobs:
 
       - name: Upload installer to release
         if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
           fail_on_unmatched_files: false
           files: dist/Pala-Setup.exe
@@ -156,8 +156,8 @@ jobs:
     name: Build macOS App & DMG
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           channel: stable
 
@@ -176,7 +176,7 @@ jobs:
 
       - name: Upload DMG to release
         if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
           fail_on_unmatched_files: false
           files: Pala-macOS.dmg
@@ -187,8 +187,8 @@ jobs:
     name: Build Linux AppImage
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           channel: stable
 
@@ -231,7 +231,7 @@ jobs:
 
       - name: Upload AppImage to release
         if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
           fail_on_unmatched_files: false
           files: Pala-x86_64.AppImage
@@ -242,12 +242,12 @@ jobs:
     name: Build Android APKs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
           distribution: temurin
           java-version: '17'
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           channel: stable
 
@@ -288,7 +288,7 @@ jobs:
 
       - name: Upload APKs to release
         if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
           fail_on_unmatched_files: false
           files: |
@@ -303,12 +303,12 @@ jobs:
     name: Package Browser Extension
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Zip extension
         run: cd extension && zip -r ../pala-extension.zip .
       - name: Upload extension zip to release
         if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
           fail_on_unmatched_files: false
           files: pala-extension.zip
@@ -321,16 +321,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Download .deb packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: debian-package
           path: deb_packages
           
       - name: Generate APT Repository
-        uses: smeinecke/apt-repo-action@v2.1.4
+        uses: smeinecke/apt-repo-action@f444ced102c5d453dea873186674c38d675afda8 # v2.1.4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           repo_supported_arch: amd64
@@ -346,24 +346,24 @@ jobs:
     if: github.event_name == 'release' && !github.event.release.prerelease
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           ref: main
 
       - name: Download Windows Binary
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: binary-windows-latest
           path: bin-win
 
       - name: Download Linux Binary
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: binary-ubuntu-latest
           path: bin-lin
 
       - name: Download macOS Binary
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: binary-macos-latest
           path: bin-mac
@@ -447,3 +447,27 @@ jobs:
           git add bucket/pala.json Formula/pala.rb packaging/PKGBUILD packaging/windows/pala_installer.iss
           git commit -m "chore: auto-update scoop, homebrew, and aur manifests to v$VERSION [skip ci]"
           git push origin HEAD:main
+
+  aur:
+    name: Publish to AUR
+    # Runs after update-manifests, so it publishes the PKGBUILD with the new
+    # version and hash instead of the one in the tagged commit.
+    needs: update-manifests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release' && !github.event.release.prerelease && startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: main
+      - name: Publish to AUR
+        uses: KSXGitHub/github-actions-deploy-aur@a97f56a8425a7a7f3b8c58607f769c69b089cadb # v3.0.1
+        with:
+          pkgname: pala-bin
+          pkgbuild: ./packaging/PKGBUILD
+          commit_username: ${{ github.actor }}
+          commit_email: ${{ github.actor }}@users.noreply.github.com
+          ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          commit_message: Update AUR package
+          ssh_keyscan_types: rsa,ecdsa,ed25519

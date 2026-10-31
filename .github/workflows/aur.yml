@@ -1,16 +1,17 @@
 name: Publish to AUR
+# Releases publish to AUR from release.yml (the aur job, after the manifests
+# are updated). This workflow is only for a manual republish from main.
 on:
-  release:
-    types: [published]
   workflow_dispatch:
+permissions:
+  contents: read
 jobs:
   aur-publish:
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' || (!github.event.release.prerelease && startsWith(github.ref, 'refs/tags/v'))
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Publish to AUR
-        uses: KSXGitHub/github-actions-deploy-aur@v3.0.1
+        uses: KSXGitHub/github-actions-deploy-aur@a97f56a8425a7a7f3b8c58607f769c69b089cadb # v3.0.1
         with:
           pkgname: pala-bin
           pkgbuild: ./packaging/PKGBUILD
