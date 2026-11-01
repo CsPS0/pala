@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:pala/api/api.dart';
 import 'package:pala/api/client.dart';
 import 'package:pala/api/demo_client.dart';
 import 'package:pala/models/absence.dart';
@@ -198,7 +199,11 @@ class AppModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final kClient = KretaClient(instituteCode: instituteCode);
+      final code = instituteCode.trim().toLowerCase();
+      if (!BaseKreta.isValidInstituteCode(code)) {
+        throw Exception('Érvénytelen intézménykód. Csak kisbetű, szám és kötőjel lehet benne.');
+      }
+      final kClient = KretaClient(instituteCode: code);
       final loggedIn = await authenticate(kClient);
       if (!loggedIn) {
         throw Exception(failureMessage);

@@ -306,11 +306,21 @@ class KretaClient {
       // Not a network problem: must not fall into offline mode below.
       rethrow;
     } catch (e) {
+      // Only an unreachable server justifies offline mode. Any other error
+      // (bad institute code, unexpected response) is a failed login.
+      if (!isNetworkError(e)) {
+        print('Hiba a bejelentkezés során: $e');
+        return false;
+      }
       print('\n[\x1B[33mOFFLINE MÓD\x1B[0m] Hálózat vagy szerver hiba bejelentkezéskor. A gyorsítótár használata aktív.');
       AppState.instance.isOffline = true;
       return true; // We return true to allow the app to continue in offline mode!
     }
   }
+
+  /// True for errors that mean Kréta could not be reached at all.
+  static bool isNetworkError(Object e) =>
+      e is SocketException || e is TimeoutException || e is HandshakeException || e is http.ClientException;
 
   /// The OAuth code from what the user pasted: the redirect URL, or just the
   /// code copied out of it (possibly with the rest of the query after it).

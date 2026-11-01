@@ -46,5 +46,14 @@ void main() {
       expect(ics, contains(r'DESCRIPTION:Egyenletek\; függvények\, C:\\ jegyzet'));
       expect(ics, contains('END:VCALENDAR'));
     });
+
+    test('an exam just after local midnight keeps its local date', () {
+      // In Budapest this is the previous day in UTC, which the old code used.
+      final exams = [Exam(subject: 'Kémia', mode: 'Témazáró', date: DateTime(2026, 10, 20, 0, 30))];
+
+      final ics = IcsExporter.generate([], exams);
+
+      expect(ics, contains('DTSTART;VALUE=DATE:20261020'));
+    });
   });
 }

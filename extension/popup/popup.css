@@ -731,7 +731,6 @@ body {
   color: var(--text);
   font-size: 0.73rem;
   font-weight: 600;
-  outline: none;
 }
 
 .ghost-pickers-row {
@@ -904,7 +903,6 @@ body {
   border-radius: 8px;
   color: var(--text);
   font-size: 0.78rem;
-  outline: none;
 }
 .input-group input:focus { border-color: var(--primary); }
 .selected-school-info { font-size: 0.7rem; color: var(--primary); margin: -4px 0 10px 2px; font-weight: 700; }
@@ -1054,4 +1052,10 @@ body.size-large {
   width: 460px;
   height: 600px;
   max-height: 600px;
+}
+
+/* Keyboard focus: visible on every control, in both themes. */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }

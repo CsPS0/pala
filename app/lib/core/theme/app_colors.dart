@@ -69,23 +69,33 @@ class AppColors {
   static const Color lightOutline = Color(0xFF615E66);
   static const Color lightOutlineVariant = Color(0xFFCAC4D0);
 
+  // Light-mode grade colors: the bright ones below are 1.2-2.4:1 on light
+  // surfaces. These reach 4.5:1 on every light surface, also on their own
+  // 15% tint (grade chips).
+  static const Color lightGrade5 = Color(0xFF17602F);
+  static const Color lightGrade4 = Color(0xFF3F5C17);
+  static const Color lightGrade3 = Color(0xFF674B00);
+  static const Color lightGrade2 = Color(0xFF87410B);
+  static const Color lightGrade1 = Color(0xFF9A2E27);
+
   // Grade color mappings
-  static Color getGradeColor(num? value) {
-    if (value == null) return darkOutline;
+  static Color getGradeColor(num? value, [Brightness brightness = Brightness.dark]) {
+    final light = brightness == Brightness.light;
+    if (value == null) return light ? lightOutline : darkOutline;
     final intVal = value.round();
     switch (intVal) {
       case 5:
-        return success;
+        return light ? lightGrade5 : success;
       case 4:
-        return const Color(0xFF45C465);
+        return light ? lightGrade4 : const Color(0xFF45C465);
       case 3:
-        return warning;
+        return light ? lightGrade3 : warning;
       case 2:
-        return primary;
+        return light ? lightGrade2 : primary;
       case 1:
-        return error;
+        return light ? lightGrade1 : error;
       default:
-        return darkOutline;
+        return light ? lightOutline : darkOutline;
     }
   }
 }

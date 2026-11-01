@@ -1,8 +1,7 @@
-// Public address of the website. Set NEXT_PUBLIC_SITE_URL once the own domain is live; until then
-// Vercel builds fall back to the project's production address (VERCEL_PROJECT_PRODUCTION_URL).
+// Public address of the website. NEXT_PUBLIC_SITE_URL overrides it (e.g. for previews). A
+// forgotten variable must not move canonical URLs and the sitemap to a *.vercel.app address,
+// so production falls back to the real domain and local development to localhost.
 export const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL ||
-  (process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : "http://localhost:3000")
+  (process.env.NODE_ENV === "production" ? "https://pala-app.hu" : "http://localhost:3000")
 ).replace(/\/$/, "");

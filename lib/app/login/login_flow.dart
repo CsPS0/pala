@@ -52,9 +52,14 @@ extension PalaAppLoginFlow on PalaApp {
           }
         }
       } else {
-        instituteCode = Utf8Input(prompt: 'Intézmény kódja (pl. bmszc-neumann)').interact();
+        instituteCode = Utf8Input(prompt: 'Intézmény kódja (pl. klik012345678)').interact();
       }
-  
+      instituteCode = instituteCode.trim().toLowerCase();
+      if (!BaseKreta.isValidInstituteCode(instituteCode)) {
+        print('Hiba: érvénytelen intézménykód. Csak kisbetű, szám és kötőjel lehet benne.');
+        return;
+      }
+
       _client = KretaClient(instituteCode: instituteCode);
       _client!.onTokenRefreshed = () async {
         await _saveAuth();

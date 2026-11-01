@@ -32,6 +32,15 @@ Az első kiadás a Pala néven: TUI, asztali és Android-alkalmazás, böngész�
 - A dokumentáció eltávolító parancsai a valódi adatmappákra mutatnak, a Homebrew-telepítés a `brew tap` lépéssel indul.
 - A kiterjesztés demóadatai csak kitalált neveket használnak.
 - A kiadási folyamat a csomagkezelők frissítése után teszi közzé az AUR-csomagot; a GitHub Actions lépések rögzített verzión futnak.
+- Minden kiadás mellé `SHA256SUMS` fájl kerül, és a telepítők ellenőrzik vele a letöltött fájlokat. A telepítők hiba esetén nem írnak ki sikert, és nem másolnak programot a munkakönyvtárból.
+- Az intézménykódot minden belépési ponton ellenőrzi a Pala; a kiterjesztés nem használ beégetett tartalék iskolát.
+- A `-p/--password` kapcsoló figyelmeztet, a jelszó a `PALA_PASSWORD` környezeti változóban is megadható.
+- A bejelentkezés csak valódi hálózati hibánál vált offline módra.
+- A kiterjesztés megkülönbözteti a lejárt belépést, a hiányzó internetet és a Kréta kiesését, és lejárt belépésnél a belépéshez vezet. Nem kér `tabs` jogot.
+- Olvashatóak a jegyszínek az asztali app és a TUI világos témájában.
+- A kiterjesztés tervezője 4,0 feletti átlagnál is helyes számot ír, az oldalpanel az „igazolandó” mulasztást nem számolja igazoltnak, és látszik a billentyűzetfókusz.
+- A számonkérések `.ics` exportja a helyi napot használja.
+- A weboldal letöltőgombja a grafikus telepítőt adja, az adatvédelmi oldal pontosabb, a rejtett fejléc nem kap fókuszt.
 
 ## [1.2.3]
 - Pala rebrand: TUI, Flutter Desktop App, böngésző-kiterjesztés (Manifest V3) és weboldal egy kiadás alatt.

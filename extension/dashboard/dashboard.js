@@ -43,6 +43,26 @@ function getInitials(name) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
+/**
+ * How many 100%-weight 5s lift a weighted average (sum / wSum) to the next
+ * certificate grade. Grades round at .5, so grade T needs an average of
+ * T - 0.5 (4.5 for a 5), which also keeps the divisor above zero.
+ * Returns null when the average already rounds to 5.
+ */
+function fivesForNextGrade(sum, wSum) {
+  const current = Math.floor(sum / wSum + 0.5);
+  if (current >= 5) return null;
+  const target = Math.max(2, current + 1);
+  const threshold = target - 0.5;
+  const needed = Math.max(1, Math.ceil((threshold * wSum - sum) / (5 - threshold)));
+  return { target, threshold, needed };
+}
+
+/** "4-es", "3-as", "5-ös": the grade with its Hungarian suffix. */
+function gradeWithSuffix(grade) {
+  return { 1: "1-es", 2: "2-es", 3: "3-as", 4: "4-es", 5: "5-ös" }[grade] || String(grade);
+}
+
 /** Collapses the sidebar to icons-only, or restores the full labeled view. */
 function applySidebarCollapsed(collapsed) {
   const sidebar = document.querySelector(".sidebar");
@@ -152,6 +172,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     await loadDashboardData(true);
   });
   document.getElementById("btn-dash-maint-retry")?.addEventListener("click", async () => {
+    if (fullState.data?.offlineReason === "expired") {
+      switchDashboardTab("view-account");
+      return;
+    }
     await chrome.storage.local.set({ pala_simulate_maintenance: false });
     await loadDashboardData(true);
   });
@@ -223,8 +247,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   document.getElementById("btn-dash-web-login")?.addEventListener("click", async () => {
-    const inst = dashSchoolHidden?.value.trim() || dashSchoolInput?.value.trim() || "klik039000";
+    const inst = (dashSchoolHidden?.value.trim() || dashSchoolInput?.value.trim() || "").toLowerCase();
     const errBox = document.getElementById("dash-login-error");
+    // A school picked from the list gives a valid code; a typed school name does not.
+    if (!KretaApi.isValidInstituteCode(inst)) {
+      if (errBox) {
+        errBox.innerText = "Válaszd ki az iskolád a listából.";
+        errBox.style.display = "block";
+        errBox.style.color = "var(--danger)";
+      }
+      return;
+    }
     const authUrl = await KretaApi.startWebLogin(inst);
     if (errBox) {
       errBox.innerText = "Megnyitás külön lapon... Jelentkezz be a hivatalos Kréta felületen!";
@@ -499,6 +532,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   await loadDashboardData();
+  // The side panel opens the account page directly when the login has expired.
+  if (location.hash === "#view-account") switchDashboardTab("view-account");
 
   // Live countdown ticker every 30 seconds
   setInterval(() => {
@@ -933,6 +968,7 @@ async function loadDashboardData(force = false) {
     fullState.data = KretaApi.getDemoDataset(abWeekOverride);
   } else {
     fullState.isDemo = false;
+    fullState.offlineReason = null;
 
     if (!force && !store.pala_cached_data) {
       force = true;
@@ -951,8 +987,9 @@ async function loadDashboardData(force = false) {
       console.warn("Could not fetch online Kréta data, falling back to cached:", e);
       const isMaint = e.isMaintenance || store.pala_maintenance_mode === true || store.pala_simulate_maintenance === true;
       fullState.isMaintenance = isMaint;
+      fullState.offlineReason = offlineReasonOf(e);
       if (store.pala_cached_data) {
-        fullState.data = { ...store.pala_cached_data, isMaintenance: true };
+        fullState.data = { ...store.pala_cached_data, isMaintenance: true, offlineReason: fullState.offlineReason };
       } else {
         fullState.data = null;
         fullState.fetchError = e;
@@ -996,9 +1033,23 @@ function renderDashboard() {
         dashView.style.display = "none";
         dashView.classList.remove("active");
       }
-      setStatusBadge("badge-maintenance", "Központi Karbantartás");
+      const viewTitle = document.getElementById("dash-maint-view-title");
+      if (viewTitle) {
+        viewTitle.textContent = fullState.offlineReason === "network"
+          ? "Nincs internetkapcsolat"
+          : fullState.offlineReason === "server"
+            ? "A Kréta most nem érhető el"
+            : "A KRÉTA rendszer karbantartás alatt áll";
+      }
+      setStatusBadge("badge-maintenance", offlineLabel(fullState.offlineReason));
       return;
     } else {
+      const bannerBadge = document.getElementById("dash-maintenance-badge");
+      if (bannerBadge) bannerBadge.textContent = offlineLabel(d);
+      const bannerTitle = document.getElementById("dash-maintenance-title");
+      if (bannerTitle) bannerTitle.textContent = offlineNotice(d);
+      const retryBtn = document.getElementById("btn-dash-maint-retry");
+      if (retryBtn) retryBtn.textContent = d.offlineReason === "expired" ? "Belépés" : "Kapcsolat újrapróbálása";
       if (maintBanner) maintBanner.style.display = "block";
       if (maintView) {
         maintView.style.display = "none";
@@ -1008,7 +1059,7 @@ function renderDashboard() {
         dashView.style.display = "block";
         dashView.classList.add("active");
       }
-      setStatusBadge("badge-maintenance", "Karbantartás • Offline Gyorsítótár");
+      setStatusBadge("badge-maintenance", `${offlineLabel(d)} • Mentett adat`);
     }
   } else {
     if (maintBanner) maintBanner.style.display = "none";
@@ -1020,8 +1071,9 @@ function renderDashboard() {
       const nameEl = document.getElementById("student-name");
       if (nameEl) nameEl.innerText = "Betöltés sikertelen";
       const instEl = document.getElementById("inst-name");
-      if (instEl) instEl.innerText = "Kréta szerver nem érhető el";
-      setStatusBadge("badge-maintenance", "Szerver hiba");
+      const reason = offlineReasonOf(fullState.fetchError);
+      if (instEl) instEl.innerText = offlineLabel(reason);
+      setStatusBadge("badge-maintenance", offlineLabel(reason));
 
       const homeView = document.getElementById("view-dashboard");
       if (homeView) {
@@ -1036,7 +1088,11 @@ function renderDashboard() {
           errTitle.innerText = "Nem sikerült adatot betölteni";
           const errBody = document.createElement("div");
           errBody.style.cssText = "font-size:0.82rem; color:var(--text-muted); margin-bottom:14px;";
-          errBody.innerText = "Nem sikerült adatot betölteni a Kréta szerverről. Kérlek ellenőrizd, hogy a Kréta elérhető-e, majd kattints a Szinkronizálás gombra.";
+          errBody.innerText = reason === "network"
+            ? "Nincs internetkapcsolat. Ha újra van net, kattints az Újra gombra."
+            : reason === "expired"
+              ? "Lejárt a Kréta-bejelentkezés. Lépj be újra a Fiók & Profil oldalon."
+              : "Nem sikerült adatot betölteni a Kréta szerverről. Kérlek ellenőrizd, hogy a Kréta elérhető-e, majd próbáld újra.";
           const errBtn = document.createElement("button");
           errBtn.className = "btn btn-primary btn-sm";
           errBtn.innerText = "Újra próbálom";
@@ -1055,8 +1111,8 @@ function renderDashboard() {
       const nameEl = document.getElementById("student-name");
       if (nameEl) nameEl.innerText = "Bejelentkezés szükséges";
       const instEl = document.getElementById("inst-name");
-      if (instEl) instEl.innerText = "Kattints a Beállítások menüpontra";
-      setStatusBadge("badge-maintenance", "Munkamenet lejárt");
+      if (instEl) instEl.innerText = "Lépj be a Fiók & Profil oldalon";
+      setStatusBadge("badge-maintenance", offlineLabel("expired"));
     }
     return;
   }
@@ -2599,36 +2655,6 @@ function setupMessageModals() {
   const compText = document.getElementById("comp-text-input");
   const compFeedback = document.getElementById("comp-feedback-box");
 
-  // Sync directly from active e-Ügyintézés tab
-  document.getElementById("btn-sync-active-tab")?.addEventListener("click", async () => {
-    const syncBtn = document.getElementById("btn-sync-active-tab");
-    if (syncBtn) {
-      syncBtn.disabled = true;
-      syncBtn.innerText = "Szinkronizálás...";
-    }
-    try {
-      const result = await KretaApi.fetchFromActiveWebTab();
-      if (result && (result.messages || result.questionnaires || result.teachers)) {
-        if (!fullState.data) fullState.data = {};
-        if (Array.isArray(result.messages)) fullState.data.messages = result.messages;
-        if (Array.isArray(result.questionnaires)) fullState.data.questionnaires = result.questionnaires;
-        if (Array.isArray(result.teachers)) fullState.data.teachers = result.teachers;
-        await chrome.storage.local.set({ pala_cached_data: fullState.data });
-        renderMessagesView(fullState.data.messages || [], fullState.data.questionnaires || []);
-        alert(`Sikeres szinkronizálás az e-Ügyintézés felületéről!\nBeérkezett üzenetek: ${result.messages?.length || 0} db\nKérdőívek: ${result.questionnaires?.length || 0} db`);
-      } else {
-        alert("Nem sikerült elérni a nyitott e-Ügyintézés fület.\n\nKérlek ellenőrizd:\n1. A böngésződben meg van-e nyitva a https://eugyintezes.e-kreta.hu oldal, és be vagy-e jelentkezve.\n2. A bővítmény frissítve lett-e a brave://extensions oldalon az új jogosultságok miatt!");
-      }
-    } catch (err) {
-      alert("Hiba a szinkronizálás során: " + err.message);
-    } finally {
-      if (syncBtn) {
-        syncBtn.disabled = false;
-        syncBtn.innerText = "Szinkronizálás e-Ügyintézésből";
-      }
-    }
-  });
-
   // Refresh messages
   document.getElementById("btn-refresh-messages")?.addEventListener("click", async () => {
     await loadDashboardData(true);
@@ -2863,10 +2889,9 @@ function renderMessagesView(messages, questionnaires) {
       <div style="text-align:center; padding:40px 20px; color:var(--text-muted); max-width:540px; margin:0 auto;">
         <div style="font-size:1.05rem; font-weight:700; color:var(--text); margin-bottom:8px;">${emptyTitle}</div>
         <div style="font-size:0.84rem; margin-bottom:20px; line-height:1.5;">
-          A Kréta e-Ügyintézés közvetlen szinkronizálásához nyisd meg a <strong>https://eugyintezes.e-kreta.hu</strong> oldalt a böngésződben, majd kattints az alábbi gombra az élő adatok átvételéhez!
+          Az üzeneteid a frissítés gombbal tölthetők be újra, vagy megnézheted őket az e-Ügyintézés webes felületén.
         </div>
         <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-          <button class="btn btn-primary" onclick="document.getElementById('btn-sync-active-tab')?.click()">Szinkronizálás az e-Ügyintézésből</button>
           <button class="btn btn-secondary" onclick="document.getElementById('btn-open-composer')?.click()">+ Új üzenet írása</button>
           <a href="https://eugyintezes.e-kreta.hu/uzenetek" target="_blank" class="btn btn-secondary" style="text-decoration:none; display:inline-block;">e-Ügyintézés Megnyitása (Web)</a>
         </div>
@@ -3470,7 +3495,6 @@ function setupStudentExtraModal() {
   const cancelBtn = document.getElementById("btn-cancel-extra-modal");
   const saveBtn = document.getElementById("btn-save-extra-modal");
   const resetBtn = document.getElementById("btn-reset-extra-modal");
-  const syncBtn = document.getElementById("btn-auto-sync-kreta-tab");
   const statusEl = document.getElementById("extra-modal-status");
 
   const closeModal = () => {
@@ -3546,109 +3570,6 @@ function setupStudentExtraModal() {
       }
     }, 600);
   });
-
-  syncBtn?.addEventListener("click", async () => {
-    if (!chrome.tabs || !chrome.scripting) {
-      if (statusEl) {
-        statusEl.innerText = "A böngésző lapok elérése nem lehetséges.";
-        statusEl.style.display = "block";
-        statusEl.style.color = "var(--danger)";
-      }
-      return;
-    }
-
-    try {
-      const tabs = await chrome.tabs.query({ url: ["*://*.e-kreta.hu/*"] });
-      if (!tabs || tabs.length === 0) {
-        if (statusEl) {
-          statusEl.innerText = "Nincs nyitott Kréta lap a böngészőben. Kérlek nyisd meg a Kréta felületét!";
-          statusEl.style.display = "block";
-          statusEl.style.color = "var(--warning)";
-        }
-        return;
-      }
-
-      const activeTab = tabs.find(t => t.active) || tabs[0];
-      const results = await chrome.scripting.executeScript({
-        target: { tabId: activeTab.id },
-        func: () => {
-          const res = {};
-          const allText = document.body.innerText || "";
-          
-          // Bank account pattern
-          const bankMatch = allText.match(/\b\d{8}[- ]\d{8}(?:[- ]\d{8})?\b/);
-          if (bankMatch) res.bankAccount = bankMatch[0].replace(/\s+/g, "-");
-
-          // Tax ID: 10 digits starting with 8
-          const taxMatch = allText.match(/\b8\d{9}\b/);
-          if (taxMatch) res.taxId = taxMatch[0];
-
-          // TAJ: 9 digits
-          const tajMatch = allText.match(/\b\d{3}[- ]?\d{3}[- ]?\d{3}\b/);
-          if (tajMatch && (!taxMatch || tajMatch[0] !== taxMatch[0])) {
-            res.tajNumber = tajMatch[0].replace(/[- ]/g, "");
-          }
-
-          // OM identifier: 11 digits starting with 7
-          const omMatch = allText.match(/\b7\d{10}\b/);
-          if (omMatch) res.omId = omMatch[0];
-
-          // Direct inputs scan
-          const inputs = Array.from(document.querySelectorAll("input, select, textarea"));
-          for (const inp of inputs) {
-            const val = (inp.value || "").trim();
-            if (!val) continue;
-            const name = (inp.name || inp.id || "").toLowerCase();
-            if (name.includes("bank") && name.includes("szamla") && !res.bankAccount) res.bankAccount = val;
-            if (name.includes("bank") && !name.includes("szamla") && !res.bankName) res.bankName = val;
-            if (name.includes("tulajdonos") && !res.bankOwner) res.bankOwner = val;
-            if (name.includes("ado") && !res.taxId) res.taxId = val;
-            if (name.includes("taj") && !res.tajNumber) res.tajNumber = val;
-            if (name.includes("diak") && !res.studentCardNumber) res.studentCardNumber = val;
-            if (name.includes("om") && !res.omId) res.omId = val;
-            if ((name.includes("tanulo") || name.includes("nev")) && !res.name && val.includes(" ")) res.name = val;
-          }
-
-          return res;
-        }
-      });
-
-      if (results && results[0]?.result) {
-        const found = results[0].result;
-        let count = 0;
-        const populateField = (id, val) => {
-          if (!val) return;
-          const el = document.getElementById(id);
-          if (el) { el.value = val; count++; }
-        };
-
-        populateField("extra-input-bank-account", found.bankAccount);
-        populateField("extra-input-bank-name", found.bankName);
-        populateField("extra-input-bank-owner", found.bankOwner);
-        populateField("extra-input-tax-id", found.taxId);
-        populateField("extra-input-taj", found.tajNumber);
-        populateField("extra-input-om-id", found.omId);
-        populateField("extra-input-name", found.name);
-
-        if (statusEl) {
-          if (count > 0) {
-            statusEl.innerText = `${count} db adat sikeresen beolvasva a nyitott Kréta lapról! Kattints a mentésre.`;
-            statusEl.style.color = "var(--success)";
-          } else {
-            statusEl.innerText = "A nyitott Kréta lapon nem találhatók profil adatok. Kérlek nyisd meg a Személyes adatlap oldalt a Krétában!";
-            statusEl.style.color = "var(--warning)";
-          }
-          statusEl.style.display = "block";
-        }
-      }
-    } catch (err) {
-      if (statusEl) {
-        statusEl.innerText = "Nem sikerült a beolvasás a lapról: " + err.message;
-        statusEl.style.display = "block";
-        statusEl.style.color = "var(--danger)";
-      }
-    }
-  });
 }
 
 function renderGhostGradesAndPlanner(subjectMap) {
@@ -3722,19 +3643,12 @@ function renderGhostGradesAndPlanner(subjectMap) {
     const diffStr = diff >= 0 ? `+${diff.toFixed(2)}` : diff.toFixed(2);
     const diffColor = diff >= 0 ? "var(--success)" : "var(--danger)";
     
-    let target = Math.ceil(currentAvg);
-    if (currentAvg >= target) target = Math.min(5, target + 1);
-    
+    const next = wSum > 0 ? fivesForNextGrade(sum, wSum) : null;
     let neededHtml = "";
-    if (target <= 5 && currentAvg < 5.0) {
-      const nNeeded = Math.ceil((target * wSum - sum) / (5 - target));
-      if (nNeeded > 0) {
-        neededHtml = `<div style="margin-top:8px; font-size:0.75rem;">Még <strong>${nNeeded} db</strong> 100%-os 5-ös kell a következő kerek egészhez (${target}).</div>`;
-      } else {
-        neededHtml = `<div style="margin-top:8px; font-size:0.75rem;">Már elérted a ${target}-öt!</div>`;
-      }
+    if (next) {
+      neededHtml = `<div style="margin-top:8px; font-size:0.75rem;">Még <strong>${next.needed} db</strong> 100%-os 5-ös kell a ${gradeWithSuffix(next.target)} eléréséhez (${next.threshold.toFixed(1)} átlag).</div>`;
     } else {
-      neededHtml = `<div style="margin-top:8px; font-size:0.75rem;">Már kitűnő vagy!</div>`;
+      neededHtml = `<div style="margin-top:8px; font-size:0.75rem;">Már ötösre állsz!</div>`;
     }
 
     ghostResult.innerHTML = `
@@ -3775,25 +3689,16 @@ function renderGhostGradesAndPlanner(subjectMap) {
   
   subjects.forEach(sub => {
     const { sum, wSum, currentAvg } = getSubStats(sub);
-    if (wSum > 0 && currentAvg < 5.0) {
-      let target = Math.ceil(currentAvg);
-      if (currentAvg >= target) target = Math.min(5, target + 1);
-      
-      let nNeeded = 0;
-      if (target <= 5) {
-        nNeeded = Math.ceil((target * wSum - sum) / (5 - target));
-      }
-      
-      if (nNeeded > 0) {
-        plannerHtml += `
+    const next = wSum > 0 ? fivesForNextGrade(sum, wSum) : null;
+    if (next) {
+      plannerHtml += `
           <tr style="border-bottom: 1px solid var(--border);">
             <td style="padding: 8px; font-weight:700;">${escapeHtml(sub)}</td>
             <td style="padding: 8px; text-align:center;">${currentAvg.toFixed(2)}</td>
-            <td style="padding: 8px; text-align:center;">${target}.0</td>
-            <td style="padding: 8px; text-align:center; font-weight:800; color:var(--primary);">${nNeeded} db</td>
+            <td style="padding: 8px; text-align:center;">${next.threshold.toFixed(1)}</td>
+            <td style="padding: 8px; text-align:center; font-weight:800; color:var(--primary);">${next.needed} db</td>
           </tr>
         `;
-      }
     }
   });
   
@@ -4021,6 +3926,8 @@ function openWrappedModal() {
 
   grades.forEach(g => {
     const p = KretaApi.parseGrade(g);
+    // Midyear and year-end grades are results, not grades earned during the year.
+    if (p.isSummary) return;
     if (p.numericGrade === 5) total5s++;
     if (p.numericGrade === 1) total1s++;
 

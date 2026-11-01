@@ -115,7 +115,7 @@ class _CertificatePlannerState extends State<CertificatePlanner> {
                         currentCertificateGpa.toStringAsFixed(2),
                         style: theme.textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.w900,
-                          color: AppColors.getGradeColor(currentCertificateGpa),
+                          color: AppColors.getGradeColor(currentCertificateGpa, Theme.of(context).brightness),
                         ),
                       ),
                     ],
@@ -136,7 +136,7 @@ class _CertificatePlannerState extends State<CertificatePlanner> {
                         targetCertificateGpa.toStringAsFixed(2),
                         style: theme.textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.w900,
-                          color: AppColors.getGradeColor(targetCertificateGpa),
+                          color: AppColors.getGradeColor(targetCertificateGpa, Theme.of(context).brightness),
                         ),
                       ),
                     ],
@@ -214,15 +214,15 @@ class _CertificatePlannerState extends State<CertificatePlanner> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppColors.getGradeColor(avg).withValues(alpha: 0.15),
+                          color: AppColors.getGradeColor(avg, Theme.of(context).brightness).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.getGradeColor(avg)),
+                          border: Border.all(color: AppColors.getGradeColor(avg, Theme.of(context).brightness)),
                         ),
                         child: Text(
                           avg.toStringAsFixed(2),
                           style: TextStyle(
                             fontWeight: FontWeight.w800,
-                            color: AppColors.getGradeColor(avg),
+                            color: AppColors.getGradeColor(avg, Theme.of(context).brightness),
                             fontSize: 13,
                           ),
                         ),
@@ -246,7 +246,7 @@ class _CertificatePlannerState extends State<CertificatePlanner> {
                     children: [
                       ...[2, 3, 4, 5].map((g) {
                         final isSelected = target == g;
-                        final color = AppColors.getGradeColor(g);
+                        final color = AppColors.getGradeColor(g, Theme.of(context).brightness);
                         return Expanded(
                           child: Padding(
                             padding: EdgeInsets.only(left: g == 2 ? 0 : 6),

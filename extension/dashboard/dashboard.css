@@ -399,7 +399,6 @@ body {
   transition: var(--transition);
 }
 .topbar-search-input:focus {
-  outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15);
 }
@@ -950,7 +949,6 @@ body {
 }
 .modern-input:focus,
 .modern-select:focus {
-  outline: none;
   border-color: var(--primary);
 }
 .modern-input-sm {
@@ -963,7 +961,6 @@ body {
   min-width: 210px;
 }
 .modern-input-sm:focus {
-  outline: none;
   border-color: var(--primary);
 }
 .field-label {
@@ -1203,7 +1200,6 @@ body {
   font-weight: 800;
   cursor: pointer;
   color: var(--text);
-  outline: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1396,3 +1392,9 @@ body {
   border: 1px solid var(--border);
 }
 .skeleton-card:last-child { margin-bottom: 0; }
+
+/* Keyboard focus: visible on every control, in both themes. */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

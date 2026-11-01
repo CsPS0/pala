@@ -58,10 +58,12 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-lg font-bold text-fg mb-3">Ez a weboldal</h2>
             <p>
-              A pala-app.hu nem használ követő sütit és nem futtat analitikát. A letölthető verzió
-              számának megjelenítéséhez a böngésződ egy nyilvános, személyes adatot nem tartalmazó
-              lekérdezést küld a GitHub API-nak. Ezen kívül a weboldal semmilyen adatot nem küld
-              harmadik félnek.
+              A pala-app.hu nem használ követő sütit és nem futtat analitikát. A legfrissebb kiadás
+              számának megjelenítéséhez a böngésződ lekérdezést küld a GitHub API-nak, a Történet oldal
+              pedig a felsorolt projektek verzióit is onnan kéri le. Mint minden webes kérésnél, a GitHub
+              ilyenkor látja az IP-címedet és a böngésződ adatait. A weboldalt a Vercel szolgálja ki,
+              amely a kéréseket a saját szokásos naplóiban rögzítheti. Ezen kívül a weboldal semmilyen
+              adatot nem küld harmadik félnek.
             </p>
           </section>
 
@@ -71,7 +73,8 @@ export default function PrivacyPage() {
               Mivel minden adat helyben, a te eszközödön tárolódik, a törléshez elég kijelentkezni az
               alkalmazásból, vagy törölni a konfigurációs mappát (<code className="text-primary font-mono text-xs">~/.config/pala</code>{" "}
               Linuxon és macOS-en, illetve a Windows-os felhasználói profilban) és a gyorsítótár-mappát
-              (<code className="text-primary font-mono text-xs">~/.cache/pala</code>, Windows-on{" "}
+              (Linuxon <code className="text-primary font-mono text-xs">~/.cache/pala</code>, macOS-en{" "}
+              <code className="text-primary font-mono text-xs">~/Library/Caches/pala</code>, Windows-on{" "}
               <code className="text-primary font-mono text-xs">%LOCALAPPDATA%\pala</code>). Nincs központi
               fiók vagy szerver, amit ehhez értesíteni kellene.
             </p>

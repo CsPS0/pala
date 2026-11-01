@@ -150,12 +150,16 @@ class PalaWebServer {
           return;
         }
 
-        final instituteCode = (data['instituteCode'] ?? '').toString().trim();
+        final instituteCode = (data['instituteCode'] ?? '').toString().trim().toLowerCase();
         final username = (data['username'] ?? '').toString().trim();
         final password = (data['password'] ?? '').toString().trim();
 
         if (instituteCode.isEmpty || username.isEmpty || password.isEmpty) {
           _sendError(request, HttpStatus.badRequest, 'Minden mező kitöltése kötelező!');
+          return;
+        }
+        if (!BaseKreta.isValidInstituteCode(instituteCode)) {
+          _sendError(request, HttpStatus.badRequest, 'Érvénytelen intézménykód.');
           return;
         }
 
@@ -173,19 +177,27 @@ class PalaWebServer {
         _sendError(request, HttpStatus.internalServerError, 'Hiba a bejelentkezés során: $e');
       }
     } else if (request.method == 'GET' && path == '/api/login/kreta-url') {
-      final instituteCode = (request.uri.queryParameters['institute'] ?? '').trim();
+      final instituteCode = (request.uri.queryParameters['institute'] ?? '').trim().toLowerCase();
       if (instituteCode.isEmpty) {
         _sendError(request, HttpStatus.badRequest, 'Add meg az intézmény kódját!');
+        return;
+      }
+      if (!BaseKreta.isValidInstituteCode(instituteCode)) {
+        _sendError(request, HttpStatus.badRequest, 'Érvénytelen intézménykód.');
         return;
       }
       _sendJson(request, {'url': KretaAPI.authorizeUrl(instituteCode: instituteCode)});
     } else if (request.method == 'POST' && path == '/api/login/code') {
       try {
         final data = jsonDecode(await utf8.decodeStream(request)) as Map<String, dynamic>;
-        final instituteCode = (data['instituteCode'] ?? '').toString().trim();
+        final instituteCode = (data['instituteCode'] ?? '').toString().trim().toLowerCase();
         final code = (data['code'] ?? '').toString().trim();
         if (instituteCode.isEmpty || code.isEmpty) {
           _sendError(request, HttpStatus.badRequest, 'Add meg az intézmény kódját és a Kréta oldaláról kimásolt kódot!');
+          return;
+        }
+        if (!BaseKreta.isValidInstituteCode(instituteCode)) {
+          _sendError(request, HttpStatus.badRequest, 'Érvénytelen intézménykód.');
           return;
         }
         final newClient = KretaClient(instituteCode: instituteCode);
@@ -264,6 +276,7 @@ class PalaWebServer {
         'weight': g.weight,
         'date': g.date?.toIso8601String(),
         'type': g.type,
+        'isSummary': g.isSummaryGrade,
         'theme': g.theme,
         'teacherName': g.teacherName,
       }).toList();

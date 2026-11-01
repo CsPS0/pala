@@ -90,7 +90,12 @@ async function handleOAuthRedirect(url, tabId) {
       return;
     }
 
-    const institute = pending.institute || "klik039000";
+    const institute = pending.institute;
+    if (!KretaApi.isValidInstituteCode(institute)) {
+      console.warn("Pala: invalid institute code in pending login, ignoring redirect.");
+      await chrome.storage.local.set({ pala_pending_login: null });
+      return;
+    }
 
     const tokenData = await KretaApi.exchangeCodeForToken(code);
     await SecureSession.save({

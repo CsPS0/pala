@@ -94,7 +94,7 @@ class TuiViews {
 
     String statusBadge;
     if (state.isLoading) {
-      statusBadge = '\x1B[1;38;5;45m◌ SZINKRONIZÁLÁS...${PalaTheme.reset}';
+      statusBadge = '${PalaTheme.bold}${PalaTheme.borderHighlight}◌ SZINKRONIZÁLÁS...${PalaTheme.reset}';
     } else if (state.sessionExpired) {
       statusBadge = '${PalaTheme.grade1Fg}● MUNKAMENET LEJÁRT${PalaTheme.reset}';
     } else if (state.isNetworkDown) {

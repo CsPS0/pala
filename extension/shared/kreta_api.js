@@ -78,11 +78,41 @@ function renderKretaContent(el, content) {
   }
 }
 
-/** Hungarian notice shown above cached data while Kréta is unreachable. */
+/**
+ * Why live data could not be loaded, shared by the popup, side panel and
+ * dashboard: "expired" (Kréta rejected the login), "network" (no internet),
+ * "maintenance" (simulated) or "server" (Kréta itself is down).
+ */
+function offlineReasonOf(err) {
+  if (err?.sessionExpired || err?.status === 401) return "expired";
+  if ((typeof navigator !== "undefined" && navigator.onLine === false) || err?.isNetwork) return "network";
+  return "server";
+}
+
+const OFFLINE_LABELS = {
+  expired: "Lejárt a belépés",
+  network: "Nincs internet",
+  maintenance: "Karbantartás",
+  server: "A Kréta nem elérhető"
+};
+
+/** Short status label for the reason in data.offlineReason (or a reason string). */
+function offlineLabel(dataOrReason) {
+  const reason = typeof dataOrReason === "string" ? dataOrReason : dataOrReason?.offlineReason;
+  return OFFLINE_LABELS[reason] || OFFLINE_LABELS.server;
+}
+
+/** Hungarian notice shown above cached data when live data is not available. */
 function offlineNotice(data) {
   const at = data?.cachedAt || data?.lastUpdated;
   const when = at ? new Date(at).toLocaleString("hu-HU", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
-  return `A Kréta szerverei most nem érhetők el. ${when ? `Mentett adatok (${when}).` : "Mentett adatokat látsz."}`;
+  const saved = when ? `Mentett adatok (${when}).` : "Mentett adatokat látsz.";
+  switch (data?.offlineReason) {
+    case "expired": return `Lejárt a Kréta-bejelentkezés, lépj be újra. ${saved}`;
+    case "network": return `Nincs internetkapcsolat. ${saved}`;
+    case "maintenance": return `A Kréta karbantartás alatt áll. ${saved}`;
+    default: return `A Kréta szerverei most nem érhetők el. ${saved}`;
+  }
 }
 
 /**
@@ -96,6 +126,8 @@ function outageError(status, cause) {
     : "A Kréta szerverei nem válaszolnak (időtúllépés vagy hálózati hiba).");
   err.status = status || 503;
   err.isMaintenance = true;
+  // A connection that could not be made at all (not a timeout) is our side.
+  err.isNetwork = !status && cause instanceof TypeError;
   err.cause = cause;
   return err;
 }
@@ -551,6 +583,14 @@ class SecureSession {
 }
 
 class KretaApi {
+  /**
+   * Kréta institute codes are lowercase letters, digits and dashes. Anything
+   * else could move the Bearer token to another host, so it is refused.
+   */
+  static isValidInstituteCode(code) {
+    return /^[a-z0-9-]{2,40}$/.test(String(code ?? ""));
+  }
+
   /** Lowercase, accent-free form for accent-insensitive Hungarian search. */
   static normalizeHu(value) {
     return String(value ?? "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
@@ -604,7 +644,7 @@ class KretaApi {
       `&client_id=${CLIENT_ID}` +
       `&state=${stateEncoded}`;
     if (instituteCode) {
-      const code = instituteCode.trim().toLowerCase();
+      const code = encodeURIComponent(instituteCode.trim().toLowerCase());
       base += `&institute_code=${code}&acr_values=institute_code:${code}`;
     }
     return base;
@@ -619,6 +659,7 @@ class KretaApi {
    * from being accepted as a legitimate login completion (CSRF on login).
    */
   static async startWebLogin(instituteCode) {
+    if (!this.isValidInstituteCode(instituteCode)) throw new Error("Érvénytelen intézménykód.");
     const state = crypto.randomUUID();
     await chrome.storage.local.set({
       pala_pending_login: { institute: instituteCode, state }
@@ -713,7 +754,9 @@ class KretaApi {
 
     if (response.status >= 500) throw outageError(response.status);
     if (!response.ok) {
-      throw new Error("A munkamenet lejárt. Kérlek jelentkezz be újra.");
+      const err = new Error("A munkamenet lejárt. Kérlek jelentkezz be újra.");
+      err.sessionExpired = true;
+      throw err;
     }
 
     const data = await response.json();
@@ -735,7 +778,7 @@ class KretaApi {
     try {
       await this.refreshSession(session);
     } catch (e) {
-      if (e.isMaintenance) throw e;
+      if (e.isMaintenance || e.sessionExpired) throw e;
       console.warn("Token frissítési hiba:", e);
     }
     return session.token;
@@ -873,7 +916,9 @@ class KretaApi {
    * Fetches full student data with rate-limit protections and error handling.
    */
   static async getStudentData(instituteCode, accessToken) {
-    const base = `https://${instituteCode.trim().toLowerCase()}.e-kreta.hu/ellenorzo/V3/Sajat`;
+    const code = String(instituteCode ?? "").trim().toLowerCase();
+    if (!this.isValidInstituteCode(code)) throw new Error("Érvénytelen intézménykód.");
+    const base = `https://${code}.e-kreta.hu/ellenorzo/V3/Sajat`;
     const headers = {
       "Authorization": `Bearer ${accessToken}`,
       "apiKey": KRETA_API_KEY,
@@ -1034,62 +1079,6 @@ class KretaApi {
   }
 
   /**
-   * Attempts to fetch data directly from an active e-Ügyintézés tab if the user has it open.
-   * This bypasses all cross-origin restrictions, CORS, and token expiry since it executes
-   * inside the browser's already authenticated same-origin page context.
-   */
-  static async fetchFromActiveWebTab() {
-    if (typeof chrome === "undefined" || !chrome.tabs || !chrome.scripting) return null;
-    try {
-      const tabs = await chrome.tabs.query({ url: "*://eugyintezes.e-kreta.hu/*" });
-      if (!tabs || tabs.length === 0) return null;
-
-      // Find an active/ready tab
-      const validTab = tabs.find(t => t.id && t.url && !t.url.includes("login") && !t.url.includes("kijelentkezes")) || tabs[0];
-      if (!validTab || !validTab.id) return null;
-
-      const results = await chrome.scripting.executeScript({
-        target: { tabId: validTab.id },
-        func: async () => {
-          try {
-            const [beerkezett, sajat, adatbekerok, tanarok] = await Promise.all([
-              fetch("/api/v1/kommunikacio/postaladaelemek/beerkezett", { credentials: "include" })
-                .then(r => r.ok ? r.json() : null)
-                .catch(() => null),
-              fetch("/api/v1/kommunikacio/postaladaelemek/sajat", { credentials: "include" })
-                .then(r => r.ok ? r.json() : null)
-                .catch(() => null),
-              fetch("/api/v1/kommunikacio/adatbekerok/kitolto?isLezartakIs=true", { credentials: "include" })
-                .then(r => r.ok ? r.json() : null)
-                .catch(() => null),
-              fetch("/api/v1/kreta/alkalmazottak/tanar", { credentials: "include" })
-                .then(r => r.ok ? r.json() : null)
-                .catch(() => null)
-            ]);
-
-            const msgs = Array.isArray(beerkezett) && beerkezett.length > 0 ? beerkezett : (Array.isArray(sajat) ? sajat : null);
-            return {
-              messages: msgs,
-              questionnaires: Array.isArray(adatbekerok) ? adatbekerok : null,
-              teachers: Array.isArray(tanarok) ? tanarok : null
-            };
-          } catch (err) {
-            return null;
-          }
-        }
-      });
-
-      if (results && results[0] && results[0].result) {
-        return results[0].result;
-      }
-      return null;
-    } catch (e) {
-      console.warn("fetchFromActiveWebTab nem sikerült:", e);
-      return null;
-    }
-  }
-
-  /**
    * Helper to fetch from e-Ügyintézés API.
    */
   static async fetchAdmin(token, endpoint, method = "GET", body = null) {
@@ -1189,8 +1178,7 @@ class KretaApi {
    */
   static async getTeachers(token) {
     try {
-      const webData = await this.fetchFromActiveWebTab();
-      let data = webData?.teachers;
+      let data = null;
 
       if (!Array.isArray(data) || data.length === 0) {
         data = await this.fetchAdmin(token, "kreta/alkalmazottak/tanar");
@@ -1251,8 +1239,7 @@ class KretaApi {
    */
   static async getQuestionnaires(token) {
     try {
-      const webData = await this.fetchFromActiveWebTab();
-      let data = webData?.questionnaires;
+      let data = null;
 
       if (!Array.isArray(data) || data.length === 0) {
         data = await this.fetchAdmin(token, "kommunikacio/adatbekerok/kitolto?isLezartakIs=true");
@@ -1300,6 +1287,7 @@ class KretaApi {
         return {
           ...store.pala_cached_data,
           isMaintenance: true,
+          offlineReason: "maintenance",
           cachedAt: store.pala_last_fetch || Date.now()
         };
       }
@@ -1360,6 +1348,15 @@ class KretaApi {
       if (err.status === 429 && store.pala_cached_data) {
         return store.pala_cached_data;
       }
+      // Kréta rejected the login: show the saved data, marked as such, and ask for a new login.
+      if (offlineReasonOf(err) === "expired" && store.pala_cached_data) {
+        return {
+          ...store.pala_cached_data,
+          isMaintenance: true,
+          offlineReason: "expired",
+          cachedAt: store.pala_last_fetch || Date.now()
+        };
+      }
       if (err.isMaintenance || err.status === 502 || err.status === 503 || err.status === 504) {
         await chrome.storage.local.set({
           pala_maintenance_mode: true,
@@ -1370,6 +1367,7 @@ class KretaApi {
           return {
             ...store.pala_cached_data,
             isMaintenance: true,
+            offlineReason: offlineReasonOf(err),
             cachedAt: store.pala_last_fetch || Date.now()
           };
         }

@@ -336,7 +336,7 @@ class _GhostGradeCalculatorState extends State<GhostGradeCalculator> {
                                 projectedSubAvg > 0 ? projectedSubAvg.toStringAsFixed(2) : '-',
                                 style: theme.textTheme.headlineSmall?.copyWith(
                                   fontWeight: FontWeight.w900,
-                                  color: AppColors.getGradeColor(projectedSubAvg),
+                                  color: AppColors.getGradeColor(projectedSubAvg, Theme.of(context).brightness),
                                 ),
                               ),
                               if (subDelta.abs() > 0.001)
@@ -378,7 +378,7 @@ class _GhostGradeCalculatorState extends State<GhostGradeCalculator> {
                                 projectedGpa > 0 ? projectedGpa.toStringAsFixed(2) : '-',
                                 style: theme.textTheme.headlineSmall?.copyWith(
                                   fontWeight: FontWeight.w900,
-                                  color: AppColors.getGradeColor(projectedGpa),
+                                  color: AppColors.getGradeColor(projectedGpa, Theme.of(context).brightness),
                                 ),
                               ),
                               if (gpaDelta.abs() > 0.001)
@@ -442,7 +442,7 @@ class _GhostGradeCalculatorState extends State<GhostGradeCalculator> {
               runSpacing: 8,
               children: [1, 2, 3, 4, 5].map((val) {
                 final isSelected = selectedGrade == val;
-                final gradeColor = AppColors.getGradeColor(val);
+                final gradeColor = AppColors.getGradeColor(val, Theme.of(context).brightness);
 
                 return Semantics(
                   button: true,
@@ -527,7 +527,7 @@ class _GhostGradeCalculatorState extends State<GhostGradeCalculator> {
               ),
               const SizedBox(height: 8),
               ...mockGrades.reversed.map((mg) {
-                final color = AppColors.getGradeColor(mg.value);
+                final color = AppColors.getGradeColor(mg.value, Theme.of(context).brightness);
                 return Card(
                   color: colorScheme.surfaceContainerLow,
                   margin: const EdgeInsets.symmetric(vertical: 4),

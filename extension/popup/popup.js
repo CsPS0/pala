@@ -473,6 +473,10 @@ function setupActions() {
   });
 
   document.getElementById("btn-maintenance-retry")?.addEventListener("click", async () => {
+    if (appState.data?.offlineReason === "expired") {
+      document.getElementById("login-modal")?.classList.add("active");
+      return;
+    }
     await chrome.storage.local.set({ pala_simulate_maintenance: false });
     await loadData(true);
   });
@@ -553,8 +557,17 @@ function setupActions() {
   });
 
   document.getElementById("btn-web-login")?.addEventListener("click", async () => {
-    const inst = schoolHidden?.value.trim() || schoolInput?.value.trim() || "klik039000";
+    const inst = (schoolHidden?.value.trim() || schoolInput?.value.trim() || "").toLowerCase();
     const errBox = document.getElementById("login-error");
+    // A school picked from the list gives a valid code; a typed school name does not.
+    if (!KretaApi.isValidInstituteCode(inst)) {
+      if (errBox) {
+        errBox.innerText = "Válaszd ki az iskolád a listából.";
+        errBox.style.display = "block";
+        errBox.style.color = "var(--danger)";
+      }
+      return;
+    }
     const authUrl = await KretaApi.startWebLogin(inst);
 
     if (errBox) {
@@ -619,7 +632,7 @@ async function loadData(forceRefresh = false) {
   appState.showWeekType = store.pala_show_week_type !== false;
   const session = await SecureSession.load();
   const useDemo = store.pala_use_demo !== false;
-  const next = { isDemo: true, isMaintenance: false, data: null };
+  const next = { isDemo: true, isMaintenance: false, offlineReason: null, data: null };
 
   if (useDemo || !session) {
     next.data = KretaApi.getDemoDataset();
@@ -637,7 +650,8 @@ async function loadData(forceRefresh = false) {
     } catch (err) {
       console.warn("Could not fetch online Kréta data, falling back to cached:", err);
       next.isMaintenance = err.isMaintenance || store.pala_maintenance_mode === true || store.pala_simulate_maintenance === true;
-      next.data = store.pala_cached_data ? { ...store.pala_cached_data, isMaintenance: true } : null;
+      next.offlineReason = offlineReasonOf(err);
+      next.data = store.pala_cached_data ? { ...store.pala_cached_data, isMaintenance: true, offlineReason: next.offlineReason } : null;
     }
   }
 
@@ -663,17 +677,21 @@ function renderUI() {
       if (heroCard) heroCard.style.display = "none";
       if (tabBar) tabBar.style.display = "none";
       contentPanels.forEach(p => p.style.display = "none");
-      setStatusBadge("badge-maintenance", "Karbantartás");
+      setStatusBadge("badge-maintenance", offlineLabel(appState.offlineReason));
       return;
     } else {
       const bannerText = document.getElementById("maintenance-banner-text");
       if (bannerText) bannerText.textContent = offlineNotice(data);
+      const bannerBadge = document.getElementById("maintenance-banner-badge");
+      if (bannerBadge) bannerBadge.textContent = offlineLabel(data);
+      const retryBtn = document.getElementById("btn-maintenance-retry");
+      if (retryBtn) retryBtn.textContent = data.offlineReason === "expired" ? "Belépés" : "Újra";
       if (maintBanner) maintBanner.style.display = "block";
       if (maintView) maintView.style.display = "none";
       contentPanels.forEach(p => p.style.display = "");
       if (heroCard) heroCard.style.display = currentPopupSettings.showHeroCard === false ? "none" : "block";
       if (tabBar) tabBar.style.display = "grid";
-      setStatusBadge("badge-maintenance", "Offline");
+      setStatusBadge("badge-maintenance", offlineLabel(data));
     }
   } else {
     if (maintBanner) maintBanner.style.display = "none";

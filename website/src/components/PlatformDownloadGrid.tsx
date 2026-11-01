@@ -61,9 +61,17 @@ export function PlatformDownloadGrid() {
       id: "extension",
       title: "Bővítmény",
       Icon: CONCEPT_ICONS.extension,
-      text: "Chrome, Edge, Brave és Firefox. Gyorsnézet a böngésző eszköztárán és teljes vezérlőpult.",
+      text: "Chrome, Edge és Brave, Firefoxon ideiglenes kiegészítőként. Gyorsnézet a böngésző eszköztárán és teljes vezérlőpult.",
       action: { label: "Bővítmény (.zip)", href: release.assets.extensionZip },
-      extra: null,
+      // Until there is a store listing, the ZIP only works in developer mode.
+      extra: (
+        <span>
+          Csomagold ki, majd a bővítmények oldalán: fejlesztői mód, „Kicsomagolt betöltése”.{" "}
+          <Link href="/docs?page=installation&tab=extension" className="text-primary font-bold hover:underline">
+            Lépések
+          </Link>
+        </span>
+      ),
     },
   ];
 

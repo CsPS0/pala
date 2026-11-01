@@ -62,22 +62,13 @@ function parseAssetUrls(assets: GitHubAsset[]): ReleaseAssetMap {
   const map: ReleaseAssetMap = { ...DEFAULT_ASSETS };
   if (!assets || !Array.isArray(assets) || assets.length === 0) return map;
 
-  for (const a of assets) {
-    const name = a.name.toLowerCase();
-    const url = a.browser_download_url;
-    if (name.endsWith(".exe")) map.windowsExe = url;
-    else if ((name.includes("extension") || name.includes("bovitmeny")) && name.endsWith(".zip")) map.extensionZip = url;
-    else if (name.includes("win") && name.endsWith(".zip")) map.windowsZip = url;
-    else if (name.endsWith(".apk")) {
-      if (name.includes("arm64") || name.includes("v8a")) map.androidArm64 = url;
-      else if (name.includes("armv7") || name.includes("v7a") || name.includes("32")) map.androidArmv7 = url;
-      else if (name.includes("x86_64") || name.includes("x64")) map.androidX86 = url;
-      else map.androidUniversal = url;
-    } else if (name.endsWith(".deb")) map.linuxDeb = url;
-    else if (name.endsWith(".appimage")) map.linuxAppImage = url;
-    else if (name.endsWith(".tar.gz")) map.linuxTar = url;
-    else if (name.endsWith(".dmg")) map.macDmg = url;
-    else if ((name.includes("mac") || name.includes("darwin")) && name.endsWith(".zip")) map.macZip = url;
+  // Match the exact release file names: a release holds two .exe files (the
+  // installer and the TUI) and can hold two .deb files, so matching by
+  // extension picked whichever came last.
+  for (const key of Object.keys(DEFAULT_ASSETS) as (keyof ReleaseAssetMap)[]) {
+    const fileName = DEFAULT_ASSETS[key].split("/").pop();
+    const asset = assets.find(a => a.name === fileName);
+    if (asset) map[key] = asset.browser_download_url;
   }
   return map;
 }

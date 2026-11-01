@@ -124,9 +124,9 @@
     <div id="dash-maintenance-banner" class="dash-maintenance-banner" style="display: none; margin-bottom: 20px;">
       <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
         <div style="display: flex; align-items: center; gap: 12px;">
-          <span class="badge badge-maintenance">Központi Karbantartás</span>
+          <span id="dash-maintenance-badge" class="badge badge-maintenance">Offline</span>
           <div>
-            <strong style="font-size: 0.9rem;">A KRÉTA központi szerverei jelenleg karbantartás alatt állnak</strong>
+            <strong id="dash-maintenance-title" style="font-size: 0.9rem;">A Kréta szerverei most nem érhetők el.</strong>
             <div id="dash-maintenance-cached-time" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
               Az utoljára szinkronizált offline adatokat látod a helyi gyorsítótárból.
             </div>
@@ -147,7 +147,7 @@
             <line x1="6" y1="18" x2="6.01" y2="18"></line>
           </svg>
         </div>
-        <h1 style="font-size: 1.4rem; font-weight: 900; margin-bottom: 8px;">A KRÉTA rendszer karbantartás alatt áll</h1>
+        <h1 id="dash-maint-view-title" style="font-size: 1.4rem; font-weight: 900; margin-bottom: 8px;">A KRÉTA rendszer karbantartás alatt áll</h1>
         <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px;">
           A Kréta központi szerverei tervezett vagy rendkívüli karbantartás miatt átmenetileg nem elérhetők. Mivel még nincsenek helyben tárolt offline adatok ehhez a fiókhoz, az adatok megjelenítése nem lehetséges a karbantartás befejezéséig.
         </p>
@@ -516,7 +516,6 @@
           </div>
         </div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-          <button id="btn-sync-active-tab" class="btn btn-secondary btn-sm">Szinkronizálás e-Ügyintézésből</button>
           <button id="btn-open-composer" class="btn btn-primary btn-sm">+ Új üzenet írása</button>
           <a href="https://eugyintezes.e-kreta.hu/uzenetek" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration: none;">e-Ügyintézés (Web) &#8599;</a>
           <a href="https://eugyintezes.e-kreta.hu/adatbekeresek" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration: none;">Kérdőívek (Web) &#8599;</a>
@@ -946,13 +945,10 @@
       </div>
 
       <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 16px; line-height: 1.45;">
-        A Kréta mobil API adatvédelmi okokból nem minden személyes, banki vagy intézményi adatot szolgáltat ki külső klienseknek. Itt a profil összes adatát manuálisan testreszabhatod, vagy 1 kattintással beolvashatod a megnyitott hivatalos Kréta webes lapról.
+        A Kréta mobil API adatvédelmi okokból nem minden személyes, banki vagy intézményi adatot szolgáltat ki külső klienseknek. Itt a profil adatait kézzel egészítheted ki.
       </p>
 
       <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
-        <button id="btn-auto-sync-kreta-tab" class="btn btn-secondary" style="flex: 1; font-size: 0.78rem; border-color: rgba(255,136,0,0.5); background: rgba(255,136,0,0.08); color: var(--primary); font-weight: 700; padding: 10px;">
-          Adatok automatikus beolvasása nyitott Kréta lapról
-        </button>
         <button id="btn-reset-extra-modal" class="btn btn-secondary" style="font-size: 0.78rem; padding: 10px; color: var(--text-muted);">
           Kréta adatok visszaállítása
         </button>

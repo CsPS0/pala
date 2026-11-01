@@ -281,6 +281,11 @@ class PalaApp {
   Future<void> runWithCredentials(String instituteCode, String username, String password, {bool startInDashboard = false}) async {
     AppState.instance.migrateOldFiles();
     PalaTheme.configureInteractTheme();
+    instituteCode = instituteCode.trim().toLowerCase();
+    if (!BaseKreta.isValidInstituteCode(instituteCode)) {
+      print('Hiba: érvénytelen intézménykód. Csak kisbetű, szám és kötőjel lehet benne.');
+      exit(1);
+    }
     _client = KretaClient(instituteCode: instituteCode);
     _client!.onTokenRefreshed = () async {
       await _saveAuth();
@@ -604,7 +609,9 @@ class PalaApp {
       }
     } else if (Platform.isMacOS) {
       const url = 'https://github.com/CsPS0/pala/releases/latest/download/Pala-macOS.dmg';
-      final tempDmg = File('/tmp/Pala-macOS.dmg');
+      // A private temp folder, not a fixed /tmp path another user could pre-create.
+      final tempDir = Directory.systemTemp.createTempSync('pala-dmg');
+      final tempDmg = File('${tempDir.path}/Pala-macOS.dmg');
       print('    Letöltés: $url');
       final success = await _downloadFile(url, tempDmg);
       if (success) {
@@ -612,13 +619,13 @@ class PalaApp {
         if (mountRes.exitCode == 0) {
           Process.runSync('cp', ['-R', '/Volumes/Pala/Pala.app', '/Applications/']);
           Process.runSync('hdiutil', ['detach', '/Volumes/Pala']);
-          Process.runSync('xattr', ['-rd', 'com.apple.quarantine', '/Applications/Pala.app']);
           print('\x1B[32m    [OK] Pala.app sikeresen telepítve az /Applications mappába!\x1B[0m');
-          try { if (tempDmg.existsSync()) tempDmg.deleteSync(); } catch (_) {}
+          try { tempDir.deleteSync(recursive: true); } catch (_) {}
           return true;
         }
-        try { if (tempDmg.existsSync()) tempDmg.deleteSync(); } catch (_) {}
+        try { tempDir.deleteSync(recursive: true); } catch (_) {}
       } else {
+        try { tempDir.deleteSync(recursive: true); } catch (_) {}
         print('\x1B[31m    [!] A Pala DMG letöltése sikertelen.\x1B[0m');
       }
     }

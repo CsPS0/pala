@@ -124,7 +124,7 @@ export default async function Image() {
             gap: "10px",
           }}
         >
-          {["Windows", "Android", "iOS", "Linux", "macOS", "Böngésző", "Terminál (TUI)"].map((platform) => (
+          {["Windows", "Android", "Linux", "macOS", "Böngésző", "Terminál (TUI)"].map((platform) => (
             <div
               key={platform}
               style={{

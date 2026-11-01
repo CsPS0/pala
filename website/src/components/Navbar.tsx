@@ -54,6 +54,8 @@ export function Navbar() {
 
   return (
     <header
+      // While hidden over the hero, keep its links out of the Tab order too.
+      inert={!visible}
       className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-200 ease-out ${
         visible
           ? "translate-y-0 opacity-100 pointer-events-auto bg-bg/90 border-b border-border"

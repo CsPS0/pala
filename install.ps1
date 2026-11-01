@@ -6,6 +6,7 @@
 #               .\install.ps1 -Cli
 #               .\install.ps1 -Desktop
 #               .\install.ps1 -Uninstall
+#               .\install.ps1 -Desktop -Cli -FromLocalBuild   (sajat build masolasa a repobol)
 # =====================================================================
 
 param(
@@ -16,6 +17,7 @@ param(
     [switch]$StartMenu,
     [switch]$DesktopIcon,
     [switch]$Uninstall,
+    [switch]$FromLocalBuild,
     [string]$Version = ""
 )
 
@@ -25,6 +27,7 @@ $InstallBase = Join-Path $env:LOCALAPPDATA "Pala"
 $BinDir = Join-Path $InstallBase "bin"
 $DesktopDir = Join-Path $InstallBase "desktop"
 $ProgramsFolder = [Environment]::GetFolderPath('Programs')
+$Failed = 0
 $DesktopFolder = [Environment]::GetFolderPath('Desktop')
 
 function Show-Banner {
@@ -258,14 +261,49 @@ if ([string]::IsNullOrWhiteSpace($Version)) {
 Write-Host "Telepitendo verzio: $Version" -ForegroundColor Cyan
 Write-Host ""
 
+$SumsUrl = if ($Version -eq "latest") {
+    "https://github.com/$Repo/releases/latest/download/SHA256SUMS"
+} else {
+    "https://github.com/$Repo/releases/download/$Version/SHA256SUMS"
+}
+
+# Checks a downloaded file against the release's SHA256SUMS. Older releases
+# have no SHA256SUMS, which only warns; a mismatch fails.
+function Test-Download([string]$File, [string]$Name) {
+    try {
+        $Sums = (Invoke-WebRequest -Uri $SumsUrl -UseBasicParsing -TimeoutSec 30).Content
+    } catch {
+        Write-Host "    [!] Ehhez a kiadashoz nincs SHA256SUMS, a letoltes nem ellenorizheto." -ForegroundColor Yellow
+        return $true
+    }
+    if ($Sums -is [byte[]]) { $Sums = [Text.Encoding]::UTF8.GetString($Sums) }
+    $Expected = $null
+    foreach ($Line in ($Sums -split "`n")) {
+        $Parts = $Line.Trim() -split '\s+', 2
+        if ($Parts.Count -eq 2 -and $Parts[1].TrimStart('*') -eq $Name) {
+            $Expected = $Parts[0].ToLower()
+            break
+        }
+    }
+    $Actual = (Get-FileHash -Path $File -Algorithm SHA256).Hash.ToLower()
+    if (-not $Expected -or $Expected -ne $Actual) {
+        Write-Host "    [HIBA] Az ellenorzo osszeg nem egyezik ($Name), a fajlt nem telepitem." -ForegroundColor Red
+        return $false
+    }
+    Write-Host "    [OK] Ellenorzo osszeg rendben: $Name" -ForegroundColor Green
+    return $true
+}
+
 # Create directories
 New-Item -ItemType Directory -Path $BinDir -Force | Out-Null
 if ($InstallDesktop) {
     New-Item -ItemType Directory -Path $DesktopDir -Force | Out-Null
 }
 
+# Local builds are copied only on request and only from the script's own repo,
+# never from the current folder (irm | iex has no $PSScriptRoot).
+$UseLocalBuild = $FromLocalBuild -and $PSScriptRoot
 $RepoRoot = $PSScriptRoot
-if (-not $RepoRoot) { $RepoRoot = (Get-Location).Path }
 
 # 1. Desktop Installation
 if ($InstallDesktop) {
@@ -274,7 +312,7 @@ if ($InstallDesktop) {
     $LocalDesktopExe = "$RepoRoot\app\build\windows\x64\runner\Release\pala.exe"
     $DestDesktopExe = Join-Path $DesktopDir "pala.exe"
     
-    if (Test-Path $LocalDesktopExe) {
+    if ($UseLocalBuild -and (Test-Path $LocalDesktopExe)) {
         $ReleaseDir = Split-Path -Parent $LocalDesktopExe
         Copy-Item -Path "$ReleaseDir\*" -Destination $DesktopDir -Recurse -Force
         Write-Host "    [OK] Helyi asztali alkalmazas masolva ide: $DesktopDir" -ForegroundColor Green
@@ -288,15 +326,21 @@ if ($InstallDesktop) {
         Write-Host "    Letoltes: $SetupUrl" -ForegroundColor DarkGray
         try {
             Invoke-WebRequest -Uri $SetupUrl -OutFile $TempSetup -TimeoutSec 120
-            Write-Host "    [+] Asztali alkalmazas telepitese a hatterben..." -ForegroundColor Yellow
-            $proc = Start-Process -FilePath $TempSetup -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART" -Wait -PassThru
-            if ($proc.ExitCode -eq 0) {
-                Write-Host "    [OK] Pala Desktop sikeresen telepitve!" -ForegroundColor Green
+            if (-not (Test-Download $TempSetup "Pala-Setup.exe")) {
+                $Failed++
             } else {
-                Write-Host "    [!] A telepito kilepesi kodja: $($proc.ExitCode)" -ForegroundColor Yellow
+                Write-Host "    [+] Asztali alkalmazas telepitese a hatterben..." -ForegroundColor Yellow
+                $proc = Start-Process -FilePath $TempSetup -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART" -Wait -PassThru
+                if ($proc.ExitCode -eq 0) {
+                    Write-Host "    [OK] Pala Desktop sikeresen telepitve!" -ForegroundColor Green
+                } else {
+                    Write-Host "    [HIBA] A telepito kilepesi kodja: $($proc.ExitCode)" -ForegroundColor Red
+                    $Failed++
+                }
             }
         } catch {
-            Write-Host "    [!] Figyelem: A Pala-Setup.exe letoltese sikertelen: $_" -ForegroundColor Red
+            Write-Host "    [HIBA] A Pala-Setup.exe letoltese sikertelen: $_" -ForegroundColor Red
+            $Failed++
         } finally {
             if (Test-Path $TempSetup) { Remove-Item $TempSetup -Force -ErrorAction SilentlyContinue }
         }
@@ -309,7 +353,7 @@ if ($InstallCli) {
     $LocalCli = Join-Path $RepoRoot "pala.exe"
     $DestCli = Join-Path $BinDir "pala.exe"
     
-    if (Test-Path $LocalCli) {
+    if ($UseLocalBuild -and (Test-Path $LocalCli)) {
         Copy-Item -Path $LocalCli -Destination $DestCli -Force
         Write-Host "    [OK] Helyi pala.exe masolva ide: $DestCli" -ForegroundColor Green
     } else {
@@ -319,11 +363,20 @@ if ($InstallCli) {
             "https://github.com/$Repo/releases/download/$Version/pala.exe"
         }
         Write-Host "    Letoltes: $CliDownloadUrl" -ForegroundColor DarkGray
+        $TempCli = Join-Path $env:TEMP "pala-cli-$PID.exe"
         try {
-            Invoke-WebRequest -Uri $CliDownloadUrl -OutFile $DestCli -TimeoutSec 60
-            Write-Host "    [OK] Letoltve es telepitve: $DestCli" -ForegroundColor Green
+            Invoke-WebRequest -Uri $CliDownloadUrl -OutFile $TempCli -TimeoutSec 60
+            if (Test-Download $TempCli "pala.exe") {
+                Move-Item -Path $TempCli -Destination $DestCli -Force
+                Write-Host "    [OK] Letoltve es telepitve: $DestCli" -ForegroundColor Green
+            } else {
+                $Failed++
+            }
         } catch {
-            Write-Host "    [!] Figyelem: A CLI binaris letoltese sikertelen: $_" -ForegroundColor Red
+            Write-Host "    [HIBA] A CLI binaris letoltese sikertelen: $_" -ForegroundColor Red
+            $Failed++
+        } finally {
+            if (Test-Path $TempCli) { Remove-Item $TempCli -Force -ErrorAction SilentlyContinue }
         }
     }
     
@@ -375,6 +428,15 @@ Write-Host "Pala sikeresen eltavolitva!" -ForegroundColor Green
 "@ | Set-Content -Path $UninstallScript -Encoding utf8
 
 Write-Host ""
+if ($Failed -gt 0) {
+    Write-Host "=============================================================" -ForegroundColor Red
+    Write-Host " A telepites reszben sikertelen: $Failed osszetevo nem telepult." -ForegroundColor Red
+    Write-Host " Ellenorizd az internetkapcsolatot, es futtasd ujra a telepitot." -ForegroundColor Red
+    Write-Host "=============================================================" -ForegroundColor Red
+    # exit would close the window under irm | iex, so only exit when run as a file.
+    if ($PSCommandPath) { exit 1 }
+    return
+}
 Write-Host "=============================================================" -ForegroundColor Green
 Write-Host " A telepites es beallitas sikeresen befejezodott!" -ForegroundColor Green
 Write-Host " Inditas: " -ForegroundColor White

@@ -1541,7 +1541,8 @@ class PalaWebHtml {
         const subSums = {};
 
         cachedGrades.forEach(g => {
-          if (g.numericValue && g.numericValue >= 1 && g.numericValue <= 5) {
+          // Midyear and year-end grades are results, not part of the average.
+          if (!g.isSummary && g.numericValue && g.numericValue >= 1 && g.numericValue <= 5) {
             const w = (g.weight || 100) / 100;
             sum += g.numericValue * w;
             count += w;

@@ -24,7 +24,7 @@ A kiterjesztés az alábbi Manifest V3 engedélyeket kéri, kizárólag a követ
 - `storage`: a fent leírt helyi adattárolás.
 - `alarms`: a token silent-refresh és az óraközi visszaszámláló ütemezése.
 - `notifications`: új jegy/üzenet értesítések megjelenítése.
-- `tabs`, `webNavigation`, valamint a `*.e-kreta.hu` host engedély: a Kréta weboldal automatikus adat-beolvasásához és a bejelentkezési folyamathoz.
+- `webNavigation`, valamint a `*.e-kreta.hu` host engedély: a bejelentkezési folyamathoz (a Kréta visszairányításának elkapása) és a Kréta API eléréséhez.
 
 ## Adatok törlése
 

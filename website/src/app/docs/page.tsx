@@ -2049,7 +2049,7 @@ dart run bin/pala.dart`}</pre>
                     <div className="flex items-start gap-2 text-xs text-muted"><CheckCircle2 size={13} className="text-primary shrink-0 mt-0.5" /><span>Nulla telepítés (nincs .exe/.apk), azonnal használható a böngésző eszköztárból.</span></div>
                     <div className="flex items-start gap-2 text-xs text-muted"><CheckCircle2 size={13} className="text-primary shrink-0 mt-0.5" /><span>Csendes token-megújítás oldja fel a hivatalos Kréta weboldal 40–60 perces időkorlátját.</span></div>
                     <div className="flex items-start gap-2 text-xs text-muted"><CheckCircle2 size={13} className="text-primary shrink-0 mt-0.5" /><span>Mini popup gyorsnézet + teljes vezérlőpult, 429-kezeléssel és cache-first tartalékkal terhelés esetén.</span></div>
-                    <div className="flex items-start gap-2 text-xs text-muted"><AlertTriangle size={13} className="text-primary shrink-0 mt-0.5" /><span>Csak Chromium-alapú böngészőkben (Chrome, Edge, Brave) — Firefox Manifest V3 támogatás korlátozott.</span></div>
+                    <div className="flex items-start gap-2 text-xs text-muted"><AlertTriangle size={13} className="text-primary shrink-0 mt-0.5" /><span>Chrome, Edge és Brave alatt fut; Firefoxon csak ideiglenes kiegészítőként, a böngésző újraindításáig.</span></div>
                     <div className="flex items-start gap-2 text-xs text-muted"><AlertTriangle size={13} className="text-primary shrink-0 mt-0.5" /><span>Nincs értesítés, amíg a böngésző zárva van, és nincs asztali parancsikon-szintű gyors elérés.</span></div>
                   </div>
                 </div>
@@ -2740,6 +2740,9 @@ dart run bin/pala.dart`}</pre>
                   </div>
                   <p className="text-xs text-muted leading-relaxed mt-2 sm:pl-6">
                     A Pala egy nonprofit, közösségi nyílt forráskódú projekt, így nem rendelkezik évi többszázezer forintos Microsoft/Google EV digitális aláíró tanúsítvánnyal. A forráskód nyilvános és ellenőrizhető a GitHubon. Windows alatt kattints a <strong>„További információ”</strong> &gt; <strong>„Futtatás mindenképpen”</strong> gombra.
+                  </p>
+                  <p className="text-xs text-muted leading-relaxed mt-2 sm:pl-6">
+                    Ezt csak akkor tedd, ha a fájlt a <strong>pala-app.hu</strong> oldalról vagy a GitHub Releases oldalról töltötted le, soha ne más által küldött példányt futtass. Minden kiadás mellett ott a <strong>SHA256SUMS</strong> fájl: a letöltött fájl ellenőrző összegének egyeznie kell a benne szereplővel. Windowson: <code className="font-mono text-primary">Get-FileHash .\Pala-Setup.exe</code>, macOS-en és Linuxon: <code className="font-mono text-primary">shasum -a 256 -c SHA256SUMS --ignore-missing</code>.
                   </p>
                 </div>
 

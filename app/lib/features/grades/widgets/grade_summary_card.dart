@@ -63,7 +63,7 @@ class _GradeSummaryCardState extends State<GradeSummaryCard> {
 
     final trendIcon = _getTrendIcon(trendDiff);
     final trendColor = _getTrendColor(trendDiff, colorScheme);
-    final avgColor = AppColors.getGradeColor(widget.average);
+    final avgColor = AppColors.getGradeColor(widget.average, Theme.of(context).brightness);
 
     return Semantics(
       container: true,
@@ -183,7 +183,7 @@ class _GradeSummaryCardState extends State<GradeSummaryCard> {
   }
 
   Widget _buildGradeItem(BuildContext context, ThemeData theme, ColorScheme colorScheme, Grade grade) {
-    final gradeColor = AppColors.getGradeColor(grade.numericValue);
+    final gradeColor = AppColors.getGradeColor(grade.numericValue, Theme.of(context).brightness);
     final dateStr = grade.date != null ? DateFormat('yyyy.MM.dd').format(grade.date!) : '';
 
     return Padding(

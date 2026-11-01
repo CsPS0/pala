@@ -27,7 +27,8 @@ class KretaAPI {
         '&client_id=$clientId'
         '&state=pala_student_mobile';
     if (instituteCode != null) {
-      return '$base&institute_code=$instituteCode&acr_values=institute_code:$instituteCode';
+      final code = Uri.encodeComponent(instituteCode);
+      return '$base&institute_code=$code&acr_values=institute_code:$code';
     }
     return base;
   }
@@ -110,7 +111,14 @@ class KretaAPI {
 }
 
 class BaseKreta {
-    static String kreta(String iss) => "https://$iss.e-kreta.hu";
+    /// Kréta institute codes are lowercase letters, digits and dashes. Anything
+    /// else (e.g. "evil.example#") could move the token to another host.
+    static bool isValidInstituteCode(String code) => RegExp(r'^[a-z0-9-]{2,40}$').hasMatch(code);
+
+    static String kreta(String iss) {
+      if (!isValidInstituteCode(iss)) throw FormatException('Érvénytelen intézménykód: $iss');
+      return "https://$iss.e-kreta.hu";
+    }
     static const kretaIdp = "https://idp.e-kreta.hu";
     static const kretaAdmin = "https://eugyintezes.e-kreta.hu";
     static const kretaFiles = "https://files.e-kreta.hu";

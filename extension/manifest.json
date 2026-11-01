@@ -41,13 +41,11 @@
     "storage",
     "alarms",
     "notifications",
-    "tabs",
     "webNavigation",
     "sidePanel"
   ],
   "host_permissions": [
-    "https://*.e-kreta.hu/*",
-    "https://mobil.e-kreta.hu/*"
+    "https://*.e-kreta.hu/*"
   ],
   "browser_specific_settings": {
     "gecko": {

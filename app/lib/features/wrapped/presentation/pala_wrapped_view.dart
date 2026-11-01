@@ -168,6 +168,7 @@ class _PalaWrappedViewState extends State<PalaWrappedView> {
             ...[5, 4, 3, 2, 1].map((val) {
               final count = gradeCounts[val] ?? 0;
               final ratio = totalGrades > 0 ? (count / totalGrades) : 0.0;
+              // Wrapped is always drawn on a dark background.
               final color = AppColors.getGradeColor(val);
 
               return Padding(

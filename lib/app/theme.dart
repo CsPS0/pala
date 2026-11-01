@@ -11,10 +11,10 @@ class PalaTheme {
   static String get _mode => AppState.instance.themeMode;
   static bool get isLight => _mode == modeLight;
 
-  // Single fixed accent color (Pala Amber). Kept as a constant everywhere
-  // rather than user-selectable, per platform-wide accent removal.
-  static const String primary = '\x1B[38;5;208m';
-  static const String primaryBold = '\x1B[1;38;5;208m';
+  // Single fixed accent color (Pala Amber), not user-selectable. Light mode
+  // uses a darker amber (130): 208 is only 2.4:1 on a white terminal.
+  static String get primary => isLight ? '\x1B[38;5;130m' : '\x1B[38;5;208m';
+  static String get primaryBold => isLight ? '\x1B[1;38;5;130m' : '\x1B[1;38;5;208m';
 
   // Common colors
   static const String reset = '\x1B[0m';
@@ -31,7 +31,7 @@ class PalaTheme {
   // High-contrast pane border and divider colors
   static String get borderMuted => isLight ? '\x1B[38;5;244m' : '\x1B[38;5;240m';
   static String get borderActive => primary;
-  static String get borderHighlight => isLight ? '\x1B[38;5;31m' : '\x1B[38;5;45m';
+  static String get borderHighlight => isLight ? '\x1B[38;5;25m' : '\x1B[38;5;45m';
   static String get textBright => isLight ? '\x1B[1;30m' : '\x1B[1;97m';
   static String get surfaceBadge => isLight ? '\x1B[48;5;254m\x1B[38;5;235m' : '\x1B[48;5;236m\x1B[38;5;252m';
 
@@ -46,13 +46,15 @@ class PalaTheme {
   static const String boxTeeLeft = '┤';
 
   // Grade Color Psychology (ANSI 256 / TrueColor compatible):
-  // 5: Bright Green, 4: Light Green, 3: Yellow, 2: Orange, 1: Red
-  static const String grade5Fg = '\x1B[1;38;5;46m';
-  static const String grade4Fg = '\x1B[1;38;5;114m';
-  static const String grade3Fg = '\x1B[1;38;5;220m';
-  static const String grade2Fg = '\x1B[1;38;5;208m';
-  static const String grade1Fg = '\x1B[1;38;5;196m';
-  static const String gradeGhostFg = '\x1B[1;38;5;51m';
+  // 5: Bright Green, 4: Light Green, 3: Yellow, 2: Orange, 1: Red.
+  // The bright codes are 1.2-2.4:1 on a white terminal, so light mode uses
+  // darker codes that all reach at least 4.5:1.
+  static String get grade5Fg => isLight ? '\x1B[1;38;5;22m' : '\x1B[1;38;5;46m';
+  static String get grade4Fg => isLight ? '\x1B[1;38;5;28m' : '\x1B[1;38;5;114m';
+  static String get grade3Fg => isLight ? '\x1B[1;38;5;94m' : '\x1B[1;38;5;220m';
+  static String get grade2Fg => isLight ? '\x1B[1;38;5;130m' : '\x1B[1;38;5;208m';
+  static String get grade1Fg => isLight ? '\x1B[1;38;5;124m' : '\x1B[1;38;5;196m';
+  static String get gradeGhostFg => isLight ? '\x1B[1;38;5;25m' : '\x1B[1;38;5;51m';
 
   static const String grade5Pill = '\x1B[48;5;22m\x1B[1;38;5;46m';
   static const String grade4Pill = '\x1B[48;5;23m\x1B[1;38;5;114m';

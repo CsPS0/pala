@@ -12,6 +12,7 @@ set -e
 
 REPO="CsPS0/pala"
 USER_BIN="$HOME/.local/bin"
+FAILED=0
 mkdir -p "$USER_BIN"
 
 # Reconnect stdin to controlling terminal if piped via curl | bash
@@ -27,6 +28,28 @@ if [ "$OS" != "Linux" ] && [ "$OS" != "Darwin" ]; then
     echo "Hiba: Ez a telepito csak Linux es macOS rendszereken futtathato."
     exit 1
 fi
+
+# Checks a downloaded file against the release's SHA256SUMS. Older releases
+# have no SHA256SUMS, which only warns; a mismatch fails.
+verify_download() {
+    FILE="$1"
+    NAME="$2"
+    if ! SUMS="$(curl -fsSL "https://github.com/$REPO/releases/latest/download/SHA256SUMS" 2>/dev/null)"; then
+        echo "    [!] Ehhez a kiadashoz nincs SHA256SUMS, a letoltes nem ellenorizheto."
+        return 0
+    fi
+    EXPECTED="$(echo "$SUMS" | awk -v n="$NAME" '$2 == n || $2 == "*" n { print $1; exit }')"
+    if command -v sha256sum >/dev/null 2>&1; then
+        ACTUAL="$(sha256sum "$FILE" | awk '{print $1}')"
+    else
+        ACTUAL="$(shasum -a 256 "$FILE" | awk '{print $1}')"
+    fi
+    if [ -z "$EXPECTED" ] || [ "$EXPECTED" != "$ACTUAL" ]; then
+        echo "    [HIBA] Az ellenorzo osszeg nem egyezik ($NAME), a fajlt nem telepitem."
+        return 1
+    fi
+    echo "    [OK] Ellenorzo osszeg rendben: $NAME"
+}
 
 # Default component selections
 INSTALL_DESKTOP=1
@@ -201,12 +224,14 @@ if [ "$INSTALL_DESKTOP" -eq 1 ]; then
         
         APPIMAGE_URL="https://github.com/$REPO/releases/latest/download/Pala-x86_64.AppImage"
         echo "    Letoltes: $APPIMAGE_URL"
-        if curl -fsSL -o "$APPIMAGE_PATH" "$APPIMAGE_URL"; then
+        if curl -fsSL -o "$APPIMAGE_PATH" "$APPIMAGE_URL" && verify_download "$APPIMAGE_PATH" "Pala-x86_64.AppImage"; then
             chmod +x "$APPIMAGE_PATH"
             ln -sf "$APPIMAGE_PATH" "$USER_BIN/pala-desktop"
             echo "    [OK] Pala AppImage telepitve ide: $APPIMAGE_PATH"
         else
-            echo "    [!] Figyelem: Az AppImage letoltese sikertelen."
+            echo "    [HIBA] Az AppImage letoltese vagy ellenorzese sikertelen."
+            rm -f "$APPIMAGE_PATH"
+            FAILED=$((FAILED + 1))
         fi
 
         # Download icon
@@ -244,9 +269,10 @@ EOF
 
     elif [ "$OS" = "Darwin" ]; then
         DMG_URL="https://github.com/$REPO/releases/latest/download/Pala-macOS.dmg"
-        TMP_DMG="/tmp/Pala-macOS.dmg"
+        TMP_DMG_DIR="$(mktemp -d)"
+        TMP_DMG="$TMP_DMG_DIR/Pala-macOS.dmg"
         echo "    Letoltes: $DMG_URL"
-        if curl -fsSL -o "$TMP_DMG" "$DMG_URL"; then
+        if curl -fsSL -o "$TMP_DMG" "$DMG_URL" && verify_download "$TMP_DMG" "Pala-macOS.dmg"; then
             MOUNT_DIR=$(mktemp -d)
             hdiutil attach "$TMP_DMG" -mountpoint "$MOUNT_DIR" -nobrowse -quiet
             if [ -d "$MOUNT_DIR/Pala.app" ]; then
@@ -257,18 +283,22 @@ EOF
                 fi
                 rm -rf "$DEST_APP"
                 cp -R "$MOUNT_DIR/Pala.app" "$DEST_APP"
-                xattr -cr "$DEST_APP" 2>/dev/null || true
                 echo "    [OK] Pala.app sikeresen telepitve ide: $DEST_APP"
 
                 if [ "$DO_DESKTOP_ICON" -eq 1 ] && [ -d "$HOME/Desktop" ]; then
                     ln -sf "$DEST_APP" "$HOME/Desktop/Pala.app"
                     echo "    [OK] Asztali parancsikon letrehozva: $HOME/Desktop/Pala.app"
                 fi
+            else
+                echo "    [HIBA] A DMG nem tartalmazza a Pala.app-ot."
+                FAILED=$((FAILED + 1))
             fi
             hdiutil detach "$MOUNT_DIR" -quiet 2>/dev/null || true
-            rm -rf "$MOUNT_DIR" "$TMP_DMG"
+            rm -rf "$MOUNT_DIR" "$TMP_DMG_DIR"
         else
-            echo "    [!] Figyelem: A macOS DMG letoltese sikertelen."
+            echo "    [HIBA] A macOS DMG letoltese vagy ellenorzese sikertelen."
+            rm -rf "$TMP_DMG_DIR"
+            FAILED=$((FAILED + 1))
         fi
     fi
 fi
@@ -283,20 +313,19 @@ if [ "$INSTALL_CLI" -eq 1 ]; then
     fi
 
     CLI_URL="https://github.com/$REPO/releases/latest/download/$CLI_ASSET"
-    TMP_CLI="/tmp/pala_cli_$$"
+    TMP_CLI="$(mktemp)"
     
     echo "    Letoltes: $CLI_URL"
-    if curl -fsSL -o "$TMP_CLI" "$CLI_URL"; then
+    if curl -fsSL -o "$TMP_CLI" "$CLI_URL" && verify_download "$TMP_CLI" "$CLI_ASSET"; then
         chmod +x "$TMP_CLI"
         
         TARGET_BIN="$USER_BIN/pala"
         mv "$TMP_CLI" "$TARGET_BIN"
-        if [ "$OS" = "Darwin" ]; then
-            xattr -d com.apple.quarantine "$TARGET_BIN" 2>/dev/null || true
-        fi
         echo "    [OK] Pala CLI sikeresen telepitve ide: $TARGET_BIN"
     else
-        echo "    [!] Figyelem: A CLI binaris letoltese sikertelen."
+        echo "    [HIBA] A CLI binaris letoltese vagy ellenorzese sikertelen."
+        rm -f "$TMP_CLI"
+        FAILED=$((FAILED + 1))
     fi
 
     if [ "$DO_ADD_TO_PATH" -eq 1 ]; then
@@ -305,6 +334,13 @@ if [ "$INSTALL_CLI" -eq 1 ]; then
 fi
 
 echo ""
+if [ "$FAILED" -gt 0 ]; then
+    echo "============================================================="
+    echo " A telepites reszben sikertelen: $FAILED osszetevo nem telepult."
+    echo " Ellenorizd az internetkapcsolatot, es futtasd ujra a telepitot."
+    echo "============================================================="
+    exit 1
+fi
 echo "============================================================="
 echo " A telepites es beallitas sikeresen befejezodott!"
 echo " Inditas: "

@@ -47,7 +47,8 @@ class IcsExporter {
     }
 
     for (var exam in exams) {
-      final date = exam.date?.toUtc();
+      // An all-day event: its date is the local calendar day, not the UTC one.
+      final date = exam.date?.toLocal();
       if (date == null) continue;
 
       final subject = exam.subject;

@@ -17,7 +17,7 @@ void main(List<String> arguments) async {
   final parser = ArgParser()
     ..addOption('institute', abbr: 'i', help: 'Az intézmény kódja (pl. intezmeny123)')
     ..addOption('username', abbr: 'u', help: 'Felhasználónév (oktatási azonosító)')
-    ..addOption('password', abbr: 'p', help: 'Jelszó')
+    ..addOption('password', abbr: 'p', help: 'Jelszó (nem ajánlott: látszik a folyamatlistában és a shell előzményeiben; használd inkább a PALA_PASSWORD környezeti változót vagy az interaktív belépést)')
     ..addCommand('setup')
     ..addCommand('install')
     ..addFlag('setup', negatable: false, help: 'Interaktív komponens-telepítő és beállító varázsló indítása')
@@ -143,7 +143,12 @@ void main(List<String> arguments) async {
 
   final institute = argResults['institute'];
   final username = argResults['username'];
-  final password = argResults['password'];
+  final passwordArg = argResults['password'] as String?;
+  if (passwordArg != null) {
+    stderr.writeln('Figyelem: a -p/--password kapcsolóval megadott jelszó látszik a folyamatlistában és a shell előzményeiben. '
+        'Használd inkább a PALA_PASSWORD környezeti változót vagy az interaktív belépést.');
+  }
+  final password = passwordArg ?? Platform.environment['PALA_PASSWORD'];
 
   if (institute != null && username != null && password != null) {
     await app.runWithCredentials(institute, username, password, startInDashboard: argResults.rest.contains('dash'));

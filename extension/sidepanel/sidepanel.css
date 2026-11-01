@@ -570,7 +570,6 @@ body {
   padding: 8px 11px;
   color: var(--text);
   font-size: 0.78rem;
-  outline: none;
 }
 .sp-search-input:focus { border-color: var(--primary); }
 
@@ -768,4 +767,10 @@ body {
   background-size: 200% 100%;
   animation: pala-shimmer 1.4s infinite;
   border: 1px solid var(--border);
+}
+
+/* Keyboard focus: visible on every control, in both themes. */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }

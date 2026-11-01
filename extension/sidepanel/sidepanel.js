@@ -129,6 +129,11 @@ function setupHeaderActions() {
   });
 
   document.getElementById("sp-btn-maint-retry")?.addEventListener("click", async () => {
+    // Login lives on the dashboard's account page.
+    if ((spState.data?.offlineReason || spState.offlineReason) === "expired") {
+      chrome.tabs.create({ url: chrome.runtime.getURL("dashboard/dashboard.html#view-account") });
+      return;
+    }
     await chrome.storage.local.set({ pala_simulate_maintenance: false });
     await loadSidePanelData(true);
   });
@@ -197,7 +202,7 @@ async function loadSidePanelData(forceRefresh = false) {
   ]);
   const session = await SecureSession.load();
   const useDemo = store.pala_use_demo !== false;
-  const next = { isDemo: true, isMaintenance: false, data: null };
+  const next = { isDemo: true, isMaintenance: false, offlineReason: null, data: null };
 
   if (useDemo || !session) {
     next.data = KretaApi.getDemoDataset(spState.demoAWeekOverride);
@@ -210,8 +215,9 @@ async function loadSidePanelData(forceRefresh = false) {
     } catch (err) {
       console.warn("Could not fetch online Kréta data, falling back to cached:", err);
       next.isMaintenance = true;
+      next.offlineReason = offlineReasonOf(err);
       // No cache: show the offline state, never demo data posing as the student's.
-      next.data = store.pala_cached_data ? { ...store.pala_cached_data, isMaintenance: true } : null;
+      next.data = store.pala_cached_data ? { ...store.pala_cached_data, isMaintenance: true, offlineReason: next.offlineReason } : null;
     }
   }
 
@@ -222,14 +228,28 @@ async function loadSidePanelData(forceRefresh = false) {
   renderFrame = requestAnimationFrame(renderAllViews);
 }
 
+/** The banner button logs in again for an expired session, otherwise retries. */
+function setSpRetryLabel(reason) {
+  const btn = document.getElementById("sp-btn-maint-retry");
+  if (btn) btn.textContent = reason === "expired" ? "Belépés" : "Újra";
+}
+
 function renderAllViews() {
   const data = spState.data;
   const maintBanner = document.getElementById("sp-maint-banner");
   const maintText = document.getElementById("sp-maint-text");
   if (!data) {
-    if (maintText) maintText.textContent = "A Kréta szerverei most nem érhetők el, és még nincs mentett adat.";
+    const reason = spState.offlineReason;
+    if (maintText) {
+      maintText.textContent = reason === "expired"
+        ? "Lejárt a Kréta-bejelentkezés, és még nincs mentett adat. Lépj be újra."
+        : reason === "network"
+          ? "Nincs internetkapcsolat, és még nincs mentett adat."
+          : "A Kréta szerverei most nem érhetők el, és még nincs mentett adat.";
+    }
+    setSpRetryLabel(reason);
     if (maintBanner) maintBanner.style.display = "flex";
-    setSpStatus("badge-maintenance", "Offline");
+    setSpStatus("badge-maintenance", offlineLabel(reason));
     ["sp-recent-grades", "sp-upcoming-tasks", "sp-timetable-container", "sp-grade-matrix", "sp-absences-list"].forEach(id => {
       document.getElementById(id)?.replaceChildren();
     });
@@ -249,8 +269,9 @@ function renderAllViews() {
 
   if (spState.isMaintenance) {
     if (maintText) maintText.textContent = offlineNotice(data);
+    setSpRetryLabel(data.offlineReason);
     if (maintBanner) maintBanner.style.display = "flex";
-    setSpStatus("badge-maintenance", "Offline");
+    setSpStatus("badge-maintenance", offlineLabel(data));
   } else {
     if (maintBanner) maintBanner.style.display = "none";
     setSpStatus(spState.isDemo ? "badge-demo" : "badge-online", spState.isDemo ? "Demó" : "Online");
@@ -699,6 +720,17 @@ function setupAbsenceControls() {
   });
 }
 
+/**
+ * Kréta IgazolasAllapota: only "Igazolt" is excused. "Igazolando" is still
+ * open, so it counts as not excused, as on the dashboard.
+ */
+function absenceStatus(a) {
+  const status = String(a.IgazolasAllapota || "").toLowerCase();
+  if (status.includes("igazolatlan")) return "unexcused";
+  if (status.includes("igazoland")) return "pending";
+  return "excused";
+}
+
 function renderAbsencesView(absences) {
   let excused = 0;
   let unexcused = 0;
@@ -706,8 +738,7 @@ function renderAbsencesView(absences) {
 
   (absences || []).forEach(a => {
     const delay = Number(a.KesesPercben || 0);
-    const status = String(a.IgazolasAllapota || "").toLowerCase();
-    const isUnexcused = status.includes("igazolatlan");
+    const isUnexcused = absenceStatus(a) !== "excused";
     if (delay > 0) {
       delayMins += delay;
     } else if (isUnexcused) {
@@ -759,7 +790,7 @@ function renderAbsencesView(absences) {
 
   const filtered = (absences || []).filter(a => {
     const delay = Number(a.KesesPercben || 0);
-    const isUnexcused = String(a.IgazolasAllapota || "").toLowerCase().includes("igazolatlan");
+    const isUnexcused = absenceStatus(a) !== "excused";
     if (spState.absenceFilter === "late") return delay > 0;
     if (spState.absenceFilter === "unexcused") return isUnexcused;
     if (spState.absenceFilter === "excused") return !isUnexcused && delay === 0;
@@ -774,10 +805,14 @@ function renderAbsencesView(absences) {
   filtered.forEach(a => {
     const sub = a.Tantargy?.Nev || a.Tantargy || "Tanóra";
     const delay = Number(a.KesesPercben || 0);
-    const isUnexcused = String(a.IgazolasAllapota || "").toLowerCase().includes("igazolatlan");
+    const status = absenceStatus(a);
     const dateStr = a.Datum ? new Date(a.Datum).toLocaleDateString("hu-HU") : "";
-    const statusLabel = delay > 0 ? `Késés (${delay} p)` : (isUnexcused ? "Igazolatlan" : "Igazolt");
-    const statusColor = isUnexcused ? "var(--danger)" : (delay > 0 ? "var(--warning)" : "var(--success)");
+    const statusLabel = delay > 0
+      ? `Késés (${delay} p)`
+      : ({ unexcused: "Igazolatlan", pending: "Igazolandó", excused: "Igazolt" })[status];
+    const statusColor = status === "unexcused"
+      ? "var(--danger)"
+      : (delay > 0 || status === "pending" ? "var(--warning)" : "var(--success)");
 
     const row = document.createElement("div");
     row.className = "sp-list-item";

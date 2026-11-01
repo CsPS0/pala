@@ -213,7 +213,7 @@ class _GlobalSearchViewState extends State<GlobalSearchView> {
                               ...matchGrades.map((g) {
                                 final dateStr = g.date != null ? DateFormat('yyyy.MM.dd').format(g.date!) : '';
                                 final val = g.numericValue?.toString() ?? g.textValue ?? '?';
-                                final gradeColor = AppColors.getGradeColor(g.numericValue);
+                                final gradeColor = AppColors.getGradeColor(g.numericValue, Theme.of(context).brightness);
 
                                 return SearchResultTile(
                                   category: SearchCategory.grade,
