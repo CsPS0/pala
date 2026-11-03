@@ -16,9 +16,9 @@ export default function HomePage() {
         <Wave />
         <Features />
         <Wave />
-        <PlatformDownloadGrid />
-        <Wave />
         <Security />
+        <Wave />
+        <PlatformDownloadGrid />
         <Wave />
         <Roadmap />
         <HistoryTeaser />

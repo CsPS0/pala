@@ -5,47 +5,47 @@ export function Roadmap() {
   const sections = [
     {
       title: "Már elérhető",
-      subtitle: "Befejezett funkciók",
-      badgeClass: "bg-primary/10 text-primary border-primary/30",
+      subtitle: "Ezt tudja most",
+      badgeClass: "bg-sidebar text-fg border-border",
       icon: CheckCircle2,
       items: [
-        "Asztali alkalmazás (Windows, Linux, macOS)",
-        "Android alkalmazás",
-        "Terminálos (TUI) kliens (Scoop, Homebrew, AUR, .deb)",
-        "Böngészőbővítmény (Chrome, Edge, Brave, Firefox) felugró ablakkal, oldalsávval és teljes vezérlőpulttal",
-        "Világos és sötét téma minden kliensben",
-        "Élő órarendi visszaszámláló és szünetjelző",
-        "A/B hét felismerése a Kréta adataiból",
-        "Célátlag és Szellem Jegy kalkulátor",
-        "250 órás hiányzásfigyelő és szülői igazolási keret",
-        "Tanári üzenetküldés és válaszok",
-        "Órarend exportálása naptárba (.ics)",
-        "Pala Wrapped éves összegző",
-        "Offline gyorsítótár, titkosított munkamenet-tárolás",
-        "Bejelentkezés CAPTCHA-val vagy kétlépcsős azonosítással védett fiókkal",
+        "Alkalmazás számítógépre (Windows, Mac, Linux)",
+        "Alkalmazás androidos telefonra",
+        "Böngészőbővítmény Chrome-ba, Edge-be és Brave-be",
+        "Világos és sötét megjelenés",
+        "Visszaszámláló a következő óráig, helyettesítések és elmaradó órák",
+        "A és B hét felismerése",
+        "Jegykalkulátor: mennyi kell még a kívánt jegyhez",
+        "Hiányzásfigyelő a 250 órás határig, a szülői igazolásokkal",
+        "Üzenetek a tanároknak",
+        "Órarend a saját naptáradba",
+        "Éves összefoglaló kép (Pala Wrapped)",
+        "Net nélkül is mutatja a legutóbbi adataidat",
+        "Belépés kétlépcsős azonosítással is",
+        "Haladóknak: parancssori változat",
       ],
     },
     {
       title: "Hamarosan",
-      subtitle: "Aktív fejlesztés alatt",
-      badgeClass: "bg-primary/10 text-primary border-primary/30",
+      subtitle: "Ezen dolgozunk",
+      badgeClass: "bg-sidebar text-fg border-border",
       icon: Clock,
       items: [
-        "Intelligens tanulmányi előrejelzés és heti elemzés",
-        "Interaktív házi feladat határidő naptár widget",
-        "Továbbfejlesztett vizsga- és dolgozattervező modul",
-        "Testreszabható témaszínek",
+        "Heti összefoglaló: mi vár rád a jövő héten",
+        "Házi feladatok határidőnaptárban",
+        "Dolgozattervező: mennyi múlik a következő dolgozaton",
+        "Saját színek választása",
       ],
     },
     {
       title: "Későbbi tervek",
-      subtitle: "Tervezett jövőbeli bővítések",
-      badgeClass: "bg-muted/10 text-muted border-muted/30",
+      subtitle: "Ezt tervezzük",
+      badgeClass: "bg-sidebar text-muted border-border",
       icon: Calendar,
       items: [
-        "Automatikus naptárszinkron (Google Naptár, Apple Naptár)",
-        "Közösségi tanulási modul és jegyzetmegosztó",
-        "Asztali widgetek Windowsra és macOS-re",
+        "Automatikus szinkron a Google és az Apple naptárával",
+        "Jegyzetek megosztása az osztálytársakkal",
+        "Kis ablak (widget) az asztalra Windowson és Macen",
         "iPhone-alkalmazás",
       ],
     },
@@ -54,9 +54,9 @@ export function Roadmap() {
   return (
     <section id="utemterv" className="py-12 sm:py-16 px-4 sm:px-6 max-w-6xl mx-auto w-full overflow-hidden">
       <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-10">
-        <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-3 text-fg">Fejlesztési Ütemterv</h2>
+        <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-3 text-fg">Mi jön még?</h2>
         <p className="text-muted text-base">
-          Kövesd nyomon, min dolgozunk jelenleg és milyen újítások érkeznek a következő verziókban.
+          Mit tud már a Pala, és min dolgozunk most.
         </p>
       </div>
 
@@ -69,7 +69,7 @@ export function Roadmap() {
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h3 className="text-lg font-bold text-fg">{sec.title}</h3>
-                    <p className="text-xs text-muted font-semibold">{sec.subtitle}</p>
+                    <p className="text-sm text-muted font-semibold">{sec.subtitle}</p>
                   </div>
                   <div className={`p-2 rounded-xl border ${sec.badgeClass}`}>
                     <IconComp size={18} />
@@ -78,8 +78,8 @@ export function Roadmap() {
 
                 <ul className={`grid gap-y-2 gap-x-8 ${i === 0 ? "sm:grid-cols-2" : ""}`}>
                   {sec.items.map((item) => (
-                    <li key={item} className="flex items-start gap-2.5 text-xs sm:text-sm text-muted">
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary-fill shrink-0 mt-2" />
+                    <li key={item} className="flex items-start gap-2.5 text-sm sm:text-base text-muted">
+                      <span className="w-1.5 h-1.5 rounded-full bg-muted shrink-0 mt-2.5" />
                       <span className="leading-relaxed">{item}</span>
                     </li>
                   ))}

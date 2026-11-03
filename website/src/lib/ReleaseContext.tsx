@@ -44,6 +44,14 @@ export interface ReleaseInfo {
 const GITHUB_REPO = "CsPS0/pala";
 export const DEFAULT_FALLBACK_VERSION = "v2.0.0";
 
+/**
+ * The version to show visitors, or null: only a numbered release ("v2.0.0")
+ * that was actually fetched. A test tag, or the built-in fallback when the
+ * GitHub lookup failed, is not shown.
+ */
+export const shownVersion = (release: { version: string; publishedAt: string }) =>
+  release.publishedAt && /^v?\d+\.\d+/.test(release.version) ? release.version : null;
+
 export const DEFAULT_ASSETS: ReleaseAssetMap = {
   windowsExe: `https://github.com/${GITHUB_REPO}/releases/latest/download/Pala-Setup.exe`,
   windowsZip: `https://github.com/${GITHUB_REPO}/releases/latest/download/pala-windows-x64.zip`,

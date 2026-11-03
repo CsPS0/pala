@@ -13,10 +13,11 @@ import {
   X,
 } from "lucide-react";
 import { useRelease } from "@/lib/useRelease";
+import { shownVersion } from "@/lib/ReleaseContext";
 import { useDocsUI } from "@/lib/DocsUIContext";
 
 export function Navbar() {
-  const { version, isLoading } = useRelease();
+  const version = shownVersion(useRelease());
   const { isDocsPage, mobileMenuOpen, setMobileMenuOpen, openDocsSearch } = useDocsUI();
   const [visible, setVisible] = useState(true);
   const pathname = usePathname();
@@ -47,7 +48,7 @@ export function Navbar() {
   const NAV_LINKS = [
     { label: "Funkciók", href: "/#funkciok" },
     { label: "Letöltés", href: "/#letoltes" },
-    { label: "Adatvédelem", href: "/#biztonsag" },
+    { label: "Hogyan működik?", href: "/#hogyan-mukodik" },
     { label: "Dokumentáció", href: "/docs" },
     { label: "Történet", href: "/tortenet" },
   ];
@@ -58,7 +59,8 @@ export function Navbar() {
       inert={!visible}
       className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-200 ease-out ${
         visible
-          ? "translate-y-0 opacity-100 pointer-events-auto bg-bg/90 border-b border-border"
+          ? // A solid surface with a visible edge, so it never melts into the docs page below it.
+            "translate-y-0 opacity-100 pointer-events-auto bg-sidebar/95 backdrop-blur-md border-b border-border shadow-[0_10px_24px_-18px_rgba(0,0,0,0.7)]"
           : "-translate-y-full opacity-0 pointer-events-none"
       }`}
     >
@@ -74,9 +76,11 @@ export function Navbar() {
           />
           <div className="flex items-center gap-2">
             <span className="font-black text-base tracking-wider text-fg">PALA</span>
-            <span className="text-[10px] font-bold bg-primary/15 text-primary border border-primary/30 px-1.5 py-0.5 rounded">
-              {isLoading ? "..." : version}
-            </span>
+            {version && (
+              <span className="text-xs font-bold text-muted border border-border px-1.5 py-0.5 rounded">
+                {version}
+              </span>
+            )}
           </div>
         </Link>
 
@@ -105,7 +109,7 @@ export function Navbar() {
         <div className="hidden sm:flex items-center gap-2.5">
           <button
             onClick={openDocsSearch}
-            className="hidden md:flex items-center justify-between bg-card hover:bg-card-hover border border-border hover:border-primary/50 rounded-xl px-3 py-2 text-xs text-muted transition-colors cursor-pointer group w-48 lg:w-56"
+            className="hidden xl:flex items-center justify-between bg-card hover:bg-card-hover border border-border hover:border-primary/50 rounded-xl px-3 py-2 text-xs text-muted transition-colors cursor-pointer group w-56"
             aria-label="Dokumentáció kereső megnyitása"
           >
             <span className="flex items-center gap-1.5 truncate">
@@ -116,16 +120,6 @@ export function Navbar() {
               Ctrl K
             </kbd>
           </button>
-
-          <a
-            href="https://github.com/CsPS0/pala"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs font-bold text-muted hover:text-fg px-3 py-2 rounded-xl hover:bg-card transition-colors inline-flex items-center gap-1.5"
-          >
-            <GitHubIcon size={14} />
-            <span>GitHub</span>
-          </a>
 
           <Link
             href="/#letoltes"
@@ -139,7 +133,7 @@ export function Navbar() {
         {/* Mobile-only Search Trigger */}
         <button
           onClick={openDocsSearch}
-          className="md:hidden p-2 rounded-xl bg-card border border-border text-muted hover:text-fg transition-colors"
+          className="xl:hidden p-2 rounded-xl bg-card border border-border text-muted hover:text-fg transition-colors"
           aria-label="Dokumentáció kereső megnyitása"
         >
           <Search size={18} />

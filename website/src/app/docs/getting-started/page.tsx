@@ -11,5 +11,5 @@ export const metadata: Metadata = {
 };
 
 export default function GettingStartedDocsPage() {
-  return <DocsView initialPage="installation" />;
+  return <DocsView initialPage="kezdoknek" />;
 }

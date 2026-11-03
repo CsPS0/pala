@@ -44,7 +44,7 @@ import { useRelease } from "@/lib/useRelease";
 import { useDocsUI } from "@/lib/DocsUIContext";
 import { DocsNewSections, DocsRightToc } from "@/components/docs/DocsNewSections";
 
-export function DocsView({ initialPage = "installation" }: { initialPage?: string }) {
+export function DocsView({ initialPage = "kezdoknek" }: { initialPage?: string }) {
   const [activePage, setActivePage] = useState(initialPage);
   const [installTab, setInstallTab] = useState("windows");
   const [detectedOS, setDetectedOS] = useState<string>("unknown");
@@ -101,6 +101,8 @@ export function DocsView({ initialPage = "installation" }: { initialPage?: strin
       if (!target) {
         // Back to the docs entry page, which had no ?page=.
         setActivePage(initialPage);
+      } else if (target === "kezdoknek" || target === "elso-lepesek") {
+        setActivePage("kezdoknek");
       } else if (target === "tortenet" || target === "history") {
         setActivePage("tortenet");
       } else if (target === "telepites" || target === "installation" || target === "getting-started") {
@@ -212,44 +214,51 @@ export function DocsView({ initialPage = "installation" }: { initialPage?: strin
 
 
 
-  const navCategories = [
+  // Everyday users first; everything technical sits apart under "Haladóknak és fejlesztőknek".
+  const navCategories: {
+    category: string;
+    advanced?: boolean;
+    items: { id: string; label: string; icon: React.ComponentType<{ size?: number; className?: string }>; kicker: string }[];
+  }[] = [
     {
-      category: "A. Kezdő Lépések",
+      category: "Kezdés",
       items: [
-        { id: "installation", label: "Telepítés & Beállítás", icon: Download, kicker: "KEZDŐ LÉPÉSEK / TELEPÍTÉS & BEÁLLÍTÁS" },
-        { id: "hasznalat", label: "Első Bejelentkezés & CLI", icon: Play, kicker: "KEZDŐ LÉPÉSEK / HASZNÁLAT" },
-        { id: "files-configs", label: "Fájlok & Konfigurációk", icon: FolderTree, kicker: "KEZDŐ LÉPÉSEK / FÁJLOK & KONFIGURÁCIÓK" },
-        { id: "gyorsbillentyuk", label: "Gyorsbillentyűk", icon: Keyboard, kicker: "KEZDŐ LÉPÉSEK / GYORSBILLENTYŰK" },
+        { id: "kezdoknek", label: "Első lépések", icon: Play, kicker: "KEZDÉS / ELSŐ LÉPÉSEK" },
+        { id: "platformvalasztas", label: "Melyiket válasszam?", icon: Layers, kicker: "KEZDÉS / MELYIKET VÁLASSZAM?" },
+        { id: "installation", label: "Telepítés", icon: Download, kicker: "KEZDÉS / TELEPÍTÉS" },
+        { id: "troubleshooting", label: "Gyakori kérdések", icon: HelpCircle, kicker: "KEZDÉS / GYAKORI KÉRDÉSEK" },
       ],
     },
     {
-      category: "B. Funkció Útmutatók",
+      category: "Használat",
       items: [
-        { id: "guide-dashboard", label: "Vezérlőpult & Órarend", icon: Clock, kicker: "FUNKCIÓ ÚTMUTATÓK / VEZÉRLŐPULT & ÓRAREND" },
-        { id: "guide-grades", label: "Jegyek & Szellem Jegy", icon: Calculator, kicker: "FUNKCIÓ ÚTMUTATÓK / JEGYEK & SZELLEM JEGY" },
-        { id: "guide-absences", label: "Mulasztások (250 Óra)", icon: ShieldAlert, kicker: "FUNKCIÓ ÚTMUTATÓK / JELENLÉT & 250 ÓRÁS LIMIT" },
+        { id: "guide-dashboard", label: "Vezérlőpult és órarend", icon: Clock, kicker: "HASZNÁLAT / VEZÉRLŐPULT ÉS ÓRAREND" },
+        { id: "guide-grades", label: "Jegyek és szellemjegy", icon: Calculator, kicker: "HASZNÁLAT / JEGYEK ÉS SZELLEMJEGY" },
+        { id: "guide-absences", label: "Mulasztások", icon: ShieldAlert, kicker: "HASZNÁLAT / MULASZTÁSOK" },
       ],
     },
     {
-      category: "C. Fejlesztői & API Spec",
+      category: "Változatok",
       items: [
-        { id: "dev-architecture", label: "Architektúra (<600dp)", icon: Cpu, kicker: "FEJLESZTŐI SPECIFIKÁCIÓK / ARCHITEKTÚRA" },
-        { id: "security", label: "Kréta API & Titkosítás", icon: ShieldCheck, kicker: "FEJLESZTŐI SPECIFIKÁCIÓK / KRÉTA API & TITKOSÍTÁS" },
-        { id: "dev-ext-tui", label: "Extension MV3 & TUI", icon: FileCode2, kicker: "FEJLESZTŐI SPECIFIKÁCIÓK / EXTENSION & TUI" },
-        { id: "dev-contributing", label: "Közreműködés & i18n", icon: CheckCircle2, kicker: "FEJLESZTŐI SPECIFIKÁCIÓK / KÖZREMŰKÖDÉS & I18N" },
+        { id: "desktop", label: "Számítógépes alkalmazás", icon: Monitor, kicker: "VÁLTOZATOK / SZÁMÍTÓGÉPES ALKALMAZÁS" },
+        { id: "mobile", label: "Telefonos alkalmazás", icon: Smartphone, kicker: "VÁLTOZATOK / TELEFONOS ALKALMAZÁS" },
+        { id: "extension", label: "Böngészőbővítmény", icon: Puzzle, kicker: "VÁLTOZATOK / BÖNGÉSZŐBŐVÍTMÉNY" },
+        { id: "tortenet", label: "A Kréta-kliensek története", icon: History, kicker: "KÖZÖSSÉG / A KRÉTA-KLIENSEK TÖRTÉNETE" },
       ],
     },
     {
-      category: "D. Platformok & Történet",
+      category: "Haladóknak és fejlesztőknek",
+      advanced: true,
       items: [
-        { id: "platformvalasztas", label: "Melyiket válasszam?", icon: Layers, kicker: "VÁLTOZATOK / PLATFORM ÖSSZEHASONLÍTÁS" },
-        { id: "tui", label: "Pala TUI (Terminál)", icon: Terminal, kicker: "VÁLTOZATOK / TUI" },
-        { id: "desktop", label: "Pala Desktop App", icon: Monitor, kicker: "VÁLTOZATOK / DESKTOP APP" },
-        { id: "mobile", label: "Pala Mobile App", icon: Smartphone, kicker: "VÁLTOZATOK / MOBILE APP" },
-        { id: "webui", label: "Localhost Web UI", icon: AppWindow, kicker: "VÁLTOZATOK / WEBES FELÜLET (WEB UI)" },
-        { id: "extension", label: "Böngésző Kiterjesztés", icon: Puzzle, kicker: "VÁLTOZATOK / BÖNGÉSZŐ KITERJESZTÉS" },
-        { id: "troubleshooting", label: "Hibaelhárítás & GYIK", icon: HelpCircle, kicker: "BIZTONSÁG & ARCHITEKTÚRA / GYIK" },
-        { id: "tortenet", label: "Kliensek Története", icon: History, kicker: "KÖZÖSSÉG & TÖRTÉNET / A KRÉTA-KLIENSEK TÖRTÉNETE" },
+        { id: "tui", label: "Parancssori változat (TUI)", icon: Terminal, kicker: "HALADÓKNAK / PARANCSSORI VÁLTOZAT" },
+        { id: "hasznalat", label: "Parancssori belépés és kapcsolók", icon: Play, kicker: "HALADÓKNAK / PARANCSSORI HASZNÁLAT" },
+        { id: "gyorsbillentyuk", label: "Gyorsbillentyűk", icon: Keyboard, kicker: "HALADÓKNAK / GYORSBILLENTYŰK" },
+        { id: "files-configs", label: "Fájlok és beállítások", icon: FolderTree, kicker: "HALADÓKNAK / FÁJLOK ÉS BEÁLLÍTÁSOK" },
+        { id: "webui", label: "Helyi webes felület", icon: AppWindow, kicker: "HALADÓKNAK / HELYI WEBES FELÜLET" },
+        { id: "security", label: "Kréta API és titkosítás", icon: ShieldCheck, kicker: "FEJLESZTŐKNEK / KRÉTA API ÉS TITKOSÍTÁS" },
+        { id: "dev-architecture", label: "Felépítés", icon: Cpu, kicker: "FEJLESZTŐKNEK / FELÉPÍTÉS" },
+        { id: "dev-ext-tui", label: "Bővítmény és TUI belülről", icon: FileCode2, kicker: "FEJLESZTŐKNEK / BŐVÍTMÉNY ÉS TUI" },
+        { id: "dev-contributing", label: "Közreműködés", icon: CheckCircle2, kicker: "FEJLESZTŐKNEK / KÖZREMŰKÖDÉS" },
       ],
     },
   ];
@@ -290,8 +299,8 @@ export function DocsView({ initialPage = "installation" }: { initialPage?: strin
             </button>
 
             {navCategories.map((group, gIdx) => (
-              <div key={gIdx}>
-                <h4 className="text-[11px] font-black uppercase tracking-wider text-primary mb-2 px-1">
+              <div key={gIdx} className={group.advanced ? "border-t border-border pt-4" : ""}>
+                <h4 className="text-xs font-black uppercase tracking-wider text-muted mb-2 px-1">
                   {group.category}
                 </h4>
                 <div className="space-y-1">
@@ -326,8 +335,8 @@ export function DocsView({ initialPage = "installation" }: { initialPage?: strin
         <aside className="w-60 shrink-0 hidden md:block sticky top-[93px] h-[calc(100vh-118px)] overflow-y-auto pr-2 self-start">
           <nav className="space-y-6">
             {navCategories.map((group, gIdx) => (
-              <div key={gIdx}>
-                <h4 className="text-[11px] font-black uppercase tracking-wider text-primary mb-2 px-3">
+              <div key={gIdx} className={group.advanced ? "border-t border-border pt-5" : ""}>
+                <h4 className="text-xs font-black uppercase tracking-wider text-muted mb-2 px-3">
                   {group.category}
                 </h4>
                 <div className="space-y-1">
@@ -1927,6 +1936,77 @@ dart run bin/pala.dart`}</pre>
           )}
 
                     {/* ================= PAGE: PLATFORM ÖSSZEHASONLÍTÁS ================= */}
+          {activePage === "kezdoknek" && (
+            <div className="space-y-8">
+              <div>
+                <span className="text-xs font-bold tracking-widest text-muted uppercase block mb-1">KEZDÉS</span>
+                <h1 className="text-3xl sm:text-4xl font-black text-fg tracking-tight mb-3">Első lépések</h1>
+                <p className="text-base text-muted leading-relaxed max-w-2xl">
+                  A Pala a Kréta adataidat mutatja meg átláthatóbban: jegyeket, órarendet, hiányzásokat és üzeneteket.
+                  Három lépésben kész vagy, és semmit nem kell beállítanod.
+                </p>
+              </div>
+
+              <ol className="space-y-4">
+                <li className="bg-card border border-border rounded-2xl p-5 sm:p-6">
+                  <h2 className="text-xl font-bold text-fg mb-2">1. Válaszd ki, hol használnád</h2>
+                  <p className="text-base text-muted leading-relaxed mb-4">
+                    Mindegyik ugyanazt tudja. Ha nem tudod eldönteni, a telefonos vagy a számítógépes alkalmazás a legegyszerűbb.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {[
+                      { icon: Smartphone, title: "Telefonon", text: "Androidos telefonra.", tab: "android" },
+                      { icon: Monitor, title: "Számítógépen", text: "Windowsra, Macre, Linuxra.", tab: detectedOS === "macos" || detectedOS === "linux" ? detectedOS : "windows" },
+                      { icon: Puzzle, title: "Böngészőben", text: "Chrome, Edge vagy Brave.", tab: "extension" },
+                    ].map((opt) => (
+                      <button
+                        key={opt.title}
+                        type="button"
+                        onClick={() => selectPage("installation", opt.tab)}
+                        className="text-left bg-sidebar hover:bg-card-hover border border-border hover:border-primary/50 rounded-xl p-4 transition-colors cursor-pointer"
+                      >
+                        <opt.icon size={20} className="text-fg mb-2" />
+                        <div className="text-base font-bold text-fg">{opt.title}</div>
+                        <div className="text-sm text-muted">{opt.text}</div>
+                      </button>
+                    ))}
+                  </div>
+                </li>
+
+                <li className="bg-card border border-border rounded-2xl p-5 sm:p-6">
+                  <h2 className="text-xl font-bold text-fg mb-2">2. Telepítsd</h2>
+                  <p className="text-base text-muted leading-relaxed">
+                    A fenti gombok a megfelelő telepítési útmutatóhoz visznek. Számítógépen és telefonon elég elindítani a letöltött
+                    fájlt; ha a gép vagy a telefon rákérdez, engedélyezd a telepítést.
+                  </p>
+                </li>
+
+                <li className="bg-card border border-border rounded-2xl p-5 sm:p-6">
+                  <h2 className="text-xl font-bold text-fg mb-2">3. Lépj be a Kréta-fiókoddal</h2>
+                  <p className="text-base text-muted leading-relaxed">
+                    Keresd meg az iskoládat, majd lépj be ugyanúgy, mint a Krétába. A belépés a Kréta saját oldalán történik, így a
+                    jelszavadat a Pala nem látja. Ha kétlépcsős azonosítást használsz, az is működik.
+                  </p>
+                </li>
+              </ol>
+
+              <div className="bg-card border border-border rounded-2xl p-5 sm:p-6">
+                <h2 className="text-xl font-bold text-fg mb-2">Elakadtál?</h2>
+                <p className="text-base text-muted leading-relaxed">
+                  Nézd meg a{" "}
+                  <button type="button" onClick={() => selectPage("troubleshooting")} className="text-fg font-bold underline cursor-pointer">
+                    gyakori kérdéseket
+                  </button>
+                  , vagy azt, hogy{" "}
+                  <button type="button" onClick={() => selectPage("platformvalasztas")} className="text-fg font-bold underline cursor-pointer">
+                    melyik változat illik hozzád
+                  </button>
+                  .
+                </p>
+              </div>
+            </div>
+          )}
+
           {activePage === "platformvalasztas" && (
             <div className="space-y-8">
               <div>
@@ -2870,6 +2950,6 @@ dart run bin/pala.dart`}</pre>
 }
 
 export default function DocsPage() {
-  return <DocsView initialPage="installation" />;
+  return <DocsView initialPage="kezdoknek" />;
 }
 

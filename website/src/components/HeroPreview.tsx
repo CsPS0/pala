@@ -27,7 +27,7 @@ interface PreviewTab {
 const TABS: PreviewTab[] = [
   {
     id: "desktop",
-    label: "Asztali",
+    label: "Számítógép",
     icon: CONCEPT_ICONS.desktop,
     width: 1600,
     height: 1000,
@@ -49,7 +49,7 @@ const TABS: PreviewTab[] = [
   },
   {
     id: "extension",
-    label: "Bővítmény",
+    label: "Böngésző",
     icon: CONCEPT_ICONS.extension,
     width: 760,
     height: 1160,
@@ -93,7 +93,7 @@ export function HeroPreview() {
         role="tablist"
         aria-label="Előnézet kiválasztása"
         onKeyDown={onTabKeyDown}
-        className="flex items-center gap-1.5 mb-5 p-1.5 rounded-xl bg-sidebar border border-border max-w-full overflow-x-auto no-scrollbar"
+        className="flex items-center gap-1 sm:gap-1.5 mb-5 p-1 sm:p-1.5 rounded-xl bg-sidebar border border-border max-w-full overflow-x-auto no-scrollbar"
       >
         {TABS.map((tab) => {
           const selected = tab.id === active;
@@ -107,7 +107,7 @@ export function HeroPreview() {
               aria-controls={`preview-panel-${tab.id}`}
               tabIndex={selected ? 0 : -1}
               onClick={() => setActive(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-colors duration-150 cursor-pointer whitespace-nowrap ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 rounded-lg text-sm font-bold transition-colors duration-150 cursor-pointer whitespace-nowrap ${
                 selected ? "bg-primary-fill text-on-primary" : "text-muted hover:text-fg hover:bg-card-hover"
               }`}
             >
@@ -169,10 +169,10 @@ export function HeroPreview() {
       })}
 
       <p className="mt-5 text-xs text-muted">
-        Terminálban vagy böngészőben is fut:{" "}
-        <Link href="/docs?page=tui" className="text-primary font-bold hover:underline">TUI</Link>
-        {" · "}
-        <Link href="/docs?page=webui" className="text-primary font-bold hover:underline">Webes felület</Link>
+        Haladóknak:{" "}
+        <Link href="/docs?page=tui" className="text-fg font-bold hover:underline">parancssori változat</Link>
+        {" és "}
+        <Link href="/docs?page=webui" className="text-fg font-bold hover:underline">helyi webes felület</Link>
       </p>
     </div>
   );

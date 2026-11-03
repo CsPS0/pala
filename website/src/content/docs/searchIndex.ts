@@ -11,6 +11,14 @@ export interface SearchIndexItem {
 
 export const SEARCH_INDEX: SearchIndexItem[] = [
   {
+    id: "kezdoknek",
+    pageId: "kezdoknek",
+    title: "Első lépések",
+    category: "Kezdés",
+    description: "Hol használd, hogyan telepítsd, és hogyan lépj be a Kréta-fiókoddal, három lépésben.",
+    keywords: ["kezdés", "első lépések", "hogyan", "belépés", "bejelentkezés", "telepítés", "kezdőknek", "segítség"]
+  },
+  {
     id: "inst-win",
     pageId: "installation",
     tabId: "windows",
