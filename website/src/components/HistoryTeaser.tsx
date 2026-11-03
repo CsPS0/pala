@@ -12,7 +12,7 @@ export function HistoryTeaser() {
         href="/tortenet"
         className="group flex items-center gap-4 bg-card border border-border hover:border-primary rounded-xl p-5 transition-colors duration-150"
       >
-        <div className="w-10 h-10 rounded-lg bg-sidebar border border-border text-primary flex items-center justify-center shrink-0">
+        <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/25 text-primary flex items-center justify-center shrink-0">
           <Icon size={20} />
         </div>
         <div className="flex-1 min-w-0">

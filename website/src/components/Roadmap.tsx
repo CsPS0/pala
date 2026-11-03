@@ -6,7 +6,8 @@ export function Roadmap() {
     {
       title: "Már elérhető",
       subtitle: "Ezt tudja most",
-      badgeClass: "bg-sidebar text-fg border-border",
+      badgeClass: "bg-primary/10 text-primary border-primary/25",
+      bulletClass: "bg-primary",
       icon: CheckCircle2,
       items: [
         "Alkalmazás számítógépre (Windows, Mac, Linux)",
@@ -28,7 +29,8 @@ export function Roadmap() {
     {
       title: "Hamarosan",
       subtitle: "Ezen dolgozunk",
-      badgeClass: "bg-sidebar text-fg border-border",
+      badgeClass: "bg-primary/10 text-primary border-primary/25",
+      bulletClass: "bg-primary/60",
       icon: Clock,
       items: [
         "Heti összefoglaló: mi vár rád a jövő héten",
@@ -41,6 +43,7 @@ export function Roadmap() {
       title: "Későbbi tervek",
       subtitle: "Ezt tervezzük",
       badgeClass: "bg-sidebar text-muted border-border",
+      bulletClass: "bg-muted",
       icon: Calendar,
       items: [
         "Automatikus szinkron a Google és az Apple naptárával",
@@ -54,6 +57,7 @@ export function Roadmap() {
   return (
     <section id="utemterv" className="py-12 sm:py-16 px-4 sm:px-6 max-w-6xl mx-auto w-full overflow-hidden">
       <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-10">
+        <p className="text-xs sm:text-sm font-extrabold uppercase tracking-widest text-primary mb-2">Ütemterv</p>
         <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-3 text-fg">Mi jön még?</h2>
         <p className="text-muted text-base">
           Mit tud már a Pala, és min dolgozunk most.
@@ -79,7 +83,7 @@ export function Roadmap() {
                 <ul className={`grid gap-y-2 gap-x-8 ${i === 0 ? "sm:grid-cols-2" : ""}`}>
                   {sec.items.map((item) => (
                     <li key={item} className="flex items-start gap-2.5 text-sm sm:text-base text-muted">
-                      <span className="w-1.5 h-1.5 rounded-full bg-muted shrink-0 mt-2.5" />
+                      <span className={`w-1.5 h-1.5 rounded-full shrink-0 mt-2.5 ${sec.bulletClass}`} />
                       <span className="leading-relaxed">{item}</span>
                     </li>
                   ))}

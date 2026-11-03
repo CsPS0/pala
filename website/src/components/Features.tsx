@@ -44,6 +44,7 @@ export function Features() {
   return (
     <section id="funkciok" className="py-12 sm:py-16 px-4 sm:px-6 max-w-6xl mx-auto w-full">
       <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-10">
+        <p className="text-xs sm:text-sm font-extrabold uppercase tracking-widest text-primary mb-2">Funkciók</p>
         <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-3 text-fg">Mire jó a Pala?</h2>
         <p className="text-muted text-base">Ugyanazt tudja telefonon, számítógépen és a böngészőben.</p>
       </div>
@@ -53,7 +54,7 @@ export function Features() {
           const IconComp = item.icon;
           return (
             <div key={item.title} className="bg-card border border-border p-5 rounded-xl">
-              <div className="w-10 h-10 rounded-lg bg-sidebar text-fg border border-border flex items-center justify-center mb-4">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary border border-primary/25 flex items-center justify-center mb-4">
                 <IconComp size={20} />
               </div>
               <h3 className="text-lg font-bold text-fg mb-2">{item.title}</h3>

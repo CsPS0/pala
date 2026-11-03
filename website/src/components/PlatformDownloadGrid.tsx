@@ -120,6 +120,7 @@ export function PlatformDownloadGrid() {
       className="py-12 sm:py-16 px-4 sm:px-6 max-w-5xl mx-auto w-full"
     >
       <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-10">
+        <p className="text-xs sm:text-sm font-extrabold uppercase tracking-widest text-primary mb-2">Ingyenes, reklám nélkül</p>
         <h2 id="download-grid-heading" className="text-3xl sm:text-4xl font-black tracking-tight text-fg mb-3">
           Letöltés
         </h2>
@@ -138,7 +139,7 @@ export function PlatformDownloadGrid() {
               className={`bg-card border rounded-xl p-5 flex flex-col gap-4 ${isRecommended ? "border-primary/60" : "border-border"}`}
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-sidebar border border-border text-fg flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/25 text-primary flex items-center justify-center shrink-0">
                   <card.Icon size={20} />
                 </div>
                 <h3 className="text-lg font-extrabold text-fg">{card.title}</h3>
