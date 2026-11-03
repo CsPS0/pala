@@ -41,6 +41,15 @@ Az első kiadás a Pala néven: TUI, asztali és Android-alkalmazás, böngész�
 - A kiterjesztés tervezője 4,0 feletti átlagnál is helyes számot ír, az oldalpanel az „igazolandó” mulasztást nem számolja igazoltnak, és látszik a billentyűzetfókusz.
 - A számonkérések `.ics` exportja a helyi napot használja.
 - A weboldal letöltőgombja a grafikus telepítőt adja, az adatvédelmi oldal pontosabb, a rejtett fejléc nem kap fókuszt.
+- Minden kliens ugyanúgy számolja az átlagot és a mulasztásokat: az összesített átlag a tantárgyi átlagok átlaga, a 0%-os jegy nem számít, a késés nem számít bele a 250 órába, az „igazolandó” külön látszik. A szabályokat közös tesztvektorok ellenőrzik Dartban és a kiterjesztésben is.
+- A késések perceit a Pala a Kréta valódi mezőjéből (`KesesPercben`) olvassa.
+- A kiterjesztés első indításkor belépést kínál a demóadatok helyett; a demó külön választható. Az iskolaválasztó billentyűzettel is használható.
+- A kiterjesztés követi a rendszer sötét/világos témáját, tiszteletben tartja a csökkentett mozgást, a legkisebb betűméret 12 px, és a képernyőolvasók is értik a füleket és az állapotot.
+- A weboldal a kiadásadatot építéskor kéri le, a látogató böngészője nem fordul a GitHubhoz. A dokumentáció oldalai megoszthatók, a Vissza gomb működik, és a tartalomjegyzék minden pontja működik.
+- A helyi webes felület szigorúbb biztonsági fejlécet kap, és a Kréta-adat nem kerül szkriptkódba.
+- Linuxon és macOS-en a beállítás- és gyorsítótár-mappát csak a saját felhasználód olvashatja. A `DATA_SECURITY.md` pontosabban írja le, mit véd a titkosítás.
+- Egy CSV- és egy `.ics`-író van nyelvenként: pontosvessző, BOM, helyi dátum, szabályos sorvég és sortördelés.
+- A CI a Flutter-teszteket, a kiterjesztés tesztjeit és a weboldal buildjét is futtatja.
 
 ## [1.2.3]
 - Pala rebrand: TUI, Flutter Desktop App, böngésző-kiterjesztés (Manifest V3) és weboldal egy kiadás alatt.

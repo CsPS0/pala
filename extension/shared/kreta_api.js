@@ -90,6 +90,7 @@ function offlineReasonOf(err) {
 }
 
 const OFFLINE_LABELS = {
+  login: "Nincs belépve",
   expired: "Lejárt a belépés",
   network: "Nincs internet",
   maintenance: "Karbantartás",
@@ -100,6 +101,66 @@ const OFFLINE_LABELS = {
 function offlineLabel(dataOrReason) {
   const reason = typeof dataOrReason === "string" ? dataOrReason : dataOrReason?.offlineReason;
   return OFFLINE_LABELS[reason] || OFFLINE_LABELS.server;
+}
+
+/**
+ * Makes a search input and its result list usable from the keyboard and by
+ * screen readers (combobox pattern): ArrowDown/ArrowUp move through the
+ * options, Enter picks one (by clicking it), Escape closes the list. Options
+ * are the list's [role=option] children.
+ */
+function enableComboboxKeys(input, listbox) {
+  if (!input || !listbox) return;
+  input.setAttribute("role", "combobox");
+  input.setAttribute("aria-autocomplete", "list");
+  input.setAttribute("aria-controls", listbox.id);
+  input.setAttribute("aria-expanded", "false");
+  listbox.setAttribute("role", "listbox");
+  let active = -1;
+  const options = () => [...listbox.querySelectorAll("[role=option]")];
+  const highlight = (index) => {
+    const list = options();
+    list.forEach((el, i) => el.setAttribute("aria-selected", String(i === index)));
+    active = index;
+    if (list[index]) {
+      input.setAttribute("aria-activedescendant", list[index].id);
+      list[index].scrollIntoView({ block: "nearest" });
+    } else {
+      input.removeAttribute("aria-activedescendant");
+    }
+  };
+  // New results or a hidden list reset the highlighted option.
+  new MutationObserver(() => {
+    active = -1;
+    input.removeAttribute("aria-activedescendant");
+    input.setAttribute("aria-expanded", String(listbox.style.display !== "none" && options().length > 0));
+  }).observe(listbox, { childList: true, attributes: true, attributeFilter: ["style"] });
+  input.addEventListener("keydown", (e) => {
+    const list = options();
+    if (e.key === "ArrowDown" && list.length) {
+      e.preventDefault();
+      listbox.style.display = "block";
+      highlight(Math.min(list.length - 1, active + 1));
+    } else if (e.key === "ArrowUp" && list.length) {
+      e.preventDefault();
+      highlight(Math.max(0, active - 1));
+    } else if (e.key === "Enter" && list[active]) {
+      e.preventDefault();
+      list[active].click();
+    } else if (e.key === "Escape" && listbox.style.display !== "none") {
+      e.preventDefault();
+      listbox.style.display = "none";
+    }
+  });
+}
+
+/**
+ * Dark or light: the user's stored choice (pala_dark_mode), or the system
+ * setting while they have not picked one.
+ */
+function prefersDarkMode(stored) {
+  if (typeof stored === "boolean") return stored;
+  return !(typeof matchMedia === "function" && matchMedia("(prefers-color-scheme: light)").matches);
 }
 
 /** Hungarian notice shown above cached data when live data is not available. */
@@ -401,10 +462,10 @@ const AUTH_TIMEOUT_MS = 15000;
 
 /**
  * Encrypts the OAuth session (access/refresh tokens) at rest using a
- * non-extractable AES-GCM key kept in IndexedDB. The key material itself
- * never leaves the crypto subsystem as plain bytes, so even a raw dump of
- * the extension's on-disk storage cannot recover a usable token without
- * also compromising the browser's key-store internals.
+ * non-extractable AES-GCM key kept in IndexedDB. The key material never
+ * leaves the crypto subsystem as plain bytes, so the chrome.storage data on
+ * its own does not reveal a token. The key lives in the same browser
+ * profile, though: whoever copies the whole profile folder gets both.
  * Non-sensitive fields (institute, user, expires_at) stay in plaintext for
  * cheap synchronous reads across the UI.
  */
@@ -535,7 +596,8 @@ class SecureSession {
   /** Returns all available profiles (saved encrypted profiles + Demo profile). */
   static async listProfiles() {
     const store = await chrome.storage.local.get(["pala_profiles", "pala_session", "pala_use_demo"]);
-    const useDemo = store.pala_use_demo !== false;
+    // Demo data only when the user chose it; a fresh install asks for a login.
+    const useDemo = store.pala_use_demo === true;
     const activeSession = store.pala_session;
     const rawProfiles = Array.isArray(store.pala_profiles) ? [...store.pala_profiles] : [];
 
@@ -556,7 +618,7 @@ class SecureSession {
       user: "Teszt Elek (Demó)",
       institute: "Pala Minta Gimnázium",
       isDemo: true,
-      isActive: useDemo || !activeSession
+      isActive: useDemo
     });
 
     return items;
@@ -1440,9 +1502,12 @@ class KretaApi {
       }
     }
 
-    const weightRaw = g.SulySzazalekErteke || g.SulySzazalek || 100;
+    // Only a missing weight means 100%; an explicit 0% grade does not count
+    // toward averages (docs/DEV.md, "Számítási szabályok").
+    const weightRaw = g.SulySzazalekErteke ?? g.SulySzazalek ?? 100;
+    const weightParsed = typeof weightRaw === "number" ? weightRaw : parseFloat(weightRaw);
     // Always a number: UIs interpolate it into markup and attributes.
-    const weightPercent = typeof weightRaw === "number" ? weightRaw : (parseFloat(weightRaw) || 100);
+    const weightPercent = Number.isFinite(weightParsed) ? weightParsed : 100;
     const weight = weightPercent / 100;
 
     return {
@@ -1456,6 +1521,157 @@ class KretaApi {
       weight,
       weightPercent
     };
+  }
+
+  // Calculation rules shared by every Pala client. The Dart side is
+  // lib/rules/; both are tested against fixtures/rules/*.json, and the rules
+  // are written down in docs/DEV.md ("Számítási szabályok").
+
+  /** True when a parsed grade counts toward averages: a 1-5 grade, not a summary grade, weight above 0. */
+  static countsForAverage(p) {
+    return p.numericGrade !== null && p.numericGrade >= 1 && p.numericGrade <= 5 && !p.isSummary && p.weight > 0;
+  }
+
+  /** Weighted average per subject name, from raw Kréta grades. Subjects without a counted grade are left out. */
+  static subjectAverages(grades, subjectOf = g => g.Tantargy?.Nev || g.TantargyNev || g.Tantargy || "Egyéb tantárgy") {
+    const totals = {};
+    for (const g of grades || []) {
+      const p = this.parseGrade(g);
+      if (!this.countsForAverage(p)) continue;
+      const sub = subjectOf(g);
+      const t = totals[sub] || (totals[sub] = { sum: 0, weight: 0 });
+      t.sum += p.numericGrade * p.weight;
+      t.weight += p.weight;
+    }
+    const averages = {};
+    for (const [sub, t] of Object.entries(totals)) averages[sub] = t.sum / t.weight;
+    return averages;
+  }
+
+  /** Overall average: the mean of the subject averages, as on a certificate. Null without counted grades. */
+  static overallAverage(grades) {
+    const values = Object.values(this.subjectAverages(grades));
+    return values.length ? values.reduce((a, b) => a + b, 0) / values.length : null;
+  }
+
+  /** True for a lateness entry: it has late minutes, or its type says "késés". */
+  static isLateness(a) {
+    const type = this.normalizeHu(a?.Tipus?.Nev || a?.Tipus?.Leiras || a?.Tipus || "");
+    return Number(a?.KesesPercben || 0) > 0 || type.includes("keses");
+  }
+
+  /** "excused", "pending" or "unexcused" from IgazolasAllapota. Anything unknown is still open: "pending". */
+  static absenceStatus(a) {
+    const status = this.normalizeHu(a?.IgazolasAllapota || "");
+    if (status.includes("igazolatlan")) return "unexcused";
+    if (status.includes("igazolt")) return "excused";
+    return "pending";
+  }
+
+  /**
+   * One absence summary for every view. Each absence entry is one missed
+   * lesson; lateness is counted apart and does not go toward the 250 hours.
+   */
+  static summarizeAbsences(absences) {
+    const s = { missed: 0, excused: 0, pending: 0, unexcused: 0, lateCount: 0, lateMinutes: 0 };
+    for (const a of absences || []) {
+      if (this.isLateness(a)) {
+        s.lateCount++;
+        s.lateMinutes += Number(a.KesesPercben || 0);
+        continue;
+      }
+      s.missed++;
+      s[this.absenceStatus(a)]++;
+    }
+    return s;
+  }
+
+  // Exports. One CSV and one iCalendar writer for the whole extension, in the
+  // same formats as the Dart side (lib/utils/csv.dart, lib/utils/ics_exporter.dart).
+
+  /** CSV: UTF-8 BOM (Excel accents), ';' (Hungarian Excel), every value quoted, CRLF. */
+  static toCsv(header, rows) {
+    const field = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const bom = String.fromCharCode(0xFEFF);
+    return bom + [header.join(";"), ...rows.map(r => r.map(field).join(";"))].join("\r\n") + "\r\n";
+  }
+
+  /** Grades as CSV, with the local date. */
+  static gradesCsv(grades, subjectOf = g => g.Tantargy?.Nev || g.TantargyNev || g.Tantargy || "Egyéb") {
+    return this.toCsv(
+      ["Tantárgy", "Típus", "Érték", "Súly (%)", "Dátum", "Téma"],
+      (grades || []).map(g => {
+        const p = this.parseGrade(g);
+        const date = g.KeszitesDatuma || g.RogzitesDatuma || g.Datum;
+        return [subjectOf(g), g.Tipus?.Leiras || g.Tipus?.Nev || "", p.displayValue, p.weightPercent, date ? localDateKey(date) : "", g.Tema || ""];
+      })
+    );
+  }
+
+  /** Absences as CSV, with the local date. */
+  static absencesCsv(absences) {
+    return this.toCsv(
+      ["Tantárgy", "Dátum", "Típus", "Állapot", "Késés (perc)"],
+      (absences || []).map(a => {
+        const date = a.Datum || a.OraKezdete;
+        return [a.Tantargy?.Nev || a.Tantargy || "", date ? localDateKey(date) : "", a.Tipus?.Leiras || a.Tipus?.Nev || a.Tipus || "", a.IgazolasAllapota || "", Number(a.KesesPercben || 0)];
+      })
+    );
+  }
+
+  /**
+   * Timetable lessons as iCalendar (RFC 5545): escaped text, CRLF line ends,
+   * lines folded at 75 octets, a stable UID from the lesson's Uid, DTSTAMP,
+   * and STATUS:CANCELLED for cancelled lessons.
+   */
+  static timetableToIcs(lessons, subjectOf = l => l.Tantargy?.Nev || l.Tantargy || l.Nev || "Tanóra") {
+    const text = v => String(v ?? "").replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+    const utc = v => new Date(v).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+    const encoder = new TextEncoder();
+    const fold = line => {
+      let out = "";
+      let bytes = 0;
+      for (const ch of line) {
+        const size = encoder.encode(ch).length;
+        if (bytes + size > 75) {
+          out += "\r\n ";
+          bytes = 1;
+        }
+        out += ch;
+        bytes += size;
+      }
+      return out;
+    };
+    const stamp = utc(new Date());
+    const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Pala//Pala Extension//HU", "CALSCALE:GREGORIAN", "METHOD:PUBLISH", "X-WR-CALNAME:Pala Órarend"];
+    for (const l of lessons || []) {
+      if (!l.KezdetIdopont || !l.VegIdopont) continue;
+      const cancelled = String(l.Allapot?.Nev || l.Allapot || "").toLowerCase().includes("elmarad");
+      lines.push("BEGIN:VEVENT");
+      lines.push(`UID:lesson-${l.Uid || l.Id || utc(l.KezdetIdopont)}@pala`);
+      lines.push(`DTSTAMP:${stamp}`);
+      lines.push(`DTSTART:${utc(l.KezdetIdopont)}`);
+      lines.push(`DTEND:${utc(l.VegIdopont)}`);
+      lines.push(`SUMMARY:${text(subjectOf(l))}`);
+      if (l.TeremNeve) lines.push(`LOCATION:${text(l.TeremNeve)}`);
+      if (l.Tema) lines.push(`DESCRIPTION:${text(l.Tema)}`);
+      lines.push(`STATUS:${cancelled ? "CANCELLED" : "CONFIRMED"}`);
+      lines.push("END:VEVENT");
+    }
+    lines.push("END:VCALENDAR");
+    return lines.map(fold).join("\r\n") + "\r\n";
+  }
+
+  /** Saves text as a file through a temporary download link (UI pages only). */
+  static downloadText(filename, content, mimeType) {
+    const url = URL.createObjectURL(new Blob([content], { type: mimeType }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   }
 
   static generateDemoTimetable(overrideAWeek = null) {

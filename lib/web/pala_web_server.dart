@@ -8,6 +8,8 @@ import 'package:pala/api/client.dart';
 import 'package:pala/api/demo_client.dart';
 import 'package:pala/app/state/app_state.dart';
 import 'package:pala/utils/encryption.dart';
+import 'package:pala/rules/absence_rules.dart';
+import 'package:pala/rules/grade_rules.dart';
 import 'package:pala/utils/logger.dart';
 import 'package:pala/utils/loopback_host.dart';
 import 'pala_web_html.dart';
@@ -97,6 +99,13 @@ class PalaWebServer {
         ..headers.contentType = ContentType.html
         ..headers.set('X-Frame-Options', 'DENY')
         ..headers.set('X-Content-Type-Options', 'nosniff')
+        // Everything the page needs is inline or on this server. The inline
+        // handlers keep 'unsafe-inline', but nothing can be loaded from or
+        // sent to another host, and Kréta text never lands in inline script.
+        ..headers.set('Content-Security-Policy',
+            "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data:; font-src 'self' data:; connect-src 'self'; "
+            "frame-ancestors 'none'; base-uri 'none'; form-action 'none'")
         ..write(html);
       await request.response.close();
       return;
@@ -277,10 +286,13 @@ class PalaWebServer {
         'date': g.date?.toIso8601String(),
         'type': g.type,
         'isSummary': g.isSummaryGrade,
+        // The shared rule decides what counts; the page only adds it up.
+        'countsForAverage': GradeRules.countsForAverage(g),
         'theme': g.theme,
         'teacherName': g.teacherName,
       }).toList();
-      _sendJson(request, {'grades': list});
+      final overall = GradeRules.overallAverage(grades, subjectOf: (g) => AppState.instance.applyAlias(g.subject));
+      _sendJson(request, {'grades': list, 'overallAverage': overall});
     } else if (request.method == 'GET' && path == '/api/timetable') {
       final weekOffsetStr = request.uri.queryParameters['weekOffset'] ?? '0';
       final weekOffset = int.tryParse(weekOffsetStr) ?? 0;
@@ -356,10 +368,14 @@ class PalaWebServer {
         'delayMinutes': a.delayMinutes,
       }).toList();
 
+      final summary = AbsenceRules.summarize(absences);
       _sendJson(request, {
         'absences': list,
         'parentalQuota': quota,
         'usedParentalDays': parentalDates.length,
+        // The shared rule: missed lessons (toward 250) and still-open ones.
+        'missedHours': summary.missed,
+        'openHours': summary.pending + summary.unexcused,
       });
     } else if (request.method == 'GET' && path == '/api/teachers') {
       final teachers = await client?.getTeachers() ?? [];

@@ -8,9 +8,9 @@ Ebben a dokumentumban áttekintjük, hogy az alkalmazás pontosan milyen adatoka
 
 A működés érdekében a program a következő információkat menti el a számítógépeden:
 
-*   **Hitelesítő tokenek:** A sikeres bejelentkezést követően a Kréta rendszertől kapott Access (hozzáférési) és Refresh (frissítési) tokenek. **A jelszavadat a program soha nem tárolja el tartósan a lemezen!** A jelszót csak a memóriában tartja addig a néhány másodpercig, amíg a bejelentkezési folyamat a Kréta rendszerével (idp.e-kreta.hu) le nem zajlik, majd az azonnal törlődik a memóriából.
+*   **Hitelesítő tokenek:** A sikeres bejelentkezést követően a Kréta rendszertől kapott Access (hozzáférési) és Refresh (frissítési) tokenek. **A jelszavadat a program soha nem írja a lemezre.** Csak a bejelentkezés idejére használja, amíg a Kréta rendszerével (idp.e-kreta.hu) le nem zajlik a belépés.
 *   **Profil adatok:** A diák neve és az intézmény azonosítója (kódja), hogy egyszerre több profilt is kényelmesen lehessen kezelni (pl. több diák esetén).
-*   **Gyorsítótár (Cache):** Az utoljára letöltött jegyek, órarend, mulasztások és házi feladatok mentésre kerülnek. Ez teszi lehetővé, hogy az alkalmazás gyorsan induljon, és akkor is lásd a korábbi adataidat, ha a Kréta szerverei éppen elérhetetlenek (Offline mód).
+*   **Gyorsítótár (Cache):** Az utoljára letöltött jegyek, órarend, mulasztások, házi feladatok, üzenetek és a tanulói adatlap mentésre kerülnek. Ez teszi lehetővé, hogy az alkalmazás gyorsan induljon, és akkor is lásd a korábbi adataidat, ha a Kréta szerverei éppen elérhetetlenek (Offline mód). **A gyorsítótár nincs titkosítva**, és személyes adatot is tartalmaz (az adatlapon például a lakcímet és a gondviselők elérhetőségét).
 
 ## 2. Hogyan és hol tároljuk az adatokat?
 
@@ -27,15 +27,17 @@ A Krétától letöltött adatok offline gyorsítótára (`cache.json`) a rendsz
 
 A gyorsítótár bármikor törölhető, a Pala a következő frissítéskor újra letölti. Bejelentkezve maradsz.
 
+Linuxon és macOS-en a Pala mindkét mappát csak a saját felhasználód számára teszi olvashatóvá (700-as jogosultság), így egy közös gép többi felhasználója nem fér hozzájuk. Windowson a felhasználói profil mappái eleve csak a te fiókodból érhetők el.
+
 ### Titkosítás (Encryption at Rest)
 A tokeneket és profiladatokat tartalmazó konfigurációs fájl (`auth.json`) egy erős, iparági szabványnak megfelelő **AES-256-GCM** titkosítással van levédve.
 A titkosítási kulcsot a Pala az első induláskor véletlenszerűen generálja (kriptográfiailag biztonságos véletlenszám-generátorral), és egy külön, csak az adott telepítéshez tartozó kulcsfájlban (`.pala_keyfile`) tárolja a `.config/pala` mappában.
-*A gyakorlatban ez azt jelenti, hogy ha egy kártékony program vagy egy hacker lemásolná a gépedről a `.config/pala` mappát, a kulcsfájl nélkül (vagy másik gépen/felhasználói fiókban) esélytelen lesz visszafejtenie és kiolvasnia a Kréta tokenjeidet.*
+*Fontos: a parancssori Pala kulcsfájlja ugyanebben a mappában van, mint az `auth.json`. A titkosítás ezért attól véd, aki csak az `auth.json` fájlt szerzi meg; aki a teljes mappát lemásolja, az a kulcsfájlt is megkapja. A mappát a saját felhasználói fiókod jogosultságai védik.*
 
 Az alkalmazás (Android, iOS, macOS, Windows, Linux) a kulcsot nem fájlban, hanem a rendszer biztonságos kulcstárában tartja (Android Keystore, iOS/macOS Kulcskarika, Windows DPAPI, Linuxon libsecret). Frissítéskor a régi `.pala_keyfile` kulcsa átkerül a kulcstárba, és a fájl törlődik. Windowson és Linuxon a kulcsfájl megmarad, mert a parancssori Pala is használja. Ha a kulcstár nem érhető el (például Linuxon nincs kulcstartó szolgáltatás), az alkalmazás a kulcsfájlt használja tovább.
 
 ### Hálózati Biztonság
-A Pala **kizárólag** a Kréta hivatalos szervereivel kommunikál, szigorúan titkosított HTTPS/TLS csatornán keresztül. A program nem használ semmilyen saját vagy külső (third-party) analitikai szervert, adatbázist vagy felhőt. Az adataid soha nem hagyják el a gépedet más irányba, csak a Kréta felé.
+A Pala a Kréta hivatalos szervereivel kommunikál, titkosított HTTPS/TLS csatornán keresztül. Ezen kívül csak a GitHubhoz fordul: a frissítés-ellenőrzéshez, illetve a telepítő és a beépített frissítő a program letöltéséhez. Ezekben a kérésekben nincs Kréta-adat. A program nem használ saját vagy külső analitikai szervert, adatbázist vagy felhőt, és a Kréta-adataid csak a Kréta felé hagyják el a gépedet.
 
 ## 3. Hogyan törölheted (semmisítheted meg) az adataidat?
 

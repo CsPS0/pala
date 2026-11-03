@@ -10,8 +10,11 @@ if (typeof KretaApi === "undefined" && typeof importScripts === "function") {
 // the single-use pala_pending_login state in storage is the real replay guard.
 const handledCodes = new Set();
 
-chrome.runtime.onInstalled.addListener(() => {
-  console.log("Pala Extension installed successfully.");
+// A fresh install opens the login page, not demo data.
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason === "install") {
+    chrome.tabs.create({ url: chrome.runtime.getURL("dashboard/dashboard.html#view-account") });
+  }
 });
 
 // Alarms may be cleared on browser restart, so ensure the 30-minute sync alarm
@@ -209,7 +212,8 @@ async function checkForNewGrades(force = false) {
     await checkScheduleChanges(data);
 
     const knownIds = new Set(store.pala_known_grade_ids || []);
-    const newGrades = data.grades.filter(g => !knownIds.has(g.Id));
+    // Kréta V3 objects carry Uid; the demo data uses Id.
+    const newGrades = data.grades.filter(g => !knownIds.has(g.Uid ?? g.Id));
 
     if (newGrades.length > 0 && knownIds.size > 0) {
       const latest = newGrades[0];
@@ -221,7 +225,7 @@ async function checkForNewGrades(force = false) {
         type: "basic",
         iconUrl: "../icons/icon-128.png",
         title: `Új érdemjegy: ${sub} — ${val}`,
-        message: `Téma: ${topic} (${latest.SulySzazalek || 100}%)`,
+        message: `Téma: ${topic} (${KretaApi.parseGrade(latest).weightPercent}%)`,
         priority: 2
       });
 
@@ -230,7 +234,7 @@ async function checkForNewGrades(force = false) {
     }
 
     // Update known IDs
-    const allIds = data.grades.map(g => g.Id);
+    const allIds = data.grades.map(g => g.Uid ?? g.Id);
     await chrome.storage.local.set({ pala_known_grade_ids: allIds });
   } catch (err) {
     console.warn("Background grade check failed:", err);

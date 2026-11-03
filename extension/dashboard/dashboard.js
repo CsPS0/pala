@@ -94,9 +94,9 @@ function switchDashboardTab(targetId) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  // Initialize dark/light mode (dark is the default).
+  // Initialize dark/light mode: the stored choice, or the system setting.
   const themeStore = await chrome.storage.local.get("pala_dark_mode");
-  const isDark = themeStore.pala_dark_mode !== false;
+  const isDark = prefersDarkMode(themeStore.pala_dark_mode);
   applyThemeMode(isDark);
 
   document.getElementById("dash-dark-mode-toggle")?.addEventListener("change", async (e) => {
@@ -107,7 +107,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   document.getElementById("btn-topbar-theme")?.addEventListener("click", async () => {
     const store = await chrome.storage.local.get("pala_dark_mode");
-    const nextDark = store.pala_dark_mode === false;
+    const nextDark = !prefersDarkMode(store.pala_dark_mode);
     applyThemeMode(nextDark);
     await chrome.storage.local.set({ pala_dark_mode: nextDark });
   });
@@ -195,6 +195,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const dashSchoolDropdown = document.getElementById("dash-school-dropdown");
   const dashSchoolInfo = document.getElementById("dash-selected-school-info");
 
+  enableComboboxKeys(dashSchoolInput, dashSchoolDropdown);
+
   let dashSchoolDebounce = null;
   dashSchoolInput?.addEventListener("input", () => {
     clearTimeout(dashSchoolDebounce);
@@ -222,10 +224,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       dashSchoolDropdown.innerHTML = "";
-      schools.forEach(s => {
+      schools.forEach((s, i) => {
         const item = document.createElement("div");
         item.className = "school-item";
-        item.innerHTML = `<div><strong>${escapeHtml(s.name)}</strong></div><div style="font-size:0.72rem; color:var(--primary); margin-top:2px;">Kód: ${escapeHtml(s.code)}</div>`;
+        item.id = `dash-school-option-${i}`;
+        item.setAttribute("role", "option");
+        item.innerHTML = `<div><strong>${escapeHtml(s.name)}</strong></div><div style="font-size: 0.75rem; color:var(--primary); margin-top:2px;">Kód: ${escapeHtml(s.code)}</div>`;
         item.addEventListener("click", () => {
           dashSchoolInput.value = s.name;
           if (dashSchoolHidden) dashSchoolHidden.value = s.code;
@@ -292,7 +296,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     abWeekOverride = null;
     await SecureSession.logout();
     await chrome.storage.local.remove(["pala_cached_data", "pala_last_fetch", "pala_student_extra"]);
-    await chrome.storage.local.set({ pala_use_demo: true });
+    // Logged out means the login screen, not someone else's demo grades.
+    await chrome.storage.local.set({ pala_use_demo: false });
     fullState.aliases = {};
     await loadDashboardData(true);
   });
@@ -357,46 +362,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  // CSV Exports
-  const downloadCSV = (filename, csvContent) => {
-    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  };
-
+  // CSV exports: the shared writer (KretaApi.toCsv), the same format as the TUI and the app.
   const exportGradesCsv = () => {
     if (!fullState.data?.grades) return alert("Nincsenek elérhető jegyek.");
-    let csv = "Tantárgy,Típus,Érték,Súly,Dátum,Téma\n";
-    fullState.data.grades.forEach(g => {
-      const parsed = KretaApi.parseGrade(g);
-      const sub = `"${(g.Tantargy?.Nev || g.Tantargy || "Egyéb").replace(/"/g, '""')}"`;
-      const type = `"${(g.Tipus?.Leiras || g.Tipus?.Nev || "Értékelés").replace(/"/g, '""')}"`;
-      const val = parsed.displayValue;
-      const weight = parsed.weightPercent;
-      const date = (g.KeszitesDatuma || g.RogzitesDatuma || g.Datum || "").split("T")[0];
-      const theme = `"${(g.Tema || "").replace(/"/g, '""')}"`;
-      csv += `${sub},${type},${val},${weight}%,${date},${theme}\n`;
-    });
-    downloadCSV("jegyek_export.csv", csv);
+    KretaApi.downloadText("jegyek_export.csv", KretaApi.gradesCsv(fullState.data.grades), "text/csv;charset=utf-8");
   };
 
   const exportAbsencesCsv = () => {
     if (!fullState.data?.absences) return alert("Nincsenek elérhető mulasztások.");
-    let csv = "Tantárgy,Dátum,Típus,Állapot,Késés (perc)\n";
-    fullState.data.absences.forEach(a => {
-      const sub = `"${(a.Tantargy?.Nev || a.Tantargy || "Tanóra").replace(/"/g, '""')}"`;
-      const date = (a.Datum || a.OraKezdete || "").split("T")[0];
-      const type = `"${(a.Tipus?.Leiras || a.Tipus || "Mulasztás").replace(/"/g, '""')}"`;
-      const state = `"${(a.IgazolasAllapota || "Igazolatlan").replace(/"/g, '""')}"`;
-      const delay = a.KesesPercben || 0;
-      csv += `${sub},${date},${type},${state},${delay}\n`;
-    });
-    downloadCSV("mulasztasok_export.csv", csv);
+    KretaApi.downloadText("mulasztasok_export.csv", KretaApi.absencesCsv(fullState.data.absences), "text/csv;charset=utf-8");
   };
 
   document.getElementById("btn-export-grades")?.addEventListener("click", exportGradesCsv);
@@ -409,34 +383,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const lessons = fullState.data?.timetable || [];
     if (!lessons.length) return alert("Nincsenek elérhető órarendi adatok.");
 
-    let ics = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Pala//Pala Extension//HU\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\nX-WR-CALNAME:Pala Órarend\r\n";
-    const nowUtc = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
-
-    lessons.forEach(l => {
-      const start = l.KezdetIdopont ? new Date(l.KezdetIdopont).toISOString().replace(/[-:]/g, "").split(".")[0] + "Z" : null;
-      const end = l.VegIdopont ? new Date(l.VegIdopont).toISOString().replace(/[-:]/g, "").split(".")[0] + "Z" : null;
-      if (!start || !end) return;
-
-      const rawSub = l.Tantargy?.Nev || l.Tantargy || "Tanóra";
-      const sub = getDisplaySubject(rawSub);
-      const theme = (l.Tema || "").replace(/\r?\n/g, " ");
-      const room = l.TeremNeve ? ` (Terem: ${l.TeremNeve})` : "";
-      const uid = `lesson-${l.Id || Math.random().toString(36).substring(2)}@pala`;
-
-      ics += `BEGIN:VEVENT\r\nUID:${uid}\r\nDTSTAMP:${nowUtc}\r\nDTSTART:${start}\r\nDTEND:${end}\r\nSUMMARY:${sub}${room}\r\nDESCRIPTION:${theme}\r\nEND:VEVENT\r\n`;
-    });
-
-    ics += "END:VCALENDAR\r\n";
-
-    const blob = new Blob([ics], { type: "text/calendar;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "pala_orarend.ics";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    // The shared iCalendar writer, with the user's subject aliases.
+    const ics = KretaApi.timetableToIcs(lessons, l => getDisplaySubject(l.Tantargy?.Nev || l.Tantargy || "Tanóra"));
+    KretaApi.downloadText("pala_orarend.ics", ics, "text/calendar;charset=utf-8");
   });
 
   // Pala Wrapped
@@ -500,7 +449,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   chrome.storage.onChanged?.addListener((changes, area) => {
     if (area !== "local") return;
     if (changes.pala_dark_mode) {
-      applyThemeMode(changes.pala_dark_mode.newValue !== false);
+      applyThemeMode(prefersDarkMode(changes.pala_dark_mode.newValue));
     }
     if (changes.pala_session || changes.pala_maintenance_mode) {
       loadDashboardData(true);
@@ -603,7 +552,7 @@ async function renderDashProfileDropdown() {
     row.innerHTML = `
       <div style="min-width:0; flex:1;">
         <div style="font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(p.user || "Diák")}</div>
-        <div style="font-size:0.66rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(p.instituteName || p.institute || "")}</div>
+        <div style="font-size: 0.75rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(p.instituteName || p.institute || "")}</div>
       </div>
       ${!fullState.isDemo && p.isActive ? '<span style="font-weight:900; color:var(--primary);">&#10003;</span>' : ""}
     `;
@@ -621,7 +570,7 @@ async function renderDashProfileDropdown() {
   demoRow.innerHTML = `
     <div style="min-width:0; flex:1;">
       <div style="font-weight:800;">Teszt Elek (Demó)</div>
-      <div style="font-size:0.66rem; color:var(--text-muted);">Pala Minta Gimnázium</div>
+      <div style="font-size: 0.75rem; color:var(--text-muted);">Pala Minta Gimnázium</div>
     </div>
     ${fullState.isDemo ? '<span style="font-weight:900; color:var(--primary);">&#10003;</span>' : ""}
   `;
@@ -776,7 +725,7 @@ function setupGlobalSearch() {
       row.innerHTML = `
         <div style="min-width:0; flex:1;">
           <div style="font-size:0.8rem; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(hit.title)}</div>
-          <div style="font-size:0.68rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(hit.sub || "")}</div>
+          <div style="font-size: 0.75rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(hit.sub || "")}</div>
         </div>
         <span class="search-cat-tag">${escapeHtml(hit.category)}</span>
       `;
@@ -932,7 +881,7 @@ function setupAccountSubtabs() {
 async function syncMessagesIfEmpty() {
   const store = await chrome.storage.local.get(["pala_use_demo"]);
   const session = await SecureSession.load();
-  if (store.pala_use_demo !== false || !session?.token) return;
+  if (store.pala_use_demo === true || !session?.token) return;
   if (fullState.data?.messages && fullState.data.messages.some(m => m.source === "eugyintezes")) return;
 
   try {
@@ -959,8 +908,18 @@ async function loadDashboardData(force = false) {
     "pala_aliases"
   ]);
   const session = await SecureSession.load();
-  const useDemo = store.pala_use_demo !== false;
+  // Demo data only when the user chose it; without a session the dashboard opens the login.
+  const useDemo = store.pala_use_demo === true;
   fullState.aliases = useDemo ? {} : (store.pala_aliases || {});
+
+  if (!useDemo && !session) {
+    fullState.isDemo = false;
+    fullState.isMaintenance = false;
+    fullState.data = null;
+    renderDashboard();
+    switchDashboardTab("view-account");
+    return;
+  }
 
   if (useDemo || !session) {
     fullState.isDemo = true;
@@ -1112,7 +1071,7 @@ function renderDashboard() {
       if (nameEl) nameEl.innerText = "Bejelentkezés szükséges";
       const instEl = document.getElementById("inst-name");
       if (instEl) instEl.innerText = "Lépj be a Fiók & Profil oldalon";
-      setStatusBadge("badge-maintenance", offlineLabel("expired"));
+      setStatusBadge("badge-maintenance", offlineLabel("login"));
     }
     return;
   }
@@ -1142,34 +1101,16 @@ function renderDashboard() {
     }
   }
 
-  // 1. Calculate GPA & Stats using the shared parser
-  let totalWeight = 0;
-  let weightedSum = 0;
+  // 1. Overall average by the shared rule (mean of the subject averages)
   const subjectMap = {};
-
   (d.grades || []).forEach(g => {
-    const parsed = KretaApi.parseGrade(g);
-    if (parsed.numericGrade !== null && !parsed.isSummary) {
-      weightedSum += parsed.numericGrade * parsed.weight;
-      totalWeight += parsed.weight;
-    }
-
     const sub = g.Tantargy?.Nev || g.TantargyNev || g.Tantargy || "Egyéb tantárgy";
     if (!subjectMap[sub]) subjectMap[sub] = [];
     subjectMap[sub].push(g);
   });
 
-  if (totalWeight === 0) {
-    (d.grades || []).forEach(g => {
-      const parsed = KretaApi.parseGrade(g);
-      if (parsed.numericGrade !== null) {
-        weightedSum += parsed.numericGrade * parsed.weight;
-        totalWeight += parsed.weight;
-      }
-    });
-  }
-
-  const overallAvg = totalWeight > 0 ? (weightedSum / totalWeight).toFixed(2) : "0.00";
+  const overall = KretaApi.overallAverage(d.grades);
+  const overallAvg = overall !== null ? overall.toFixed(2) : "0.00";
   const avgEl = document.getElementById("dash-avg");
   if (avgEl) avgEl.innerText = overallAvg;
 
@@ -1219,7 +1160,7 @@ function renderDashboard() {
       let subSum = 0;
       subjectMap[sub].forEach(g => {
         const parsed = KretaApi.parseGrade(g);
-        if (parsed.numericGrade !== null && !parsed.isSummary) {
+        if (KretaApi.countsForAverage(parsed)) {
           subSum += parsed.numericGrade * parsed.weight;
           subWeight += parsed.weight;
         }
@@ -1266,8 +1207,7 @@ function renderDashboard() {
   let unexcusedCount = 0;
   const unexcusedSubMap = {};
   (d.absences || []).forEach(a => {
-    const status = (a.IgazolasAllapota || "").toLowerCase();
-    if (!status.includes("igazolt") && (a.KesesPercben || 0) === 0) {
+    if (!KretaApi.isLateness(a) && KretaApi.absenceStatus(a) === "unexcused") {
       unexcusedCount++;
       const sub = a.Tantargy?.Nev || a.Tantargy || "Tanóra";
       unexcusedSubMap[sub] = (unexcusedSubMap[sub] || 0) + 1;
@@ -1539,10 +1479,10 @@ function renderDashboardTodayTimeline(todayLessons) {
     row.className = cls;
     row.innerHTML = `
       <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
-        <span class="lesson-slot-badge" style="width:22px; height:22px; font-size:0.7rem;">${escapeHtml(slot)}</span>
+        <span class="lesson-slot-badge" style="width:22px; height:22px; font-size: 0.75rem;">${escapeHtml(slot)}</span>
         <div style="min-width:0; flex:1;">
           <div style="font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; ${isCanc ? 'text-decoration:line-through; color:var(--text-muted);' : ''}">${escapeHtml(sub)}</div>
-          <div style="font-size:0.66rem; color:var(--text-muted);">${escapeHtml(timeRange)}</div>
+          <div style="font-size: 0.75rem; color:var(--text-muted);">${escapeHtml(timeRange)}</div>
         </div>
       </div>
       ${tagHtml}
@@ -1586,12 +1526,12 @@ function renderDashboardUpcomingTasks(homework, exams) {
     row.innerHTML = `
       <div style="min-width:0; flex:1;">
         <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
-          <span class="badge ${badgeCls}" style="font-size:0.62rem; padding:1px 6px;">${badgeLabel}</span>
+          <span class="badge ${badgeCls}" style="font-size: 0.75rem; padding:1px 6px;">${badgeLabel}</span>
           <strong style="font-size:0.78rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(item.sub)}</strong>
         </div>
-        <div style="font-size:0.72rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(item.title)}</div>
+        <div style="font-size: 0.75rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(item.title)}</div>
       </div>
-      <span style="font-size:0.68rem; color:var(--text-muted); flex-shrink:0;">${escapeHtml(dateStr)}</span>
+      <span style="font-size: 0.75rem; color:var(--text-muted); flex-shrink:0;">${escapeHtml(dateStr)}</span>
     `;
     listEl.appendChild(row);
   });
@@ -1659,7 +1599,7 @@ function refreshGhostSimulations(providedSubjectMap = null) {
 
   grades.forEach(g => {
     const parsed = KretaApi.parseGrade(g);
-    if (parsed.numericGrade !== null && !parsed.isSummary) {
+    if (KretaApi.countsForAverage(parsed)) {
       const sub = g.Tantargy?.Nev || g.TantargyNev || g.Tantargy || "";
       realTotSum += parsed.numericGrade * parsed.weight;
       realTotW += parsed.weight;
@@ -1832,7 +1772,7 @@ function renderDashboardSubjectCards(subjectMap) {
     let weightSum = 0;
     subGrades.forEach(g => {
       const parsed = KretaApi.parseGrade(g);
-      if (parsed.numericGrade !== null && !parsed.isSummary) {
+      if (KretaApi.countsForAverage(parsed)) {
         sum += parsed.numericGrade * parsed.weight;
         weightSum += parsed.weight;
       }
@@ -1868,7 +1808,7 @@ function renderDashboardSubjectCards(subjectMap) {
       gradePills += `<div class="grade-badge ${parsed.badgeClass}" style="height:22px; font-size:0.75rem;">${escapeHtml(parsed.displayValue)}</div>`;
     });
     if (subGrades.length > 6) {
-      gradePills += `<span style="font-size:0.7rem; color:var(--text-muted); align-self:center;">+${subGrades.length - 6}</span>`;
+      gradePills += `<span style="font-size: 0.75rem; color:var(--text-muted); align-self:center;">+${subGrades.length - 6}</span>`;
     }
 
     card.innerHTML = `
@@ -1879,7 +1819,7 @@ function renderDashboardSubjectCards(subjectMap) {
       <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
         ${gradePills}
       </div>
-      <div style="font-size:0.68rem; color:var(--text-muted); margin-top:8px;">${subGrades.length} értékelés rögzítve</div>
+      <div style="font-size: 0.75rem; color:var(--text-muted); margin-top:8px;">${subGrades.length} értékelés rögzítve</div>
     `;
     container.appendChild(card);
   });
@@ -1933,7 +1873,7 @@ function renderWeeklyTimetable(timetable) {
     const isToday = i === todayWeekday;
     const col = document.createElement("div");
     col.className = isToday ? "timetable-day-card today" : "timetable-day-card";
-    const todayBadge = isToday ? `<span class="badge" style="background:var(--primary-fill); color:var(--on-primary); font-weight:900; font-size:0.65rem; border:none;">Ma</span>` : "";
+    const todayBadge = isToday ? `<span class="badge" style="background:var(--primary-fill); color:var(--on-primary); font-weight:900; font-size: 0.75rem; border:none;">Ma</span>` : "";
     col.innerHTML = `<div class="day-title" style="display:flex; justify-content:space-between; align-items:center;"><span>${dayNames[i - 1]}</span>${todayBadge}</div>`;
 
     const lessons = dayBuckets[i];
@@ -1942,7 +1882,7 @@ function renderWeeklyTimetable(timetable) {
         <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 36px 12px; text-align: center; color: var(--text-muted);">
           <svg class="icon" viewBox="0 0 24 24" style="width: 26px; height: 26px; stroke: currentColor; stroke-width: 1.5; fill: none; opacity: 0.4; margin-bottom: 8px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg>
           <div style="font-size: 0.8rem; font-weight: 700; color: var(--text);">Nincs tanóra ezen a napon</div>
-          <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">Tanítás nélküli munkanap / Szabadnap</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Tanítás nélküli munkanap / Szabadnap</div>
         </div>
       `;
     } else {
@@ -1973,11 +1913,11 @@ function renderWeeklyTimetable(timetable) {
 
         let statusBadgeHtml = "";
         if (isActive) {
-          statusBadgeHtml = `<span class="badge" style="background:var(--primary-fill); color:var(--on-primary); font-weight:900; font-size:0.65rem; border:none; flex-shrink:0;">Folyamatban</span>`;
+          statusBadgeHtml = `<span class="badge" style="background:var(--primary-fill); color:var(--on-primary); font-weight:900; font-size: 0.75rem; border:none; flex-shrink:0;">Folyamatban</span>`;
         } else if (isCancelled) {
-          statusBadgeHtml = `<span class="badge" style="background:rgba(255,69,58,0.15); color:var(--danger); border:1px solid rgba(255,69,58,0.35); font-size:0.65rem; flex-shrink:0;">Elmaradt</span>`;
+          statusBadgeHtml = `<span class="badge" style="background:rgba(255,69,58,0.15); color:var(--danger); border:1px solid rgba(255,69,58,0.35); font-size: 0.75rem; flex-shrink:0;">Elmaradt</span>`;
         } else if (isSub) {
-          statusBadgeHtml = `<span class="badge" style="background:rgba(255,214,10,0.15); color:var(--warning); border:1px solid rgba(255,214,10,0.35); font-size:0.65rem; flex-shrink:0;">Helyettesítés</span>`;
+          statusBadgeHtml = `<span class="badge" style="background:rgba(255,214,10,0.15); color:var(--warning); border:1px solid rgba(255,214,10,0.35); font-size: 0.75rem; flex-shrink:0;">Helyettesítés</span>`;
         } else if (isPast) {
           statusBadgeHtml = `<span style="color:var(--success); font-weight:900; font-size:0.75rem; flex-shrink:0;">✓</span>`;
         }
@@ -1987,14 +1927,14 @@ function renderWeeklyTimetable(timetable) {
           ? `${formatLocalTime(l.KezdetIdopont)} - ${formatLocalTime(l.VegIdopont)}`
           : "";
         const titleStyle = isCancelled ? "text-decoration: line-through; color: var(--text-muted);" : (isActive ? "color: var(--primary);" : "");
-        const theme = l.Tema ? `<div style="font-size:0.68rem; color:var(--text-muted); margin-top:2px;">${escapeHtml(l.Tema)}</div>` : "";
+        const theme = l.Tema ? `<div style="font-size: 0.75rem; color:var(--text-muted); margin-top:2px;">${escapeHtml(l.Tema)}</div>` : "";
 
         itemEl.innerHTML = `
           <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
             <span class="lesson-slot-badge">${escapeHtml(slotNum)}</span>
             <div style="min-width:0; flex:1;">
               <div style="font-size:0.8rem; font-weight:700; ${titleStyle}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${sub}</div>
-              <div style="font-size:0.68rem; color:var(--text-muted);">${timeSpan ? timeSpan + ' • ' : ''}${room}${substitute ? ' • ' + substitute : ''}</div>
+              <div style="font-size: 0.75rem; color:var(--text-muted);">${timeSpan ? timeSpan + ' • ' : ''}${room}${substitute ? ' • ' + substitute : ''}</div>
               ${theme}
             </div>
           </div>
@@ -2044,7 +1984,7 @@ function renderWeeklyTimetable(timetable) {
 
         matrixHtml += `<td style="${cellStyle}">
           <div style="${contentStyle}">${sub}</div>
-          <div style="font-size: 0.65rem; color: var(--text-muted);">${room}</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">${room}</div>
         </td>`;
       } else {
         matrixHtml += `<td style="padding: 8px 10px; border-left: 1px solid var(--border);"></td>`;
@@ -2111,7 +2051,7 @@ function renderAllGradesView(grades, groupAverages = []) {
     const validGrades = [];
     subGrades.forEach(g => {
       const parsed = KretaApi.parseGrade(g);
-      if (parsed.numericGrade !== null && !parsed.isSummary) {
+      if (KretaApi.countsForAverage(parsed)) {
         validGrades.push({ grade: parsed.numericGrade, weight: parsed.weight, original: g, parsed });
         sum += parsed.numericGrade * parsed.weight;
         weightSum += parsed.weight;
@@ -2163,7 +2103,7 @@ function renderAllGradesView(grades, groupAverages = []) {
     if (projNumAvg > 0) {
       const rounded = Math.round(projNumAvg);
       if (Math.abs(projNumAvg - rounded) <= 0.3 && projNumAvg !== rounded) {
-        warningHtml = `<span class="badge" style="background: rgba(255,214,10,0.15); color: var(--warning); border: none; font-size: 0.7rem; margin-left: 8px;">Közel a ${rounded}-hez/höz!</span>`;
+        warningHtml = `<span class="badge" style="background: rgba(255,214,10,0.15); color: var(--warning); border: none; font-size: 0.75rem; margin-left: 8px;">Közel a ${rounded}-hez/höz!</span>`;
       }
     }
 
@@ -2193,7 +2133,7 @@ function renderAllGradesView(grades, groupAverages = []) {
     });
 
     const ghostTagHtml = ghostW > 0
-      ? `<span class="badge badge-demo" style="font-size:0.65rem;">Szimulált (${numAvg.toFixed(2)} → ${projNumAvg.toFixed(2)})</span>`
+      ? `<span class="badge badge-demo" style="font-size: 0.75rem;">Szimulált (${numAvg.toFixed(2)} → ${projNumAvg.toFixed(2)})</span>`
       : "";
 
     const sparklineHtml = createSparklineSvg(validGrades);
@@ -2274,7 +2214,7 @@ function renderGradesMatrixTable(grades, groupAverages = []) {
 
     subGrades.forEach(g => {
       const parsed = KretaApi.parseGrade(g);
-      if (parsed.numericGrade !== null && !parsed.isSummary) {
+      if (KretaApi.countsForAverage(parsed)) {
         sum += parsed.numericGrade * parsed.weight;
         wSum += parsed.weight;
       }
@@ -2323,7 +2263,7 @@ function createSparklineSvg(validGrades) {
 
     return `
       <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06);">
-        <div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:4px; display:flex; justify-content:space-between;">
+        <div style="font-size: 0.75rem; color:var(--text-muted); margin-bottom:4px; display:flex; justify-content:space-between;">
           <span>Időbeli alakulás</span>
           <span>1 jegy</span>
         </div>
@@ -2375,7 +2315,7 @@ function createSparklineSvg(validGrades) {
 
   return `
     <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06);">
-      <div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:4px; display:flex; justify-content:space-between;">
+      <div style="font-size: 0.75rem; color:var(--text-muted); margin-bottom:4px; display:flex; justify-content:space-between;">
         <span>Időbeli alakulás (${escapeHtml(dateRangeStr)})</span>
         <span style="font-weight:600;">${validGrades.length} jegy</span>
       </div>
@@ -2418,8 +2358,8 @@ function renderTasksView(homework, exams) {
   items.forEach(it => {
     const isExam = it.type === "exam";
     const tag = isExam
-      ? `<span class="badge badge-warning-soft" style="font-size:0.68rem;">SZÁMONKÉRÉS</span>`
-      : `<span class="badge badge-subtle" style="color:var(--info); font-size:0.68rem;">HÁZI FELADAT</span>`;
+      ? `<span class="badge badge-warning-soft" style="font-size: 0.75rem;">SZÁMONKÉRÉS</span>`
+      : `<span class="badge badge-subtle" style="color:var(--info); font-size: 0.75rem;">HÁZI FELADAT</span>`;
 
     let dateText = "";
     if (it.date) {
@@ -2433,7 +2373,7 @@ function renderTasksView(homework, exams) {
     card.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; gap:8px; flex-wrap:wrap;">
         <div style="display:flex; align-items:center; gap:8px;">${tag} <strong style="font-size:0.92rem;">${it.sub}</strong></div>
-        <span style="font-size:0.74rem; color:var(--text-muted);">${dateText}</span>
+        <span style="font-size: 0.75rem; color:var(--text-muted);">${dateText}</span>
       </div>
       <div style="font-size:0.84rem; color:var(--text); line-height:1.45;">${it.title}</div>
     `;
@@ -2446,7 +2386,9 @@ function renderAbsencesView(absences) {
   if (!container) return;
   container.innerHTML = "";
 
-  const totalHours = (absences || []).length;
+  // The shared rule: missed lessons count toward 250, lateness is apart.
+  const summary = KretaApi.summarizeAbsences(absences);
+  const totalHours = summary.missed;
   const pct = Math.min(100, (totalHours / 250) * 100);
 
   const hoursEl = document.getElementById("absences-total-hours");
@@ -2487,40 +2429,33 @@ function renderAbsencesView(absences) {
     barEl.className = `progress-bar-fill ${glowClass}`;
   }
 
-  let unexcusedCount = 0;
-  let delayMinutes = 0;
+  // Parental excuses are counted in days, by distinct dates, as in the Dart clients.
   let parentalCount = 0;
+  const parentalDates = new Set();
 
   (absences || []).forEach(a => {
-    const status = (a.IgazolasAllapota || "").toLowerCase();
-    if (!status.includes("igazolt") && (a.KesesPercben || 0) === 0) {
-      unexcusedCount++;
-    }
-    if (a.KesesPercben && a.KesesPercben > 0) {
-      delayMinutes += a.KesesPercben;
-    }
     const typeStr = (a.Tipus?.Leiras || a.Tipus || "").toLowerCase();
     if (typeStr.includes("szülői") || typeStr.includes("szuloi")) {
       parentalCount++;
+      if (a.Datum) parentalDates.add(localDateKey(a.Datum));
     }
   });
 
-  const justifiedCount = Math.max(0, totalHours - unexcusedCount);
   const justifiedEl = document.getElementById("absences-justified-count");
-  if (justifiedEl) justifiedEl.innerText = `${justifiedCount}`;
+  if (justifiedEl) justifiedEl.innerText = `${summary.excused}`;
 
+  // "Igazolando" is neither excused nor unexcused yet, so it is shown next to the unexcused count.
   const unexcusedEl = document.getElementById("absences-unexcused-count");
-  if (unexcusedEl) unexcusedEl.innerText = `${unexcusedCount}`;
+  if (unexcusedEl) unexcusedEl.innerText = summary.pending > 0 ? `${summary.unexcused} (+${summary.pending} igazolandó)` : `${summary.unexcused}`;
 
   const delayEl = document.getElementById("absences-delay-minutes");
-  if (delayEl) delayEl.innerText = `${delayMinutes} perc`;
+  if (delayEl) delayEl.innerText = `${summary.lateMinutes} perc`;
 
   chrome.storage.local.get("pala_parental_limit").then(res => {
     const limit = res.pala_parental_limit || 3;
-    const maxLessons = limit * 7;
-    const usedDays = Math.ceil(parentalCount / 7);
+    const usedDays = parentalDates.size;
     const parentStatus = document.getElementById("absences-parental-status");
-    if (parentStatus) parentStatus.innerText = `${parentalCount} / ${maxLessons} óra`;
+    if (parentStatus) parentStatus.innerText = `${usedDays} / ${limit} nap`;
 
     const parentVal = document.getElementById("absences-parental-val");
     if (parentVal) parentVal.innerText = `${usedDays} / ${limit} nap`;
@@ -2533,7 +2468,7 @@ function renderAbsencesView(absences) {
 
     const parentBar = document.getElementById("absences-parental-bar");
     if (parentBar) {
-      const pPct = Math.min(100, (parentalCount / maxLessons) * 100);
+      const pPct = Math.min(100, (usedDays / limit) * 100);
       parentBar.style.width = `${pPct}%`;
       const pGlow = pPct < 70 ? "progress-glow-primary" : (pPct < 90 ? "progress-glow-warning" : "progress-glow-danger");
       parentBar.className = `progress-bar-fill ${pGlow}`;
@@ -2563,9 +2498,8 @@ function renderAbsencesView(absences) {
   }
 
   const filteredAbsences = absences.filter(a => {
-    const statusRaw = (a.IgazolasAllapota || "Igazolatlan").toLowerCase();
-    const isJustified = statusRaw.includes("igazolt");
-    const isDelay = (a.KesesPercben || 0) > 0;
+    const isJustified = KretaApi.absenceStatus(a) === "excused";
+    const isDelay = KretaApi.isLateness(a);
     if (currentAbsenceFilter === "unexcused") return !isJustified && !isDelay;
     if (currentAbsenceFilter === "justified") return isJustified;
     if (currentAbsenceFilter === "delays") return isDelay;
@@ -2582,14 +2516,16 @@ function renderAbsencesView(absences) {
     const sub = escapeHtml(getDisplaySubject(rawSub));
     const totalInSub = subAbsenceCounts[rawSub] || 0;
     const riskBadge = totalInSub >= 15
-      ? `<span class="badge" style="background:rgba(255,69,58,0.15); color:var(--danger); border:1px solid rgba(255,69,58,0.3); font-size:0.68rem; margin-left:6px;" title="${totalInSub} óra mulasztás ebből a tárgyból">20% kockázat</span>`
+      ? `<span class="badge" style="background:rgba(255,69,58,0.15); color:var(--danger); border:1px solid rgba(255,69,58,0.3); font-size: 0.75rem; margin-left:6px;" title="${totalInSub} óra mulasztás ebből a tárgyból">20% kockázat</span>`
       : "";
 
     const statusRaw = a.IgazolasAllapota || "Igazolatlan";
     const status = escapeHtml(statusRaw);
     const delayMins = a.KesesPercben || 0;
     const type = escapeHtml(a.Tipus?.Leiras || a.Tipus || (delayMins > 0 ? `Késés (${delayMins} perc)` : "Mulasztás"));
-    const isJustified = statusRaw.toLowerCase().includes("igazolt");
+    const absenceStatus = KretaApi.absenceStatus(a);
+    const isJustified = absenceStatus === "excused";
+    const isPending = absenceStatus === "pending";
 
     let dateText = "";
     const dateRaw = a.Datum || a.OraKezdete;
@@ -2600,9 +2536,9 @@ function renderAbsencesView(absences) {
 
     const row = document.createElement("div");
     row.className = "table-row";
-    const statusBg = isJustified ? "rgba(48,209,88,0.15)" : "rgba(255,69,58,0.15)";
-    const statusBorder = isJustified ? "rgba(48,209,88,0.35)" : "rgba(255,69,58,0.35)";
-    const statusColor = isJustified ? "var(--success)" : "var(--danger)";
+    const statusBg = isJustified ? "rgba(48,209,88,0.15)" : (isPending ? "rgba(255,214,10,0.15)" : "rgba(255,69,58,0.15)");
+    const statusBorder = isJustified ? "rgba(48,209,88,0.35)" : (isPending ? "rgba(255,214,10,0.35)" : "rgba(255,69,58,0.35)");
+    const statusColor = isJustified ? "var(--success)" : (isPending ? "var(--warning)" : "var(--danger)");
 
     row.innerHTML = `
       <div>
@@ -2610,9 +2546,9 @@ function renderAbsencesView(absences) {
           <strong style="font-size:0.88rem; color:var(--text);">${sub}</strong>
           ${riskBadge}
         </div>
-        <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">${type} • ${dateText}</div>
+        <div style="font-size: 0.75rem; color:var(--text-muted); margin-top:2px;">${type} • ${dateText}</div>
       </div>
-      <span class="badge" style="background:${statusBg}; color:${statusColor}; border:1px solid ${statusBorder}; font-size:0.72rem; font-weight:700;">
+      <span class="badge" style="background:${statusBg}; color:${statusColor}; border:1px solid ${statusBorder}; font-size: 0.75rem; font-weight:700;">
         ${status}
       </span>
     `;
@@ -2860,7 +2796,7 @@ function renderMessagesView(messages, questionnaires) {
         <td style="padding:10px 12px; color:var(--text-muted);">${escapeHtml(q.deadline || "-")}</td>
         <td style="padding:10px 12px;">${feedbackCell}</td>
         <td style="padding:10px 12px; text-align:right;">
-          <a href="https://eugyintezes.e-kreta.hu/adatbekeresek" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration:none; font-size:0.74rem;">Kitöltés (Web)</a>
+          <a href="https://eugyintezes.e-kreta.hu/adatbekeresek" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration:none; font-size: 0.75rem;">Kitöltés (Web)</a>
         </td>
       `;
       tbody.appendChild(tr);
@@ -3170,8 +3106,12 @@ async function renderStudentView(student) {
   const subjectSums = {};
 
   grades.forEach(g => {
-    const val = typeof g.SzamErtek === "number" ? g.SzamErtek : parseInt(g.SzamErtek, 10);
-    if (!val || isNaN(val) || val < 1 || val > 5) return;
+    // Same grades and weights as every other average (the shared rule), so the
+    // profile never disagrees with the dashboard. Real Kréta grades carry
+    // SulySzazalekErteke, which parseGrade reads.
+    const parsed = KretaApi.parseGrade(g);
+    if (!KretaApi.countsForAverage(parsed)) return;
+    const val = parsed.numericGrade;
 
     if (val === 5) count5++;
     else if (val === 4) count4++;
@@ -3179,7 +3119,7 @@ async function renderStudentView(student) {
     else if (val === 2) count2++;
     else if (val === 1) count1++;
 
-    const w = g.SulySzazalek ? g.SulySzazalek / 100 : 1;
+    const w = parsed.weight;
     weightedSum += val * w;
     totalWeight += w;
     unweightedSum += val;
@@ -3210,18 +3150,10 @@ async function renderStudentView(student) {
   let unexcusedHours = 0;
   let totalDelayMins = 0;
 
-  absences.forEach(a => {
-    const delay = a.KesesPercben || 0;
-    const status = (a.IgazolasAllapota || "").toLowerCase();
-    if (delay > 0) {
-      totalDelayMins += delay;
-    } else {
-      totalAbsenceHours++;
-      if (!status.includes("igazolt")) {
-        unexcusedHours++;
-      }
-    }
-  });
+  const absenceSummary = KretaApi.summarizeAbsences(absences);
+  totalDelayMins = absenceSummary.lateMinutes;
+  totalAbsenceHours = absenceSummary.missed;
+  unexcusedHours = absenceSummary.unexcused;
 
   const remaining250 = Math.max(0, 250 - totalAbsenceHours);
 
@@ -3302,7 +3234,7 @@ async function renderStudentView(student) {
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
       <div style="display: flex; align-items: center; gap: 8px;">
         <h2 style="font-size: 1.05rem; font-weight: 800; color: var(--primary); margin: 0;">Bankszámla Adatok</h2>
-        <span class="badge ${hasBankData ? "badge-verified" : "badge-maintenance"}" style="font-size: 0.72rem;">
+        <span class="badge ${hasBankData ? "badge-verified" : "badge-maintenance"}" style="font-size: 0.75rem;">
           ${hasBankData ? "Rögzítve • Ösztöndíjhoz aktív" : "Nincs rögzítve"}
         </span>
       </div>
@@ -3325,7 +3257,7 @@ async function renderStudentView(student) {
         <strong style="text-transform: capitalize;">${escapeHtml(bankOwnerType)}</strong>
       </div>
     </div>
-    <div style="background: rgba(255,136,0,0.08); border: 1px solid rgba(255,136,0,0.25); border-radius: 8px; padding: 10px 12px; font-size: 0.73rem; color: var(--text-muted); line-height: 1.4;">
+    <div style="background: rgba(255,136,0,0.08); border: 1px solid rgba(255,136,0,0.25); border-radius: 8px; padding: 10px 12px; font-size: 0.75rem; color: var(--text-muted); line-height: 1.4;">
       A tanulói bankszámla adatok a szakképzési ösztöndíj, a rászorultsági támogatás és a duális képzés munkabérének átutalásához szükségesek.
     </div>
   `;
@@ -3374,22 +3306,22 @@ async function renderStudentView(student) {
       <div style="background: var(--sidebar); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px;">
         <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Súlyozott tanulmányi átlag</div>
         <div style="font-size: 1.4rem; font-weight: 800; color: var(--primary);">${weightedAvg}</div>
-        <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">Súlyozatlan: ${unweightedAvg} (${gradeCount} jegy)</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Súlyozatlan: ${unweightedAvg} (${gradeCount} jegy)</div>
       </div>
       <div style="background: var(--sidebar); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px;">
         <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Legjobb tantárgy</div>
         <div style="font-size: 1rem; font-weight: 700; color: var(--success); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(bestSub)}</div>
-        <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">Átlag: ${bestAvg > 0 ? bestAvg.toFixed(2) : "-"}</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Átlag: ${bestAvg > 0 ? bestAvg.toFixed(2) : "-"}</div>
       </div>
       <div style="background: var(--sidebar); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px;">
         <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Leggyengébb tantárgy</div>
         <div style="font-size: 1rem; font-weight: 700; color: ${worstAvg < 3 ? "var(--danger)" : "var(--warning)"}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(worstSub)}</div>
-        <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">Átlag: ${worstAvg <= 5 ? worstAvg.toFixed(2) : "-"}</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Átlag: ${worstAvg <= 5 ? worstAvg.toFixed(2) : "-"}</div>
       </div>
       <div style="background: var(--sidebar); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px;">
         <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Mulasztott órák / 250h keret</div>
         <div style="font-size: 1.2rem; font-weight: 800; color: ${totalAbsenceHours > 100 ? "var(--warning)" : "var(--text)"};">${totalAbsenceHours} óra</div>
-        <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">Hátralévő biztonságos: ${remaining250} óra</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Hátralévő biztonságos: ${remaining250} óra</div>
       </div>
     </div>
 
@@ -3595,7 +3527,7 @@ function renderGhostGradesAndPlanner(subjectMap) {
     let wSum = 0;
     subjectMap[subName].forEach(g => {
       const parsed = KretaApi.parseGrade(g);
-      if (parsed.numericGrade !== null && !parsed.isSummary) {
+      if (KretaApi.countsForAverage(parsed)) {
         sum += parsed.numericGrade * parsed.weight;
         wSum += parsed.weight;
       }
@@ -3656,7 +3588,7 @@ function renderGhostGradesAndPlanner(subjectMap) {
         <span>Új átlag: <strong>${newAvg.toFixed(2)}</strong></span>
         <span style="color:${diffColor}; font-weight:700;">${diffStr}</span>
       </div>
-      <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">
+      <div style="font-size: 0.75rem; color:var(--text-muted); margin-top:2px;">
         Jelenlegi: ${currentAvg.toFixed(2)} &rarr; Szimulált: ${newAvg.toFixed(2)}
       </div>
       ${neededHtml}
@@ -3816,7 +3748,7 @@ async function ensureTeachersLoaded() {
   try {
     const store = await chrome.storage.local.get(["pala_use_demo"]);
     const session = await SecureSession.load();
-    if (store.pala_use_demo !== false || !session?.token) return;
+    if (store.pala_use_demo === true || !session?.token) return;
     const token = await KretaApi.ensureValidToken(session);
     const teachers = await KretaApi.getTeachers(token).catch(() => []);
     if (teachers && teachers.length > 0 && fullState.data) {
@@ -3981,11 +3913,7 @@ function openWrappedModal() {
   });
   const topMonthName = monthNames[topMonthNum] || "Szeptember";
 
-  let unexcusedHours = 0;
-  absences.forEach(a => {
-    const st = (a.IgazolasAllapota || "").toLowerCase();
-    if (!st.includes("igazolt") && (a.KesesPercben || 0) === 0) unexcusedHours++;
-  });
+  const unexcusedHours = KretaApi.summarizeAbsences(absences).unexcused;
 
   content.innerHTML = `
     <div style="display: flex; flex-direction: column; gap: 14px;">
@@ -3998,29 +3926,29 @@ function openWrappedModal() {
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
         <div class="card" style="padding: 12px 14px; background: var(--sidebar); margin: 0;">
-          <div style="font-size: 0.74rem; color: var(--text-muted);">Ötösök száma</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">Ötösök száma</div>
           <div style="font-size: 1.5rem; font-weight: 800; color: var(--success); margin: 2px 0;">${total5s} db</div>
-          <div style="font-size: 0.7rem; color: var(--text-muted);">${((total5s / grades.length) * 100).toFixed(0)}% a jegyeknek</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">${((total5s / grades.length) * 100).toFixed(0)}% a jegyeknek</div>
         </div>
 
         <div class="card" style="padding: 12px 14px; background: var(--sidebar); margin: 0;">
-          <div style="font-size: 0.74rem; color: var(--text-muted);">Egyesek száma</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">Egyesek száma</div>
           <div style="font-size: 1.5rem; font-weight: 800; color: var(--danger); margin: 2px 0;">${total1s} db</div>
-          <div style="font-size: 0.7rem; color: var(--text-muted);">${((total1s / grades.length) * 100).toFixed(0)}% a jegyeknek</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">${((total1s / grades.length) * 100).toFixed(0)}% a jegyeknek</div>
         </div>
       </div>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
         <div class="card" style="padding: 12px 14px; background: var(--sidebar); margin: 0;">
-          <div style="font-size: 0.74rem; color: var(--text-muted);">Legjobb tantárgy</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">Legjobb tantárgy</div>
           <div style="font-size: 1rem; font-weight: 800; color: var(--primary); margin: 4px 0;" title="${escapeHtml(bestSub)}">${escapeHtml(bestSub)}</div>
-          <div style="font-size: 0.72rem; color: var(--text-muted);">Átlag: ${bestSubAvg > 0 ? bestSubAvg.toFixed(2) : "-"}</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">Átlag: ${bestSubAvg > 0 ? bestSubAvg.toFixed(2) : "-"}</div>
         </div>
 
         <div class="card" style="padding: 12px 14px; background: var(--sidebar); margin: 0;">
-          <div style="font-size: 0.74rem; color: var(--text-muted);">Legaktívabb hónap</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">Legaktívabb hónap</div>
           <div style="font-size: 1rem; font-weight: 800; color: #fff; margin: 4px 0;">${topMonthName}</div>
-          <div style="font-size: 0.72rem; color: var(--text-muted);">${topMonthCount} rögzített jegy</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">${topMonthCount} rögzített jegy</div>
         </div>
       </div>
 
@@ -4028,7 +3956,7 @@ function openWrappedModal() {
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <div>
             <div style="font-size: 0.75rem; color: var(--text-muted);">Mulasztások összesen</div>
-            <strong style="font-size: 1.1rem;">${absences.length} tanóra</strong>
+            <strong style="font-size: 1.1rem;">${KretaApi.summarizeAbsences(absences).missed} tanóra</strong>
           </div>
           <div style="text-align: right;">
             <div style="font-size: 0.75rem; color: var(--text-muted);">Igazolatlan hiányzás</div>

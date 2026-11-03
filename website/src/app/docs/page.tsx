@@ -67,6 +67,12 @@ export function DocsView({ initialPage = "installation" }: { initialPage?: strin
   useEffect(() => {
     setIsDocsPage(true);
     registerDocsNavigate((pageId, tabId) => {
+      const url = new URL(window.location.href);
+      url.searchParams.set("page", pageId);
+      if (tabId) url.searchParams.set("tab", tabId);
+      else url.searchParams.delete("tab");
+      url.hash = "";
+      window.history.pushState(null, "", url);
       setActivePage(pageId);
       if (tabId) setInstallTab(tabId);
       setMobileMenuOpen(false);
@@ -85,13 +91,17 @@ export function DocsView({ initialPage = "installation" }: { initialPage?: strin
     if (os !== "unknown") {
       setInstallTab(os);
     }
-    if (typeof window !== "undefined") {
+    // Reads ?page= / #hash, on load and when Back/Forward returns to an earlier docs page.
+    const applyUrl = () => {
       const hash = window.location.hash.replace("#", "").toLowerCase();
       const params = new URLSearchParams(window.location.search);
       const target = (params.get("page") || hash || "").toLowerCase();
       const tab = params.get("tab");
 
-      if (target === "tortenet" || target === "history") {
+      if (!target) {
+        // Back to the docs entry page, which had no ?page=.
+        setActivePage(initialPage);
+      } else if (target === "tortenet" || target === "history") {
         setActivePage("tortenet");
       } else if (target === "telepites" || target === "installation" || target === "getting-started") {
         setActivePage("installation");
@@ -136,8 +146,11 @@ export function DocsView({ initialPage = "installation" }: { initialPage?: strin
       if (tab && validTabs.includes(tab)) {
         setInstallTab(tab);
       }
-    }
-  }, []);
+    };
+    applyUrl();
+    window.addEventListener("popstate", applyUrl);
+    return () => window.removeEventListener("popstate", applyUrl);
+  }, [initialPage]);
 
   const handleCopy = async (text: string, key: string) => {
     try {
@@ -160,7 +173,19 @@ export function DocsView({ initialPage = "installation" }: { initialPage?: strin
     }
   };
 
+  /** Puts the page in the address bar, so it can be shared and Back returns to the previous page. */
+  const pushPageUrl = (pageId: string, tabId?: string) => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("page") === pageId && (!tabId || url.searchParams.get("tab") === tabId)) return;
+    url.searchParams.set("page", pageId);
+    if (tabId) url.searchParams.set("tab", tabId);
+    else url.searchParams.delete("tab");
+    url.hash = "";
+    window.history.pushState(null, "", url);
+  };
+
   const selectPage = (pageId: string, tabId?: string) => {
+    pushPageUrl(pageId, tabId);
     setActivePage(pageId);
     if (tabId) {
       setInstallTab(tabId);
@@ -349,7 +374,7 @@ export function DocsView({ initialPage = "installation" }: { initialPage?: strin
               </div>
 
               {/* Internal Horizontal Tab Navbar with OS priority */}
-              <div className="w-full border-b border-border flex items-center gap-1 sm:gap-2 overflow-x-auto no-scrollbar pb-px min-w-0">
+              <div role="tablist" aria-label="Platform" className="w-full border-b border-border flex items-center gap-1 sm:gap-2 overflow-x-auto no-scrollbar pb-px min-w-0">
                 {installTabs.map((tab) => {
                   const isActive = installTab === tab.id;
                   const isDetected = tab.id === detectedOS;
@@ -357,6 +382,9 @@ export function DocsView({ initialPage = "installation" }: { initialPage?: strin
                   return (
                     <button
                       key={tab.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={isActive}
                       onClick={() => setInstallTab(tab.id)}
                       className={`shrink-0 px-3.5 py-2 text-xs font-bold transition-all border-b-2 cursor-pointer flex items-center gap-2 ${
                         isActive
@@ -422,6 +450,7 @@ export function DocsView({ initialPage = "installation" }: { initialPage?: strin
                         <div className="px-3.5 py-2 bg-bg border-b border-border text-[11px] font-mono text-muted flex items-center justify-between">
                           <span>„B” Opció: PowerShell 1-soros Telepítő</span>
                           <button
+                            aria-label="Másolás a vágólapra"
                             onClick={() => handleCopy("irm https://raw.githubusercontent.com/CsPS0/pala/main/install.ps1 | iex", "win-ps1")}
                             className="hover:text-fg transition-colors"
                           >
@@ -438,6 +467,7 @@ export function DocsView({ initialPage = "installation" }: { initialPage?: strin
                         <div className="px-3.5 py-2 bg-bg border-b border-border text-[11px] font-mono text-muted flex items-center justify-between">
                           <span>„C” Opció: Scoop Csomagkezelő</span>
                           <button
+                            aria-label="Másolás a vágólapra"
                             onClick={() => handleCopy("scoop bucket add pala https://github.com/CsPS0/pala; scoop install pala", "win-scoop")}
                             className="hover:text-fg transition-colors"
                           >
@@ -848,6 +878,7 @@ dart run bin/pala.dart`}</pre>
                         <div className="px-3.5 py-2 bg-bg border-b border-border text-[11px] font-mono text-muted flex items-center justify-between">
                           <span>„A” Opció: Univerzális Script (bash)</span>
                           <button
+                            aria-label="Másolás a vágólapra"
                             onClick={() => handleCopy("curl -fsSL https://raw.githubusercontent.com/CsPS0/pala/main/install.sh | bash", "linux-script")}
                             className="hover:text-fg transition-colors"
                           >
@@ -864,6 +895,7 @@ dart run bin/pala.dart`}</pre>
                         <div className="px-3.5 py-2 bg-bg border-b border-border text-[11px] font-mono text-muted flex items-center justify-between">
                           <span>„B” Opció: Ubuntu / Debian (.deb csomag)</span>
                           <button
+                            aria-label="Másolás a vágólapra"
                             onClick={() => handleCopy("sudo apt install ./pala_amd64.deb", "linux-deb")}
                             className="hover:text-fg transition-colors"
                           >
@@ -886,6 +918,7 @@ dart run bin/pala.dart`}</pre>
                         <div className="px-3.5 py-2 bg-bg border-b border-border text-[11px] font-mono text-muted flex items-center justify-between">
                           <span>„C” Opció: Arch Linux (AUR)</span>
                           <button
+                            aria-label="Másolás a vágólapra"
                             onClick={() => handleCopy("yay -S pala-bin", "linux-aur")}
                             className="hover:text-fg transition-colors"
                           >
@@ -914,6 +947,7 @@ dart run bin/pala.dart`}</pre>
                       <div className="px-3.5 py-2 bg-bg border-b border-border text-[11px] font-mono text-muted flex items-center justify-between">
                         <span>Terminal (bash)</span>
                         <button
+                          aria-label="Másolás a vágólapra"
                           onClick={() => handleCopy("pala", "linux-run")}
                           className="hover:text-fg transition-colors"
                         >
@@ -1042,6 +1076,7 @@ dart run bin/pala.dart`}</pre>
                       <div className="px-3.5 py-2 bg-bg border-b border-border text-[11px] font-mono text-muted flex items-center justify-between">
                         <span>Terminal (zsh)</span>
                         <button
+                          aria-label="Másolás a vágólapra"
                           onClick={() => handleCopy("brew tap CsPS0/pala https://github.com/CsPS0/pala && brew install CsPS0/pala/pala", "mac-cmd")}
                           className="hover:text-fg transition-colors"
                         >
@@ -1127,6 +1162,7 @@ dart run bin/pala.dart`}</pre>
                       <div className="px-3.5 py-2 bg-bg border-b border-border text-[11px] font-mono text-muted flex items-center justify-between">
                         <span>Terminal (zsh)</span>
                         <button
+                          aria-label="Másolás a vágólapra"
                           onClick={() => handleCopy("brew uninstall pala; rm -rf ~/.config/pala ~/Library/Caches/pala", "mac-uninst")}
                           className="hover:text-fg transition-colors"
                         >
@@ -1459,7 +1495,7 @@ dart run bin/pala.dart`}</pre>
                     <strong>Megnyitás Jegyzettömbben PowerShellből:</strong>
                     <div className="mt-1.5 p-2.5 bg-bg rounded-xl border border-border font-mono text-primary flex items-center justify-between gap-2">
                       <span className="truncate text-[11px] sm:text-xs">notepad $env:USERPROFILE\.config\pala\state.json</span>
-                      <button onClick={() => handleCopy("notepad $env:USERPROFILE\\.config\\pala\\state.json", "cfg-win")} className="hover:text-fg shrink-0 p-1">
+                      <button aria-label="Másolás a vágólapra" onClick={() => handleCopy("notepad $env:USERPROFILE\\.config\\pala\\state.json", "cfg-win")} className="hover:text-fg shrink-0 p-1">
                         {copiedKey === "cfg-win" ? <Check size={13} className="text-primary" /> : <Copy size={13} />}
                       </button>
                     </div>
@@ -1493,7 +1529,7 @@ dart run bin/pala.dart`}</pre>
                     <strong>Szerkesztés terminálban:</strong>
                     <div className="mt-1.5 p-2.5 bg-bg rounded-xl border border-border font-mono text-primary flex items-center justify-between gap-2">
                       <span className="truncate text-[11px] sm:text-xs">nano ~/.config/pala/state.json</span>
-                      <button onClick={() => handleCopy("nano ~/.config/pala/state.json", "cfg-lin")} className="hover:text-fg shrink-0 p-1">
+                      <button aria-label="Másolás a vágólapra" onClick={() => handleCopy("nano ~/.config/pala/state.json", "cfg-lin")} className="hover:text-fg shrink-0 p-1">
                         {copiedKey === "cfg-lin" ? <Check size={13} className="text-primary" /> : <Copy size={13} />}
                       </button>
                     </div>
@@ -1527,7 +1563,7 @@ dart run bin/pala.dart`}</pre>
                     <strong>Megnyitás TextEditben:</strong>
                     <div className="mt-1.5 p-2.5 bg-bg rounded-xl border border-border font-mono text-primary flex items-center justify-between gap-2">
                       <span className="truncate text-[11px] sm:text-xs">open -a TextEdit ~/.config/pala/state.json</span>
-                      <button onClick={() => handleCopy("open -a TextEdit ~/.config/pala/state.json", "cfg-mac")} className="hover:text-fg shrink-0 p-1">
+                      <button aria-label="Másolás a vágólapra" onClick={() => handleCopy("open -a TextEdit ~/.config/pala/state.json", "cfg-mac")} className="hover:text-fg shrink-0 p-1">
                         {copiedKey === "cfg-mac" ? <Check size={13} className="text-primary" /> : <Copy size={13} />}
                       </button>
                     </div>

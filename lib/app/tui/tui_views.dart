@@ -1,6 +1,8 @@
 import 'dart:math';
 
 import '../../models/models.dart';
+import '../../rules/absence_rules.dart';
+import '../../rules/grade_rules.dart';
 import '../../version.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
@@ -794,15 +796,12 @@ class TuiViews {
         final subjGrades = state.grades
             .where((g) =>
                 g.subject.toLowerCase() == subj.toLowerCase() &&
-                !g.isSummaryGrade &&
-                g.numericValue != null &&
-                g.numericValue! >= 1 &&
-                g.numericValue! <= 5)
+                GradeRules.countsForAverage(g))
             .toList();
         var sum = 0.0;
         var wSum = 0.0;
         for (final g in subjGrades) {
-          final w = g.weight > 0 ? g.weight : 100.0;
+          final w = g.weight;
           sum += g.numericValue! * w;
           wSum += w;
         }
@@ -1193,17 +1192,15 @@ class TuiViews {
 
     // Filter absences list
     final filtered = state.absences.where((a) {
-      final sLower = a.status.toLowerCase();
-      final tLower = (a.type ?? '').toLowerCase();
-      final isDelay = tLower.contains('késés') || sLower.contains('késés');
+      final isDelay = AbsenceRules.isLateness(a);
+      final status = AbsenceRules.status(a);
       switch (state.absenceFilter) {
         case 1: // Igazolatlan
-          return !isDelay && sLower.contains('igazolatlan');
+          return !isDelay && status == AbsenceStatus.unexcused;
         case 2: // Igazolandó
-          return !isDelay &&
-              (sLower.contains('igazolando') || sLower.contains('igazolandó'));
+          return !isDelay && status == AbsenceStatus.pending;
         case 3: // Igazolt
-          return !isDelay && sLower == 'igazolt';
+          return !isDelay && status == AbsenceStatus.excused;
         case 4: // Késések
           return isDelay;
         default:

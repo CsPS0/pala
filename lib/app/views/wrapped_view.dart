@@ -111,10 +111,11 @@ extension PalaAppWrappedView on PalaApp {
     }
 
     // Absences
-    int totalHours = absences.where((a) => a.type?.toLowerCase() != 'késés').length;
+    // Missed lessons and lateness by the shared rule (AbsenceRules).
+    int totalHours = AbsenceRules.summarize(absences).missed;
     final Map<String, int> missedBySubject = {};
     for (var a in absences) {
-      if (a.type?.toLowerCase() != 'késés' && a.subject.isNotEmpty) {
+      if (!AbsenceRules.isLateness(a) && a.subject.isNotEmpty) {
         missedBySubject[a.subject] = (missedBySubject[a.subject] ?? 0) + 1;
       }
     }
@@ -197,7 +198,7 @@ extension PalaAppWrappedView on PalaApp {
     final weekdays = ["Hétfő", "Kedd", "Szerda", "Csütörtök", "Péntek", "Szombat", "Vasárnap"];
 
     // 3. Késések összesítése
-    final delays = absences.where((a) => a.type?.toLowerCase() == 'késés' || a.status.toLowerCase() == 'késés').toList();
+    final delays = absences.where(AbsenceRules.isLateness).toList();
     int totalDelayMinutes = 0;
     for (var d in delays) {
       totalDelayMinutes += d.delayMinutes ?? 0;

@@ -54,6 +54,23 @@ Nézetek az `app/lib/views/` alatt (bejelentkezés, dashboard, jegyek, hiányzá
 - **Kötelező paraméterek:** a V3 végpontok szigorúak. A `HaziFeladatok` például `500 Internal Server Error` hibát ad, ha hiányzik a `datumTol` paraméter, ezért 30 napos alapértelmezett időablakot használunk.
 - **Inkonzisztens típusok:** a JSON mezők típusa (például a `Tantargy` kulcsé) változhat, ezért a kliensoldali típusellenőrzés (null check, típuskonverzió) elengedhetetlen.
 - **Windows kódolás:** a PowerShell alapértelmezett Windows-1252 kódolása miatt az UTF-8 karakterek és a táblázatrajzoló elemek külön kezelést igényelnek.
+- **Mezőnevek:** a jegy súlya `SulySzazalekErteke`, a késés perce `KesesPercben`, az igazolás állapota `IgazolasAllapota` (`Igazolt`, `Igazolatlan`, `Igazolando`). A `Tipus` objektumban a `Leiras` az olvasható név, a `Nev` a kód (például `felevi_jegy_ertekeles`); a kliensek előbb a `Leiras`-t olvassák.
+
+## Számítási szabályok
+
+Minden kliens (TUI, asztali és mobil app, kiterjesztés, helyi webes felület) ugyanezeket a szabályokat követi. A Dart oldalon a `lib/rules/` valósítja meg, a kiterjesztésben a `KretaApi` azonos nevű függvényei. A tesztvektorok a `fixtures/rules/` mappában vannak, és mindkét oldal teszteli őket (`test/rules_test.dart`, `extension/test/rules.test.mjs`). Szabályváltozásnál előbb a vektort kell módosítani.
+
+**Átlag**
+- Egy jegy akkor számít, ha 1 és 5 közötti számjegy, nem félévi, év végi, negyedéves vagy osztályozó vizsga eredménye, és a súlya 0-nál nagyobb.
+- A hiányzó súly 100%. A 0%-os súlyú jegy nem számít bele az átlagba.
+- A szöveges és a százalékos értékelés nem számít.
+- A tantárgyi átlag a beszámított jegyek súlyozott átlaga.
+- Az összesített (tanulmányi) átlag a tantárgyi átlagok egyszerű átlaga, ahogy a bizonyítványban. A tantárgy, amelyben nincs beszámított jegy, kimarad.
+
+**Mulasztás**
+- Minden mulasztás egy tanórát jelent.
+- Késés az a bejegyzés, amelynek van `KesesPercben` értéke, vagy a típusa „késés”. A késés nem számít bele a 250 órás keretbe, a percei külön összegződnek. (A késések percekből órává összeadását a Pala nem modellezi.)
+- Igazolt csak az `Igazolt`, igazolatlan csak az `Igazolatlan` állapot. Minden más (például `Igazolando`) még nyitott, ezt a felület „igazolandó”-ként mutatja.
 
 ## Ellenőrzés commit előtt
 
@@ -62,9 +79,10 @@ A CI a Dart és Flutter ellenőrzéseket minden `main`-re történő pushnál é
 | Változás helye | Parancs |
 | :--- | :--- |
 | `lib/`, `bin/`, `test/` | `dart analyze --fatal-infos` és `dart test` a repó gyökerében. A sima `dart analyze` nem elég: a CI az info szintű jelzéseket is hibának veszi. |
-| `app/` | `flutter analyze` az `app/` mappában. |
-| `extension/` | `node --check <fájl>` minden módosított JS fájlra. |
-| `website/` | `npm run lint` és `npm run build` a `website/` mappában. |
+| `app/` | `flutter analyze` és `flutter test` az `app/` mappában. |
+| `extension/` | `node --check <fájl>` minden módosított JS fájlra, és `node --test extension/test/*.test.mjs` a repó gyökerében (függőség nélkül fut). |
+| `website/` | `bun run lint` és `bun run build` a `website/` mappában (vagy npm-mel). |
+| `fixtures/rules/` | Mindkét tesztsor: `dart test test/rules_test.dart` és `node --test extension/test/*.test.mjs`. |
 
 Gyors kézi próba: `dart run bin/pala.dart --demo` bejelentkezés és hálózat nélkül, fiktív adatokkal indítja a TUI-t.
 

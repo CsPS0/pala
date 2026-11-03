@@ -10,7 +10,7 @@
   <!-- Header: Active Student Profile Switcher, Sync Status Indicator & Quick Settings Gear -->
   <header class="header">
     <div class="profile-switcher-wrap">
-      <button id="profile-switcher-btn" class="profile-switcher-btn" type="button" title="Tanulói profil váltása">
+      <button id="profile-switcher-btn" class="profile-switcher-btn" type="button" title="Tanulói profil váltása" aria-haspopup="true" aria-expanded="false" aria-controls="profile-dropdown-menu">
         <img src="../icons/icon-32.png" alt="Pala" class="brand-icon">
         <div class="profile-meta">
           <div class="profile-name-row">
@@ -34,7 +34,7 @@
     </div>
 
     <div class="header-right">
-      <div id="status-badge" class="badge badge-sync">
+      <div id="status-badge" class="badge badge-sync" role="status" aria-live="polite">
         <span class="status-dot"></span>
         <span id="status-badge-text">Betöltés...</span>
       </div>
@@ -52,6 +52,14 @@
       </button>
     </div>
   </header>
+
+  <!-- First launch / logged out: login first, demo only on request -->
+  <section id="welcome-view" class="welcome-view" style="display: none;" aria-labelledby="welcome-title">
+    <h2 id="welcome-title">Üdv a Palában!</h2>
+    <p>Lépj be a Kréta-fiókoddal. A belépés a Kréta saját oldalán történik; a Pala csak a munkamenetet kapja meg, titkosítva, a saját gépeden.</p>
+    <button id="btn-welcome-login" class="btn btn-primary btn-block" type="button">Belépés a Krétába</button>
+    <button id="btn-welcome-demo" class="btn btn-secondary btn-block" type="button">Előbb kipróbálom demóadattal</button>
+  </section>
 
   <!-- Maintenance Alert Banner (when viewing cached data during maintenance) -->
   <div id="maintenance-banner" class="maintenance-banner" style="display: none;">
@@ -83,10 +91,10 @@
   </section>
 
   <!-- Navigation Tabs -->
-  <nav id="popup-tab-bar" class="tab-bar" aria-label="Popup fülek">
-    <button class="tab-btn active" data-tab="tab-grades" type="button">Jegyek</button>
-    <button class="tab-btn" data-tab="tab-today" type="button">Mai Órák</button>
-    <button class="tab-btn" data-tab="tab-tasks" type="button">Feladatok</button>
+  <nav id="popup-tab-bar" class="tab-bar" aria-label="Popup fülek" role="tablist">
+    <button class="tab-btn active" data-tab="tab-grades" type="button" role="tab" aria-selected="true" aria-controls="tab-grades">Jegyek</button>
+    <button class="tab-btn" data-tab="tab-today" type="button" role="tab" aria-selected="false" aria-controls="tab-today">Mai órák</button>
+    <button class="tab-btn" data-tab="tab-tasks" type="button" role="tab" aria-selected="false" aria-controls="tab-tasks">Feladatok</button>
   </nav>
 
   <!-- Content Panels -->
@@ -241,9 +249,9 @@
     <div class="modal-content">
       <div class="modal-header-row">
         <h2 style="font-size: 1rem; font-weight: 800; color: var(--primary);">Kréta Bejelentkezés</h2>
-        <button id="btn-close-login-modal" class="btn btn-secondary btn-xs" type="button">✕</button>
+        <button id="btn-close-login-modal" class="btn btn-secondary btn-xs" type="button" aria-label="Bezárás">✕</button>
       </div>
-      <p style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 12px;">Közvetlen, titkosított kapcsolat az e-Kréta szervereivel</p>
+      <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px;">Közvetlen, titkosított kapcsolat az e-Kréta szervereivel</p>
 
       <div class="input-group" style="position: relative;">
         <label for="login-institute">Iskola keresése (név vagy kód):</label>
@@ -256,7 +264,7 @@
       <div id="login-error" class="login-error"></div>
 
       <button id="btn-web-login" class="btn btn-primary btn-block" type="button" style="padding: 10px; font-weight: 700; font-size: 0.84rem;">Bejelentkezés a Kréta felületén</button>
-      <p style="font-size: 0.68rem; color: var(--text-muted); text-align: center; margin: 8px 0 12px 0; line-height: 1.4;">
+      <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center; margin: 8px 0 12px 0; line-height: 1.4;">
         Keresd meg az iskolád, majd kattints a gombra. A hivatalos Kréta belépési oldal megnyílik, a bővítmény pedig biztonságosan elmenti a munkameneted.
       </p>
       <button id="btn-demo-mode" class="btn btn-secondary btn-block" type="button">Kipróbálás Demó Módban (Teszt Elek)</button>
@@ -268,7 +276,7 @@
     <div class="modal-content" style="max-height: 88vh; overflow-y: auto;">
       <div class="modal-header-row">
         <h2 style="font-size: 0.96rem; font-weight: 800; color: var(--primary);">Popup Testreszabása</h2>
-        <button id="btn-close-popup-settings" class="btn btn-secondary btn-xs" type="button">✕</button>
+        <button id="btn-close-popup-settings" class="btn btn-secondary btn-xs" type="button" aria-label="Bezárás">✕</button>
       </div>
 
       <div class="settings-form-stack">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Clock,
@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { DocCallout } from "./DocCallout";
 import { CodeBlock } from "./CodeBlock";
-import { PAGE_TOC_MAP, type TocHeading } from "@/content/docs/navigation";
+import type { TocHeading } from "@/content/docs/navigation";
 
 interface DocsNewSectionsProps {
   activePage: string;
@@ -710,10 +710,46 @@ interface DocsRightTocProps {
   onSelectPage: (pageId: string) => void;
 }
 
+/** URL-safe id from a Hungarian heading: "Első Kréta bejelentkezés" -> "elso-kreta-bejelentkezes". */
+function headingSlug(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "szakasz";
+}
+
 export function DocsRightToc({ activePage, onSelectPage }: DocsRightTocProps) {
-  const headings: TocHeading[] = PAGE_TOC_MAP[activePage] || [
-    { id: "attekintes", label: "Oldal áttekintése", level: 2 },
-  ];
+  // Built from the headings actually on the page, so every entry has a target,
+  // also when the installation tabs swap the content.
+  const [headings, setHeadings] = useState<TocHeading[]>([]);
+
+  useEffect(() => {
+    const main = document.querySelector("main");
+    if (!main) return;
+    const build = () => {
+      const used = new Set<string>();
+      const list: TocHeading[] = [];
+      main.querySelectorAll("h2, h3").forEach((el) => {
+        const label = el.textContent?.trim();
+        if (!label) return;
+        if (!el.id || used.has(el.id)) {
+          const base = headingSlug(label);
+          let id = base;
+          for (let i = 2; used.has(id) || (document.getElementById(id) && document.getElementById(id) !== el); i++) id = `${base}-${i}`;
+          el.id = id;
+        }
+        used.add(el.id);
+        list.push({ id: el.id, label, level: el.tagName === "H2" ? 2 : 3 });
+      });
+      setHeadings(list);
+    };
+    build();
+    const observer = new MutationObserver(build);
+    observer.observe(main, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [activePage]);
 
   const scrollToTop = () => {
     if (typeof window !== "undefined") {
@@ -783,13 +819,13 @@ export function DocsRightToc({ activePage, onSelectPage }: DocsRightTocProps) {
         {/* Utility Actions */}
         <div className="pt-4 border-t border-border space-y-2 text-xs">
           <a
-            href="https://github.com/CsPS0/pala/tree/main/website/src/content/docs"
+            href="https://github.com/CsPS0/pala/tree/main/website/src/app/docs"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-muted hover:text-fg transition-colors"
           >
             <FileCode2 size={13} className="text-primary" />
-            <span>MDX forrásfájlok GitHubon</span>
+            <span>Forrás a GitHubon</span>
             <ExternalLink size={11} />
           </a>
           <button

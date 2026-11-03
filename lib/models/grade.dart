@@ -60,7 +60,8 @@ class Grade {
       textValue: json['SzovegesErtek'],
       weight: parsedWeight,
       date: json['KeszitesDatuma'] != null ? DateTime.tryParse(json['KeszitesDatuma'])?.toLocal() : null,
-      type: json['Tipus']?['Nev'],
+      // Leiras is the readable name ("Félévi jegy"), Nev the code; read like the extension does.
+      type: json['Tipus']?['Leiras'] ?? json['Tipus']?['Nev'],
       theme: json['Tema'],
       teacherName: json['ErtekeloTanarNeve'],
     );

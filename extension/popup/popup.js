@@ -39,7 +39,7 @@ const ghostState = {
 
 document.addEventListener("DOMContentLoaded", async () => {
   const themeStore = await chrome.storage.local.get("pala_dark_mode");
-  applyThemeMode(themeStore.pala_dark_mode !== false);
+  applyThemeMode(prefersDarkMode(themeStore.pala_dark_mode));
 
   setupTabs();
   setupActions();
@@ -66,6 +66,7 @@ function switchTab(targetTabId) {
   tabs.forEach(t => {
     const isTarget = t.getAttribute("data-tab") === targetTabId;
     t.classList.toggle("active", isTarget);
+    t.setAttribute("aria-selected", String(isTarget));
   });
   document.querySelectorAll(".tab-panel").forEach(p => {
     p.classList.toggle("active", p.id === targetTabId);
@@ -123,6 +124,7 @@ function setupProfileSwitcher() {
       await populateProfileMenu();
       menu.style.display = "block";
     }
+    btn.setAttribute("aria-expanded", String(!isVisible));
   });
 
   addBtn?.addEventListener("click", () => {
@@ -276,15 +278,11 @@ function updateGhostCalculator() {
   // Compute real vs projected averages for selected subject and overall GPA
   let realSubSum = 0;
   let realSubWeight = 0;
-  let realTotalSum = 0;
-  let realTotalWeight = 0;
 
   grades.forEach(g => {
     const parsed = KretaApi.parseGrade(g);
-    if (parsed.numericGrade !== null && !parsed.isSummary) {
+    if (KretaApi.countsForAverage(parsed)) {
       const sub = g.Tantargy?.Nev || g.TantargyNev || g.Tantargy || "";
-      realTotalSum += parsed.numericGrade * parsed.weight;
-      realTotalWeight += parsed.weight;
       if (sub === ghostState.selectedSubject) {
         realSubSum += parsed.numericGrade * parsed.weight;
         realSubWeight += parsed.weight;
@@ -294,13 +292,9 @@ function updateGhostCalculator() {
 
   let mockSubSum = 0;
   let mockSubWeight = 0;
-  let mockTotalSum = 0;
-  let mockTotalWeight = 0;
 
   ghostState.items.forEach(m => {
     const w = m.weight / 100;
-    mockTotalSum += m.grade * w;
-    mockTotalWeight += w;
     if (m.subject === ghostState.selectedSubject) {
       mockSubSum += m.grade * w;
       mockSubWeight += w;
@@ -313,10 +307,10 @@ function updateGhostCalculator() {
     : 0;
   const subDelta = projSubAvg - curSubAvg;
 
-  const curGpa = realTotalWeight > 0 ? realTotalSum / realTotalWeight : 0;
-  const projGpa = (realTotalWeight + mockTotalWeight) > 0
-    ? (realTotalSum + mockTotalSum) / (realTotalWeight + mockTotalWeight)
-    : 0;
+  // Overall average by the shared rule, with the ghost grades added to their subjects.
+  const ghostGrades = ghostState.items.map(m => ({ Tantargy: { Nev: m.subject }, SzamErtek: m.grade, SulySzazalekErteke: m.weight }));
+  const curGpa = KretaApi.overallAverage(grades) ?? 0;
+  const projGpa = KretaApi.overallAverage([...grades, ...ghostGrades]) ?? 0;
   const gpaDelta = projGpa - curGpa;
 
   const subProjEl = document.getElementById("ghost-sub-projected");
@@ -472,6 +466,15 @@ function setupActions() {
     document.getElementById("login-modal")?.classList.remove("active");
   });
 
+  document.getElementById("btn-welcome-login")?.addEventListener("click", () => {
+    document.getElementById("login-modal")?.classList.add("active");
+    document.getElementById("login-institute")?.focus();
+  });
+  document.getElementById("btn-welcome-demo")?.addEventListener("click", async () => {
+    await chrome.storage.local.set({ pala_use_demo: true, pala_simulate_maintenance: false });
+    await loadData(true);
+  });
+
   document.getElementById("btn-maintenance-retry")?.addEventListener("click", async () => {
     if (appState.data?.offlineReason === "expired") {
       document.getElementById("login-modal")?.classList.add("active");
@@ -505,6 +508,8 @@ function setupActions() {
   const schoolDropdown = document.getElementById("school-dropdown");
   const schoolInfo = document.getElementById("selected-school-info");
 
+  enableComboboxKeys(schoolInput, schoolDropdown);
+
   let schoolDebounce = null;
   schoolInput?.addEventListener("input", () => {
     clearTimeout(schoolDebounce);
@@ -522,20 +527,22 @@ function setupActions() {
 
     schoolDebounce = setTimeout(async () => {
       if (!schoolDropdown) return;
-      schoolDropdown.innerHTML = '<div style="padding:8px 10px; font-size:0.73rem; color:var(--text-muted);">Keresés...</div>';
+      schoolDropdown.innerHTML = '<div style="padding:8px 10px; font-size: 0.75rem; color:var(--text-muted);">Keresés...</div>';
       schoolDropdown.style.display = "block";
 
       const schools = await KretaApi.searchSchools(query);
       if (schools.length === 0) {
-        schoolDropdown.innerHTML = '<div style="padding:8px 10px; font-size:0.73rem; color:var(--text-muted);">Nincs találat. Beírhatsz közvetlen kódot is.</div>';
+        schoolDropdown.innerHTML = '<div style="padding:8px 10px; font-size: 0.75rem; color:var(--text-muted);">Nincs találat. Beírhatsz közvetlen kódot is.</div>';
         return;
       }
 
       schoolDropdown.innerHTML = "";
-      schools.forEach(s => {
+      schools.forEach((s, i) => {
         const item = document.createElement("div");
         item.className = "school-item";
-        item.innerHTML = `<div><strong>${escapeHtml(s.name)}</strong></div><div style="font-size:0.66rem; color:var(--primary); margin-top:2px;">Kód: ${escapeHtml(s.code)}</div>`;
+        item.id = `school-option-${i}`;
+        item.setAttribute("role", "option");
+        item.innerHTML = `<div><strong>${escapeHtml(s.name)}</strong></div><div style="font-size: 0.75rem; color:var(--primary); margin-top:2px;">Kód: ${escapeHtml(s.code)}</div>`;
         item.addEventListener("click", () => {
           schoolInput.value = s.name;
           if (schoolHidden) schoolHidden.value = s.code;
@@ -631,10 +638,13 @@ async function loadData(forceRefresh = false) {
   ]);
   appState.showWeekType = store.pala_show_week_type !== false;
   const session = await SecureSession.load();
-  const useDemo = store.pala_use_demo !== false;
-  const next = { isDemo: true, isMaintenance: false, offlineReason: null, data: null };
+  // Demo data only when the user chose it; without a session the popup asks for a login.
+  const useDemo = store.pala_use_demo === true;
+  const next = { isDemo: true, isMaintenance: false, offlineReason: null, needsLogin: false, data: null };
 
-  if (useDemo || !session) {
+  if (!useDemo && !session) {
+    next.needsLogin = true;
+  } else if (useDemo || !session) {
     next.data = KretaApi.getDemoDataset();
   } else {
     next.isDemo = false;
@@ -669,6 +679,22 @@ function renderUI() {
   const heroCard = document.getElementById("active-class-card");
   const tabBar = document.getElementById("popup-tab-bar");
   const contentPanels = document.querySelectorAll(".tab-panel:not(#tab-maintenance)");
+  const welcomeView = document.getElementById("welcome-view");
+  // Hides the ghost calculator too, which needs grades to work with.
+  document.body.classList.toggle("needs-login", Boolean(appState.needsLogin));
+
+  if (appState.needsLogin) {
+    if (welcomeView) welcomeView.style.display = "flex";
+    [maintBanner, maintView, heroCard, tabBar].forEach(el => { if (el) el.style.display = "none"; });
+    contentPanels.forEach(p => p.style.display = "none");
+    const studentNameEl = document.getElementById("student-name");
+    if (studentNameEl) studentNameEl.innerText = "Pala";
+    const studentSchoolEl = document.getElementById("student-school");
+    if (studentSchoolEl) studentSchoolEl.innerText = "Kréta-kliens";
+    setStatusBadge("badge-maintenance", offlineLabel("login"));
+    return;
+  }
+  if (welcomeView) welcomeView.style.display = "none";
 
   if (appState.isMaintenance) {
     if (!data) {
@@ -818,32 +844,15 @@ function renderGrades(grades) {
   if (!listEl) return;
 
   const subjectMap = {};
-  let totalWeight = 0;
-  let weightedSum = 0;
-
   (grades || []).forEach(g => {
-    const parsed = KretaApi.parseGrade(g);
-    if (parsed.numericGrade !== null && !parsed.isSummary) {
-      weightedSum += parsed.numericGrade * parsed.weight;
-      totalWeight += parsed.weight;
-    }
-
     const sub = g.Tantargy?.Nev || g.TantargyNev || g.Tantargy || "Egyéb tantárgy";
     if (!subjectMap[sub]) subjectMap[sub] = [];
     subjectMap[sub].push(g);
   });
 
-  if (totalWeight === 0) {
-    (grades || []).forEach(g => {
-      const parsed = KretaApi.parseGrade(g);
-      if (parsed.numericGrade !== null) {
-        weightedSum += parsed.numericGrade * parsed.weight;
-        totalWeight += parsed.weight;
-      }
-    });
-  }
-
-  const avg = totalWeight > 0 ? (weightedSum / totalWeight).toFixed(2) : "0.00";
+  // Overall average by the shared rule (mean of the subject averages).
+  const overall = KretaApi.overallAverage(grades);
+  const avg = overall !== null ? overall.toFixed(2) : "0.00";
   const avgEl = document.getElementById("average-value");
   if (avgEl) avgEl.innerText = avg;
 
@@ -919,7 +928,7 @@ function renderGrades(grades) {
   if (maxLimit > 0 && filteredGrades.length > displayedGrades.length) {
     const extraCount = filteredGrades.length - displayedGrades.length;
     const moreEl = document.createElement("div");
-    moreEl.style.cssText = "text-align: center; padding: 6px; font-size: 0.7rem; color: var(--text-muted);";
+    moreEl.style.cssText = "text-align: center; padding: 6px; font-size: 0.75rem; color: var(--text-muted);";
     moreEl.innerText = `+ További ${extraCount} jegy az Oldalsávon vagy Vezérlőpulton`;
     listEl.appendChild(moreEl);
   }
@@ -956,8 +965,8 @@ function renderTasks(homework, exams) {
     card.className = "item-card";
     const isExam = it.type === "exam";
     const tag = isExam
-      ? `<span style="color: var(--danger); font-weight:800; font-size:0.63rem;">DOLGOZAT</span>`
-      : `<span style="color: var(--info); font-weight:800; font-size:0.63rem;">HÁZI</span>`;
+      ? `<span style="color: var(--danger); font-weight:800; font-size: 0.75rem;">DOLGOZAT</span>`
+      : `<span style="color: var(--info); font-weight:800; font-size: 0.75rem;">HÁZI</span>`;
 
     card.innerHTML = `
       <div style="min-width:0; flex:1;">

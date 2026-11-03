@@ -52,6 +52,15 @@ void main() {
       expect(await get('/?token=${server.sessionToken}'), HttpStatus.ok);
     });
 
+    test('the page is sent with a Content-Security-Policy', () async {
+      final req = await http.getUrl(Uri.parse('http://127.0.0.1:$port/?token=${server.sessionToken}'));
+      final res = await req.close();
+      await res.drain<void>();
+      final csp = res.headers.value('content-security-policy') ?? '';
+      expect(csp, contains("connect-src 'self'"));
+      expect(csp, contains("base-uri 'none'"));
+    });
+
     test('a foreign Host header is refused even with the token', () async {
       expect(
         await get('/?token=${server.sessionToken}', host: 'evil.example'),

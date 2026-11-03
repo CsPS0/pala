@@ -25,7 +25,7 @@ extension PalaAppGradesView on PalaApp {
             continue;
           }
 
-          final validGrades = grades.where((g) => g.numericValue != null && g.numericValue! >= 1 && g.numericValue! <= 5 && !g.isSummaryGrade).toList();
+          final validGrades = grades.where(GradeRules.countsForAverage).toList();
           if (validGrades.isEmpty) {
             print('Nincsenek érdemi (1-5) jegyek a számításhoz.');
             _pause();
@@ -55,7 +55,7 @@ extension PalaAppGradesView on PalaApp {
           double currentWeightSum = 0.0;
           for (var g in subjectGrades) {
             double w = g.weight;
-            if (w == 0) w = 100.0;
+            if (w == 0) continue; // A 0% grade does not count (GradeRules).
             currentWeightedSum += g.numericValue! * w;
             currentWeightSum += w;
           }

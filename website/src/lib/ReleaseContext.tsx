@@ -1,7 +1,8 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useCallback, useMemo } from "react";
 import type { DetectedPlatform } from "./detectOS";
+import type { LatestRelease } from "./githubReleases";
 
 export interface GitHubAsset {
   name: string;
@@ -75,51 +76,18 @@ function parseAssetUrls(assets: GitHubAsset[]): ReleaseAssetMap {
 
 const ReleaseContext = createContext<ReleaseInfo | null>(null);
 
-export function ReleaseProvider({ children }: { children: React.ReactNode }) {
-  const [version, setVersion] = useState<string>(DEFAULT_FALLBACK_VERSION);
-  const [publishedAt, setPublishedAt] = useState<string>("");
-  const [formattedDate, setFormattedDate] = useState<string>("");
-  const [releaseUrl, setReleaseUrl] = useState<string>(
-    `https://github.com/${GITHUB_REPO}/releases/latest`
-  );
-  const [assets, setAssets] = useState<ReleaseAssetMap>(DEFAULT_ASSETS);
-  const [rawAssets, setRawAssets] = useState<GitHubAsset[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function fetchRelease() {
-      try {
-        const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`);
-        if (!res.ok) {
-          if (isMounted) setIsLoading(false);
-          return;
-        }
-        const data = await res.json();
-        if (!isMounted) return;
-
-        const tag: string = data.tag_name || DEFAULT_FALLBACK_VERSION;
-        setVersion(tag);
-        if (data.html_url) setReleaseUrl(data.html_url);
-        if (data.published_at) {
-          setPublishedAt(data.published_at);
-          setFormattedDate(new Date(data.published_at).toLocaleDateString("hu-HU"));
-        }
-        if (data.assets && Array.isArray(data.assets)) {
-          setRawAssets(data.assets);
-          setAssets(parseAssetUrls(data.assets));
-        }
-      } catch (err) {
-        console.warn("Could not load GitHub release info:", err);
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    }
-
-    fetchRelease();
-    return () => { isMounted = false; };
-  }, []);
+/**
+ * Release data comes from the build (see githubReleases.ts), passed in by the
+ * root layout. Nothing is fetched in the browser.
+ */
+export function ReleaseProvider({ children, release }: { children: React.ReactNode; release: LatestRelease | null }) {
+  const version = release?.tag || DEFAULT_FALLBACK_VERSION;
+  const publishedAt = release?.publishedAt || "";
+  const formattedDate = release?.formattedDate || "";
+  const releaseUrl = release?.htmlUrl || `https://github.com/${GITHUB_REPO}/releases/latest`;
+  const rawAssets = useMemo(() => release?.assets || [], [release]);
+  const assets = useMemo(() => parseAssetUrls(rawAssets), [rawAssets]);
+  const isLoading = false;
 
   const versionClean = version.replace(/^v/, "");
 

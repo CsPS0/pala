@@ -1,14 +1,18 @@
+import 'dart:convert';
+
 import '../models/models.dart';
 
 class IcsExporter {
   static String generate(List<TimetableEntry> timetable, List<Exam> exams) {
     final buffer = StringBuffer();
-    buffer.writeln('BEGIN:VCALENDAR');
-    buffer.writeln('VERSION:2.0');
-    buffer.writeln('PRODID:-//Pala//Pala TUI//HU');
-    buffer.writeln('CALSCALE:GREGORIAN');
-    buffer.writeln('METHOD:PUBLISH');
-    buffer.writeln('X-WR-CALNAME:Pala Órarend és Vizsgák');
+    // RFC 5545: CRLF line ends, lines folded at 75 octets.
+    void line(String text) => buffer.write('${_fold(text)}\r\n');
+    line('BEGIN:VCALENDAR');
+    line('VERSION:2.0');
+    line('PRODID:-//Pala//Pala TUI//HU');
+    line('CALSCALE:GREGORIAN');
+    line('METHOD:PUBLISH');
+    line('X-WR-CALNAME:Pala Órarend és Vizsgák');
 
     final now = DateTime.now().toUtc();
     final dtstamp = _formatDate(now);
@@ -32,18 +36,18 @@ class IcsExporter {
         descriptionParts.add('Téma: ${lesson.theme}');
       }
 
-      buffer.writeln('BEGIN:VEVENT');
-      buffer.writeln('UID:$uid');
-      buffer.writeln('DTSTAMP:$dtstamp');
-      buffer.writeln('DTSTART:${_formatDate(start)}');
-      buffer.writeln('DTEND:${_formatDate(end)}');
-      buffer.writeln('SUMMARY:${_escape(lesson.subject)}');
-      if (room.isNotEmpty) buffer.writeln('LOCATION:${_escape(room)}');
+      line('BEGIN:VEVENT');
+      line('UID:$uid');
+      line('DTSTAMP:$dtstamp');
+      line('DTSTART:${_formatDate(start)}');
+      line('DTEND:${_formatDate(end)}');
+      line('SUMMARY:${_escape(lesson.subject)}');
+      if (room.isNotEmpty) line('LOCATION:${_escape(room)}');
       if (descriptionParts.isNotEmpty) {
-        buffer.writeln('DESCRIPTION:${_escape(descriptionParts.join('\n'))}');
+        line('DESCRIPTION:${_escape(descriptionParts.join('\n'))}');
       }
-      buffer.writeln('STATUS:${lesson.isCancelled ? 'CANCELLED' : 'CONFIRMED'}');
-      buffer.writeln('END:VEVENT');
+      line('STATUS:${lesson.isCancelled ? 'CANCELLED' : 'CONFIRMED'}');
+      line('END:VEVENT');
     }
 
     for (var exam in exams) {
@@ -56,16 +60,16 @@ class IcsExporter {
       final theme = exam.theme ?? '';
       final uid = 'exam-${exam.uid ?? date.millisecondsSinceEpoch}@pala';
 
-      buffer.writeln('BEGIN:VEVENT');
-      buffer.writeln('UID:$uid');
-      buffer.writeln('DTSTAMP:$dtstamp');
-      buffer.writeln('DTSTART;VALUE=DATE:${_formatDateOnly(date)}');
-      buffer.writeln('SUMMARY:${_escape('[$type] $subject')}');
-      if (theme.isNotEmpty) buffer.writeln('DESCRIPTION:${_escape(theme)}');
-      buffer.writeln('END:VEVENT');
+      line('BEGIN:VEVENT');
+      line('UID:$uid');
+      line('DTSTAMP:$dtstamp');
+      line('DTSTART;VALUE=DATE:${_formatDateOnly(date)}');
+      line('SUMMARY:${_escape('[$type] $subject')}');
+      if (theme.isNotEmpty) line('DESCRIPTION:${_escape(theme)}');
+      line('END:VEVENT');
     }
 
-    buffer.writeln('END:VCALENDAR');
+    line('END:VCALENDAR');
     return buffer.toString();
   }
 
@@ -76,6 +80,24 @@ class IcsExporter {
         .replaceAll(';', r'\;')
         .replaceAll(',', r'\,')
         .replaceAll('\n', r'\n');
+  }
+
+  /// Splits a content line into 75-octet pieces (continuations start with a
+  /// space), without cutting a multi-byte UTF-8 character in half.
+  static String _fold(String text) {
+    final out = StringBuffer();
+    var lineBytes = 0;
+    for (final rune in text.runes) {
+      final ch = String.fromCharCode(rune);
+      final size = utf8.encode(ch).length;
+      if (lineBytes + size > 75) {
+        out.write('\r\n ');
+        lineBytes = 1;
+      }
+      out.write(ch);
+      lineBytes += size;
+    }
+    return out.toString();
   }
 
   static String _formatDate(DateTime dt) {

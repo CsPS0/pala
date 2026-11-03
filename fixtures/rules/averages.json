@@ -1,0 +1,191 @@
+{
+  "description": "Test vectors for the averaging rule (docs/DEV.md, 'Számítási szabályok'). Read by test/rules_test.dart and extension/test/rules.test.mjs. Inputs are Kréta-shaped grades with fictional data.",
+  "cases": [
+    {
+      "name": "weighted subject averages, overall is the mean of the subjects",
+      "grades": [
+        {
+          "Tantargy": {
+            "Nev": "Matematika"
+          },
+          "SzamErtek": 5,
+          "Tipus": {
+            "Nev": "evkozi_jegy_ertekeles",
+            "Leiras": "Évközi jegy/értékelés"
+          },
+          "SulySzazalekErteke": 200
+        },
+        {
+          "Tantargy": {
+            "Nev": "Matematika"
+          },
+          "SzamErtek": 2,
+          "Tipus": {
+            "Nev": "evkozi_jegy_ertekeles",
+            "Leiras": "Évközi jegy/értékelés"
+          },
+          "SulySzazalekErteke": 100
+        },
+        {
+          "Tantargy": {
+            "Nev": "Fizika"
+          },
+          "SzamErtek": 3,
+          "Tipus": {
+            "Nev": "evkozi_jegy_ertekeles",
+            "Leiras": "Évközi jegy/értékelés"
+          },
+          "SulySzazalekErteke": 100
+        }
+      ],
+      "subjectAverages": {
+        "Matematika": 4,
+        "Fizika": 3
+      },
+      "overall": 3.5
+    },
+    {
+      "name": "midyear and year-end grades do not count",
+      "grades": [
+        {
+          "Tantargy": {
+            "Nev": "Matematika"
+          },
+          "SzamErtek": 4,
+          "Tipus": {
+            "Nev": "evkozi_jegy_ertekeles",
+            "Leiras": "Évközi jegy/értékelés"
+          },
+          "SulySzazalekErteke": 100
+        },
+        {
+          "Tantargy": {
+            "Nev": "Matematika"
+          },
+          "SzamErtek": 1,
+          "Tipus": {
+            "Nev": "felevi_jegy_ertekeles",
+            "Leiras": "Félévi jegy/értékelés"
+          },
+          "SulySzazalekErteke": 100
+        },
+        {
+          "Tantargy": {
+            "Nev": "Matematika"
+          },
+          "SzamErtek": 2,
+          "Tipus": {
+            "Nev": "evvegi_jegy_ertekeles"
+          },
+          "SulySzazalekErteke": 100
+        }
+      ],
+      "subjectAverages": {
+        "Matematika": 4
+      },
+      "overall": 4
+    },
+    {
+      "name": "a 0% weight does not count, a missing weight is 100%",
+      "grades": [
+        {
+          "Tantargy": {
+            "Nev": "Matematika"
+          },
+          "SzamErtek": 5,
+          "Tipus": {
+            "Nev": "evkozi_jegy_ertekeles",
+            "Leiras": "Évközi jegy/értékelés"
+          },
+          "SulySzazalekErteke": 0
+        },
+        {
+          "Tantargy": {
+            "Nev": "Matematika"
+          },
+          "SzamErtek": 3,
+          "Tipus": {
+            "Nev": "evkozi_jegy_ertekeles",
+            "Leiras": "Évközi jegy/értékelés"
+          }
+        },
+        {
+          "Tantargy": {
+            "Nev": "Matematika"
+          },
+          "SzamErtek": 4,
+          "Tipus": {
+            "Nev": "evkozi_jegy_ertekeles",
+            "Leiras": "Évközi jegy/értékelés"
+          },
+          "SulySzazalekErteke": 100
+        }
+      ],
+      "subjectAverages": {
+        "Matematika": 3.5
+      },
+      "overall": 3.5
+    },
+    {
+      "name": "text and percentage evaluations do not count",
+      "grades": [
+        {
+          "Tantargy": {
+            "Nev": "Rajz"
+          },
+          "SzamErtek": null,
+          "Tipus": {
+            "Nev": "evkozi_jegy_ertekeles",
+            "Leiras": "Évközi jegy/értékelés"
+          },
+          "SzovegesErtek": "Megfelelt",
+          "SulySzazalekErteke": 100
+        },
+        {
+          "Tantargy": {
+            "Nev": "Rajz"
+          },
+          "SzamErtek": 85,
+          "Tipus": {
+            "Nev": "evkozi_jegy_ertekeles",
+            "Leiras": "Évközi jegy/értékelés"
+          },
+          "SulySzazalekErteke": 100
+        },
+        {
+          "Tantargy": {
+            "Nev": "Fizika"
+          },
+          "SzamErtek": 4,
+          "Tipus": {
+            "Nev": "evkozi_jegy_ertekeles",
+            "Leiras": "Évközi jegy/értékelés"
+          },
+          "SulySzazalekErteke": 100
+        }
+      ],
+      "subjectAverages": {
+        "Fizika": 4
+      },
+      "overall": 4
+    },
+    {
+      "name": "no counted grade gives no overall average",
+      "grades": [
+        {
+          "Tantargy": {
+            "Nev": "Matematika"
+          },
+          "SzamErtek": 1,
+          "Tipus": {
+            "Nev": "felevi_jegy_ertekeles",
+            "Leiras": "Félévi jegy/értékelés"
+          },
+          "SulySzazalekErteke": 100
+        }
+      ],
+      "subjectAverages": {},
+      "overall": null
+    }
+  ]
+}

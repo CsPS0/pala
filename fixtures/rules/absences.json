@@ -1,0 +1,140 @@
+{
+  "description": "Test vectors for the absence rule (docs/DEV.md, 'Számítási szabályok'). Each entry is one lesson; lateness is counted apart and not toward the 250 hours.",
+  "cases": [
+    {
+      "name": "excused, pending and unexcused lessons, lateness apart",
+      "absences": [
+        {
+          "Tantargy": {
+            "Nev": "Matematika"
+          },
+          "Datum": "2026-10-12T00:00:00Z",
+          "IgazolasAllapota": "Igazolt",
+          "Tipus": {
+            "Nev": "hianyzas",
+            "Leiras": "Hiányzás"
+          },
+          "KesesPercben": null
+        },
+        {
+          "Tantargy": {
+            "Nev": "Matematika"
+          },
+          "Datum": "2026-10-12T00:00:00Z",
+          "IgazolasAllapota": "Igazolando",
+          "Tipus": {
+            "Nev": "hianyzas",
+            "Leiras": "Hiányzás"
+          },
+          "KesesPercben": null
+        },
+        {
+          "Tantargy": {
+            "Nev": "Matematika"
+          },
+          "Datum": "2026-10-12T00:00:00Z",
+          "IgazolasAllapota": "Igazolatlan",
+          "Tipus": {
+            "Nev": "hianyzas",
+            "Leiras": "Hiányzás"
+          },
+          "KesesPercben": null
+        },
+        {
+          "Tantargy": {
+            "Nev": "Matematika"
+          },
+          "Datum": "2026-10-12T00:00:00Z",
+          "IgazolasAllapota": "Igazolatlan",
+          "Tipus": {
+            "Nev": "hianyzas",
+            "Leiras": "Hiányzás"
+          },
+          "KesesPercben": null
+        },
+        {
+          "Tantargy": {
+            "Nev": "Matematika"
+          },
+          "Datum": "2026-10-12T00:00:00Z",
+          "IgazolasAllapota": "Igazolt",
+          "Tipus": {
+            "Nev": "keses",
+            "Leiras": "Késés"
+          },
+          "KesesPercben": 15
+        },
+        {
+          "Tantargy": {
+            "Nev": "Matematika"
+          },
+          "Datum": "2026-10-12T00:00:00Z",
+          "IgazolasAllapota": "Igazolatlan",
+          "Tipus": {
+            "Nev": "keses",
+            "Leiras": "Késés"
+          },
+          "KesesPercben": 10
+        }
+      ],
+      "summary": {
+        "missed": 4,
+        "excused": 1,
+        "pending": 1,
+        "unexcused": 2,
+        "lateCount": 2,
+        "lateMinutes": 25
+      }
+    },
+    {
+      "name": "a lateness entry without minutes is still lateness",
+      "absences": [
+        {
+          "Tantargy": {
+            "Nev": "Matematika"
+          },
+          "Datum": "2026-10-12T00:00:00Z",
+          "IgazolasAllapota": "Igazolt",
+          "Tipus": {
+            "Nev": "keses",
+            "Leiras": "Késés"
+          },
+          "KesesPercben": 0
+        }
+      ],
+      "summary": {
+        "missed": 0,
+        "excused": 0,
+        "pending": 0,
+        "unexcused": 0,
+        "lateCount": 1,
+        "lateMinutes": 0
+      }
+    },
+    {
+      "name": "an unknown status is still open",
+      "absences": [
+        {
+          "Tantargy": {
+            "Nev": "Matematika"
+          },
+          "Datum": "2026-10-12T00:00:00Z",
+          "IgazolasAllapota": "Ismeretlen",
+          "Tipus": {
+            "Nev": "hianyzas",
+            "Leiras": "Hiányzás"
+          },
+          "KesesPercben": null
+        }
+      ],
+      "summary": {
+        "missed": 1,
+        "excused": 0,
+        "pending": 1,
+        "unexcused": 0,
+        "lateCount": 0,
+        "lateMinutes": 0
+      }
+    }
+  ]
+}

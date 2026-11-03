@@ -123,7 +123,7 @@ body {
 
 .sp-student-school {
   display: block;
-  font-size: 0.67rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
@@ -145,7 +145,7 @@ body {
 
 .sp-profile-menu-title {
   padding: 8px 12px;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   font-weight: 800;
   text-transform: uppercase;
   color: var(--text-muted);
@@ -182,7 +182,7 @@ body {
 
 /* Badges */
 .badge {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   font-weight: 700;
   padding: 3px 8px;
   border-radius: 999px;
@@ -244,7 +244,7 @@ body {
   color: var(--text-muted);
   padding: 6px 4px;
   border-radius: 8px;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
   cursor: pointer;
   display: flex;
@@ -268,7 +268,7 @@ body {
   background: rgba(255, 214, 10, 0.13);
   border-bottom: 1px solid rgba(255, 214, 10, 0.35);
   padding: 7px 14px;
-  font-size: 0.71rem;
+  font-size: 0.75rem;
   color: var(--warning);
   display: flex;
   align-items: center;
@@ -304,13 +304,13 @@ body {
   margin-bottom: 4px;
 }
 .sp-live-tag {
-  font-size: 0.62rem;
+  font-size: 0.75rem;
   font-weight: 900;
   letter-spacing: 0.6px;
   color: var(--primary);
 }
 .room-pill {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   font-weight: 800;
   padding: 2px 8px;
   border-radius: 6px;
@@ -324,12 +324,12 @@ body {
   margin-bottom: 3px;
 }
 .sp-live-details {
-  font-size: 0.73rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
   margin-bottom: 7px;
 }
 .sub-alert-banner {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
   padding: 6px 9px;
   border-radius: 7px;
@@ -359,7 +359,7 @@ body {
   transition: width 0.3s ease;
 }
 .sp-live-countdown {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-align: right;
 }
@@ -388,7 +388,7 @@ body {
   border-color: rgba(var(--primary-rgb), 0.35);
 }
 .sp-kpi-label {
-  font-size: 0.67rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
   font-weight: 700;
   display: block;
@@ -403,7 +403,7 @@ body {
 .sp-kpi-val.success { color: var(--success); }
 .sp-kpi-val.info { color: var(--info); }
 .sp-kpi-sub {
-  font-size: 0.64rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
 }
 
@@ -421,7 +421,7 @@ body {
   background: none;
   border: none;
   color: var(--primary);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   cursor: pointer;
 }
@@ -471,7 +471,7 @@ body {
   background: var(--sidebar);
   border: 1px solid var(--border);
   color: var(--text-muted);
-  font-size: 0.73rem;
+  font-size: 0.75rem;
   font-weight: 800;
   display: flex;
   align-items: center;
@@ -492,7 +492,7 @@ body {
   color: var(--danger);
 }
 .sp-item-sub {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
@@ -516,15 +516,15 @@ body {
 .grade-2 { background: rgba(var(--primary-rgb), 0.18); color: var(--primary); border: 1px solid rgba(var(--primary-rgb), 0.42); }
 .grade-1 { background: rgba(255, 69, 58, 0.2); color: var(--danger); border: 1px solid rgba(255, 69, 58, 0.45); }
 .grade-badge.grade-percent {
-  min-width: 36px; width: auto; padding: 0 5px; font-size: 0.7rem;
+  min-width: 36px; width: auto; padding: 0 5px; font-size: 0.75rem;
   background: rgba(10, 132, 255, 0.18); color: var(--info); border: 1px solid rgba(10, 132, 255, 0.4);
 }
 .grade-badge.grade-nem-irt {
-  min-width: 48px; width: auto; padding: 0 5px; font-size: 0.6rem;
+  min-width: 48px; width: auto; padding: 0 5px; font-size: 0.75rem;
   background: rgba(255, 69, 58, 0.16); color: var(--danger); border: 1px solid rgba(255, 69, 58, 0.4);
 }
 .grade-badge.grade-text, .grade-badge.grade-unknown {
-  min-width: 30px; width: auto; padding: 0 5px; font-size: 0.65rem;
+  min-width: 30px; width: auto; padding: 0 5px; font-size: 0.75rem;
   background: rgba(255, 255, 255, 0.07); color: var(--text-muted); border: 1px solid var(--border);
 }
 
@@ -605,7 +605,7 @@ body {
   border-radius: 7px;
   padding: 6px 8px;
   color: var(--text);
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   min-width: 0;
 }
 .sp-ghost-output {
@@ -613,7 +613,7 @@ body {
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 8px 10px;
-  font-size: 0.74rem;
+  font-size: 0.75rem;
 }
 
 .sp-matrix-card {
@@ -634,7 +634,7 @@ body {
   font-weight: 800;
 }
 .sp-matrix-meta {
-  font-size: 0.67rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
   margin-top: 2px;
 }
@@ -677,12 +677,12 @@ body {
   font-weight: 900;
 }
 .sp-gauge-rem {
-  font-size: 0.73rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
   font-weight: 600;
 }
 .sp-gauge-note {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
   line-height: 1.35;
 }
@@ -697,7 +697,7 @@ body {
   padding: 9px 8px;
 }
 .sp-cat-label {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
   display: block;
   margin-bottom: 3px;
@@ -719,7 +719,7 @@ body {
   background: var(--sidebar);
   border: 1px solid var(--border);
   color: var(--text-muted);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 700;
   padding: 4px 10px;
   border-radius: 999px;
@@ -738,10 +738,10 @@ body {
   transition: var(--transition);
 }
 .btn-primary { background: var(--primary-fill); color: var(--on-primary); padding: 7px 12px; font-size: 0.76rem; }
-.btn-secondary { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; font-size: 0.72rem; }
+.btn-secondary { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; font-size: 0.75rem; }
 .btn-secondary:hover { background: var(--card-hover); }
-.btn-sm { font-size: 0.72rem; padding: 5px 10px; }
-.btn-xs { font-size: 0.66rem; padding: 3px 8px; }
+.btn-sm { font-size: 0.75rem; padding: 5px 10px; }
+.btn-xs { font-size: 0.75rem; padding: 3px 8px; }
 .btn-icon {
   width: 28px;
   height: 28px;
@@ -773,4 +773,38 @@ body {
 :focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
+}
+
+/* Reduced motion: no shimmer or panel animation. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Narrow side panel (Chrome allows about 320 px). */
+@media (max-width: 360px) {
+  /* Day chips wrap instead of scrolling away behind a hidden scrollbar. */
+  .sp-day-tabs {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+  /* The ghost-grade selects stack instead of squeezing into one row. */
+  .sp-ghost-grid {
+    grid-template-columns: 1fr;
+  }
+  .sp-tabs {
+    padding: 6px;
+    gap: 3px;
+  }
+  .sp-tab {
+    padding: 6px 2px;
+    overflow-wrap: anywhere;
+  }
+  /* Section titles and their links wrap instead of running into each other. */
+  .sp-section-header {
+    flex-wrap: wrap;
+    gap: 4px 10px;
+  }
 }

@@ -18,31 +18,25 @@ extension PalaAppExportView on PalaApp {
 
         if (grades != null && grades.isNotEmpty) {
           final csvFile = File(p.join(outDir, 'Pala_Jegyek.csv'));
-          String csvContent = 'Tantárgy;Érték;Dátum;Téma\n';
-          for (var g in grades) {
-            final t = g.subject;
-            final v = g.numericValue ?? g.textValue ?? '';
-            final d = g.date?.toString().split(' ').first.split('T').first ?? '';
-            final th = g.theme ?? '';
-            csvContent += '"$t";"$v";"$d";"$th"\n';
-          }
-          csvFile.writeAsBytesSync(const [239, 187, 191]); // UTF-8 BOM
-          csvFile.writeAsStringSync(csvContent, mode: FileMode.append);
+          // The shared CSV format (utils/csv.dart): BOM, ';', every value quoted.
+          csvFile.writeAsStringSync(toCsv(
+            ['Tantárgy', 'Érték', 'Dátum', 'Téma'],
+            grades.map((g) => [g.subject, g.numericValue ?? g.textValue ?? '', csvDate(g.date), g.theme ?? '']),
+          ));
           print('Jegyek elmentve: ${csvFile.path}');
         }
         
         if (absences != null && absences.isNotEmpty) {
           final csvFile = File(p.join(outDir, 'Pala_Mulasztasok.csv'));
-          String csvContent = 'Tantárgy;Dátum;Igazolt;Típus\n';
-          for (var a in absences) {
-            final t = a.subject;
-            final d = a.date?.toString().split(' ').first.split('T').first ?? '';
-            final i = a.status == 'Igazolt' ? 'Igen' : 'Nem';
-            final ty = a.type ?? '';
-            csvContent += '"$t";"$d";"$i";"$ty"\n';
-          }
-          csvFile.writeAsBytesSync(const [239, 187, 191]); // UTF-8 BOM
-          csvFile.writeAsStringSync(csvContent, mode: FileMode.append);
+          csvFile.writeAsStringSync(toCsv(
+            ['Tantárgy', 'Dátum', 'Igazolt', 'Típus'],
+            absences.map((a) => [
+                  a.subject,
+                  csvDate(a.date),
+                  AbsenceRules.status(a) == AbsenceStatus.excused ? 'Igen' : 'Nem',
+                  a.type ?? '',
+                ]),
+          ));
           print('Mulasztások elmentve: ${csvFile.path}');
         }
       } catch (e) {

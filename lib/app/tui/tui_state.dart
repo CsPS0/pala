@@ -1,4 +1,6 @@
 import '../../models/models.dart';
+import '../../rules/absence_rules.dart';
+import '../../rules/grade_rules.dart';
 
 enum TuiPane { left, right }
 
@@ -136,14 +138,12 @@ class TuiWorkspaceState {
     var weightedSum = 0.0;
     var weightTotal = 0.0;
 
+    // Which grades count and with what weight: the shared rule (GradeRules).
     for (final g in grades) {
       if (g.subject.toLowerCase() != subject.toLowerCase()) continue;
-      if (g.isSummaryGrade) continue;
-      final val = g.numericValue;
-      if (val == null || val < 1 || val > 5) continue;
-      final w = g.weight > 0 ? g.weight : 100.0;
-      weightedSum += val * w;
-      weightTotal += w;
+      if (!GradeRules.countsForAverage(g)) continue;
+      weightedSum += g.numericValue! * g.weight;
+      weightTotal += g.weight;
     }
 
     if (includeGhost) {
@@ -171,8 +171,10 @@ class TuiWorkspaceState {
     return 0.0;
   }
 
-  /// Overall GPA across all graded subjects.
+  /// Overall GPA: the mean of the subject averages (the shared rule). Ghost
+  /// grades are only added when asked for.
   double overallGpa({bool includeGhost = false}) {
+    if (!includeGhost) return GradeRules.overallAverage(grades) ?? 0.0;
     final subjects = availableSubjects;
     if (subjects.isEmpty) return 0.0;
     var sum = 0.0;
@@ -203,42 +205,18 @@ class TuiWorkspaceState {
         .length;
   }
 
-  int get totalMissedHours =>
-      absences.where((a) => (a.type ?? '').toLowerCase() != 'késés').length;
+  // Absence counts: the shared rule (AbsenceRules), the same as the app and the extension.
+  AbsenceSummary get _absenceSummary => AbsenceRules.summarize(absences);
 
-  int get unexcusedHours => absences
-      .where((a) =>
-          (a.type ?? '').toLowerCase() != 'késés' &&
-          a.status.toLowerCase().contains('igazolatlan'))
-      .length;
+  int get totalMissedHours => _absenceSummary.missed;
 
-  int get pendingHours => absences
-      .where((a) =>
-          (a.type ?? '').toLowerCase() != 'késés' &&
-          (a.status.toLowerCase().contains('igazolando') ||
-              a.status.toLowerCase().contains('igazolandó')))
-      .length;
+  int get unexcusedHours => _absenceSummary.unexcused;
 
-  int get excusedHours => absences
-      .where((a) =>
-          (a.type ?? '').toLowerCase() != 'késés' &&
-          a.status.toLowerCase() == 'igazolt')
-      .length;
+  int get pendingHours => _absenceSummary.pending;
 
-  int get delayCount => absences
-      .where((a) =>
-          (a.type ?? '').toLowerCase().contains('késés') ||
-          a.status.toLowerCase().contains('késés'))
-      .length;
+  int get excusedHours => _absenceSummary.excused;
 
-  int get totalDelayMinutes {
-    var mins = 0;
-    for (final a in absences) {
-      if ((a.type ?? '').toLowerCase().contains('késés') ||
-          a.status.toLowerCase().contains('késés')) {
-        mins += a.delayMinutes ?? 0;
-      }
-    }
-    return mins;
-  }
+  int get delayCount => _absenceSummary.lateCount;
+
+  int get totalDelayMinutes => _absenceSummary.lateMinutes;
 }

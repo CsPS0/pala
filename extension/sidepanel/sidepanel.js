@@ -38,7 +38,7 @@ function getLessonAnomaly(lesson) {
 
 document.addEventListener("DOMContentLoaded", async () => {
   const themeStore = await chrome.storage.local.get("pala_dark_mode");
-  applyThemeMode(themeStore.pala_dark_mode !== false);
+  applyThemeMode(prefersDarkMode(themeStore.pala_dark_mode));
 
   setupNavigation();
   setupHeaderActions();
@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 chrome.storage?.onChanged?.addListener((changes, area) => {
   if (area !== "local") return;
   if (changes.pala_dark_mode) {
-    applyThemeMode(changes.pala_dark_mode.newValue !== false);
+    applyThemeMode(prefersDarkMode(changes.pala_dark_mode.newValue));
   }
   if (changes.pala_session || changes.pala_use_demo || changes.pala_cached_data) {
     loadSidePanelData(false);
@@ -68,7 +68,9 @@ chrome.storage?.onChanged?.addListener((changes, area) => {
 
 function switchSpTab(tabId) {
   document.querySelectorAll(".sp-tab").forEach(btn => {
-    btn.classList.toggle("active", btn.getAttribute("data-tab") === tabId);
+    const isTarget = btn.getAttribute("data-tab") === tabId;
+    btn.classList.toggle("active", isTarget);
+    btn.setAttribute("aria-selected", String(isTarget));
   });
   document.querySelectorAll(".sp-view").forEach(view => {
     view.classList.toggle("active", view.id === tabId);
@@ -130,7 +132,8 @@ function setupHeaderActions() {
 
   document.getElementById("sp-btn-maint-retry")?.addEventListener("click", async () => {
     // Login lives on the dashboard's account page.
-    if ((spState.data?.offlineReason || spState.offlineReason) === "expired") {
+    const reason = spState.data?.offlineReason || spState.offlineReason;
+    if (reason === "expired" || reason === "login") {
       chrome.tabs.create({ url: chrome.runtime.getURL("dashboard/dashboard.html#view-account") });
       return;
     }
@@ -154,7 +157,7 @@ async function renderProfileDropdown() {
     btn.innerHTML = `
       <div>
         <strong style="display:block; font-size:0.77rem;">${escapeHtml(p.user)}</strong>
-        <span style="font-size:0.65rem; color:var(--text-muted);">${escapeHtml(p.institute || "Kréta fiók")}</span>
+        <span style="font-size: 0.75rem; color:var(--text-muted);">${escapeHtml(p.institute || "Kréta fiók")}</span>
       </div>
       ${p.isActive ? '<span class="status-dot" style="background:var(--primary);"></span>' : ""}
     `;
@@ -201,10 +204,14 @@ async function loadSidePanelData(forceRefresh = false) {
     "pala_simulate_maintenance"
   ]);
   const session = await SecureSession.load();
-  const useDemo = store.pala_use_demo !== false;
+  // Demo data only when the user chose it; without a session the panel asks for a login.
+  const useDemo = store.pala_use_demo === true;
   const next = { isDemo: true, isMaintenance: false, offlineReason: null, data: null };
 
-  if (useDemo || !session) {
+  if (!useDemo && !session) {
+    next.isDemo = false;
+    next.offlineReason = "login";
+  } else if (useDemo || !session) {
     next.data = KretaApi.getDemoDataset(spState.demoAWeekOverride);
   } else {
     next.isDemo = false;
@@ -231,7 +238,7 @@ async function loadSidePanelData(forceRefresh = false) {
 /** The banner button logs in again for an expired session, otherwise retries. */
 function setSpRetryLabel(reason) {
   const btn = document.getElementById("sp-btn-maint-retry");
-  if (btn) btn.textContent = reason === "expired" ? "Belépés" : "Újra";
+  if (btn) btn.textContent = reason === "expired" || reason === "login" ? "Belépés" : "Újra";
 }
 
 function renderAllViews() {
@@ -241,7 +248,9 @@ function renderAllViews() {
   if (!data) {
     const reason = spState.offlineReason;
     if (maintText) {
-      maintText.textContent = reason === "expired"
+      maintText.textContent = reason === "login"
+        ? "Még nem léptél be. Lépj be a Kréta-fiókoddal a vezérlőpulton."
+        : reason === "expired"
         ? "Lejárt a Kréta-bejelentkezés, és még nincs mentett adat. Lépj be újra."
         : reason === "network"
           ? "Nincs internetkapcsolat, és még nincs mentett adat."
@@ -388,20 +397,13 @@ function renderDashboardView(data) {
   const homework = data.homework || [];
   const exams = data.exams || [];
 
-  let weightedSum = 0;
-  let totalWeight = 0;
-  grades.forEach(g => {
-    const p = KretaApi.parseGrade(g);
-    if (p.numericGrade !== null && !p.isSummary) {
-      weightedSum += p.numericGrade * p.weight;
-      totalWeight += p.weight;
-    }
-  });
-  const gpa = totalWeight > 0 ? (weightedSum / totalWeight).toFixed(2) : "--";
+  // The shared rules: the mean of the subject averages, and missed lessons without lateness.
+  const overall = KretaApi.overallAverage(grades);
+  const gpa = overall !== null ? overall.toFixed(2) : "--";
 
   const todayIso = localDateKey(new Date());
   const todayCount = timetable.filter(l => l.KezdetIdopont && localDateKey(l.KezdetIdopont) === todayIso).length;
-  const missedHours = absences.filter(a => !(a.KesesPercben > 0)).length;
+  const missedHours = KretaApi.summarizeAbsences(absences).missed;
 
   const kpiGpa = document.getElementById("sp-kpi-gpa");
   const kpiGpaSub = document.getElementById("sp-kpi-gpa-sub");
@@ -465,8 +467,8 @@ function renderDashboardView(data) {
         card.className = "sp-list-item";
         card.innerHTML = `
           <div style="min-width:0; flex:1;">
-            <div style="font-size:0.74rem; margin-bottom:2px;">
-              <strong style="color:${t.color}; font-size:0.64rem; margin-right:5px;">${t.type}</strong>
+            <div style="font-size: 0.75rem; margin-bottom:2px;">
+              <strong style="color:${t.color}; font-size: 0.75rem; margin-right:5px;">${t.type}</strong>
               <strong>${escapeHtml(t.sub)}</strong>
             </div>
             <div class="sp-item-sub">${escapeHtml(t.text)}</div>
@@ -645,7 +647,7 @@ function renderGradeMatrixView(grades, groupAverages) {
     let weight = 0;
     subGrades.forEach(g => {
       const p = KretaApi.parseGrade(g);
-      if (p.numericGrade !== null && !p.isSummary) {
+      if (KretaApi.countsForAverage(p)) {
         sum += p.numericGrade * p.weight;
         weight += p.weight;
       }
@@ -690,7 +692,7 @@ function updateSpGhostSimulation() {
   grades.forEach(g => {
     const s = g.Tantargy?.Nev || g.TantargyNev || g.Tantargy;
     const p = KretaApi.parseGrade(g);
-    if (s === sub && p.numericGrade !== null && !p.isSummary) {
+    if (s === sub && KretaApi.countsForAverage(p)) {
       sum += p.numericGrade * p.weight;
       weight += p.weight;
     }
@@ -720,35 +722,10 @@ function setupAbsenceControls() {
   });
 }
 
-/**
- * Kréta IgazolasAllapota: only "Igazolt" is excused. "Igazolando" is still
- * open, so it counts as not excused, as on the dashboard.
- */
-function absenceStatus(a) {
-  const status = String(a.IgazolasAllapota || "").toLowerCase();
-  if (status.includes("igazolatlan")) return "unexcused";
-  if (status.includes("igazoland")) return "pending";
-  return "excused";
-}
-
 function renderAbsencesView(absences) {
-  let excused = 0;
-  let unexcused = 0;
-  let delayMins = 0;
-
-  (absences || []).forEach(a => {
-    const delay = Number(a.KesesPercben || 0);
-    const isUnexcused = absenceStatus(a) !== "excused";
-    if (delay > 0) {
-      delayMins += delay;
-    } else if (isUnexcused) {
-      unexcused++;
-    } else {
-      excused++;
-    }
-  });
-
-  const totalHours = excused + unexcused;
+  // The shared rule: missed lessons count toward 250, lateness is apart.
+  const summary = KretaApi.summarizeAbsences(absences);
+  const totalHours = summary.missed;
   const pct = Math.min(100, (totalHours / 250) * 100);
   const remaining = Math.max(0, 250 - totalHours);
 
@@ -780,20 +757,21 @@ function renderAbsencesView(absences) {
   const excEl = document.getElementById("sp-abs-excused");
   const unexcEl = document.getElementById("sp-abs-unexcused");
   const lateEl = document.getElementById("sp-abs-late");
-  if (excEl) excEl.innerText = `${excused} óra`;
-  if (unexcEl) unexcEl.innerText = `${unexcused} óra`;
-  if (lateEl) lateEl.innerText = `${delayMins} perc`;
+  if (excEl) excEl.innerText = `${summary.excused} óra`;
+  // "Igazolando" is neither excused nor unexcused yet, so it is shown next to the unexcused count.
+  if (unexcEl) unexcEl.innerText = summary.pending > 0 ? `${summary.unexcused} óra (+${summary.pending} igazolandó)` : `${summary.unexcused} óra`;
+  if (lateEl) lateEl.innerText = `${summary.lateMinutes} perc`;
 
   const listEl = document.getElementById("sp-absences-list");
   if (!listEl) return;
   listEl.innerHTML = "";
 
   const filtered = (absences || []).filter(a => {
-    const delay = Number(a.KesesPercben || 0);
-    const isUnexcused = absenceStatus(a) !== "excused";
-    if (spState.absenceFilter === "late") return delay > 0;
-    if (spState.absenceFilter === "unexcused") return isUnexcused;
-    if (spState.absenceFilter === "excused") return !isUnexcused && delay === 0;
+    const isLate = KretaApi.isLateness(a);
+    const isExcused = KretaApi.absenceStatus(a) === "excused";
+    if (spState.absenceFilter === "late") return isLate;
+    if (spState.absenceFilter === "unexcused") return !isLate && !isExcused;
+    if (spState.absenceFilter === "excused") return !isLate && isExcused;
     return true;
   });
 
@@ -805,7 +783,7 @@ function renderAbsencesView(absences) {
   filtered.forEach(a => {
     const sub = a.Tantargy?.Nev || a.Tantargy || "Tanóra";
     const delay = Number(a.KesesPercben || 0);
-    const status = absenceStatus(a);
+    const status = KretaApi.absenceStatus(a);
     const dateStr = a.Datum ? new Date(a.Datum).toLocaleDateString("hu-HU") : "";
     const statusLabel = delay > 0
       ? `Késés (${delay} p)`
@@ -827,54 +805,11 @@ function renderAbsencesView(absences) {
   });
 }
 
+// Exports use the shared writers in KretaApi, the same as the dashboard.
 function exportIcsFile(timetable) {
-  const lines = [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
-    "PRODID:-//Pala//Kreta Timetable//HU",
-    "CALSCALE:GREGORIAN"
-  ];
-  const fmtUtc = (iso) => new Date(iso).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
-
-  (timetable || []).forEach(l => {
-    if (!l.KezdetIdopont || !l.VegIdopont) return;
-    const sub = l.Tantargy?.Nev || l.Tantargy || l.Nev || "Tanóra";
-    lines.push("BEGIN:VEVENT");
-    lines.push(`UID:pala-${l.Id || Math.random()}@pala.edu.hu`);
-    lines.push(`DTSTART:${fmtUtc(l.KezdetIdopont)}`);
-    lines.push(`DTEND:${fmtUtc(l.VegIdopont)}`);
-    lines.push(`SUMMARY:${sub}`);
-    if (l.TeremNeve) lines.push(`LOCATION:${l.TeremNeve}`);
-    lines.push("END:VEVENT");
-  });
-  lines.push("END:VCALENDAR");
-
-  const blob = new Blob([lines.join("\r\n")], { type: "text/calendar;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "pala_orarend.ics";
-  a.click();
-  URL.revokeObjectURL(url);
+  KretaApi.downloadText("pala_orarend.ics", KretaApi.timetableToIcs(timetable), "text/calendar;charset=utf-8");
 }
 
 function exportGradesCsv(grades) {
-  const rows = [['"Tantárgy"', '"Jegy"', '"Súly (%)"', '"Téma"', '"Dátum"']];
-  (grades || []).forEach(g => {
-    const p = KretaApi.parseGrade(g);
-    const sub = g.Tantargy?.Nev || g.TantargyNev || g.Tantargy || "Tantárgy";
-    const topic = g.Tema || g.Tipus?.Leiras || "Értékelés";
-    const dateStr = (g.RogzitesDatuma || g.Datum || "").slice(0, 10);
-    const esc = (v) => `"${String(v || "").replace(/"/g, '""')}"`;
-    rows.push([esc(sub), esc(p.displayValue), esc(`${p.weightPercent}%`), esc(topic), esc(dateStr)]);
-  });
-
-  const csvContent = "\uFEFF" + rows.map(r => r.join(",")).join("\r\n");
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "pala_jegyek.csv";
-  a.click();
-  URL.revokeObjectURL(url);
+  KretaApi.downloadText("pala_jegyek.csv", KretaApi.gradesCsv(grades), "text/csv;charset=utf-8");
 }

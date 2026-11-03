@@ -4,6 +4,9 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:pala/api/api.dart';
 import 'package:pala/api/client.dart';
+import 'package:pala/rules/absence_rules.dart';
+import 'package:pala/rules/grade_rules.dart';
+import 'package:pala/utils/csv.dart';
 import 'package:pala/api/demo_client.dart';
 import 'package:pala/models/absence.dart';
 import 'package:pala/models/exam.dart';
@@ -479,39 +482,14 @@ class AppModel extends ChangeNotifier {
 
   // --- Calculated Statistics ---
 
-  double get overallGpa {
-    double sum = 0;
-    double count = 0;
-    for (final g in _grades) {
-      if (!g.isSummaryGrade && g.numericValue != null && g.numericValue! >= 1 && g.numericValue! <= 5) {
-        final w = g.weight / 100.0;
-        sum += g.numericValue! * w;
-        count += w;
-      }
-    }
-    return count > 0 ? (sum / count) : 0.0;
-  }
+  // Averages and absence counts follow the shared rules in package:pala/rules
+  // (docs/DEV.md, "Számítási szabályok"), the same as the TUI and the extension.
 
-  Map<String, double> get subjectAverages {
-    final sums = <String, double>{};
-    final weights = <String, double>{};
+  /// The mean of the subject averages, as on a certificate.
+  double get overallGpa => GradeRules.overallAverage(_grades, subjectOf: (g) => getDisplaySubject(g.subject)) ?? 0.0;
 
-    for (final g in _grades) {
-      if (!g.isSummaryGrade && g.numericValue != null && g.numericValue! >= 1 && g.numericValue! <= 5) {
-        final sub = getDisplaySubject(g.subject);
-        final w = g.weight / 100.0;
-        sums[sub] = (sums[sub] ?? 0) + g.numericValue! * w;
-        weights[sub] = (weights[sub] ?? 0) + w;
-      }
-    }
-
-    final avgs = <String, double>{};
-    for (final s in sums.keys) {
-      final w = weights[s] ?? 0;
-      if (w > 0) avgs[s] = sums[s]! / w;
-    }
-    return avgs;
-  }
+  Map<String, double> get subjectAverages =>
+      GradeRules.subjectAverages(_grades, subjectOf: (g) => getDisplaySubject(g.subject));
 
   Map<String, double> get groupAveragesMap {
     final map = <String, double>{};
@@ -529,39 +507,25 @@ class AppModel extends ChangeNotifier {
   }
 
   // Absence breakdown
-  int get totalMissedHours => _absences.where((a) => a.type?.toLowerCase() != 'késés').length;
-  
+  AbsenceSummary get _absenceSummary => AbsenceRules.summarize(_absences);
+
+  int get totalMissedHours => _absenceSummary.missed;
+
   // Status classifiers shared by the counters and the absences list filter.
-  // Late arrivals (késés) are not missed hours and match none of them.
-  static bool _isLate(Absence a) => a.type?.toLowerCase() == 'késés';
+  // Late arrivals are not missed hours and match none of them.
+  static bool isJustified(Absence a) => !AbsenceRules.isLateness(a) && AbsenceRules.status(a) == AbsenceStatus.excused;
 
-  static bool isJustified(Absence a) {
-    final s = a.status.toLowerCase();
-    return s.contains('igazolt') && !s.contains('igazolatlan') && !_isLate(a);
-  }
+  static bool isUnjustified(Absence a) => !AbsenceRules.isLateness(a) && AbsenceRules.status(a) == AbsenceStatus.unexcused;
 
-  static bool isUnjustified(Absence a) => a.status.toLowerCase().contains('igazolatlan') && !_isLate(a);
+  static bool isPending(Absence a) => !AbsenceRules.isLateness(a) && AbsenceRules.status(a) == AbsenceStatus.pending;
 
-  static bool isPending(Absence a) {
-    final s = a.status.toLowerCase();
-    return (s.contains('igazolando') || s.contains('igazolandó') || s.contains('fuggoben') || s.contains('függőben')) && !_isLate(a);
-  }
+  int get justifiedHours => _absenceSummary.excused;
 
-  int get justifiedHours => _absences.where(isJustified).length;
+  int get unjustifiedHours => _absenceSummary.unexcused;
 
-  int get unjustifiedHours => _absences.where(isUnjustified).length;
+  int get pendingHours => _absenceSummary.pending;
 
-  int get pendingHours => _absences.where(isPending).length;
-
-  int get totalDelayMinutes {
-    int sum = 0;
-    for (final a in _absences) {
-      if (a.delayMinutes != null && a.delayMinutes! > 0) {
-        sum += a.delayMinutes!;
-      }
-    }
-    return sum;
-  }
+  int get totalDelayMinutes => _absenceSummary.lateMinutes;
 
   int get usedParentalDays {
     final parentAbsences = _absences.where((a) {
@@ -639,33 +603,28 @@ class AppModel extends ChangeNotifier {
   }
 
   // CSV Exports
-  String exportGradesCsv() {
-    final buffer = StringBuffer();
-    buffer.writeln('Tantargy;Ertek;Suly;Datum;Tema;Tanar');
-    for (final g in _grades) {
-      final sub = getDisplaySubject(g.subject);
-      final val = g.numericValue?.toString() ?? g.textValue ?? '';
-      final weight = g.weight.toInt();
-      final date = g.date?.toIso8601String().split('T')[0] ?? '';
-      final theme = (g.theme ?? '').replaceAll(';', ',');
-      final teacher = (g.teacherName ?? '').replaceAll(';', ',');
-      buffer.writeln('"$sub";"$val";"$weight%";"$date";"$theme";"$teacher"');
-    }
-    return buffer.toString();
-  }
+  // Both in the shared CSV format (package:pala/utils/csv.dart), with local dates.
+  String exportGradesCsv() => toCsv(
+        ['Tantárgy', 'Érték', 'Súly', 'Dátum', 'Téma', 'Tanár'],
+        _grades.map((g) => [
+              getDisplaySubject(g.subject),
+              g.numericValue?.toString() ?? g.textValue ?? '',
+              '${g.weight.toInt()}%',
+              csvDate(g.date),
+              g.theme ?? '',
+              g.teacherName ?? '',
+            ]),
+      );
 
-  String exportAbsencesCsv() {
-    final buffer = StringBuffer();
-    buffer.writeln('Tantargy;Datum;Allapot;Tipus;KesesPerc');
-    for (final a in _absences) {
-      final sub = getDisplaySubject(a.subject);
-      final date = a.date?.toIso8601String().split('T')[0] ?? '';
-      final status = a.status;
-      final type = a.type ?? '';
-      final delay = a.delayMinutes ?? 0;
-      buffer.writeln('"$sub";"$date";"$status";"$type";"$delay"');
-    }
-    return buffer.toString();
-  }
+  String exportAbsencesCsv() => toCsv(
+        ['Tantárgy', 'Dátum', 'Állapot', 'Típus', 'Késés (perc)'],
+        _absences.map((a) => [
+              getDisplaySubject(a.subject),
+              csvDate(a.date),
+              a.status,
+              a.type ?? '',
+              a.delayMinutes ?? 0,
+            ]),
+      );
 }
 

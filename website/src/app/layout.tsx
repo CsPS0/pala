@@ -3,6 +3,7 @@ import { SITE_URL } from "@/lib/site";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ReleaseProvider } from "@/lib/ReleaseContext";
+import { fetchLatestRelease } from "@/lib/githubReleases";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { Navbar } from "@/components/Navbar";
 import { DocsUIProvider } from "@/lib/DocsUIContext";
@@ -80,11 +81,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const release = await fetchLatestRelease("CsPS0/pala");
+
   return (
     <html lang="hu" className={`${geistSans.variable} ${geistMono.variable} scroll-smooth overflow-x-hidden max-w-full`} suppressHydrationWarning>
       <head>
@@ -92,7 +95,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
       <body className="bg-[var(--bg)] text-fg min-h-screen flex flex-col font-sans antialiased selection:bg-primary-fill selection:text-on-primary overflow-x-hidden max-w-full w-full">
-        <ReleaseProvider>
+        <ReleaseProvider release={release}>
           <DocsUIProvider>
             <Navbar />
             {children}

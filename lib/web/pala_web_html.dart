@@ -1541,9 +1541,9 @@ class PalaWebHtml {
         const subSums = {};
 
         cachedGrades.forEach(g => {
-          // Midyear and year-end grades are results, not part of the average.
-          if (!g.isSummary && g.numericValue && g.numericValue >= 1 && g.numericValue <= 5) {
-            const w = (g.weight || 100) / 100;
+          // The server applies the shared rule (no midyear/year-end grades, no 0% grades).
+          if (g.countsForAverage) {
+            const w = g.weight / 100;
             sum += g.numericValue * w;
             count += w;
             counts[g.numericValue] = (counts[g.numericValue] || 0) + 1;
@@ -1556,7 +1556,8 @@ class PalaWebHtml {
           }
         });
 
-        const gpa = count > 0 ? (sum / count).toFixed(2) : '--';
+        // The mean of the subject averages, computed by the server with the shared rule.
+        const gpa = typeof data.overallAverage === 'number' ? data.overallAverage.toFixed(2) : '--';
         document.getElementById('dashGpa').innerText = gpa;
 
         cachedSubjectAverages = {};
@@ -1823,14 +1824,18 @@ class PalaWebHtml {
           hwTbody.innerHTML = homework.map((h, idx) => {
             const hwId = h.uid || ('hw_' + idx);
             const isDone = completedHw[hwId] === true;
-            return `<tr id="hw_row_\${hwId}" class="\${isDone ? 'hw-done' : ''}">
-              <td><input type="checkbox" class="hw-checkbox" \${isDone ? 'checked' : ''} onchange="toggleHomeworkDone('\${hwId}')" /></td>
+            // Kréta values go into data-* attributes (escaped), never into inline script.
+            return `<tr id="hw_row_\${escapeHtml(hwId)}" class="\${isDone ? 'hw-done' : ''}">
+              <td><input type="checkbox" class="hw-checkbox" \${isDone ? 'checked' : ''} data-hw-id="\${escapeHtml(hwId)}" /></td>
               <td style="font-weight: 600; color: var(--warning);">\${h.deadline ? h.deadline.split('T')[0] : '-'}</td>
               <td style="font-weight: 600; color: #fff;">\${escapeHtml(h.subject || '-')}</td>
               <td>\${escapeHtml(h.text || '-')}</td>
               <td>\${h.date ? h.date.split('T')[0] : '-'}</td>
             </tr>`;
           }).join('');
+          hwTbody.querySelectorAll('input[data-hw-id]').forEach(cb => {
+            cb.addEventListener('change', () => toggleHomeworkDone(cb.dataset.hwId));
+          });
         }
       } catch (e) {
         console.error('Homework/Exams error:', e);
@@ -1897,17 +1902,15 @@ class PalaWebHtml {
         const usedDays = data.usedParentalDays || 0;
 
         document.getElementById('dashQuota').innerText = `\${usedDays} / \${quota}`;
-        document.getElementById('absTotalHours').innerText = `\${absences.length} óra`;
-        
-        const dangerPct = ((absences.length / 250) * 100).toFixed(1);
+        // Missed lessons by the shared rule: lateness does not count toward 250.
+        const missed = data.missedHours ?? absences.length;
+        document.getElementById('absTotalHours').innerText = `\${missed} óra`;
+
+        const dangerPct = ((missed / 250) * 100).toFixed(1);
         document.getElementById('absDangerPct').innerText = `\${dangerPct}%`;
         document.getElementById('absQuotaStatus').innerText = `\${usedDays} / \${quota} nap`;
 
-        const pending = absences.filter(a => {
-          const s = (a.status || '').toLowerCase();
-          return s.includes('igazolando') || s.includes('igazolandó') || s.includes('igazolatlan');
-        });
-        document.getElementById('absPendingCount').innerText = `\${pending.length} óra`;
+        document.getElementById('absPendingCount').innerText = `\${data.openHours ?? 0} óra`;
 
         const tbody = document.querySelector('#absencesTable tbody');
         if (absences.length === 0) {
@@ -1945,7 +1948,7 @@ class PalaWebHtml {
             const name = t.nev || t.name || 'Tanár';
             const sub = t.tantargyak || t.subjects || '';
             const label = sub ? `\${name} (\${sub})` : name;
-            return `<option value="\${id}">\${escapeHtml(label)}</option>`;
+            return `<option value="\${escapeHtml(id)}">\${escapeHtml(label)}</option>`;
           }).join('');
         }
       } catch (_) {}
@@ -1973,8 +1976,11 @@ class PalaWebHtml {
       tbody.innerHTML = keys.map(k => `<tr>
         <td style="font-weight: 600; color: #fff;">\${escapeHtml(k)}</td>
         <td style="color: var(--primary); font-weight: 600;">\${escapeHtml(aliases[k])}</td>
-        <td><button class="btn btn-danger" onclick="deleteAlias('\${escapeHtml(k)}')">Törlés</button></td>
+        <td><button class="btn btn-danger" data-alias="\${escapeHtml(k)}">Törlés</button></td>
       </tr>`).join('');
+      tbody.querySelectorAll('button[data-alias]').forEach(btn => {
+        btn.addEventListener('click', () => deleteAlias(btn.dataset.alias));
+      });
     }
 
     async function saveParentalQuotaSetting() {
@@ -2102,11 +2108,14 @@ class PalaWebHtml {
           const keys = Object.keys(res || {});
           if (keys.length > 0) {
             suggBox.innerHTML = keys.slice(0, 8).map(code => `
-              <div style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem;" onclick="selectSchoolSuggest('\${code}', '\${escapeHtml(res[code])}')">
+              <div style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem;" data-code="\${escapeHtml(code)}" data-name="\${escapeHtml(res[code])}">
                 <div style="font-weight: 600; color: #fff;">\${escapeHtml(res[code])}</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">\${code}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">\${escapeHtml(code)}</div>
               </div>
             `).join('');
+            suggBox.querySelectorAll('div[data-code]').forEach(el => {
+              el.addEventListener('click', () => selectSchoolSuggest(el.dataset.code, el.dataset.name));
+            });
             suggBox.style.display = 'block';
           } else {
             suggBox.style.display = 'none';
@@ -2294,7 +2303,7 @@ class PalaWebHtml {
         showToast('Nincsenek elérhető tantárgyak a szimulációhoz.', 'error');
         return;
       }
-      select.innerHTML = subs.map(s => `<option value="\${s}">\${escapeHtml(s)}</option>`).join('');
+      select.innerHTML = subs.map(s => `<option value="\${escapeHtml(s)}">\${escapeHtml(s)}</option>`).join('');
       recalculateGhostSimulation();
       document.getElementById('ghostModal').classList.add('open');
     }

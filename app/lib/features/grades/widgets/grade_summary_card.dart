@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pala/models/grade.dart';
+import 'package:pala/rules/grade_rules.dart';
 import '../../../core/theme/app_colors.dart';
 
 /// Hierarchical Grade Summary Card (Organism) displaying subject average, class comparison, and trend.
@@ -46,16 +47,17 @@ class _GradeSummaryCardState extends State<GradeSummaryCard> {
 
     // Calculate trend from last 3 grades vs earlier
     double trendDiff = 0.0;
-    if (widget.grades.length >= 2) {
-      final recent = widget.grades.take(3).toList();
+    // The three newest counted grades against the subject average.
+    final counted = widget.grades.where(GradeRules.countsForAverage).toList()
+      ..sort((a, b) => (b.date ?? DateTime(2000)).compareTo(a.date ?? DateTime(2000)));
+    if (counted.length >= 2) {
+      final recent = counted.take(3).toList();
       double recentSum = 0;
       double recentWeight = 0;
       for (final g in recent) {
-        if (g.numericValue != null) {
-          final w = g.weight / 100.0;
-          recentSum += g.numericValue! * w;
-          recentWeight += w;
-        }
+        final w = g.weight / 100.0;
+        recentSum += g.numericValue! * w;
+        recentWeight += w;
       }
       final recentAvg = recentWeight > 0 ? (recentSum / recentWeight) : widget.average;
       trendDiff = recentAvg - widget.average;

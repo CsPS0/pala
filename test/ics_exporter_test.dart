@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:test/test.dart';
 import 'package:pala/models/exam.dart';
 import 'package:pala/models/timetable_entry.dart';
@@ -45,6 +47,18 @@ void main() {
       expect(ics, contains('SUMMARY:[Dolgozat] Matematika'));
       expect(ics, contains(r'DESCRIPTION:Egyenletek\; függvények\, C:\\ jegyzet'));
       expect(ics, contains('END:VCALENDAR'));
+    });
+
+    test('lines end with CRLF and are folded at 75 octets', () {
+      final longTheme = 'Témazáró: ${'másodfokú egyenletek és egyenlőtlenségek, ' * 5}';
+      final ics = IcsExporter.generate([], [Exam(subject: 'Matematika', mode: 'Dolgozat', theme: longTheme, date: DateTime(2026, 10, 20, 8))]);
+
+      expect(ics, contains('BEGIN:VCALENDAR\r\n'));
+      for (final l in ics.split('\r\n')) {
+        expect(utf8.encode(l).length, lessThanOrEqualTo(75), reason: l);
+      }
+      // Unfolding (removing CRLF + space) gives back the full text.
+      expect(ics.replaceAll('\r\n ', ''), contains('Témazáró: másodfokú'));
     });
 
     test('an exam just after local midnight keeps its local date', () {

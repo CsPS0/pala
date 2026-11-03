@@ -4,6 +4,7 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:encrypt/encrypt.dart';
+import 'owner_only.dart';
 
 class EncryptionUtil {
   // Legacy (v1/v2) key derivation: hostname + OS + username are all locally
@@ -47,10 +48,9 @@ class EncryptionUtil {
   /// reconstructable from anything an attacker can observe externally —
   /// recovering it requires actually reading the keyfile off disk.
   static Key _getMachineKey() {
-    final dir = Directory(_configDir);
-    if (!dir.existsSync()) {
-      dir.createSync(recursive: true);
-    }
+    // The folder is owner-only (700), so the key file is never readable by
+    // other accounts, not even between its creation and the chmod below.
+    ensureOwnerOnlyDir(_configDir);
     final keyFile = File('$_configDir/.pala_keyfile');
 
     if (keyFile.existsSync()) {

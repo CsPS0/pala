@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pala/models/grade.dart';
+import 'package:pala/rules/grade_rules.dart';
 
 import '../../../core/adaptive/adaptive_breakpoints.dart';
 import '../../../core/theme/app_colors.dart';
@@ -166,7 +167,8 @@ class _CertificatePlannerState extends State<CertificatePlanner> {
           double subWeight = 0;
           double subSum = 0;
           for (final g in widget.grades) {
-            if (widget.getDisplaySubject(g.subject) == sub && g.numericValue != null) {
+            // The same grades as the subject average (the shared rule).
+            if (widget.getDisplaySubject(g.subject) == sub && GradeRules.countsForAverage(g)) {
               final w = g.weight / 100.0;
               subWeight += w;
               subSum += g.numericValue! * w;

@@ -132,7 +132,7 @@ extension PalaAppAbsencesView on PalaApp {
                 double valSum = 0.0;
                 for (var g in gradesUpToWeek) {
                   double w = g.weight;
-                  if (w == 0) w = 100;
+                  if (w == 0) continue; // A 0% grade does not count (GradeRules).
                   valSum += g.numericValue! * w;
                   wSum += w;
                 }
@@ -176,7 +176,7 @@ extension PalaAppAbsencesView on PalaApp {
                 validGradesCount++;
                 
                 double w = g.weight;
-                if (w == 0) w = 100;
+                if (w == 0) continue; // A 0% grade does not count (GradeRules).
                 sum += g.numericValue! * w;
                 weightSum += w;
               }
@@ -199,7 +199,7 @@ extension PalaAppAbsencesView on PalaApp {
                   !g.isSummaryGrade) {
                 final m = g.date!.month;
                 double w = g.weight;
-                if (w == 0) w = 100;
+                if (w == 0) continue; // A 0% grade does not count (GradeRules).
                 monthlySums[m] = (monthlySums[m] ?? 0.0) + g.numericValue! * w;
                 monthlyWeightSums[m] = (monthlyWeightSums[m] ?? 0.0) + w;
               }
@@ -449,9 +449,8 @@ extension PalaAppAbsencesView on PalaApp {
     // Group grades by subject
     final Map<String, List<Grade>> subjectGrades = {};
     for (var g in grades) {
-      if (g.isSummaryGrade) continue;
-      if (g.numericValue == null || g.numericValue! < 1 || g.numericValue! > 5) continue;
-      
+      if (!GradeRules.countsForAverage(g)) continue;
+
       final subj = g.subject;
       subjectGrades.putIfAbsent(subj, () => []);
       subjectGrades[subj]!.add(g);
@@ -475,7 +474,7 @@ extension PalaAppAbsencesView on PalaApp {
       double weightSum = 0.0;
       for (var g in items) {
         double w = g.weight;
-        if (w == 0) w = 100.0;
+        if (w == 0) continue; // A 0% grade does not count (GradeRules).
         sum += g.numericValue! * w;
         weightSum += w;
       }
@@ -639,9 +638,7 @@ extension PalaAppAbsencesView on PalaApp {
 
     // Filter unexcused or pending absences
     final unexcused = absences.where((a) {
-      final s = a.status.toLowerCase();
-      final t = (a.type ?? '').toLowerCase();
-      return s == 'igazolando' || s == 'igazolandó' || s == 'igazolatlan' || t == 'igazolandó' || t == 'igazolatlan';
+      return !AbsenceRules.isLateness(a) && AbsenceRules.status(a) != AbsenceStatus.excused;
     }).toList();
 
     // Group unexcused by date

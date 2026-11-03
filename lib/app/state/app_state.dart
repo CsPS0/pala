@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:pala/utils/logger.dart';
+import 'package:pala/utils/owner_only.dart';
 
 class AppState {
   static final AppState instance = AppState._internal();
@@ -46,8 +47,7 @@ class AppState {
   }
 
   File get cacheFile {
-    final dir = Directory(cacheDir);
-    if (!dir.existsSync()) dir.createSync(recursive: true);
+    ensureOwnerOnlyDir(cacheDir);
     final file = File('$cacheDir/cache.json');
     // Older versions kept the cache next to the login data.
     final legacy = File('$configDir/cache.json');
@@ -62,12 +62,7 @@ class AppState {
     return file;
   }
 
-  void _ensureConfigDir() {
-    final dir = Directory(configDir);
-    if (!dir.existsSync()) {
-      dir.createSync(recursive: true);
-    }
-  }
+  void _ensureConfigDir() => ensureOwnerOnlyDir(configDir);
 
   void migrateOldFiles() {
     _ensureConfigDir();

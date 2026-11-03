@@ -135,9 +135,14 @@ class TimetableTile extends StatelessWidget {
                               if (lesson.room != null && lesson.room!.isNotEmpty) ...[
                                 Icon(Icons.room_outlined, size: 13, color: colorScheme.outline),
                                 const SizedBox(width: 2),
-                                Text(
-                                  lesson.room!,
-                                  style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+                                // Long room names shorten instead of overflowing on phones.
+                                Flexible(
+                                  child: Text(
+                                    lesson.room!,
+                                    style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
                               ],
                             ],
