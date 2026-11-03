@@ -16,12 +16,14 @@ export function PlatformDownloadGrid() {
   const release = useRelease();
   const [desktopOS, setDesktopOS] = useState<DesktopOS>("windows");
   const [recommended, setRecommended] = useState<CardId>("desktop");
+  const [isIPhone, setIsIPhone] = useState(false);
 
   useEffect(() => {
     const os = detectClientOS();
     /* eslint-disable react-hooks/set-state-in-effect */
     if (os === "macos" || os === "linux") setDesktopOS(os);
-    if (os === "android") setRecommended("phone");
+    if (os === "android" || os === "ios") setRecommended("phone");
+    if (os === "ios") setIsIPhone(true);
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
@@ -65,9 +67,29 @@ export function PlatformDownloadGrid() {
       id: "phone",
       title: "Telefonra",
       Icon: CONCEPT_ICONS.phone,
-      text: "Androidos telefonra. Nyisd meg a letöltött fájlt a telefonon, és engedélyezd a telepítést, ha a telefon rákérdez. iPhone-ra még nem érhető el.",
-      action: { label: "Letöltés Androidra", href: release.assets.androidUniversal },
-      extra: null,
+      // iPhone has no one-tap install: it is sideloaded with a computer, so it gets the guide.
+      text: isIPhone
+        ? "iPhone-ra egy ingyenes programmal és egy számítógéppel teheted fel. Az útmutató lépésről lépésre végigvezet."
+        : "Androidos telefonra. Nyisd meg a letöltött fájlt a telefonon, és engedélyezd a telepítést, ha a telefon rákérdez.",
+      action: isIPhone
+        ? { label: "Útmutató iPhone-ra", href: "/docs#inst-ios" }
+        : { label: "Letöltés Androidra", href: release.assets.androidUniversal },
+      extra: isIPhone ? (
+        <span>
+          Androidra:{" "}
+          <a href={release.assets.androidUniversal} className="text-fg font-bold hover:underline">
+            letöltés
+          </a>
+        </span>
+      ) : (
+        <span>
+          iPhone-ra:{" "}
+          <Link href="/docs#inst-ios" className="text-fg font-bold hover:underline">
+            telepítési útmutató
+          </Link>{" "}
+          (kísérleti)
+        </span>
+      ),
     },
     {
       id: "extension",

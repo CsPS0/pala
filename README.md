@@ -10,7 +10,7 @@
 A **Pala** ingyenes, nyílt forráskódú kliens a Kréta e-naplóhoz. Gyorsan és reklámok nélkül mutatja meg a jegyeidet, az órarendedet, a hiányzásaidat, a házi feladataidat és az üzeneteidet, négy formában:
 
 1. **Böngésző-kiterjesztés**: Chrome, Brave és Edge
-2. **Mobilalkalmazás**: Android
+2. **Mobilalkalmazás**: Android, és kísérletként iPhone (AltStore-ral, lásd [az iPhone-os útmutatót](https://pala-app.hu/docs#inst-ios))
 3. **Terminálos alkalmazás (TUI)**: Windows, Linux, macOS és Android (Termux)
 4. **Asztali alkalmazás**: Windows, Linux és macOS; ugyanaz, mint a mobilalkalmazás, csak asztali felülettel
 
@@ -143,7 +143,8 @@ A Pala fejlesztése során AI-alapú kódolóasszisztenseket is használok, és 
 
 Köszönet minden felhasznált nyílt forráskódú csomagnak, és a hasonló célú projekteknek, amelyek inspirációt adtak:
 
-- **Aktív projektek**: [Firka](https://github.com/QwIT-Development/firka), [app-legacy (refilc)](https://github.com/QwIT-Development/app-legacy), [firka-extension](https://github.com/QwIT-Development/firka-extension), [Folio](https://github.com/Zan1456/folio), [folio-extension](https://github.com/Zan1456/folio-extension), [RozsdásFilc (rsfilc)](https://github.com/jarjk/rsfilc), [Toll](https://github.com/doomhyena/toll)
+- **Aktív projektek**: [Firka](https://github.com/QwIT-Development/firka), [app-legacy (refilc)](https://github.com/QwIT-Development/app-legacy), [firka-extension](https://github.com/QwIT-Development/firka-extension), [Folio](https://github.com/Zan1456/folio), [folio-extension](https://github.com/Zan1456/folio-extension), [RozsdásFilc (rsfilc)](https://github.com/jarjk/rsfilc), [Tinta](https://github.com/Pacuka/tinta), [Toll](https://github.com/doomhyena/toll)
+- **Az iPhone-os telepítés ötlete**: [Pacuka](https://pacuka.hu/), köszönjük!
 - **Archivált projektek**: [Filc](https://github.com/filc/filc), [Szivacs-Naplo](https://github.com/boapps/Szivacs-Naplo)
 
 A felsorolt projektek egy része eltérő licenc (pl. GPL) alatt áll. A Pala a nyilvánosan dokumentált e-Kréta API alapján, ezektől függetlenül készült, és egyikükből sem vett át kódot.

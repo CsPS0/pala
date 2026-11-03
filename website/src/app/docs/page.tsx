@@ -409,8 +409,8 @@ export function DocsView({ initialPage = "kezdoknek" }: { initialPage?: string }
                         </span>
                       )}
                       {tab.id === "ios" && (
-                        <span className="text-[9px] bg-primary/15 text-primary border border-primary/30 px-1.5 py-0.2 rounded font-mono font-black">
-                          Nem elérhető
+                        <span className="text-[9px] bg-sidebar text-muted border border-border px-1.5 py-0.2 rounded font-mono font-black">
+                          Kísérleti
                         </span>
                       )}
                     </button>
@@ -833,31 +833,166 @@ dart run bin/pala.dart`}</pre>
                 </div>
               )}
 
-              {/* ================= TAB 3: IOS (iPhone & iPad) — not available yet ================= */}
+              {/* ================= TAB 3: IOS (iPhone & iPad) — sideloaded with the user's own free Apple ID ================= */}
               {installTab === "ios" && (
                 <div id="inst-ios" className="space-y-6">
-                  <div className="bg-card border border-primary/40 p-6 rounded-2xl space-y-3">
+                  <div className="bg-card border border-border p-6 rounded-2xl space-y-3">
                     <div className="flex items-start gap-3">
-                      <ServerOff size={20} className="text-primary shrink-0 mt-0.5" />
+                      <Smartphone size={20} className="text-fg shrink-0 mt-0.5" />
                       <div>
-                        <h3 className="text-sm font-bold text-fg leading-snug">
-                          Az iOS (iPhone / iPad) verzió jelenleg nem érhető el
-                        </h3>
-                        <span className="text-[11px] text-primary font-semibold">Fejlesztés alatt • Jelenleg nincs App Store / IPA letöltés</span>
+                        <h3 className="text-base font-bold text-fg leading-snug">Telepítés iPhone-ra és iPadre</h3>
+                        <span className="text-xs text-muted font-semibold">Kísérleti • Ingyenes • Elsőre kb. 20–30 perc</span>
                       </div>
                     </div>
-                    <div className="text-xs text-muted space-y-2 leading-relaxed mt-2 sm:pl-8">
+                    <div className="text-sm text-muted space-y-2 leading-relaxed sm:pl-8">
                       <p>
-                        A Safari böngésző szigorú biztonsági szabályai (CORS házirend) miatt egy böngészőben futó kliens nem tud közvetlenül, kliensoldalról kommunikálni a Kréta hivatalos szervereivel. Ezt tisztán webes felületek csak egy köztes proxy/backend szerverrel tudnák áthidalni, ami viszont több tízezer diák jelszavait és személyes adatait terelné át egy külső szerveren, súlyos adatvédelmi és GDPR-kockázatot vállalva. A Pala alapelve a szigorúan kliensoldali, közvetlen és nulla-telemetriás adatkezelés, így köztes szerver soha nem fog futni.
+                        A Pala nincs fent az App Store-ban, mert ahhoz évente fizetni kellene az Apple-nek. Helyette egy ingyenes programmal, a saját Apple ID-ddel teheted fel a telefonodra. Elsőre kell hozzá egy számítógép, utána már csak pár koppintás.
                       </p>
                       <p>
-                        A hivatalos natív iOS alkalmazás terjesztése (App Store vagy TestFlight) az Apple évi fizetős Fejlesztői Programjához (99 USD/év) és Mac gépes hitelesítéshez kötött. Emiatt az iOS-támogatás jelenleg nem elérhető a felhasználók számára.
+                        <strong className="text-fg">Kísérleti változat:</strong> iPhone-on a Pala akkor frissíti az adataidat, amikor megnyitod, a háttérben nem küld értesítést. Ha valami nem működik, kérlek,{" "}
+                        <a href="https://github.com/CsPS0/pala/issues" target="_blank" rel="noopener noreferrer" className="text-fg underline underline-offset-2 hover:text-primary">
+                          jelezd nekünk
+                        </a>
+                        .
                       </p>
-                      <div className="p-3 bg-sidebar rounded-xl border border-border text-primary font-semibold">
-                        Addig is: Windows, Linux, macOS és Android eszközökön a Pala natívan elérhető, vagy számítógépen a böngésző-kiterjesztés (Chrome, Brave, Edge) azonnal használható.
-                      </div>
                     </div>
                   </div>
+
+                  <div className="bg-card border border-border p-5 rounded-2xl space-y-3">
+                    <h3 className="text-sm font-bold text-fg">Mi kell hozzá?</h3>
+                    <ul className="text-sm text-muted space-y-1.5 list-disc pl-5 leading-relaxed">
+                      <li>az iPhone-od és a töltőkábele,</li>
+                      <li>egy Windowsos vagy Maces számítógép,</li>
+                      <li>az Apple ID-d (amivel az App Store-ba is belépsz) és a jelszava,</li>
+                      <li>hogy a gép és a telefon ugyanazon a wifin legyen.</li>
+                    </ul>
+                    <div className="p-3 bg-sidebar rounded-xl border border-border text-sm text-muted leading-relaxed">
+                      <strong className="text-fg">Fontos tudni:</strong> ingyenes Apple ID-vel az Apple 7 napig engedi futni az így telepített appokat, és egyszerre legfeljebb 3 ilyen app lehet a telefonon. A 7 nap után elég egy gyors frissítés (5. lépés), az adataid közben nem vesznek el.
+                    </div>
+                  </div>
+
+                  <ol className="space-y-4">
+                    <li className="bg-card border border-border p-5 rounded-2xl space-y-3">
+                      <h3 className="text-sm font-bold text-fg">1. Töltsd le a Palát a telefonra</h3>
+                      <p className="text-sm text-muted leading-relaxed">
+                        Nyisd meg ezt az oldalt az iPhone-on, Safariban, és koppints a gombra. A <code className="font-mono text-fg">Pala.ipa</code> fájl a Fájlok app Letöltések mappájába kerül. Egyelőre hagyd ott.
+                      </p>
+                      <a
+                        href={release.assets.iosIpa}
+                        className="inline-flex items-center gap-2 bg-card hover:bg-card-hover text-fg border border-border font-bold text-sm px-4 py-2.5 rounded-xl transition-colors"
+                      >
+                        <Download size={15} />
+                        <span>Pala.ipa letöltése</span>
+                      </a>
+                    </li>
+
+                    <li className="bg-card border border-border p-5 rounded-2xl space-y-3">
+                      <h3 className="text-sm font-bold text-fg">2. Tedd fel az AltServert a számítógépre (csak egyszer)</h3>
+                      <p className="text-sm text-muted leading-relaxed">
+                        Az AltServer egy ingyenes program, amely a saját Apple ID-ddel „aláírja” a Palát, hogy az iPhone elfogadja. Letölteni az{" "}
+                        <a href="https://altstore.io" target="_blank" rel="noopener noreferrer" className="text-fg underline underline-offset-2 hover:text-primary">
+                          altstore.io
+                        </a>{" "}
+                        oldalon tudod, ott angol nyelvű útmutató is van.
+                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-muted leading-relaxed">
+                        <div className="p-3.5 bg-sidebar rounded-xl border border-border">
+                          <strong className="text-fg block mb-1">Windowson</strong>
+                          Előbb telepítsd az iTunes-t és az iCloudot az Apple weboldaláról. A Microsoft Store-os változatukkal nem működik, ha azok vannak fent, előbb töröld őket. Utána telepítsd az AltServert, és indítsd el rendszergazdaként. Az ikonja a tálca jobb sarkában jelenik meg (lehet, hogy a ^ nyíl alatt).
+                        </div>
+                        <div className="p-3.5 bg-sidebar rounded-xl border border-border">
+                          <strong className="text-fg block mb-1">Macen</strong>
+                          Húzd az AltServert az Alkalmazások mappába, és indítsd el. Az ikonja fent a menüsorban jelenik meg.
+                        </div>
+                      </div>
+                    </li>
+
+                    <li className="bg-card border border-border p-5 rounded-2xl space-y-3">
+                      <h3 className="text-sm font-bold text-fg">3. Tedd fel az AltStore-t a telefonra (csak egyszer)</h3>
+                      <ol className="text-sm text-muted space-y-1.5 list-decimal pl-5 leading-relaxed">
+                        <li>Dugd be a telefont kábellel, oldd fel, és ha kérdezi, koppints a <strong className="text-fg">Megbízom</strong> gombra.</li>
+                        <li>Kapcsold be, hogy a gép wifin is lássa a telefont: Windowson az iTunes-ban a telefonodnál a <strong className="text-fg">Szinkronizálás Wi-Fi-n keresztül</strong>, Macen a Finderben az <strong className="text-fg">iPhone megjelenítése Wi-Fi-kapcsolat esetén</strong> lehetőséget.</li>
+                        <li>Kattints az AltServer ikonjára, válaszd az <strong className="text-fg">Install AltStore</strong> menüt, majd a telefonodat, és add meg az Apple ID-det. Ezt az AltServer csak az Apple-nek küldi el.</li>
+                        <li>A telefonon: <strong className="text-fg">Beállítások → Általános → VPN és eszközkezelés</strong>, koppints az Apple ID-dre, majd a <strong className="text-fg">Megbízom</strong> gombra.</li>
+                        <li>A telefonon: <strong className="text-fg">Beállítások → Adatvédelem és biztonság → Fejlesztői mód</strong>, kapcsold be. A telefon újraindul, utána még egyszer rákérdez.</li>
+                      </ol>
+                    </li>
+
+                    <li className="bg-card border border-border p-5 rounded-2xl space-y-3">
+                      <h3 className="text-sm font-bold text-fg">4. Telepítsd a Palát</h3>
+                      <p className="text-sm text-muted leading-relaxed">
+                        A gépen fusson az AltServer, és a telefon legyen ugyanazon a wifin. Nyisd meg az AltStore appot, alul válaszd a <strong className="text-fg">My Apps</strong> fület, koppints bal fent a <strong className="text-fg">+</strong> gombra, és a Letöltések mappában válaszd ki a <code className="font-mono text-fg">Pala.ipa</code> fájlt. Pár perc múlva a Pala ott lesz a kezdőképernyőn.
+                      </p>
+                    </li>
+
+                    <li className="bg-card border border-border p-5 rounded-2xl space-y-3">
+                      <h3 className="text-sm font-bold text-fg">5. Frissítés hetente</h3>
+                      <p className="text-sm text-muted leading-relaxed">
+                        Az AltStore a My Apps fülön mutatja, hány nap van még hátra. Frissíteni a <strong className="text-fg">Refresh All</strong> gombbal tudsz, amíg a gépen fut az AltServer és egy wifin vagytok. Ha a gép otthon be van kapcsolva, az AltStore ezt magától is elintézi. Ha lejárt, és a Pala nem indul el, semmi baj: frissíts, és újra működik.
+                      </p>
+                      <p className="text-sm text-muted leading-relaxed">
+                        <strong className="text-fg">Új Pala-verzió:</strong> töltsd le újra a <code className="font-mono text-fg">Pala.ipa</code> fájlt, és telepítsd ugyanígy. A régi felülíródik, az adataid megmaradnak.
+                      </p>
+                    </li>
+                  </ol>
+
+                  <div className="bg-card border border-border p-5 rounded-2xl space-y-2">
+                    <h3 className="text-sm font-bold text-fg">Egyszerűbb út: Sideloadly</h3>
+                    <p className="text-sm text-muted leading-relaxed">
+                      A{" "}
+                      <a href="https://sideloadly.io" target="_blank" rel="noopener noreferrer" className="text-fg underline underline-offset-2 hover:text-primary">
+                        Sideloadly
+                      </a>{" "}
+                      programba csak behúzod a <code className="font-mono text-fg">Pala.ipa</code> fájlt, megadod az Apple ID-det, és kész. Itt a gépre töltsd le a fájlt, ne a telefonra. Windowson ehhez is az Apple weboldaláról letöltött iTunes és iCloud kell, és a 7 napos szabály itt is érvényes.
+                    </p>
+                  </div>
+
+                  <div className="bg-card border border-border p-5 rounded-2xl space-y-3">
+                    <h3 className="text-sm font-bold text-fg flex items-center gap-2">
+                      <HelpCircle size={16} className="text-muted" />
+                      <span>Gyakori hibák</span>
+                    </h3>
+                    <dl className="text-sm text-muted space-y-3 leading-relaxed">
+                      <div>
+                        <dt className="font-bold text-fg">Az AltServer nem látja a telefont</dt>
+                        <dd>A telefon legyen feloldva és bedugva. Windowson az AltServer rendszergazdaként fusson, és az iTunes-ban legyen bekapcsolva a wifis szinkronizálás.</dd>
+                      </div>
+                      <div>
+                        <dt className="font-bold text-fg">„Could not find AltServer”</dt>
+                        <dd>A gépen nem fut az AltServer, vagy nem ugyanazon a wifin vagytok. Kábellel biztosan működik.</dd>
+                      </div>
+                      <div>
+                        <dt className="font-bold text-fg">„Untrusted Developer”, vagy nem indul az app</dt>
+                        <dd>Beállítások → Általános → VPN és eszközkezelés → Megbízom.</dd>
+                      </div>
+                      <div>
+                        <dt className="font-bold text-fg">„Maximum number of apps”</dt>
+                        <dd>Ingyenes Apple ID-vel egyszerre 3 ilyen app lehet fent, és az AltStore is közéjük számít. Törölj egyet a My Apps fülön.</dd>
+                      </div>
+                      <div>
+                        <dt className="font-bold text-fg">Egy hét után nem indul a Pala</dt>
+                        <dd>Lejárt a 7 nap: AltStore → My Apps → Refresh All.</dd>
+                      </div>
+                    </dl>
+                  </div>
+
+                  <div className="bg-card border border-border p-5 rounded-2xl space-y-2">
+                    <h3 className="text-sm font-bold text-fg flex items-center gap-2">
+                      <ShieldAlert size={16} className="text-muted" />
+                      <span>Mit ne használj?</span>
+                    </h3>
+                    <p className="text-sm text-muted leading-relaxed">
+                      Az interneten vannak „gép nélkül, örökre, ingyen” megoldások: közösen használt tanúsítványok és „anti-revoke” profilok. A Palához ne használd őket. A profiljuk letiltja az iOS-frissítéseket, így biztonsági javításokat sem kapsz, és egy idegen fiókon múlik, mikor áll le minden app. Egy Kréta-belépést tartalmazó appnál ez nem biztonságos.
+                    </p>
+                  </div>
+
+                  <p className="text-sm text-muted leading-relaxed px-1">
+                    Az iPhone-os telepítés ötletét{" "}
+                    <a href="https://pacuka.hu/" target="_blank" rel="noopener noreferrer" className="text-fg underline underline-offset-2 hover:text-primary">
+                      Pacukától
+                    </a>{" "}
+                    kaptuk. Köszönjük!
+                  </p>
                 </div>
               )}
 
@@ -2047,7 +2182,7 @@ dart run bin/pala.dart`}</pre>
                         <td className="p-3 font-semibold text-fg">Telepítés</td>
                         <td className="p-3">Egyetlen bináris</td>
                         <td className="p-3">Telepítő / bundle</td>
-                        <td className="p-3">Android: APK • iOS: Nem elérhető</td>
+                        <td className="p-3">Android: APK • iOS: IPA (kísérleti)</td>
                         <td className="p-3">Nulla telepítés</td>
                       </tr>
                       <tr className="border-t border-border">
@@ -2133,7 +2268,7 @@ dart run bin/pala.dart`}</pre>
                     <span>Desktop (Windows / macOS / Linux)</span>
                   </div>
                     <div className="space-y-1.5">
-                    <div className="flex items-start gap-2 text-xs text-muted"><CheckCircle2 size={13} className="text-primary shrink-0 mt-0.5" /><span>Közös Flutter felületi kódbázis (Windows, macOS, Linux, Android — iOS előkészületben) a konzisztens karbantartásért.</span></div>
+                    <div className="flex items-start gap-2 text-xs text-muted"><CheckCircle2 size={13} className="text-primary shrink-0 mt-0.5" /><span>Közös Flutter felületi kódbázis (Windows, macOS, Linux, Android, és kísérletként iOS) a konzisztens karbantartásért.</span></div>
                     <div className="flex items-start gap-2 text-xs text-muted"><CheckCircle2 size={13} className="text-primary shrink-0 mt-0.5" /><span>Igazi grafikus vizualizációk, interaktív diagramok, egérrel/érintéssel kényelmesen kezelhető felület.</span></div>
                     <div className="flex items-start gap-2 text-xs text-muted"><CheckCircle2 size={13} className="text-primary shrink-0 mt-0.5" /><span>A háttérben ugyanazt a Kréta-klienst használja, mint a TUI — nincs duplikált, eltérően viselkedő hálózati logika.</span></div>
                     <div className="flex items-start gap-2 text-xs text-muted"><AlertTriangle size={13} className="text-primary shrink-0 mt-0.5" /><span>Nagyobb telepítő méret és memóriaigény (~120–180 MB) a TUI-hoz képest.</span></div>
@@ -2145,12 +2280,12 @@ dart run bin/pala.dart`}</pre>
                 <div className="bg-card border border-border rounded-2xl p-5 space-y-3">
                   <div className="flex items-center gap-2 text-sm font-bold text-primary">
                     <Smartphone size={16} />
-                    <span>Mobile (Android • iOS fejlesztés alatt)</span>
+                    <span>Mobile (Android • iOS kísérleti)</span>
                   </div>
                   <div className="space-y-1.5">
                     <div className="flex items-start gap-2 text-xs text-muted"><CheckCircle2 size={13} className="text-primary shrink-0 mt-0.5" /><span>Natív érintéses felület, reklám és nyomkövetés nélkül.</span></div>
                     <div className="flex items-start gap-2 text-xs text-muted"><CheckCircle2 size={13} className="text-primary shrink-0 mt-0.5" /><span>Android: közvetlen APK letöltés, telepítés áruházi engedélyek nélkül is.</span></div>
-                    <div className="flex items-start gap-2 text-xs text-muted"><AlertTriangle size={13} className="text-primary shrink-0 mt-0.5" /><span>A natív Flutter iOS build fejlesztés alatt áll; a Safari szigorú CORS szabályai miatt weboldalként futó PWA közvetlenül nem érheti el a Krétát köztes szerver nélkül (ami adatvédelmileg kizárt). Így kizárólag a jövőbeli natív iOS kliens jöhet szóba (amihez Apple Developer Program tagság szükséges).</span></div>
+                    <div className="flex items-start gap-2 text-xs text-muted"><AlertTriangle size={13} className="text-primary shrink-0 mt-0.5" /><span>Az iOS-változat kísérleti: aláíratlan IPA, amelyet a felhasználó a saját ingyenes Apple ID-jével tesz fel (AltStore vagy Sideloadly), és 7 naponta frissíteni kell. Weboldalként (PWA) a Safari CORS-szabályai miatt nem érhetné el a Krétát köztes szerver nélkül, ami adatvédelmileg kizárt.</span></div>
                     <div className="flex items-start gap-2 text-xs text-muted"><AlertTriangle size={13} className="text-primary shrink-0 mt-0.5" /><span>Háttérben futó automatikus értesítés (új jegy figyelése) mobilon még nem elérhető — ez platformonként (Android WorkManager, iOS Background App Refresh) külön megoldást igényel.</span></div>
                   </div>
                 </div>
@@ -2200,7 +2335,7 @@ dart run bin/pala.dart`}</pre>
                   <li><strong className="text-fg">Ha minden funkció kell és nem zavar a terminál:</strong> TUI.</li>
                   <li><strong className="text-fg">Ha csak gyorsan bele akarsz nézni a jegyeidbe böngészőből, telepítés nélkül:</strong> Böngésző Kiterjesztés.</li>
                   <li><strong className="text-fg">Ha grafikus felületet szeretnél asztali gépen, és elfogadod, hogy pár TUI-funkció még hiányzik:</strong> Desktop App.</li>
-                  <li><strong className="text-fg">Ha telefonon/tableten szeretnéd használni:</strong> Mobile App (Android APK ma is elérhető, iOS natív build fejlesztés alatt).</li>
+                  <li><strong className="text-fg">Ha telefonon/tableten szeretnéd használni:</strong> Mobile App (Android APK, iPhone-ra kísérleti telepítés AltStore-ral).</li>
                 </ul>
               </div>
             </div>
@@ -2344,7 +2479,7 @@ dart run bin/pala.dart`}</pre>
                   Pala Mobile (Mobil Alkalmazás)
                 </h1>
                 <p className="text-sm text-muted leading-relaxed max-w-2xl">
-                  Reklámmentes Kréta alkalmazás Android eszközökre. (iOS/iPhone támogatás hamarosan — lásd lentebb, miért nem elérhető még.)
+                  Reklámmentes Kréta alkalmazás Android eszközökre, és kísérletként iPhone-ra.
                 </p>
               </div>
 
@@ -2359,9 +2494,9 @@ dart run bin/pala.dart`}</pre>
                       <strong className="text-fg block mb-0.5">Android Közvetlen APK:</strong>
                       Letölthető és egy kattintással telepíthető önálló APK (ARM64, ARMv7, x86_64 vagy univerzális).
                     </li>
-                    <li className="p-2.5 bg-sidebar rounded-xl border border-border opacity-70">
-                      <strong className="text-primary block mb-0.5">iOS / iPadOS Támogatás: Hamarosan</strong>
-                      A Safari CORS-korlátai és a natív App Store/TestFlight fizetős Apple Fejlesztői Program-követelménye miatt egyelőre nem elérhető. Részletek a Telepítés &rarr; iOS fülön.
+                    <li className="p-2.5 bg-sidebar rounded-xl border border-border">
+                      <strong className="text-fg block mb-0.5">iPhone és iPad (kísérleti):</strong>
+                      App Store nélkül, a saját ingyenes Apple ID-ddel telepíthető AltStore-ral vagy Sideloadlyval, hetente frissíteni kell. Részletek a Telepítés &rarr; iOS fülön.
                     </li>
                     <li className="p-2.5 bg-sidebar rounded-xl border border-border">
                       <strong className="text-fg block mb-0.5">Offline adatelérés:</strong>
@@ -2832,7 +2967,7 @@ dart run bin/pala.dart`}</pre>
                       Ezért a Pala kizárólag <strong>kliensoldali alkalmazásként</strong> (Windows, Linux, macOS, Android, Böngésző Bővítmény) érhető el: az adataid közvetlenül a te saját eszközödről kommunikálnak a hivatalos Kréta szerverrel, köztes szerverek nélkül!
                     </div>
                     <p>
-                      <strong className="text-fg">Ez ugyanaz az ok, amiért iPhone/iPad (iOS) verzió egyelőre nincs:</strong> Safari nem engedi meg egy weboldalnak, hogy közvetlenül, a fenti köztes szerver nélkül kommunikáljon a Kréta rendszerével — a natív alkalmazás alternatíva (App Store / TestFlight) pedig Apple fizetős fejlesztői tagságát igényli. Az iOS-támogatás azután érkezik, ha ez a kérdés megoldódik.
+                      <strong className="text-fg">Ezért nincs iPhone-ra weboldalas változat sem:</strong> a Safari nem engedi, hogy egy weboldal köztes szerver nélkül beszéljen a Krétával. iPhone-ra ezért natív alkalmazás készül, amelyet App Store nélkül, a saját ingyenes Apple ID-ddel telepíthetsz (kísérleti, részletek a Telepítés &rarr; iOS fülön).
                     </p>
                   </div>
                 </div>

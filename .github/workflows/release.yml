@@ -183,6 +183,39 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  ios-ipa:
+    name: Build unsigned iOS IPA
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+
+      # Unsigned on purpose: no paid Apple developer account. Users sign it on
+      # their own machine with their free Apple ID (AltStore or Sideloadly).
+      - name: Build Flutter iOS app without code signing
+        working-directory: app
+        run: |
+          flutter pub get
+          flutter build ios --release --no-codesign
+
+      - name: Package IPA
+        run: |
+          set -e
+          mkdir -p Payload
+          cp -R app/build/ios/iphoneos/Runner.app Payload/
+          zip -qry Pala.ipa Payload
+
+      - name: Upload IPA to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
+        with:
+          fail_on_unmatched_files: false
+          files: Pala.ipa
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   desktop-linux-appimage:
     name: Build Linux AppImage
     runs-on: ubuntu-latest
@@ -318,7 +351,7 @@ jobs:
   checksums:
     name: Publish SHA256SUMS
     # After every job that uploads release assets, so the file covers all of them.
-    needs: [build, desktop-windows-installer, desktop-macos-dmg, desktop-linux-appimage, android, extension]
+    needs: [build, desktop-windows-installer, desktop-macos-dmg, ios-ipa, desktop-linux-appimage, android, extension]
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
     steps:

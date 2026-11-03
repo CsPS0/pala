@@ -46,7 +46,7 @@ export function Roadmap() {
         "Automatikus szinkron a Google és az Apple naptárával",
         "Jegyzetek megosztása az osztálytársakkal",
         "Kis ablak (widget) az asztalra Windowson és Macen",
-        "iPhone-alkalmazás",
+        "Az iPhone-os változat kipróbálása és értesítések iPhone-on",
       ],
     },
   ];

@@ -59,6 +59,17 @@ export const PROJECTS: CommunityProject[] = [
     badge: "Material You",
   },
   {
+    icon: Smartphone,
+    title: "Tinta",
+    author: "Pacuka",
+    description: "A Folio továbbfejlesztése, iPhone-ra is. A Pala iPhone-os telepítésének ötlete tőle jött.",
+    url: "https://github.com/Pacuka/tinta",
+    websiteUrl: "https://tinta.pacuka.hu/",
+    repo: "Pacuka/tinta",
+    category: "kreta",
+    badge: "iPhone is",
+  },
+  {
     icon: Terminal,
     image: "/community/jarjk_rsfilc.png",
     title: "RozsdásFilc (rsfilc)",

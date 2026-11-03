@@ -42,8 +42,8 @@ const PLATFORM_CONFIGS: Record<PlatformKey, PlatformConfig> = {
     icon: AndroidIcon,
   },
   ios: {
-    cta: "Letöltési lehetőségek",
-    hint: "iPhone-ra még nincs alkalmazás. Számítógépen a böngészőbővítményt használhatod.",
+    cta: "Telepítés iPhone-ra",
+    hint: "iPhone-ra egy ingyenes programmal és egy számítógéppel teheted fel (kísérleti).",
     icon: AppleIcon,
   },
   unknown: {

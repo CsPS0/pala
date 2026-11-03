@@ -22,6 +22,7 @@ export interface ReleaseAssetMap {
   linuxAppImage: string;
   macDmg: string;
   macZip: string;
+  iosIpa: string;
   extensionZip: string;
 }
 
@@ -64,6 +65,7 @@ export const DEFAULT_ASSETS: ReleaseAssetMap = {
   linuxAppImage: `https://github.com/${GITHUB_REPO}/releases/latest/download/Pala-x86_64.AppImage`,
   macDmg: `https://github.com/${GITHUB_REPO}/releases/latest/download/Pala-macOS.dmg`,
   macZip: `https://github.com/${GITHUB_REPO}/releases/latest/download/pala-macos.zip`,
+  iosIpa: `https://github.com/${GITHUB_REPO}/releases/latest/download/Pala.ipa`,
   extensionZip: `https://github.com/${GITHUB_REPO}/releases/latest/download/pala-extension.zip`,
 };
 
@@ -115,7 +117,7 @@ export function ReleaseProvider({ children, release }: { children: React.ReactNo
         case "linux":
           return { url: "/docs", label: `Telepítés Linuxra`, isDirect: false };
         case "ios":
-          return { url: "/docs#inst-ios", label: `iOS: Jelenleg nem elérhető (Részletek)`, isDirect: false };
+          return { url: "/docs#inst-ios", label: `Telepítés iPhone-ra (útmutató)`, isDirect: false };
         default:
           return { url: "/docs", label: `Telepítés & Dokumentáció`, isDirect: false };
       }

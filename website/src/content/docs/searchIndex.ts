@@ -49,10 +49,10 @@ export const SEARCH_INDEX: SearchIndexItem[] = [
     id: "inst-ios",
     pageId: "installation",
     tabId: "ios",
-    title: "iOS (iPhone/iPad) — még nem elérhető",
+    title: "iOS (iPhone/iPad) — telepítés AltStore-ral",
     category: "Kezdő Lépések / Telepítés",
-    description: "Miért nincs még iOS/iPhone verzió: Safari CORS-korlátok és az Apple fejlesztői díj. Hamarosan érkezik.",
-    keywords: ["ios", "iphone", "ipad", "hamarosan", "nem elérhető", "cors", "apple developer", "safari", "pwa"]
+    description: "Kísérleti iPhone-os telepítés App Store nélkül, a saját ingyenes Apple ID-ddel: AltStore vagy Sideloadly, frissítés 7 naponta.",
+    keywords: ["ios", "iphone", "ipad", "ipa", "altstore", "altserver", "sideloadly", "sideload", "apple id", "7 nap", "kísérleti"]
   },
   {
     id: "inst-linux",
@@ -150,8 +150,8 @@ export const SEARCH_INDEX: SearchIndexItem[] = [
     pageId: "mobile",
     title: "Pala Mobile (Mobil Alkalmazás)",
     category: "Változatok / Mobile App",
-    description: "Android APK, érintés-optimalizált felület, zero ads, offline mód. iOS/iPhone hamarosan.",
-    keywords: ["mobile", "mobil", "android", "apk", "ios", "iphone", "hamarosan", "érintőképernyő"]
+    description: "Android APK, érintés-optimalizált felület, zero ads, offline mód. iPhone-ra kísérleti IPA.",
+    keywords: ["mobile", "mobil", "android", "apk", "ios", "iphone", "ipa", "érintőképernyő"]
   },
   {
     id: "extension-overview",

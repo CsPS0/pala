@@ -5,6 +5,9 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) elvein al
 
 ## [Nem kiadott]
 
+### Hozzáadva
+- Kísérleti iPhone-os változat: a kiadás egy aláíratlan `Pala.ipa` fájlt is tartalmaz, amelyet a felhasználó a saját ingyenes Apple ID-jével tesz fel (AltStore vagy Sideloadly). Útmutató a weboldal Telepítés → iOS fülén. Az ötletet Pacuka ([pacuka.hu](https://pacuka.hu/)) adta.
+
 ## [2.0.0] - 2026-10-31
 
 Az első kiadás a Pala néven: TUI, asztali és Android-alkalmazás, böngésző-kiterjesztés.
