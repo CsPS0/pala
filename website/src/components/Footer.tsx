@@ -107,7 +107,7 @@ export function Footer() {
                 rel="noopener noreferrer"
                 className="hover:text-primary transition-colors"
               >
-                GitHub Repository
+                Forráskód a GitHubon
               </a>
             </li>
             <li>

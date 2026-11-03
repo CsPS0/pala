@@ -1,6 +1,6 @@
 # Adatkezelés és Biztonság (Data & Security)
 
-A **Pala** fejlesztése során a legmagasabb prioritásként kezeljük a felhasználóink (diákok, tanárok, szülők) oktatási adatainak és hitelesítő információinak biztonságát. Mivel a Pala egy nyílt forráskódú, kliensoldali terminálos alkalmazás (TUI), az adatkezelés teljes mértékben transzparens, és kizárólag a te számítógépeden történik.
+A **Pala** fejlesztése során a legmagasabb prioritásként kezeljük a felhasználóink (diákok, tanárok, szülők) oktatási adatainak és hitelesítő információinak biztonságát. Mivel a Pala minden változata (terminálos alkalmazás, asztali és mobil alkalmazás, böngésző-kiterjesztés) nyílt forráskódú, kliensoldali program, az adatkezelés teljes mértékben transzparens, és kizárólag a te eszközödön történik.
 
 Ebben a dokumentumban áttekintjük, hogy az alkalmazás pontosan milyen adatokat kezel, hogyan védi azokat, és hogyan tudod őket maradéktalanul eltávolítani.
 
@@ -27,6 +27,8 @@ A Krétától letöltött adatok offline gyorsítótára (`cache.json`) a rendsz
 
 A gyorsítótár bármikor törölhető, a Pala a következő frissítéskor újra letölti. Bejelentkezve maradsz.
 
+Telefonon (Android, iOS) mindkettő az alkalmazás saját tárhelyén van, amelyhez más alkalmazások nem férnek hozzá: a beállítások az alkalmazás támogatási mappájában, a gyorsítótár az ideiglenes mappájában. Az alkalmazás eltávolításával ezek is törlődnek.
+
 Linuxon és macOS-en a Pala mindkét mappát csak a saját felhasználód számára teszi olvashatóvá (700-as jogosultság), így egy közös gép többi felhasználója nem fér hozzájuk. Windowson a felhasználói profil mappái eleve csak a te fiókodból érhetők el.
 
 ### Titkosítás (Encryption at Rest)
@@ -43,7 +45,7 @@ A Pala a Kréta hivatalos szervereivel kommunikál, titkosított HTTPS/TLS csato
 
 Mivel a Pala semmilyen felhős infrastruktúrával nem rendelkezik, az adataid felett 100%-os kontrollal rendelkezel. 
 
-Ha ki szeretnél jelentkezni, vagy teljesen meg akarod semmisíteni a program által tárolt adataidat, egyszerűen használd a Beállítások menüben az "Összes mentett adat törlése" lehetőséget, vagy töröld le mindkét mappát.
+Ha ki szeretnél jelentkezni, vagy teljesen meg akarod semmisíteni a program által tárolt adataidat, használd a terminálos Pala Beállítások menüjében az "Összes mentett adat törlése" lehetőséget, az asztali és mobil alkalmazásban a "Kijelentkezés a fiókból" gombot, vagy töröld le mindkét mappát.
 
 ### Törlés lépései parancssorból:
 
@@ -72,5 +74,5 @@ A Pala böngésző kiterjesztése (Manifest V3) a TUI-hoz hasonlóan szigorúan 
 
 ### Kréta API Adatvédelmi Korlátozások és Kiegészítő Adatok
 - **Miért hiányoznak bizonyos adatok?**: A hivatalos Kréta mobil gateway adatvédelmi okokból a `TanuloAdatlap` végponton nem adja ki a diák bankszámla adatait (bankszámlaszám, bank neve) és okmányait (adóazonosító, TAJ, diákigazolvány adatok).
-- **Helyi és Manuális Adattárolás (`pala_student_extra`)**: A kiterjesztés Globális Profil Szerkesztőjében megadott vagy a nyitott Kréta lapról automatikusan beolvasott kiegészítő adatok kizárólag a böngésződ helyi, elszeparált tárhelyében (`chrome.storage.local.pala_student_extra`) tárolódnak. Ezeket az adatokat a Pala soha nem küldi el semmilyen külső szerverre, és a "Kréta adatok visszaállítása" gombbal azonnal törölhetők.
+- **Helyi és Manuális Adattárolás (`pala_student_extra`)**: A kiterjesztés Globális Profil Szerkesztőjében kézzel megadott kiegészítő adatok kizárólag a böngésződ helyi, elszeparált tárhelyében (`chrome.storage.local.pala_student_extra`) tárolódnak. Ezeket az adatokat a Pala soha nem küldi el semmilyen külső szerverre, és a "Kréta adatok visszaállítása" gombbal azonnal törölhetők.
 

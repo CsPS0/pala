@@ -7,6 +7,11 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) elvein al
 
 ### Hozzáadva
 - Kísérleti iPhone-os változat: a kiadás egy aláíratlan `Pala.ipa` fájlt is tartalmaz, amelyet a felhasználó a saját ingyenes Apple ID-jével tesz fel (AltStore vagy Sideloadly). Útmutató a weboldal Telepítés → iOS fülén. Az ötletet Pacuka ([pacuka.hu](https://pacuka.hu/)) adta.
+- Weboldal: „Hogyan működik?” szakasz ábrával, „Első lépések” kezdőoldal a dokumentációban, GitHub-link a fejlécben és a nyitóoldalon.
+
+### Változott
+- Weboldal: közérthetőbb szövegek nem műszaki látogatóknak, a haladó letöltési lehetőségek egy lenyitható részben, a fejléc elválik a dokumentáció oldalától, a verziószám csak valódi kiadásnál jelenik meg.
+- Dokumentáció: frissített fejlesztői leírás (CI, kiadási fájlok, iOS-build), felhasználói kézikönyv (parancssori kapcsolók, mobil alkalmazás), adatvédelmi leírások (mobil alkalmazás), valamint új README az `app/` és a `website/` mappában.
 
 ## [2.0.0] - 2026-10-31
 

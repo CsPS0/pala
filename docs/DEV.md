@@ -9,9 +9,9 @@ A Pala egy közös Dart magra épülő több kliensből áll:
 | Mappa | Tartalom |
 | :--- | :--- |
 | `lib/`, `bin/` | Közös mag (API, modellek, állapot) és a terminálos alkalmazás (TUI). Tiszta Dart, Flutter nélkül, így gyorsan AOT-fordítható natív binárissá. |
-| `app/` | Flutter asztali és mobil alkalmazás (`pala --desktop`). A `lib/`-et a `package:pala` függőségen keresztül használja. |
+| `app/` | Flutter asztali és mobil alkalmazás (`pala --desktop`): Windows, macOS, Linux, Android, és kísérletként iOS. A `lib/`-et a `package:pala` függőségen keresztül használja. |
 | `extension/` | Manifest V3 böngésző-kiterjesztés (Chrome, Brave, Edge), sima JavaScript, build lépés nélkül. |
-| `website/` | Next.js weboldal ([pala-app.hu](https://pala-app.hu)), Vercelen. |
+| `website/` | Next.js weboldal ([pala-app.hu](https://pala-app.hu)), statikus exporttal, Vercelen. A kiadási adatokat a build kéri le a GitHubtól. Részletek: [website/README.md](../website/README.md). |
 
 **Fontos:** a kiterjesztés nem tudja használni a Dart kódot. Ha a `lib/api/` vagy a `lib/models/` viselkedése megváltozik, ugyanazt a változtatást kézzel át kell vezetni az `extension/shared/kreta_api.js` fájlba is. Ugyanez vonatkozik a demó adatokra: a `lib/api/demo_data.dart` és a `kreta_api.js` `DEMO_*` konstansai legyenek szinkronban.
 
@@ -38,9 +38,12 @@ Fő modulok:
 - **utils/ics_exporter.dart**: RFC 5545 kompatibilis naptárexport.
 - **web/pala_web_server.dart** és **web/pala_web_html.dart**: beágyazott HTTP szerver és HTML nézetek.
 
-### Asztali alkalmazás (`app/`)
+### Asztali és mobil alkalmazás (`app/`)
 
-Nézetek az `app/lib/views/` alatt (bejelentkezés, dashboard, jegyek, hiányzások, órarend, feladatok, üzenetírás, kereső, statisztika, Wrapped, beállítások), állapotkezelés az `app/lib/state/app_model.dart` fájlban.
+- Képernyők az `app/lib/views/` és az `app/lib/features/` alatt (bejelentkezés, dashboard, jegyek, hiányzások, órarend, feladatok, üzenetírás, kereső, statisztika, Wrapped, beállítások).
+- Állapotkezelés: `app/lib/state/app_model.dart` (`ChangeNotifier`).
+- Adaptív elrendezés: `app/lib/core/adaptive/` (600 dp alatt alsó navigáció, felette oldalsáv).
+- Értesítések: `app/lib/notifications/`. A háttérellenőrzés (WorkManager) csak Androidon fut; iOS-en az adatok megnyitáskor frissülnek.
 
 ### Böngésző-kiterjesztés (`extension/`)
 
@@ -81,7 +84,7 @@ A CI a Dart és Flutter ellenőrzéseket minden `main`-re történő pushnál é
 | `lib/`, `bin/`, `test/` | `dart analyze --fatal-infos` és `dart test` a repó gyökerében. A sima `dart analyze` nem elég: a CI az info szintű jelzéseket is hibának veszi. |
 | `app/` | `flutter analyze` és `flutter test` az `app/` mappában. |
 | `extension/` | `node --check <fájl>` minden módosított JS fájlra, és `node --test extension/test/*.test.mjs` a repó gyökerében (függőség nélkül fut). |
-| `website/` | `bun run lint` és `bun run build` a `website/` mappában (vagy npm-mel). |
+| `website/` | `bun run lint`, `bun run build` és `node scripts/check-contrast.mjs` a `website/` mappában (vagy npm-mel). |
 | `fixtures/rules/` | Mindkét tesztsor: `dart test test/rules_test.dart` és `node --test extension/test/*.test.mjs`. |
 
 Gyors kézi próba: `dart run bin/pala.dart --demo` bejelentkezés és hálózat nélkül, fiktív adatokkal indítja a TUI-t.
@@ -112,14 +115,30 @@ A Windows Feladatütemezőből háttérben indított példány (`--daemon`) lát
 
 ### GitHub Actions
 
-- **ci.yml**: minden `main`-re történő pushnál és pull requestnél `dart analyze --fatal-infos`, `dart test` és `flutter analyze` az `app/` mappában.
+- **ci.yml**: minden `main`-re történő pushnál és pull requestnél négy feladat fut:
+  - mag és TUI: `dart analyze --fatal-infos lib bin test` és `dart test`,
+  - alkalmazás: `flutter analyze` és `flutter test` az `app/` mappában,
+  - kiterjesztés: `node --check` minden JS fájlra és `node --test extension/test/*.test.mjs`,
+  - weboldal: `bun run lint`, `bun run build` és `node scripts/check-contrast.mjs`.
 - **release.yml**: egy GitHub Release közzétételekor (vagy kézi indításra) elkészíti és a kiadáshoz csatolja:
   - a terminálos binárisokat Windowsra, Linuxra és macOS-re (zip, `.deb` és `.tar.gz` csomagokkal),
-  - az asztali alkalmazást: Windows telepítő (`Pala-Setup.exe`), macOS DMG, Linux AppImage,
-  - az Android APK-kat,
-  - a böngésző-kiterjesztés zip fájlját,
-  - az APT tárolót, és frissíti a Scoop (`bucket/pala.json`) és Homebrew (`Formula/pala.rb`) manifesteket.
-- **aur.yml**: az AUR `pala-bin` csomagot a `packaging/PKGBUILD` alapján frissíti, a beállított SSH kulccsal.
+  - az asztali alkalmazást: Windows telepítő (`Pala-Setup.exe`), macOS DMG (`Pala-macOS.dmg`), Linux AppImage (`Pala-x86_64.AppImage`),
+  - az Android APK-kat (`pala-universal.apk` és architektúránként),
+  - az aláíratlan iOS alkalmazást (`Pala.ipa`),
+  - a böngésző-kiterjesztés zip fájlját (`pala-extension.zip`),
+  - a fentiek SHA-256 ellenőrzőösszegeit (`SHA256SUMS`),
+  - az APT tárolót, frissíti a Scoop (`bucket/pala.json`) és Homebrew (`Formula/pala.rb`) manifesteket, majd stabil `v*` kiadásnál közzéteszi az AUR `pala-bin` csomagot.
+- **aur.yml**: csak kézi indításra, az AUR csomag újbóli közzétételéhez a `main` ágról.
+
+### iOS build
+
+Az iOS-build csak macOS-en (Xcode-dal) készíthető el, a kiadásban a `release.yml` macOS-futója végzi:
+
+```bash
+cd app && flutter build ios --release --no-codesign
+```
+
+Az eredmény (`build/ios/iphoneos/Runner.app`) egy `Payload/` mappába csomagolva, zipelve lesz `Pala.ipa`. Fizetős Apple fejlesztői fiók nincs: a felhasználók a saját ingyenes Apple ID-jükkel írják alá AltStore-ral vagy Sideloadlyval, ezért a telepítés 7 napig érvényes. Az iOS-változat kísérleti, valódi iPhone-on még ki kell próbálni (bejelentkezés, mentett munkamenet a kulcskarikában).
 
 ### Asztali build előfeltételek
 

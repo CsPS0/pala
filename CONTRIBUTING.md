@@ -21,13 +21,14 @@ Ha kóddal szeretnél hozzájárulni a projekthez:
 2. Klónozd a tárolót lokálisan.
 3. Hozz létre egy új ágat (branch) a módosításoknak.
 4. Készítsd el a fejlesztést a meglévő kódolási konvenciók betartásával.
-5. Futtass sikeres teszt buildet (`dart compile exe bin/pala.dart`) és ellenőrizd a működést (lehetőség szerint platform-függetlenül).
+5. Futtasd le a módosított részek ellenőrzéseit (elemzés, tesztek, build). Hogy melyik részhez melyik parancs tartozik, azt a [fejlesztői dokumentáció](docs/DEV.md#ellenőrzés-commit-előtt) táblázata mutatja. Ha lehet, próbáld ki a működést is, például a `dart run bin/pala.dart --demo` paranccsal, bejelentkezés nélkül.
 6. Küldj egy Pull Requestet az eredeti repository felé.
-   - *Megjegyzés: A GitHub Actions (CI/CD) automatikusan teszteli és építi a Windows, Linux és macOS binárisokat, valamint frissíti az AUR, Scoop és Homebrew csomagokat, így ezzel a résszel nem kell manuálisan foglalkoznod.*
+   - *Megjegyzés: a pull requesteken a CI ugyanezeket az ellenőrzéseket futtatja le. A kiadási csomagokat (telepítők, APK, IPA, Scoop, Homebrew, AUR) a kiadáskor a GitHub Actions készíti el, ezekkel nem kell foglalkoznod.*
 
 ## Kódolási Szabályok
 - Nyelvhasználat: Az alkalmazás felhasználói felülete magyar nyelvű, a forráskód (változók, függvények, kommentek) azonban szigorúan angol nyelvű kell maradjon.
-- Biztonság: Hardkódolt jelszavak, tokenek vagy intézménykódok elhelyezése a forráskódban szigorúan tilos. Minden hitelesítési adat lokálisan, titkosítva a felhasználó rendszerében (`~/.config/pala/`) tárolódik.
+- Több kliens: a böngésző-kiterjesztés nem használja a Dart kódot. Ha a `lib/api/` vagy a `lib/models/` viselkedése változik, ugyanazt kézzel át kell vezetni az `extension/shared/kreta_api.js` fájlba is (a részletek a [fejlesztői dokumentációban](docs/DEV.md)).
+- Biztonság: Hardkódolt jelszavak, tokenek vagy intézménykódok elhelyezése a forráskódban szigorúan tilos. Minden hitelesítési adat lokálisan, titkosítva a felhasználó rendszerében (`~/.config/pala/`, illetve az alkalmazásban a rendszer kulcstárában) tárolódik.
 - Hibakezelés: A Kréta API válaszai változatosak lehetnek. Minden adatszerkezet beolvasásánál kötelező a biztonságos típusellenőrzés és a kivételkezelés.
 - UI Konvenciók: A terminál interfészekhez az `interact` csomag használandó, a projekt meglévő vizuális irányelveinek (színtémák, háttér megőrzése) tiszteletben tartásával.
 

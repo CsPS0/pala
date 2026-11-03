@@ -130,6 +130,17 @@ export function Navbar() {
           </Link>
         </div>
 
+        <a
+          href="https://github.com/CsPS0/pala"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Forráskód a GitHubon"
+          aria-label="A Pala forráskódja a GitHubon"
+          className="hidden sm:flex p-2 rounded-xl bg-card border border-border text-muted hover:text-fg transition-colors"
+        >
+          <GitHubIcon size={18} />
+        </a>
+
         {/* Mobile-only Search Trigger */}
         <button
           onClick={openDocsSearch}

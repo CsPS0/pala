@@ -1,17 +1,31 @@
-# palapp
+# Pala alkalmazás (Flutter)
 
-A new Flutter project.
+A Pala asztali és mobil alkalmazása: Windows, macOS, Linux, Android, és kísérletként iOS. A közös magot (Kréta API, modellek, számítási szabályok) a repó gyökerében lévő `lib/` adja, `package:pala` néven.
 
-## Getting Started
+## Futtatás és build
 
-This project is a starting point for a Flutter application.
+```bash
+flutter pub get
+flutter run                      # a csatlakoztatott eszközön vagy asztali ablakban
+flutter build windows            # vagy: macos, linux
+flutter build apk --release      # Android
+flutter build ios --release --no-codesign   # iOS, csak macOS-en
+```
 
-A few resources to get you started if this is your first Flutter project:
+- Az asztali buildek előfeltételei (Windowson az ATL összetevő, Linuxon a `libsecret-1-dev`) és az Android aláíró kulcs beállítása a [fejlesztői dokumentációban](../docs/DEV.md) van.
+- Az iOS-build aláíratlan: a felhasználók a saját ingyenes Apple ID-jükkel írják alá (AltStore vagy Sideloadly). Háttérfrissítés és háttér-értesítés csak Androidon van.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Ellenőrzés
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+flutter analyze
+flutter test
+```
+
+## Felépítés
+
+- `lib/main.dart`: indulás, a konfigurációs és gyorsítótár-mappák beállítása mobilon.
+- `lib/state/`: az alkalmazás állapota (`AppModel`, `ChangeNotifier`) és a munkamenet tárolása.
+- `lib/core/`: téma, adaptív elrendezés (600 dp alatt alsó navigáció, felette oldalsáv), közös widgetek.
+- `lib/features/`, `lib/views/`: a képernyők (vezérlőpult, jegyek, hiányzások, órarend, kereső, Wrapped, beállítások).
+- `lib/notifications/`: értesítések és az androidos háttérellenőrzés.

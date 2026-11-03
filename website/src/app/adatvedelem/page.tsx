@@ -15,7 +15,7 @@ export default function PrivacyPage() {
     <div className="min-h-screen bg-[var(--bg)] text-fg flex flex-col pt-[68px]">
       <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-12 sm:py-16">
         <h1 className="text-2xl sm:text-3xl font-black tracking-tight mb-2">Adatvédelmi tájékoztató</h1>
-        <p className="text-xs text-subtle mb-10">Utolsó frissítés: 2026. szeptember</p>
+        <p className="text-xs text-subtle mb-10">Utolsó frissítés: 2026. november</p>
 
         <div className="space-y-10 text-sm text-fg leading-relaxed">
           <section>
@@ -38,7 +38,7 @@ export default function PrivacyPage() {
             <p>
               A bejelentkezés után kapott munkamenet-token AES-256-GCM titkosítással kerül eltárolásra,
               kizárólag a saját eszközödön. A titkosításhoz használt kulcs eszközenként véletlenszerűen
-              jön létre telepítéskor, és soha nem hagyja el a gépedet. A mobil és asztali alkalmazás nem
+              jön létre az első indításkor (az alkalmazásban a rendszer kulcstárában), és soha nem hagyja el az eszközödet. A mobil és asztali alkalmazás nem
               menti a jelszavadat munkamenetek között, csak a tokent.
             </p>
           </section>
@@ -46,12 +46,14 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-lg font-bold text-fg mb-3">A böngészőbővítmény</h2>
             <p>
-              A bővítmény a <code className="text-primary font-mono text-xs">storage</code> engedélyt
-              a beállításaid és a Krétából lekért adatok (órarend, jegyek, üzenetek) helyi tárolására
-              használja, kizárólag a böngésződben. A <code className="text-primary font-mono text-xs">tabs</code> és{" "}
-              <code className="text-primary font-mono text-xs">webNavigation</code> engedély azt teszi
-              lehetővé, hogy a bővítmény felismerje, mikor vagy az e-Kréta oldalon. Egyik adat sem
-              hagyja el az eszközödet a Kréta szerverein kívül.
+              A bővítmény csak a <code className="text-primary font-mono text-xs">*.e-kreta.hu</code> oldalakhoz
+              fér hozzá. A <code className="text-primary font-mono text-xs">storage</code> engedélyt a beállításaid
+              és a Krétából lekért adatok (órarend, jegyek, üzenetek) helyi tárolására használja, kizárólag a
+              böngésződben. A <code className="text-primary font-mono text-xs">webNavigation</code> a Kréta
+              bejelentkezési oldalának felismeréséhez kell, az <code className="text-primary font-mono text-xs">alarms</code>{" "}
+              a háttérben futó frissítéshez, a <code className="text-primary font-mono text-xs">notifications</code>{" "}
+              az értesítésekhez, a <code className="text-primary font-mono text-xs">sidePanel</code> pedig az
+              oldalsávhoz. Egyik adat sem hagyja el az eszközödet a Kréta szerverein kívül.
             </p>
           </section>
 
@@ -59,9 +61,8 @@ export default function PrivacyPage() {
             <h2 className="text-lg font-bold text-fg mb-3">Ez a weboldal</h2>
             <p>
               A pala-app.hu nem használ követő sütit és nem futtat analitikát. A legfrissebb kiadás
-              számának megjelenítéséhez a böngésződ lekérdezést küld a GitHub API-nak, a Történet oldal
-              pedig a felsorolt projektek verzióit is onnan kéri le. Mint minden webes kérésnél, a GitHub
-              ilyenkor látja az IP-címedet és a böngésződ adatait. A weboldalt a Vercel szolgálja ki,
+              adatait és a Történet oldalon felsorolt projektek verzióit a weboldal az összeállításakor
+              kéri le a GitHubtól, a böngésződ ezért nem küld kérést a GitHubnak. A weboldalt a Vercel szolgálja ki,
               amely a kéréseket a saját szokásos naplóiban rögzítheti. Ezen kívül a weboldal semmilyen
               adatot nem küld harmadik félnek.
             </p>
@@ -71,11 +72,11 @@ export default function PrivacyPage() {
             <h2 className="text-lg font-bold text-fg mb-3">Adattörlés</h2>
             <p>
               Mivel minden adat helyben, a te eszközödön tárolódik, a törléshez elég kijelentkezni az
-              alkalmazásból, vagy törölni a konfigurációs mappát (<code className="text-primary font-mono text-xs">~/.config/pala</code>{" "}
-              Linuxon és macOS-en, illetve a Windows-os felhasználói profilban) és a gyorsítótár-mappát
+              alkalmazásból, vagy törölni a konfigurációs mappát (Linuxon és macOS-en <code className="text-primary font-mono text-xs">~/.config/pala</code>,
+              Windows-on <code className="text-primary font-mono text-xs">%USERPROFILE%\.config\pala</code>) és a gyorsítótár-mappát
               (Linuxon <code className="text-primary font-mono text-xs">~/.cache/pala</code>, macOS-en{" "}
               <code className="text-primary font-mono text-xs">~/Library/Caches/pala</code>, Windows-on{" "}
-              <code className="text-primary font-mono text-xs">%LOCALAPPDATA%\pala</code>). Nincs központi
+              <code className="text-primary font-mono text-xs">%LOCALAPPDATA%\pala\cache</code>). Telefonon elég az alkalmazást eltávolítani. Nincs központi
               fiók vagy szerver, amit ehhez értesíteni kellene.
             </p>
           </section>

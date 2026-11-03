@@ -41,6 +41,7 @@ import { Footer } from "@/components/Footer";
 import { ClientHistory } from "@/components/ClientHistory";
 import { detectClientOS } from "@/lib/detectOS";
 import { useRelease } from "@/lib/useRelease";
+import { shownVersion } from "@/lib/ReleaseContext";
 import { useDocsUI } from "@/lib/DocsUIContext";
 import { DocsNewSections, DocsRightToc } from "@/components/docs/DocsNewSections";
 
@@ -53,7 +54,7 @@ export function DocsView({ initialPage = "kezdoknek" }: { initialPage?: string }
   const { setIsDocsPage, mobileMenuOpen, setMobileMenuOpen, openDocsSearch, registerDocsNavigate } = useDocsUI();
 
   // Config builder state
-  const [cfgTheme, setCfgTheme] = useState<"dark" | "light" | "system">("dark");
+  const [cfgTheme, setCfgTheme] = useState<"dark" | "light">("dark");
   const [cfgBanner, setCfgBanner] = useState<boolean>(true);
   const [cfgQuota, setCfgQuota] = useState<number>(5);
   const [cfgAliases, setCfgAliases] = useState<Record<string, string>>({
@@ -371,13 +372,13 @@ export function DocsView({ initialPage = "kezdoknek" }: { initialPage?: string }
             <div className="space-y-8 min-w-0 w-full">
               <div>
                 <span className="text-[11px] font-mono font-bold tracking-widest text-primary uppercase block mb-1">
-                  KEZDŐ LÉPÉSEK / TELEPÍTÉS & BEÁLLÍTÁS
+                  KEZDÉS / TELEPÍTÉS
                 </span>
                 <h1 className="text-2xl sm:text-4xl font-black text-fg tracking-tight mb-3">
                   Telepítés és Beállítás
                 </h1>
                 <p className="text-xs sm:text-sm text-muted leading-relaxed max-w-2xl">
-                  A Pala elérhető asztali rendszerekre (Windows, Linux, macOS), mobilra (Android) és böngészőbővítményként.
+                  A Pala elérhető asztali rendszerekre (Windows, Linux, macOS), mobilra (Android, és kísérletként iPhone) és böngészőbővítményként.
                   Válassz platformot a lépésről lépésre követhető telepítési és eltávolítási útmutatóhoz.
                 </p>
               </div>
@@ -532,7 +533,7 @@ export function DocsView({ initialPage = "kezdoknek" }: { initialPage?: string }
                       </div>
                       <div className="flex items-center justify-between border-b border-border pb-2">
                         <span className="text-fg font-semibold">Processzor Architektúra:</span>
-                        <span>64-bit (x64) és natív ARM64 (Surface Pro / Snapdragon)</span>
+                        <span>64 bites (x64); ARM64-es gépeken emulációval fut</span>
                       </div>
                       <div className="flex items-center justify-between border-b border-border pb-2">
                         <span className="text-fg font-semibold">Terminál Környezet (TUI):</span>
@@ -550,7 +551,7 @@ export function DocsView({ initialPage = "kezdoknek" }: { initialPage?: string }
                     <div className="lg:col-span-5 space-y-1.5">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-xs font-black text-primary">[ 04 ]</span>
-                        <h3 className="text-sm font-bold text-primary">Automatikus Verziókövetés & Frissítés</h3>
+                        <h3 className="text-sm font-bold text-primary">Frissítés új verzióra</h3>
                       </div>
                       <p className="text-xs text-muted leading-relaxed">
                         Hogyan frissíthetsz újabb Pala verzióra anélkül, hogy elveszítenéd a beállításaidat vagy a mentett órarendedet.
@@ -559,7 +560,7 @@ export function DocsView({ initialPage = "kezdoknek" }: { initialPage?: string }
                     <div className="lg:col-span-7 bg-sidebar border border-border rounded-2xl p-4 space-y-2.5 text-xs text-muted">
                       <div className="p-3 bg-card rounded-xl border border-border">
                         <strong className="text-fg block mb-1">Telepítő .exe felülírás (Ajánlott):</strong>
-                        Egyszerűen töltsd le és futtasd az új <code className="text-primary font-mono">Pala-Setup.exe</code> fájlt. A telepítő felülírja a korábbi programfájlokat, miközben a bejelentkezési adataid és a helyi adatbázisod (<code className="text-primary font-mono">%APPDATA%\pala</code>) érintetlenek maradnak.
+                        Egyszerűen töltsd le és futtasd az új <code className="text-primary font-mono">Pala-Setup.exe</code> fájlt. A telepítő felülírja a korábbi programfájlokat, miközben a bejelentkezési adataid (<code className="text-primary font-mono">%USERPROFILE%\.config\pala</code>) és a gyorsítótár (<code className="text-primary font-mono">%LOCALAPPDATA%\pala\cache</code>) megmaradnak.
                       </div>
                       <div className="p-3 bg-card rounded-xl border border-border">
                         <strong className="text-fg block mb-1">Scoop csomagkezelő frissítés:</strong>
@@ -638,7 +639,7 @@ export function DocsView({ initialPage = "kezdoknek" }: { initialPage?: string }
                           <strong className="text-xs text-primary font-bold">1. Universal (Minden eszközre)</strong>
                           <span className="text-[10px] bg-primary/15 text-primary px-2 py-0.5 rounded font-bold">100% Biztos</span>
                         </div>
-                        <code className="text-xs text-primary font-mono block">app-release.apk</code>
+                        <code className="text-xs text-primary font-mono block">pala-universal.apk</code>
                         <p className="text-[11px] text-muted leading-relaxed">
                           <strong>Ha bizonytalan vagy:</strong> minden processzort és emulátort magában foglal, így kivétel nélkül <em>minden Android eszközön azonnal elindul!</em>
                         </p>
@@ -650,7 +651,7 @@ export function DocsView({ initialPage = "kezdoknek" }: { initialPage?: string }
                           <strong className="text-xs text-primary font-bold">2. ARM64-v8a (Modern telefonok)</strong>
                           <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded font-bold">Leggyorsabb</span>
                         </div>
-                        <code className="text-xs text-primary font-mono block">app-arm64-v8a-release.apk</code>
+                        <code className="text-xs text-primary font-mono block">pala-arm64-v8a.apk</code>
                         <p className="text-[11px] text-muted leading-relaxed">
                           Minden 2016 után gyártott 64-bites telefonhoz és táblagéphez (Samsung Galaxy, Xiaomi, Pixel, Redmi, Honor, OnePlus).
                         </p>
@@ -662,7 +663,7 @@ export function DocsView({ initialPage = "kezdoknek" }: { initialPage?: string }
                           <strong className="text-xs text-fg font-bold">3. ARMv7 / armeabi (Régebbi telefonok)</strong>
                           <span className="text-[10px] bg-card-hover text-muted px-2 py-0.5 rounded font-bold">32-bit</span>
                         </div>
-                        <code className="text-xs text-primary font-mono block">app-armeabi-v7a-release.apk</code>
+                        <code className="text-xs text-primary font-mono block">pala-armeabi-v7a.apk</code>
                         <p className="text-[11px] text-muted leading-relaxed">
                           Régebbi (2015 előtti) okostelefonokhoz, régebbi táblagépekhez vagy 32-bites belépőszintű készülékekhez.
                         </p>
@@ -674,7 +675,7 @@ export function DocsView({ initialPage = "kezdoknek" }: { initialPage?: string }
                           <strong className="text-xs text-primary font-bold">4. x86_64 (PC Emulátorok)</strong>
                           <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded font-bold">Emulátor</span>
                         </div>
-                        <code className="text-xs text-primary font-mono block">app-x86_64-release.apk</code>
+                        <code className="text-xs text-primary font-mono block">pala-x86_64.apk</code>
                         <p className="text-[11px] text-muted leading-relaxed">
                           PC-n futó Android emulátorokhoz (BlueStacks 5, NoxPlayer, LDPlayer, WSA Windows Subsystem for Android, Android Studio).
                         </p>
@@ -685,9 +686,9 @@ export function DocsView({ initialPage = "kezdoknek" }: { initialPage?: string }
                     <div className="p-4 rounded-xl bg-bg border border-border space-y-2 text-xs">
                       <strong className="text-fg block">Hogyan válassz, ha fogalmad sincs a telefonod típusáról?</strong>
                       <ol className="list-decimal pl-4 space-y-1 text-muted">
-                        <li><span className="text-primary font-bold">1. Aranyszabály:</span> Töltsd le az <strong>Universal</strong> (<code className="text-primary font-mono">app-release.apk</code>) csomagot. Ez garantáltan működni fog!</li>
-                        <li><strong>2. Szabály:</strong> Ha a telefonod az elmúlt 7-8 évben vásároltad, válaszd az <strong>ARM64</strong> verziót a legkisebb méretért és legnagyobb sebességért.</li>
-                        <li><strong>3. Ellenőrzés appal:</strong> Töltsd le a Play Áruházból a díjmentes <em>CPU-Z</em> vagy <em>AIDA64</em> alkalmazást, és a &quot;System / Processzor&quot; menüben nézd meg az <em>Instruction Set</em> sort.</li>
+                        <li><span className="text-primary font-bold">Aranyszabály:</span> Töltsd le az <strong>Universal</strong> (<code className="text-primary font-mono">pala-universal.apk</code>) csomagot. Ez minden telefonon működik.</li>
+                        <li><strong>Kisebb méret:</strong> Ha a telefonodat az elmúlt 7–8 évben vásároltad, válaszd az <strong>ARM64</strong> verziót a legkisebb méretért és legnagyobb sebességért.</li>
+                        <li><strong>Ellenőrzés appal:</strong> Töltsd le a Play Áruházból a díjmentes <em>CPU-Z</em> vagy <em>AIDA64</em> alkalmazást, és a &quot;System / Processzor&quot; menüben nézd meg az <em>Instruction Set</em> sort.</li>
                       </ol>
                     </div>
                   </div>
@@ -706,7 +707,7 @@ export function DocsView({ initialPage = "kezdoknek" }: { initialPage?: string }
                     <div className="lg:col-span-7 bg-card border border-border rounded-2xl p-4 flex items-center justify-between">
                       <div>
                         <div className="text-xs font-bold text-fg">Pala Mobile APK-k</div>
-                        <div className="text-[11px] text-subtle">{release.version} • Android 7.0+ támogatás</div>
+                        <div className="text-[11px] text-subtle">{shownVersion(release) ? `${shownVersion(release)} • ` : ""}Android 7.0+ támogatás</div>
                       </div>
                       <a
                         href={release.assets.androidUniversal}
@@ -772,7 +773,7 @@ export function DocsView({ initialPage = "kezdoknek" }: { initialPage?: string }
                     <div className="lg:col-span-5 space-y-1.5">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-xs font-black text-primary">[ 04 ]</span>
-                        <h3 className="text-sm font-bold text-primary">Automatikus Verziókövetés & Frissítés</h3>
+                        <h3 className="text-sm font-bold text-primary">Frissítés új verzióra</h3>
                       </div>
                       <p className="text-xs text-muted leading-relaxed">
                         Hogyan frissíthetsz újabb APK-ra a mentett órarend és bejelentkezés megtartásával.
@@ -800,7 +801,7 @@ export function DocsView({ initialPage = "kezdoknek" }: { initialPage?: string }
                         </h3>
                       </div>
                       <p className="text-xs text-muted leading-relaxed">
-                        Az Android alkalmazás és a titkosított helyi SQLite adatbázis törlése a telefonról.
+                        Az alkalmazás és a helyben tárolt (titkosított) adatai törlése a telefonról.
                       </p>
                     </div>
                     <div className="lg:col-span-7 bg-sidebar border border-border rounded-2xl p-4 space-y-2 text-xs text-muted">
@@ -838,19 +839,19 @@ dart run bin/pala.dart`}</pre>
                 <div id="inst-ios" className="space-y-6">
                   <div className="bg-card border border-border p-6 rounded-2xl space-y-3">
                     <div className="flex items-start gap-3">
-                      <Smartphone size={20} className="text-fg shrink-0 mt-0.5" />
+                      <Smartphone size={20} className="text-primary shrink-0 mt-0.5" />
                       <div>
-                        <h3 className="text-base font-bold text-fg leading-snug">Telepítés iPhone-ra és iPadre</h3>
-                        <span className="text-xs text-muted font-semibold">Kísérleti • Ingyenes • Elsőre kb. 20–30 perc</span>
+                        <h3 className="text-sm font-bold text-fg leading-snug">Telepítés iPhone-ra és iPadre</h3>
+                        <span className="text-[11px] text-primary font-semibold">Kísérleti • Ingyenes • Elsőre kb. 20–30 perc</span>
                       </div>
                     </div>
-                    <div className="text-sm text-muted space-y-2 leading-relaxed sm:pl-8">
+                    <div className="text-xs text-muted space-y-2 leading-relaxed sm:pl-8">
                       <p>
                         A Pala nincs fent az App Store-ban, mert ahhoz évente fizetni kellene az Apple-nek. Helyette egy ingyenes programmal, a saját Apple ID-ddel teheted fel a telefonodra. Elsőre kell hozzá egy számítógép, utána már csak pár koppintás.
                       </p>
                       <p>
                         <strong className="text-fg">Kísérleti változat:</strong> iPhone-on a Pala akkor frissíti az adataidat, amikor megnyitod, a háttérben nem küld értesítést. Ha valami nem működik, kérlek,{" "}
-                        <a href="https://github.com/CsPS0/pala/issues" target="_blank" rel="noopener noreferrer" className="text-fg underline underline-offset-2 hover:text-primary">
+                        <a href="https://github.com/CsPS0/pala/issues" target="_blank" rel="noopener noreferrer" className="text-primary font-bold hover:underline">
                           jelezd nekünk
                         </a>
                         .
@@ -860,21 +861,24 @@ dart run bin/pala.dart`}</pre>
 
                   <div className="bg-card border border-border p-5 rounded-2xl space-y-3">
                     <h3 className="text-sm font-bold text-fg">Mi kell hozzá?</h3>
-                    <ul className="text-sm text-muted space-y-1.5 list-disc pl-5 leading-relaxed">
+                    <ul className="text-xs text-muted space-y-1.5 list-disc pl-5 leading-relaxed">
                       <li>az iPhone-od és a töltőkábele,</li>
                       <li>egy Windowsos vagy Maces számítógép,</li>
                       <li>az Apple ID-d (amivel az App Store-ba is belépsz) és a jelszava,</li>
                       <li>hogy a gép és a telefon ugyanazon a wifin legyen.</li>
                     </ul>
-                    <div className="p-3 bg-sidebar rounded-xl border border-border text-sm text-muted leading-relaxed">
+                    <div className="p-3 bg-sidebar rounded-xl border border-border text-xs text-muted leading-relaxed">
                       <strong className="text-fg">Fontos tudni:</strong> ingyenes Apple ID-vel az Apple 7 napig engedi futni az így telepített appokat, és egyszerre legfeljebb 3 ilyen app lehet a telefonon. A 7 nap után elég egy gyors frissítés (5. lépés), az adataid közben nem vesznek el.
                     </div>
                   </div>
 
                   <ol className="space-y-4">
                     <li className="bg-card border border-border p-5 rounded-2xl space-y-3">
-                      <h3 className="text-sm font-bold text-fg">1. Töltsd le a Palát a telefonra</h3>
-                      <p className="text-sm text-muted leading-relaxed">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-black text-primary">[ 01 ]</span>
+                        <h3 className="text-sm font-bold text-fg">Töltsd le a Palát a telefonra</h3>
+                      </div>
+                      <p className="text-xs text-muted leading-relaxed">
                         Nyisd meg ezt az oldalt az iPhone-on, Safariban, és koppints a gombra. A <code className="font-mono text-fg">Pala.ipa</code> fájl a Fájlok app Letöltések mappájába kerül. Egyelőre hagyd ott.
                       </p>
                       <a
@@ -887,15 +891,18 @@ dart run bin/pala.dart`}</pre>
                     </li>
 
                     <li className="bg-card border border-border p-5 rounded-2xl space-y-3">
-                      <h3 className="text-sm font-bold text-fg">2. Tedd fel az AltServert a számítógépre (csak egyszer)</h3>
-                      <p className="text-sm text-muted leading-relaxed">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-black text-primary">[ 02 ]</span>
+                        <h3 className="text-sm font-bold text-fg">Tedd fel az AltServert a számítógépre (csak egyszer)</h3>
+                      </div>
+                      <p className="text-xs text-muted leading-relaxed">
                         Az AltServer egy ingyenes program, amely a saját Apple ID-ddel „aláírja” a Palát, hogy az iPhone elfogadja. Letölteni az{" "}
-                        <a href="https://altstore.io" target="_blank" rel="noopener noreferrer" className="text-fg underline underline-offset-2 hover:text-primary">
+                        <a href="https://altstore.io" target="_blank" rel="noopener noreferrer" className="text-primary font-bold hover:underline">
                           altstore.io
                         </a>{" "}
                         oldalon tudod, ott angol nyelvű útmutató is van.
                       </p>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-muted leading-relaxed">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-muted leading-relaxed">
                         <div className="p-3.5 bg-sidebar rounded-xl border border-border">
                           <strong className="text-fg block mb-1">Windowson</strong>
                           Előbb telepítsd az iTunes-t és az iCloudot az Apple weboldaláról. A Microsoft Store-os változatukkal nem működik, ha azok vannak fent, előbb töröld őket. Utána telepítsd az AltServert, és indítsd el rendszergazdaként. Az ikonja a tálca jobb sarkában jelenik meg (lehet, hogy a ^ nyíl alatt).
@@ -908,8 +915,11 @@ dart run bin/pala.dart`}</pre>
                     </li>
 
                     <li className="bg-card border border-border p-5 rounded-2xl space-y-3">
-                      <h3 className="text-sm font-bold text-fg">3. Tedd fel az AltStore-t a telefonra (csak egyszer)</h3>
-                      <ol className="text-sm text-muted space-y-1.5 list-decimal pl-5 leading-relaxed">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-black text-primary">[ 03 ]</span>
+                        <h3 className="text-sm font-bold text-fg">Tedd fel az AltStore-t a telefonra (csak egyszer)</h3>
+                      </div>
+                      <ol className="text-xs text-muted space-y-1.5 list-decimal pl-5 leading-relaxed">
                         <li>Dugd be a telefont kábellel, oldd fel, és ha kérdezi, koppints a <strong className="text-fg">Megbízom</strong> gombra.</li>
                         <li>Kapcsold be, hogy a gép wifin is lássa a telefont: Windowson az iTunes-ban a telefonodnál a <strong className="text-fg">Szinkronizálás Wi-Fi-n keresztül</strong>, Macen a Finderben az <strong className="text-fg">iPhone megjelenítése Wi-Fi-kapcsolat esetén</strong> lehetőséget.</li>
                         <li>Kattints az AltServer ikonjára, válaszd az <strong className="text-fg">Install AltStore</strong> menüt, majd a telefonodat, és add meg az Apple ID-det. Ezt az AltServer csak az Apple-nek küldi el.</li>
@@ -919,18 +929,24 @@ dart run bin/pala.dart`}</pre>
                     </li>
 
                     <li className="bg-card border border-border p-5 rounded-2xl space-y-3">
-                      <h3 className="text-sm font-bold text-fg">4. Telepítsd a Palát</h3>
-                      <p className="text-sm text-muted leading-relaxed">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-black text-primary">[ 04 ]</span>
+                        <h3 className="text-sm font-bold text-fg">Telepítsd a Palát</h3>
+                      </div>
+                      <p className="text-xs text-muted leading-relaxed">
                         A gépen fusson az AltServer, és a telefon legyen ugyanazon a wifin. Nyisd meg az AltStore appot, alul válaszd a <strong className="text-fg">My Apps</strong> fület, koppints bal fent a <strong className="text-fg">+</strong> gombra, és a Letöltések mappában válaszd ki a <code className="font-mono text-fg">Pala.ipa</code> fájlt. Pár perc múlva a Pala ott lesz a kezdőképernyőn.
                       </p>
                     </li>
 
                     <li className="bg-card border border-border p-5 rounded-2xl space-y-3">
-                      <h3 className="text-sm font-bold text-fg">5. Frissítés hetente</h3>
-                      <p className="text-sm text-muted leading-relaxed">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-black text-primary">[ 05 ]</span>
+                        <h3 className="text-sm font-bold text-fg">Frissítés hetente</h3>
+                      </div>
+                      <p className="text-xs text-muted leading-relaxed">
                         Az AltStore a My Apps fülön mutatja, hány nap van még hátra. Frissíteni a <strong className="text-fg">Refresh All</strong> gombbal tudsz, amíg a gépen fut az AltServer és egy wifin vagytok. Ha a gép otthon be van kapcsolva, az AltStore ezt magától is elintézi. Ha lejárt, és a Pala nem indul el, semmi baj: frissíts, és újra működik.
                       </p>
-                      <p className="text-sm text-muted leading-relaxed">
+                      <p className="text-xs text-muted leading-relaxed">
                         <strong className="text-fg">Új Pala-verzió:</strong> töltsd le újra a <code className="font-mono text-fg">Pala.ipa</code> fájlt, és telepítsd ugyanígy. A régi felülíródik, az adataid megmaradnak.
                       </p>
                     </li>
@@ -938,9 +954,9 @@ dart run bin/pala.dart`}</pre>
 
                   <div className="bg-card border border-border p-5 rounded-2xl space-y-2">
                     <h3 className="text-sm font-bold text-fg">Egyszerűbb út: Sideloadly</h3>
-                    <p className="text-sm text-muted leading-relaxed">
+                    <p className="text-xs text-muted leading-relaxed">
                       A{" "}
-                      <a href="https://sideloadly.io" target="_blank" rel="noopener noreferrer" className="text-fg underline underline-offset-2 hover:text-primary">
+                      <a href="https://sideloadly.io" target="_blank" rel="noopener noreferrer" className="text-primary font-bold hover:underline">
                         Sideloadly
                       </a>{" "}
                       programba csak behúzod a <code className="font-mono text-fg">Pala.ipa</code> fájlt, megadod az Apple ID-det, és kész. Itt a gépre töltsd le a fájlt, ne a telefonra. Windowson ehhez is az Apple weboldaláról letöltött iTunes és iCloud kell, és a 7 napos szabály itt is érvényes.
@@ -949,10 +965,10 @@ dart run bin/pala.dart`}</pre>
 
                   <div className="bg-card border border-border p-5 rounded-2xl space-y-3">
                     <h3 className="text-sm font-bold text-fg flex items-center gap-2">
-                      <HelpCircle size={16} className="text-muted" />
+                      <HelpCircle size={16} className="text-primary" />
                       <span>Gyakori hibák</span>
                     </h3>
-                    <dl className="text-sm text-muted space-y-3 leading-relaxed">
+                    <dl className="text-xs text-muted space-y-3 leading-relaxed">
                       <div>
                         <dt className="font-bold text-fg">Az AltServer nem látja a telefont</dt>
                         <dd>A telefon legyen feloldva és bedugva. Windowson az AltServer rendszergazdaként fusson, és az iTunes-ban legyen bekapcsolva a wifis szinkronizálás.</dd>
@@ -978,17 +994,17 @@ dart run bin/pala.dart`}</pre>
 
                   <div className="bg-card border border-border p-5 rounded-2xl space-y-2">
                     <h3 className="text-sm font-bold text-fg flex items-center gap-2">
-                      <ShieldAlert size={16} className="text-muted" />
+                      <ShieldAlert size={16} className="text-primary" />
                       <span>Mit ne használj?</span>
                     </h3>
-                    <p className="text-sm text-muted leading-relaxed">
+                    <p className="text-xs text-muted leading-relaxed">
                       Az interneten vannak „gép nélkül, örökre, ingyen” megoldások: közösen használt tanúsítványok és „anti-revoke” profilok. A Palához ne használd őket. A profiljuk letiltja az iOS-frissítéseket, így biztonsági javításokat sem kapsz, és egy idegen fiókon múlik, mikor áll le minden app. Egy Kréta-belépést tartalmazó appnál ez nem biztonságos.
                     </p>
                   </div>
 
-                  <p className="text-sm text-muted leading-relaxed px-1">
+                  <p className="text-xs text-muted leading-relaxed px-1">
                     Az iPhone-os telepítés ötletét{" "}
-                    <a href="https://pacuka.hu/" target="_blank" rel="noopener noreferrer" className="text-fg underline underline-offset-2 hover:text-primary">
+                    <a href="https://pacuka.hu/" target="_blank" rel="noopener noreferrer" className="text-primary font-bold hover:underline">
                       Pacukától
                     </a>{" "}
                     kaptuk. Köszönjük!
@@ -1089,7 +1105,7 @@ dart run bin/pala.dart`}</pre>
                     </div>
                     <div className="lg:col-span-7 bg-sidebar border border-border rounded-2xl overflow-hidden">
                       <div className="px-3.5 py-2 bg-bg border-b border-border text-[11px] font-mono text-muted flex items-center justify-between">
-                        <span>Terminal (bash)</span>
+                        <span>Terminál (bash)</span>
                         <button
                           aria-label="Másolás a vágólapra"
                           onClick={() => handleCopy("pala", "linux-run")}
@@ -1130,7 +1146,7 @@ dart run bin/pala.dart`}</pre>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-fg font-semibold">Architektúrák:</span>
-                        <span>x86_64 (amd64) és aarch64 (ARM64 Raspberry Pi 4/5 / Asahi)</span>
+                        <span>Csak x86_64 (amd64)</span>
                       </div>
                     </div>
                   </div>
@@ -1140,7 +1156,7 @@ dart run bin/pala.dart`}</pre>
                     <div className="lg:col-span-5 space-y-1.5">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-xs font-black text-primary">[ 04 ]</span>
-                        <h3 className="text-sm font-bold text-primary">Automatikus Verziókövetés & Frissítés</h3>
+                        <h3 className="text-sm font-bold text-primary">Frissítés új verzióra</h3>
                       </div>
                       <p className="text-xs text-muted leading-relaxed">
                         Csomagkezelő alapú vagy szkriptes frissítés a profiladatok megőrzésével (~/.config/pala).
@@ -1179,7 +1195,7 @@ dart run bin/pala.dart`}</pre>
                     <div className="lg:col-span-7 bg-sidebar border border-border rounded-2xl overflow-hidden divide-y divide-border text-xs">
                       <div className="p-3 space-y-1">
                         <strong className="text-fg block">Script eltávolítás:</strong>
-                        <div className="font-mono text-primary">sudo rm -f /usr/local/bin/pala</div>
+                        <div className="font-mono text-primary break-all">rm -f ~/.local/bin/pala ~/.local/bin/pala-desktop ~/.local/share/applications/pala.desktop && rm -rf ~/.local/share/pala</div>
                       </div>
                       <div className="p-3 space-y-1">
                         <strong className="text-fg block">Eltávolítás (Ubuntu/Debian, .deb):</strong>
@@ -1202,8 +1218,27 @@ dart run bin/pala.dart`}</pre>
               {installTab === "macos" && (
                 <div className="space-y-8">
                   <p className="text-xs text-muted">
-                    Telepítés Homebrew segítségével Apple Silicon (M1/M2/M3/M4) Mac számítógépekre.
+                    Apple Silicon (M1/M2/M3/M4) Mac számítógépekre. Az asztali alkalmazást a DMG-fájllal telepítheted, a parancssori (TUI) változatot Homebrew-val.
                   </p>
+
+                  <div className="bg-card border border-border p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <h3 className="text-sm font-bold text-fg flex items-center gap-2">
+                        <Download size={16} className="text-primary" />
+                        <span>Asztali alkalmazás (DMG)</span>
+                      </h3>
+                      <p className="text-xs text-muted leading-relaxed">
+                        Nyisd meg a letöltött <code className="text-primary font-mono">Pala-macOS.dmg</code> fájlt, és húzd a Pala ikonját az Alkalmazások mappába.
+                      </p>
+                    </div>
+                    <a
+                      href={release.assets.macDmg}
+                      className="inline-flex items-center justify-center gap-2 bg-primary-fill hover:bg-primary-fill-hover text-on-primary font-extrabold text-xs px-4 py-2.5 rounded-xl transition-colors shrink-0"
+                    >
+                      <Download size={14} />
+                      <span>Pala-macOS.dmg letöltése</span>
+                    </a>
+                  </div>
 
                   {/* Step 1 */}
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
@@ -1213,12 +1248,12 @@ dart run bin/pala.dart`}</pre>
                         <h3 className="text-sm font-bold text-fg">Homebrew Telepítés</h3>
                       </div>
                       <p className="text-xs text-muted">
-                        Futtasd a két brew parancsot a Terminálban: az első hozzáadja a Pala tárolóját, a második telepíti a csomagot.
+                        Futtasd a két brew parancsot a Terminálban: az első hozzáadja a Pala tárolóját, a második telepíti a csomagot. A Homebrew csak a parancssori (TUI) változatot telepíti.
                       </p>
                     </div>
                     <div className="lg:col-span-7 bg-sidebar border border-border rounded-2xl overflow-hidden">
                       <div className="px-3.5 py-2 bg-bg border-b border-border text-[11px] font-mono text-muted flex items-center justify-between">
-                        <span>Terminal (zsh)</span>
+                        <span>Terminál (zsh)</span>
                         <button
                           aria-label="Másolás a vágólapra"
                           onClick={() => handleCopy("brew tap CsPS0/pala https://github.com/CsPS0/pala && brew install CsPS0/pala/pala", "mac-cmd")}
@@ -1248,7 +1283,7 @@ dart run bin/pala.dart`}</pre>
                     <div className="lg:col-span-7 bg-card border border-border rounded-2xl p-4 space-y-3 text-xs text-muted">
                       <div className="flex items-center justify-between border-b border-border pb-2">
                         <span className="text-fg font-semibold">Támogatott macOS Verziók:</span>
-                        <span className="text-primary font-mono">macOS 11.0 (Big Sur) vagy újabb</span>
+                        <span className="text-primary font-mono">macOS 12 (Monterey) vagy újabb</span>
                       </div>
                       <div className="flex items-center justify-between border-b border-border pb-2">
                         <span className="text-fg font-semibold">Processzor Architektúrák:</span>
@@ -1270,7 +1305,7 @@ dart run bin/pala.dart`}</pre>
                     <div className="lg:col-span-5 space-y-1.5">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-xs font-black text-primary">[ 03 ]</span>
-                        <h3 className="text-sm font-bold text-primary">Automatikus Verziókövetés & Frissítés</h3>
+                        <h3 className="text-sm font-bold text-primary">Frissítés új verzióra</h3>
                       </div>
                       <p className="text-xs text-muted leading-relaxed">
                         Homebrew vagy DMG alapú frissítés az adatok megőrzésével.
@@ -1304,7 +1339,7 @@ dart run bin/pala.dart`}</pre>
                     </div>
                     <div className="lg:col-span-7 bg-sidebar border border-border rounded-2xl overflow-hidden">
                       <div className="px-3.5 py-2 bg-bg border-b border-border text-[11px] font-mono text-muted flex items-center justify-between">
-                        <span>Terminal (zsh)</span>
+                        <span>Terminál (zsh)</span>
                         <button
                           aria-label="Másolás a vágólapra"
                           onClick={() => handleCopy("brew uninstall pala; rm -rf ~/.config/pala ~/Library/Caches/pala", "mac-uninst")}
@@ -1326,7 +1361,7 @@ dart run bin/pala.dart`}</pre>
               {installTab === "extension" && (
                 <div className="space-y-8">
                   <p className="text-xs text-muted">
-                    Manifest V3 böngészőbővítmény Chrome, Edge, Brave, Opera és Firefox böngészőkhöz.
+                    Manifest V3 böngészőbővítmény Chrome, Edge és Brave böngészőkhöz; Firefoxban csak ideiglenes kiegészítőként, a böngésző újraindításáig.
                   </p>
 
                   {/* Step 1 */}
@@ -1344,7 +1379,7 @@ dart run bin/pala.dart`}</pre>
                       <div className="bg-card border border-border rounded-2xl p-4 flex items-center justify-between">
                         <div>
                           <div className="text-xs font-bold text-fg">Pala Bővítmény Letöltése (.zip)</div>
-                          <div className="text-[11px] text-subtle">Manifest V3 • Chrome, Edge, Brave és Firefox</div>
+                          <div className="text-[11px] text-subtle">Manifest V3 • Chrome, Edge, Brave (Firefox: ideiglenesen)</div>
                         </div>
                         <a
                           href={release.assets.extensionZip}
@@ -1381,7 +1416,7 @@ dart run bin/pala.dart`}</pre>
                     <div className="lg:col-span-7 bg-card border border-border rounded-2xl p-4 space-y-3 text-xs text-muted">
                       <div className="flex items-center justify-between border-b border-border pb-2">
                         <span className="text-fg font-semibold">Támogatott Böngészők:</span>
-                        <span className="text-primary">Google Chrome 88+, Microsoft Edge 88+, Brave, Opera, Vivaldi, Arc</span>
+                        <span className="text-primary">Chrome 114+, Edge 114+, Brave; Firefox csak ideiglenes kiegészítőként</span>
                       </div>
                       <div className="flex items-center justify-between border-b border-border pb-2">
                         <span className="text-fg font-semibold">Bővítmény Architektúra:</span>
@@ -1389,7 +1424,7 @@ dart run bin/pala.dart`}</pre>
                       </div>
                       <div className="flex items-center justify-between border-b border-border pb-2">
                         <span className="text-fg font-semibold">Engedélyek:</span>
-                        <span>Kizárólag a Kréta domainek (*.e-kreta.hu) és helyi böngésző-tárhely (storage)</span>
+                        <span>Csak a *.e-kreta.hu oldalakhoz fér hozzá; engedélyek: storage, alarms, notifications, webNavigation, sidePanel</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-fg font-semibold">Adatvédelem:</span>
@@ -1403,7 +1438,7 @@ dart run bin/pala.dart`}</pre>
                     <div className="lg:col-span-5 space-y-1.5">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-xs font-black text-primary">[ 03 ]</span>
-                        <h3 className="text-sm font-bold text-primary">Automatikus Verziókövetés & Frissítés</h3>
+                        <h3 className="text-sm font-bold text-primary">Frissítés új verzióra</h3>
                       </div>
                       <p className="text-xs text-muted leading-relaxed">
                         A kicsomagolt bővítmény frissítése az újabb verzióra a bejelentkezési adatok megőrzésével.
@@ -1435,7 +1470,7 @@ dart run bin/pala.dart`}</pre>
                         </h3>
                       </div>
                       <p className="text-xs text-muted">
-                        A bővítmény és a tárolt helyi cookie-k azonnali eltávolítása.
+                        A bővítmény és a böngészőben tárolt adatai eltávolítása.
                       </p>
                     </div>
                     <div className="lg:col-span-7 bg-sidebar border border-border rounded-2xl p-4 space-y-1 text-xs text-muted">
@@ -1453,7 +1488,7 @@ dart run bin/pala.dart`}</pre>
             <div className="space-y-8">
               <div>
                 <span className="text-[11px] font-mono font-bold tracking-widest text-primary uppercase block mb-1">
-                  KEZDŐ LÉPÉSEK / HASZNÁLAT
+                  HALADÓKNAK / PARANCSSORI HASZNÁLAT
                 </span>
                 <h1 className="text-3xl sm:text-4xl font-black text-fg tracking-tight mb-3">
                   Használat és Kezelési Útmutató
@@ -1553,7 +1588,7 @@ dart run bin/pala.dart`}</pre>
               <div className="bg-card border border-border p-6 rounded-2xl space-y-4">
                 <div className="flex items-center gap-2 text-sm font-bold text-fg">
                   <Terminal size={16} className="text-primary" />
-                  <span>Hasznos Parancssori Kapcsolók (CLI Flags)</span>
+                  <span>Hasznos parancssori kapcsolók</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
@@ -1595,10 +1630,10 @@ dart run bin/pala.dart`}</pre>
             <div className="space-y-8">
               <div>
                 <span className="text-[11px] font-mono font-bold tracking-widest text-primary uppercase block mb-1">
-                  KEZDŐ LÉPÉSEK / FÁJLOK & KONFIGURÁCIÓK
+                  HALADÓKNAK / FÁJLOK ÉS BEÁLLÍTÁSOK
                 </span>
                 <h1 className="text-3xl sm:text-4xl font-black text-fg tracking-tight mb-3">
-                  Fájlok és Konfigurációk (Files & Configs)
+                  Fájlok és beállítások
                 </h1>
                 <p className="text-sm text-muted leading-relaxed max-w-2xl">
                   Hol tárolja a Pala a konfigurációt, a titkosított session tokeneket és az offline adatbázist az egyes operációs rendszereken, valamint hogyan szerkesztheted őket manuálisan.
@@ -1632,7 +1667,7 @@ dart run bin/pala.dart`}</pre>
                     </div>
                     <div className="p-2.5 bg-sidebar rounded-xl border border-border break-all">
                       <span className="text-subtle">Offline Kréta Gyorsítótár: </span>
-                      <span className="text-primary">%USERPROFILE%\.config\pala\cache.json</span>
+                      <span className="text-primary">%LOCALAPPDATA%\pala\cache\cache.json</span>
                     </div>
                   </div>
                   <div className="text-xs text-muted">
@@ -1666,7 +1701,7 @@ dart run bin/pala.dart`}</pre>
                     </div>
                     <div className="p-2.5 bg-sidebar rounded-xl border border-border break-all">
                       <span className="text-subtle">Offline Kréta Gyorsítótár: </span>
-                      <span className="text-primary">~/.config/pala/cache.json</span>
+                      <span className="text-primary">~/.cache/pala/cache.json</span>
                     </div>
                   </div>
                   <div className="text-xs text-muted">
@@ -1700,7 +1735,7 @@ dart run bin/pala.dart`}</pre>
                     </div>
                     <div className="p-2.5 bg-sidebar rounded-xl border border-border break-all">
                       <span className="text-subtle">Offline Kréta Gyorsítótár: </span>
-                      <span className="text-primary">~/.config/pala/cache.json</span>
+                      <span className="text-primary">~/Library/Caches/pala/cache.json</span>
                     </div>
                   </div>
                   <div className="text-xs text-muted">
@@ -1748,7 +1783,7 @@ dart run bin/pala.dart`}</pre>
                     </div>
                     <div>
                       <h3 className="text-sm sm:text-base font-black text-fg">
-                        Interaktív Konfiguráció Generátor (state.json Builder)
+                        Beállításfájl-készítő (state.json)
                       </h3>
                       <p className="text-xs text-muted">
                         Állítsd be a kívánt értékeket, majd töltsd le vagy másold a kész beállításfájlt egyetlen kattintással.
@@ -1762,7 +1797,7 @@ dart run bin/pala.dart`}</pre>
                   <div className="space-y-2 bg-sidebar border border-border p-4 rounded-xl">
                     <label className="font-bold text-fg block">Felület Témája (themeMode):</label>
                     <div className="flex items-center gap-2">
-                      {(["dark", "light", "system"] as const).map((mode) => (
+                      {(["dark", "light"] as const).map((mode) => (
                         <button
                           key={mode}
                           type="button"
@@ -1775,7 +1810,6 @@ dart run bin/pala.dart`}</pre>
                         >
                           {mode === "dark" && "Sötét"}
                           {mode === "light" && "Világos"}
-                          {mode === "system" && "Rendszer"}
                         </button>
                       ))}
                     </div>
@@ -1976,10 +2010,10 @@ dart run bin/pala.dart`}</pre>
             <div className="space-y-8">
               <div>
                 <span className="text-[11px] font-mono font-bold tracking-widest text-primary uppercase block mb-1">
-                  KEZDŐ LÉPÉSEK / GYORSBILLENTYŰK
+                  HALADÓKNAK / GYORSBILLENTYŰK
                 </span>
                 <h1 className="text-3xl sm:text-4xl font-black text-fg tracking-tight mb-3">
-                  Gyorsbillentyűk (Keybindings)
+                  Gyorsbillentyűk
                 </h1>
                 <p className="text-sm text-muted leading-relaxed max-w-2xl">
                   A billentyűzettel gyorsan elérheted a Pala összes nézetét és műveletét egér használata nélkül is.
@@ -2070,27 +2104,32 @@ dart run bin/pala.dart`}</pre>
             </div>
           )}
 
-                    {/* ================= PAGE: PLATFORM ÖSSZEHASONLÍTÁS ================= */}
+                    {/* ================= PAGE: ELSŐ LÉPÉSEK ================= */}
           {activePage === "kezdoknek" && (
             <div className="space-y-8">
               <div>
-                <span className="text-xs font-bold tracking-widest text-muted uppercase block mb-1">KEZDÉS</span>
+                <span className="text-[11px] font-mono font-bold tracking-widest text-primary uppercase block mb-1">
+                  KEZDÉS / ELSŐ LÉPÉSEK
+                </span>
                 <h1 className="text-3xl sm:text-4xl font-black text-fg tracking-tight mb-3">Első lépések</h1>
-                <p className="text-base text-muted leading-relaxed max-w-2xl">
+                <p className="text-sm text-muted leading-relaxed max-w-2xl">
                   A Pala a Kréta adataidat mutatja meg átláthatóbban: jegyeket, órarendet, hiányzásokat és üzeneteket.
                   Három lépésben kész vagy, és semmit nem kell beállítanod.
                 </p>
               </div>
 
               <ol className="space-y-4">
-                <li className="bg-card border border-border rounded-2xl p-5 sm:p-6">
-                  <h2 className="text-xl font-bold text-fg mb-2">1. Válaszd ki, hol használnád</h2>
-                  <p className="text-base text-muted leading-relaxed mb-4">
-                    Mindegyik ugyanazt tudja. Ha nem tudod eldönteni, a telefonos vagy a számítógépes alkalmazás a legegyszerűbb.
+                <li className="bg-card border border-border p-5 rounded-2xl space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs font-black text-primary">[ 01 ]</span>
+                    <h2 className="text-sm font-bold text-fg">Válaszd ki, hol használnád</h2>
+                  </div>
+                  <p className="text-xs text-muted leading-relaxed">
+                    Mindegyik a Kréta-adataidat mutatja, a különbségekről a „Melyiket válasszam?” oldal ír. Ha nem tudod eldönteni, a telefonos vagy a számítógépes alkalmazás a legegyszerűbb.
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {[
-                      { icon: Smartphone, title: "Telefonon", text: "Androidos telefonra.", tab: "android" },
+                      { icon: Smartphone, title: "Telefonon", text: "Androidra, iPhone-ra kísérletként.", tab: detectedOS === "ios" ? "ios" : "android" },
                       { icon: Monitor, title: "Számítógépen", text: "Windowsra, Macre, Linuxra.", tab: detectedOS === "macos" || detectedOS === "linux" ? detectedOS : "windows" },
                       { icon: Puzzle, title: "Böngészőben", text: "Chrome, Edge vagy Brave.", tab: "extension" },
                     ].map((opt) => (
@@ -2100,40 +2139,49 @@ dart run bin/pala.dart`}</pre>
                         onClick={() => selectPage("installation", opt.tab)}
                         className="text-left bg-sidebar hover:bg-card-hover border border-border hover:border-primary/50 rounded-xl p-4 transition-colors cursor-pointer"
                       >
-                        <opt.icon size={20} className="text-fg mb-2" />
-                        <div className="text-base font-bold text-fg">{opt.title}</div>
-                        <div className="text-sm text-muted">{opt.text}</div>
+                        <opt.icon size={18} className="text-primary mb-2" />
+                        <div className="text-sm font-bold text-fg">{opt.title}</div>
+                        <div className="text-xs text-muted">{opt.text}</div>
                       </button>
                     ))}
                   </div>
                 </li>
 
-                <li className="bg-card border border-border rounded-2xl p-5 sm:p-6">
-                  <h2 className="text-xl font-bold text-fg mb-2">2. Telepítsd</h2>
-                  <p className="text-base text-muted leading-relaxed">
+                <li className="bg-card border border-border p-5 rounded-2xl space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs font-black text-primary">[ 02 ]</span>
+                    <h2 className="text-sm font-bold text-fg">Telepítsd</h2>
+                  </div>
+                  <p className="text-xs text-muted leading-relaxed">
                     A fenti gombok a megfelelő telepítési útmutatóhoz visznek. Számítógépen és telefonon elég elindítani a letöltött
                     fájlt; ha a gép vagy a telefon rákérdez, engedélyezd a telepítést.
                   </p>
                 </li>
 
-                <li className="bg-card border border-border rounded-2xl p-5 sm:p-6">
-                  <h2 className="text-xl font-bold text-fg mb-2">3. Lépj be a Kréta-fiókoddal</h2>
-                  <p className="text-base text-muted leading-relaxed">
-                    Keresd meg az iskoládat, majd lépj be ugyanúgy, mint a Krétába. A belépés a Kréta saját oldalán történik, így a
-                    jelszavadat a Pala nem látja. Ha kétlépcsős azonosítást használsz, az is működik.
+                <li className="bg-card border border-border p-5 rounded-2xl space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs font-black text-primary">[ 03 ]</span>
+                    <h2 className="text-sm font-bold text-fg">Lépj be a Kréta-fiókoddal</h2>
+                  </div>
+                  <p className="text-xs text-muted leading-relaxed">
+                    Keresd meg az iskoládat, majd lépj be ugyanúgy, mint a Krétába. Az alkalmazásban és a bővítményben a belépés a Kréta saját oldalán
+                    történik, így a jelszavadat a Pala nem látja. Ha kétlépcsős azonosítást használsz, az is működik.
                   </p>
                 </li>
               </ol>
 
-              <div className="bg-card border border-border rounded-2xl p-5 sm:p-6">
-                <h2 className="text-xl font-bold text-fg mb-2">Elakadtál?</h2>
-                <p className="text-base text-muted leading-relaxed">
+              <div className="bg-card border border-border p-5 rounded-2xl space-y-2">
+                <h2 className="text-sm font-bold text-fg flex items-center gap-2">
+                  <HelpCircle size={16} className="text-primary" />
+                  <span>Elakadtál?</span>
+                </h2>
+                <p className="text-xs text-muted leading-relaxed">
                   Nézd meg a{" "}
-                  <button type="button" onClick={() => selectPage("troubleshooting")} className="text-fg font-bold underline cursor-pointer">
+                  <button type="button" onClick={() => selectPage("troubleshooting")} className="text-primary font-bold hover:underline cursor-pointer">
                     gyakori kérdéseket
                   </button>
                   , vagy azt, hogy{" "}
-                  <button type="button" onClick={() => selectPage("platformvalasztas")} className="text-fg font-bold underline cursor-pointer">
+                  <button type="button" onClick={() => selectPage("platformvalasztas")} className="text-primary font-bold hover:underline cursor-pointer">
                     melyik változat illik hozzád
                   </button>
                   .
@@ -2146,13 +2194,13 @@ dart run bin/pala.dart`}</pre>
             <div className="space-y-8">
               <div>
                 <span className="text-[11px] font-mono font-bold tracking-widest text-primary uppercase block mb-1">
-                  VÁLTOZATOK / PLATFORM ÖSSZEHASONLÍTÁS
+                  KEZDÉS / MELYIKET VÁLASSZAM?
                 </span>
                 <h1 className="text-3xl sm:text-4xl font-black text-fg tracking-tight mb-3">
                   Melyik Pala verziót válasszam?
                 </h1>
                 <p className="text-sm text-muted leading-relaxed max-w-2xl">
-                  A Pala önálló felületeken (TUI, Desktop, Mobile, helyi Web UI és Böngésző Kiterjesztés) érhető el, amelyek ugyanazt a titkosított, helyi adattárolást és közvetlen Kréta-kapcsolatot használják, de eltérő
+                  A Pala önálló felületeken (TUI, Desktop, Mobile, helyi Web UI és Böngészőbővítmény) érhető el, amelyek ugyanazt a titkosított, helyi adattárolást és közvetlen Kréta-kapcsolatot használják, de eltérő
                   célra és fejlettségi szinten állnak. Az alábbi táblázat és a platformonkénti előnyök/hátrányok segítenek eldönteni, melyik illik hozzád.
                 </p>
               </div>
@@ -2165,9 +2213,9 @@ dart run bin/pala.dart`}</pre>
                       <tr className="bg-sidebar text-muted uppercase text-[10px] tracking-wider">
                         <th className="p-3 font-bold">Szempont</th>
                         <th className="p-3 font-bold text-primary">TUI</th>
-                        <th className="p-3 font-bold text-primary">Desktop (Flutter)</th>
-                        <th className="p-3 font-bold text-primary">Mobile (Flutter)</th>
-                        <th className="p-3 font-bold text-primary">Böngésző Kiterjesztés</th>
+                        <th className="p-3 font-bold text-primary">Asztali (Flutter)</th>
+                        <th className="p-3 font-bold text-primary">Mobil (Flutter)</th>
+                        <th className="p-3 font-bold text-primary">Böngészőbővítmény</th>
                       </tr>
                     </thead>
                     <tbody className="text-muted">
@@ -2183,7 +2231,7 @@ dart run bin/pala.dart`}</pre>
                         <td className="p-3">Egyetlen bináris</td>
                         <td className="p-3">Telepítő / bundle</td>
                         <td className="p-3">Android: APK • iOS: IPA (kísérleti)</td>
-                        <td className="p-3">Nulla telepítés</td>
+                        <td className="p-3">ZIP betöltése fejlesztői módban</td>
                       </tr>
                       <tr className="border-t border-border">
                         <td className="p-3 font-semibold text-fg">Vizualizációk</td>
@@ -2203,7 +2251,7 @@ dart run bin/pala.dart`}</pre>
                         <td className="p-3 font-semibold text-fg">Háttér-értesítés (új jegy)</td>
                         <td className="p-3"><CheckCircle2 size={14} className="text-primary" /> <span className="text-[10px]">(daemon)</span></td>
                         <td className="p-3"><AlertTriangle size={14} className="text-primary" /> <span className="text-[10px]">fejlesztés alatt</span></td>
-                        <td className="p-3"><AlertTriangle size={14} className="text-primary" /> <span className="text-[10px]">fejlesztés alatt</span></td>
+                        <td className="p-3"><CheckCircle2 size={14} className="text-primary" /> <span className="text-[10px]">Android: igen, iPhone: nem</span></td>
                         <td className="p-3">Csak nyitott böngésző mellett</td>
                       </tr>
                       <tr className="border-t border-border">
@@ -2239,7 +2287,7 @@ dart run bin/pala.dart`}</pre>
                   <strong className="text-fg">Miért nem egyenlő még minden platform tudása?</strong> A Desktop és Mobile alkalmazás közös Flutter
                   kódbázisra épül, és ugyanazt a hálózati/titkosítási réteget használja, mint a TUI — de a felhasználói felületet nulláról építjük újra
                   minden nézethez, ezért egyes régebb óta létező TUI-funkciók (pl. Git-alapú jegytörténet export, heti jegy-hőtérkép, több profil közötti
-                  gyors váltás, automatikus háttér-értesítés) még nincsenek átportolva. Ezek folyamatosan kerülnek át — addig is a TUI és a Böngésző
+                  gyors váltás, asztali háttér-értesítés) még nincsenek átportolva. Ezek folyamatosan kerülnek át — addig is a TUI és a Böngésző
                   Kiterjesztés számít a legteljesebb, leginkább kiforrott verziónak.
                 </p>
               </div>
@@ -2286,7 +2334,7 @@ dart run bin/pala.dart`}</pre>
                     <div className="flex items-start gap-2 text-xs text-muted"><CheckCircle2 size={13} className="text-primary shrink-0 mt-0.5" /><span>Natív érintéses felület, reklám és nyomkövetés nélkül.</span></div>
                     <div className="flex items-start gap-2 text-xs text-muted"><CheckCircle2 size={13} className="text-primary shrink-0 mt-0.5" /><span>Android: közvetlen APK letöltés, telepítés áruházi engedélyek nélkül is.</span></div>
                     <div className="flex items-start gap-2 text-xs text-muted"><AlertTriangle size={13} className="text-primary shrink-0 mt-0.5" /><span>Az iOS-változat kísérleti: aláíratlan IPA, amelyet a felhasználó a saját ingyenes Apple ID-jével tesz fel (AltStore vagy Sideloadly), és 7 naponta frissíteni kell. Weboldalként (PWA) a Safari CORS-szabályai miatt nem érhetné el a Krétát köztes szerver nélkül, ami adatvédelmileg kizárt.</span></div>
-                    <div className="flex items-start gap-2 text-xs text-muted"><AlertTriangle size={13} className="text-primary shrink-0 mt-0.5" /><span>Háttérben futó automatikus értesítés (új jegy figyelése) mobilon még nem elérhető — ez platformonként (Android WorkManager, iOS Background App Refresh) külön megoldást igényel.</span></div>
+                    <div className="flex items-start gap-2 text-xs text-muted"><AlertTriangle size={13} className="text-primary shrink-0 mt-0.5" /><span>Háttér-értesítés (új jegy, elmaradó óra) Androidon működik; iPhone-on az adatok csak megnyitáskor frissülnek.</span></div>
                   </div>
                 </div>
 
@@ -2294,10 +2342,10 @@ dart run bin/pala.dart`}</pre>
                 <div className="bg-card border border-border rounded-2xl p-5 space-y-3">
                   <div className="flex items-center gap-2 text-sm font-bold text-primary">
                     <Puzzle size={16} />
-                    <span>Böngésző Kiterjesztés</span>
+                    <span>Böngészőbővítmény</span>
                   </div>
                   <div className="space-y-1.5">
-                    <div className="flex items-start gap-2 text-xs text-muted"><CheckCircle2 size={13} className="text-primary shrink-0 mt-0.5" /><span>Nulla telepítés (nincs .exe/.apk), azonnal használható a böngésző eszköztárból.</span></div>
+                    <div className="flex items-start gap-2 text-xs text-muted"><CheckCircle2 size={13} className="text-primary shrink-0 mt-0.5" /><span>Nincs telepítőprogram: a ZIP-et fejlesztői módban töltöd be, utána a böngésző eszköztárából elérhető.</span></div>
                     <div className="flex items-start gap-2 text-xs text-muted"><CheckCircle2 size={13} className="text-primary shrink-0 mt-0.5" /><span>Csendes token-megújítás oldja fel a hivatalos Kréta weboldal 40–60 perces időkorlátját.</span></div>
                     <div className="flex items-start gap-2 text-xs text-muted"><CheckCircle2 size={13} className="text-primary shrink-0 mt-0.5" /><span>Mini popup gyorsnézet + teljes vezérlőpult, 429-kezeléssel és cache-first tartalékkal terhelés esetén.</span></div>
                     <div className="flex items-start gap-2 text-xs text-muted"><AlertTriangle size={13} className="text-primary shrink-0 mt-0.5" /><span>Chrome, Edge és Brave alatt fut; Firefoxon csak ideiglenes kiegészítőként, a böngésző újraindításáig.</span></div>
@@ -2309,7 +2357,7 @@ dart run bin/pala.dart`}</pre>
                 <div className="bg-card border border-border rounded-2xl p-5 space-y-3 md:col-span-2">
                   <div className="flex items-center gap-2 text-sm font-bold text-primary">
                     <AppWindow size={16} />
-                    <span>Helyi Webes Felület (Localhost Web UI — pala --web / pala -w)</span>
+                    <span>Helyi webes felület (pala --web / pala -w)</span>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-muted">
                     <div className="space-y-1.5">
@@ -2333,9 +2381,9 @@ dart run bin/pala.dart`}</pre>
                 </div>
                 <ul className="space-y-1.5 text-xs text-muted">
                   <li><strong className="text-fg">Ha minden funkció kell és nem zavar a terminál:</strong> TUI.</li>
-                  <li><strong className="text-fg">Ha csak gyorsan bele akarsz nézni a jegyeidbe böngészőből, telepítés nélkül:</strong> Böngésző Kiterjesztés.</li>
-                  <li><strong className="text-fg">Ha grafikus felületet szeretnél asztali gépen, és elfogadod, hogy pár TUI-funkció még hiányzik:</strong> Desktop App.</li>
-                  <li><strong className="text-fg">Ha telefonon/tableten szeretnéd használni:</strong> Mobile App (Android APK, iPhone-ra kísérleti telepítés AltStore-ral).</li>
+                  <li><strong className="text-fg">Ha csak gyorsan bele akarsz nézni a jegyeidbe a böngészőből:</strong> Böngészőbővítmény.</li>
+                  <li><strong className="text-fg">Ha grafikus felületet szeretnél asztali gépen, és elfogadod, hogy pár TUI-funkció még hiányzik:</strong> Asztali alkalmazás.</li>
+                  <li><strong className="text-fg">Ha telefonon/tableten szeretnéd használni:</strong> Mobil alkalmazás (Android APK, iPhone-ra kísérleti telepítés AltStore-ral).</li>
                 </ul>
               </div>
             </div>
@@ -2346,7 +2394,7 @@ dart run bin/pala.dart`}</pre>
             <div className="space-y-8">
               <div>
                 <span className="text-[11px] font-mono font-bold tracking-widest text-primary uppercase block mb-1">
-                  VÁLTOZATOK / TUI
+                  HALADÓKNAK / PARANCSSORI VÁLTOZAT
                 </span>
                 <h1 className="text-3xl sm:text-4xl font-black text-fg tracking-tight mb-3">
                   Pala TUI (Terminálos Felület)
@@ -2412,7 +2460,7 @@ dart run bin/pala.dart`}</pre>
             <div className="space-y-8">
               <div>
                 <span className="text-[11px] font-mono font-bold tracking-widest text-primary uppercase block mb-1">
-                  VÁLTOZATOK / DESKTOP APP
+                  VÁLTOZATOK / SZÁMÍTÓGÉPES ALKALMAZÁS
                 </span>
                 <h1 className="text-3xl sm:text-4xl font-black text-fg tracking-tight mb-3">
                   Pala Desktop (Grafikus Asztali Alkalmazás)
@@ -2473,7 +2521,7 @@ dart run bin/pala.dart`}</pre>
             <div className="space-y-8">
               <div>
                 <span className="text-[11px] font-mono font-bold tracking-widest text-primary uppercase block mb-1">
-                  VÁLTOZATOK / MOBILE APP
+                  VÁLTOZATOK / TELEFONOS ALKALMAZÁS
                 </span>
                 <h1 className="text-3xl sm:text-4xl font-black text-fg tracking-tight mb-3">
                   Pala Mobile (Mobil Alkalmazás)
@@ -2520,8 +2568,8 @@ dart run bin/pala.dart`}</pre>
                       A hivatalos vagy egyéb alternatív appokkal szemben teljesen reklámmentes, nulla analitikával.
                     </li>
                     <li className="p-2.5 bg-sidebar rounded-xl border border-border">
-                      <strong className="text-fg block mb-0.5">9:16 Story Megosztás:</strong>
-                      Év végi Pala Wrapped összefoglaló generálása, közvetlen megosztással Instagram és Facebook történetekbe.
+                      <strong className="text-fg block mb-0.5">9:16-os kép mentése:</strong>
+                      Az év végi Pala Wrapped összefoglalót képként elmentheted, és onnan megoszthatod.
                     </li>
                   </ul>
                 </div>
@@ -2534,10 +2582,10 @@ dart run bin/pala.dart`}</pre>
             <div className="space-y-8">
               <div>
                 <span className="text-[11px] font-mono font-bold tracking-widest text-primary uppercase block mb-1">
-                  VÁLTOZATOK / BÖNGÉSZŐ KITERJESZTÉS
+                  VÁLTOZATOK / BÖNGÉSZŐBŐVÍTMÉNY
                 </span>
                 <h1 className="text-3xl sm:text-4xl font-black text-fg tracking-tight mb-3">
-                  Pala Böngésző Kiterjesztés
+                  Pala Böngészőbővítmény
                 </h1>
                 <p className="text-sm text-muted leading-relaxed max-w-2xl">
                   A Pala Manifest V3 alapú kiterjesztése közvetlenül a böngésződben (Chrome, Brave, Edge) teszi elérhetővé a Kréta összes funkcióját és elemzését.
@@ -2643,9 +2691,9 @@ dart run bin/pala.dart`}</pre>
                   </div>
 
                   <div className="p-4 bg-sidebar border border-primary/30 rounded-xl space-y-2">
-                    <strong className="text-primary block">1-Kattintásos Automatikus Beolvasás Nyitott Kréta Lapról</strong>
+                    <strong className="text-primary block">Hiányzó adatok kézi kitöltése</strong>
                     <p>
-                      Ha a böngésződben meg van nyitva a hivatalos Kréta webes lapod (ahol a banki és okmány adatok látszanak), elegendő az <strong>„Adatok automatikus beolvasása nyitott Kréta lapról”</strong> gombra kattintani. A kiterjesztés automatikusan felismeri a bankszámla formátumot, az adóazonosítót, a TAJ-számot, az OM azonosítót és a személyes adatokat, és azonnal betölti őket a szerkesztőbe.
+                      Amit a Kréta mobil API nem ad át (például bankszámlaszám, adóazonosító, TAJ-szám), azt a <strong>„Profil Szerkesztése”</strong> gombbal magad töltheted ki.
                     </p>
                     <p>
                       A mentett adatok kizárólag a te böngésződ helyi tárhelyében (<code className="text-primary font-mono">chrome.storage.local.pala_student_extra</code>) tárolódnak, és a <strong>„Kréta adatok visszaállítása”</strong> gombbal bármikor visszaállíthatók a gyári állapotra.
@@ -2707,10 +2755,10 @@ dart run bin/pala.dart`}</pre>
             <div className="space-y-8">
               <div>
                 <span className="text-[11px] font-mono font-bold tracking-widest text-primary uppercase block mb-1">
-                  VÁLTOZATOK / WEBES FELÜLET (WEB UI)
+                  HALADÓKNAK / HELYI WEBES FELÜLET
                 </span>
                 <h1 className="text-3xl sm:text-4xl font-black text-fg tracking-tight mb-3">
-                  Pala Webes Felület (Localhost Web UI)
+                  Pala helyi webes felület
                 </h1>
                 <p className="text-sm text-muted leading-relaxed max-w-2xl">
                   Grafikus böngészős Kréta felület a gép helyi loopback hálózatán futtatva. Nem igényel bővítményt vagy felhős regisztrációt, és bármilyen operációs rendszeren, bármelyik modern böngészőben azonnal használható.
@@ -2743,7 +2791,7 @@ dart run bin/pala.dart`}</pre>
                 <div className="bg-card border border-border p-5 rounded-2xl space-y-3">
                   <div className="flex items-center gap-2 text-sm font-bold text-primary">
                     <ShieldCheck size={16} />
-                    <span>Zero-Cloud Adatvédelmi Modell</span>
+                    <span>Felhő nélküli adatvédelmi modell</span>
                   </div>
                   <div className="space-y-2 text-xs text-muted">
                     <div className="p-2.5 bg-sidebar rounded-xl border border-border">
@@ -2790,13 +2838,13 @@ dart run bin/pala.dart`}</pre>
             <div className="space-y-8">
               <div>
                 <span className="text-[11px] font-mono font-bold tracking-widest text-primary uppercase block mb-1">
-                  BIZTONSÁG & ARCHITEKTÚRA / TITKOSÍTÁS
+                  FEJLESZTŐKNEK / KRÉTA API ÉS TITKOSÍTÁS
                 </span>
                 <h1 className="text-3xl sm:text-4xl font-black text-fg tracking-tight mb-3">
                   Biztonság és Adatvédelem
                 </h1>
                 <p className="text-sm text-muted leading-relaxed max-w-2xl">
-                  A Pala kliensoldali Zero-Knowledge elven működik. Nincsenek köztes adatbázisok vagy követők.
+                  A Pala kliensoldalon működik: rajtad kívül senki nem látja az adataidat. Nincsenek köztes adatbázisok vagy követők.
                 </p>
               </div>
 
@@ -2824,7 +2872,7 @@ dart run bin/pala.dart`}</pre>
                 <div className="flex items-start gap-3">
                   <CheckCircle2 size={16} className="text-primary shrink-0 mt-0.5" />
                   <div>
-                    <strong className="text-fg block text-xs">Zero Telemetry</strong>
+                    <strong className="text-fg block text-xs">Nincs telemetria</strong>
                     <span className="text-xs text-muted">
                       Semmilyen analitikai vagy viselkedéskövető kód nincs a programban.
                     </span>
@@ -2832,7 +2880,7 @@ dart run bin/pala.dart`}</pre>
                 </div>
               </div>
 
-              {/* Zero-Proxy Architecture Comparison Diagram */}
+              {/* No-proxy architecture comparison diagram */}
               <div className="bg-card border border-border p-6 rounded-2xl space-y-5">
                 <div className="flex items-center gap-2 text-sm font-bold text-fg">
                   <ShieldAlert size={16} className="text-primary" />
@@ -2885,7 +2933,7 @@ dart run bin/pala.dart`}</pre>
                   <div className="p-4 bg-primary/5 border border-primary/30 rounded-xl space-y-3">
                     <div className="flex items-center gap-2 text-xs font-bold text-primary">
                       <CheckCircle2 size={15} />
-                      <span>Pala Zero-Proxy Modell (kliensoldali TLS 1.3)</span>
+                      <span>Pala: köztes szerver nélkül (kliensoldali TLS)</span>
                     </div>
 
                     {/* Flow Diagram */}
@@ -2933,7 +2981,7 @@ dart run bin/pala.dart`}</pre>
             <div className="space-y-8">
               <div>
                 <span className="text-[11px] font-mono font-bold tracking-widest text-primary uppercase block mb-1">
-                  BIZTONSÁG & ARCHITEKTÚRA / GYIK
+                  KEZDÉS / GYAKORI KÉRDÉSEK
                 </span>
                 <h1 className="text-3xl sm:text-4xl font-black text-fg tracking-tight mb-3">
                   Hibaelhárítás és Gyakori Kérdések (GYIK)
@@ -2950,7 +2998,7 @@ dart run bin/pala.dart`}</pre>
                     <ServerOff size={20} className="text-primary shrink-0 mt-0.5" />
                     <div>
                       <h3 className="text-sm font-bold text-fg leading-snug">
-                        Miért nincs nyilvános felhős weboldal (Hosted Web App) a Palából?
+                        Miért nincs a Palából online, böngészőben futó változat?
                       </h3>
                       <span className="text-[11px] text-primary font-semibold">Adatvédelmi (GDPR) és jogi határok a Kréta rendszerrel</span>
                     </div>
@@ -2964,7 +3012,7 @@ dart run bin/pala.dart`}</pre>
                       Egy ilyen központi szerver üzemeltetése azt jelentené, hogy <strong>több tízezer magyar diák és szülő felhasználóneve, jelszava, jegyei, hiányzásai és személyes adatai</strong> ezen a külső szerveren keresztül áramlanának. Ez súlyos GDPR adatvédelmi kockázatot teremtene, a fejlesztőt adatfeldolgozóvá tenné, amihez szülői és hatósági engedélyek kellenének.
                     </p>
                     <div className="p-3 bg-sidebar rounded-xl border border-border text-primary font-semibold">
-                      Ezért a Pala kizárólag <strong>kliensoldali alkalmazásként</strong> (Windows, Linux, macOS, Android, Böngésző Bővítmény) érhető el: az adataid közvetlenül a te saját eszközödről kommunikálnak a hivatalos Kréta szerverrel, köztes szerverek nélkül!
+                      Ezért a Pala kizárólag <strong>kliensoldali alkalmazásként</strong> (Windows, Linux, macOS, Android, iPhone, böngészőbővítmény) érhető el: az adataid közvetlenül a te saját eszközödről kommunikálnak a hivatalos Kréta szerverrel, köztes szerverek nélkül!
                     </div>
                     <p>
                       <strong className="text-fg">Ezért nincs iPhone-ra weboldalas változat sem:</strong> a Safari nem engedi, hogy egy weboldal köztes szerver nélkül beszéljen a Krétával. iPhone-ra ezért natív alkalmazás készül, amelyet App Store nélkül, a saját ingyenes Apple ID-ddel telepíthetsz (kísérleti, részletek a Telepítés &rarr; iOS fülön).
@@ -2990,10 +3038,10 @@ dart run bin/pala.dart`}</pre>
                     <span>Miért jelez a Windows SmartScreen vagy az Android Play Protect?</span>
                   </div>
                   <p className="text-xs text-muted leading-relaxed mt-2 sm:pl-6">
-                    A Pala egy nonprofit, közösségi nyílt forráskódú projekt, így nem rendelkezik évi többszázezer forintos Microsoft/Google EV digitális aláíró tanúsítvánnyal. A forráskód nyilvános és ellenőrizhető a GitHubon. Windows alatt kattints a <strong>„További információ”</strong> &gt; <strong>„Futtatás mindenképpen”</strong> gombra.
+                    A Pala egy nonprofit, közösségi nyílt forráskódú projekt, így nem rendelkezik évi több százezer forintos Microsoft/Google EV digitális aláíró tanúsítvánnyal. A forráskód nyilvános és ellenőrizhető a GitHubon. Windows alatt kattints a <strong>„További információ”</strong> &gt; <strong>„Futtatás mindenképpen”</strong> gombra.
                   </p>
                   <p className="text-xs text-muted leading-relaxed mt-2 sm:pl-6">
-                    Ezt csak akkor tedd, ha a fájlt a <strong>pala-app.hu</strong> oldalról vagy a GitHub Releases oldalról töltötted le, soha ne más által küldött példányt futtass. Minden kiadás mellett ott a <strong>SHA256SUMS</strong> fájl: a letöltött fájl ellenőrző összegének egyeznie kell a benne szereplővel. Windowson: <code className="font-mono text-primary">Get-FileHash .\Pala-Setup.exe</code>, macOS-en és Linuxon: <code className="font-mono text-primary">shasum -a 256 -c SHA256SUMS --ignore-missing</code>.
+                    Ezt csak akkor tedd, ha a fájlt a <strong>pala-app.hu</strong> oldalról vagy a GitHub Releases oldalról töltötted le, soha ne más által küldött példányt futtass. Minden kiadás mellett ott a <strong>SHA256SUMS</strong> fájl: a letöltött fájl ellenőrző összegének egyeznie kell a benne szereplővel. Windowson: <code className="font-mono text-primary">Get-FileHash .\Pala-Setup.exe</code>, Linuxon: <code className="font-mono text-primary">sha256sum -c SHA256SUMS --ignore-missing</code>, macOS-en: <code className="font-mono text-primary">shasum -a 256 -c SHA256SUMS --ignore-missing</code>.
                   </p>
                 </div>
 
@@ -3022,7 +3070,7 @@ dart run bin/pala.dart`}</pre>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                     <div className="p-4 bg-sidebar border border-border rounded-xl space-y-2">
                       <div className="flex items-center justify-between">
-                        <strong className="text-primary font-mono text-xs">HTTP 429 • Too Many Requests</strong>
+                        <strong className="text-primary font-mono text-xs">HTTP 429 • Túl sok kérés</strong>
                         <span className="text-[10px] bg-primary/15 text-primary px-2 py-0.5 rounded font-bold">Kéréskorlát</span>
                       </div>
                       <p className="text-[11px] text-muted leading-relaxed">
@@ -3032,7 +3080,7 @@ dart run bin/pala.dart`}</pre>
 
                     <div className="p-4 bg-sidebar border border-border rounded-xl space-y-2">
                       <div className="flex items-center justify-between">
-                        <strong className="text-primary font-mono text-xs">HTTP 502 / 503 / 504 • Server Error</strong>
+                        <strong className="text-primary font-mono text-xs">HTTP 502 / 503 / 504 • Szerverhiba</strong>
                         <span className="text-[10px] bg-primary/15 text-primary px-2 py-0.5 rounded font-bold">Leállás / Karbantartás</span>
                       </div>
                       <p className="text-[11px] text-muted leading-relaxed">
@@ -3053,7 +3101,7 @@ dart run bin/pala.dart`}</pre>
                     <div className="p-4 bg-sidebar border border-border rounded-xl space-y-2">
                       <div className="flex items-center justify-between">
                         <strong className="text-primary font-mono text-xs">Hálózati Kimaradás & Offline Mód</strong>
-                        <span className="text-[10px] bg-primary/15 text-primary px-2 py-0.5 rounded font-bold">3x Retry</span>
+                        <span className="text-[10px] bg-primary/15 text-primary px-2 py-0.5 rounded font-bold">3 újrapróbálás</span>
                       </div>
                       <p className="text-[11px] text-muted leading-relaxed">
                         Ha az iskolai WiFi vagy mobilnet megszakad, a Pala 3 lépésben (1s, 2s, 4s késleltetéssel) exponenciális újrapróbálkozást végez. Ha a hálózat nem tér vissza, automatikusan offline módra vált a mentett adatokkal.

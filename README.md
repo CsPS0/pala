@@ -65,7 +65,12 @@ Gyorsabb indításhoz lefordíthatod natívan is: `dart compile exe bin/pala.dar
 2. Nyisd meg a `chrome://extensions` (Edge alatt `edge://extensions`) oldalt, és kapcsold be a Fejlesztői módot.
 3. Kattints a „Kicsomagolt betöltése” gombra, és válaszd ki a mappát.
 
-### Telepítők (az első kiadástól)
+### Telepítők
+
+A kész telepítők a [legfrissebb kiadásnál](https://github.com/CsPS0/pala/releases/latest) vannak, lépésről lépésre a [weboldal útmutatójában](https://pala-app.hu/docs?page=installation).
+
+- **Android**: töltsd le a `pala-universal.apk` fájlt a telefonon, nyisd meg, és engedélyezd a telepítést, ha a telefon rákérdez.
+- **iPhone (kísérleti)**: a `Pala.ipa` App Store nélkül, a saját ingyenes Apple ID-ddel tehető fel AltStore-ral vagy Sideloadlyval, és 7 naponta frissíteni kell. Útmutató: [pala-app.hu/docs#inst-ios](https://pala-app.hu/docs#inst-ios).
 
 <details>
 <summary>Windows, Linux, macOS és csomagkezelők</summary>
@@ -114,6 +119,7 @@ Gyorsabb indításhoz lefordíthatod natívan is: `dart compile exe bin/pala.dar
 pala              # terminálos felület
 pala --desktop    # asztali alkalmazás (röviden: pala -g)
 pala dash         # közvetlenül az élő dashboard
+pala --web        # helyi webes felület a böngészőben (röviden: pala -w)
 pala --demo       # demó profil (Teszt Elek), bejelentkezés nélkül
 pala --daemon     # háttérfolyamat az értesítésekhez
 pala --help       # az összes kapcsoló
@@ -123,7 +129,7 @@ A parancsikonok, a PATH, a gyorsítótár törlése és az eltávolítás a [Fel
 
 ## Adatvédelem
 
-A Pala csak a hivatalos Kréta szerverekkel kommunikál, és frissítések ellenőrzéséhez a GitHubbal. Az adataid a saját gépeden maradnak, a bejelentkezési tokenek titkosítva, telemetria és analitika nélkül.
+A Pala csak a hivatalos Kréta szerverekkel kommunikál, és frissítések ellenőrzéséhez a GitHubbal. Az adataid a saját eszközödön maradnak, a bejelentkezési tokenek titkosítva, telemetria és analitika nélkül.
 
 - [Adatkezelés és biztonság](docs/DATA_SECURITY.md): mit, hol és hogyan tárol a Pala, és hogyan törölheted.
 - [Adatvédelmi szabályzat](docs/PRIVACY_POLICY.md)

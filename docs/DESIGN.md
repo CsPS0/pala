@@ -2,7 +2,7 @@
 
 ## 1. Project Overview & Architectural Vision
 - **App Name**: Pala (Open-Source Kréta e-Napló Client)
-- **Framework**: Flutter (Dart) — Single codebase targeting Android, iOS, Windows, macOS, and Linux.
+- **Framework**: Flutter (Dart) — Single codebase targeting Android, iOS (experimental, sideloaded), Windows, macOS, and Linux.
 - **Core Principle**: **One Codebase, Adaptive Layouts**. Mobile portrait and desktop landscape views run off the exact same business logic and state management layer, dynamically adapting based on screen constraints.
 - **Privacy & Security Guarantee**: All Kréta API credentials, tokens, grades, and personal student data remain strictly localized on device storage. Zero external telemetry or third-party tracking.
 
@@ -58,9 +58,9 @@
 
 ---
 
-## 5. Development Guidelines for AI Agents (Antigravity & Claude Code)
+## 5. Development Guidelines (for contributors and AI coding assistants)
 
-1. **State Isolation**: Separate UI widgets from business logic (`Bloc` / `Provider` / `Riverpod`).
-2. **Adaptive Widgets**: Use `LayoutBuilder` or `MediaQuery.sizeOf(context).width` to swap UI branches cleanly.
+1. **State Isolation**: Keep business logic out of widgets. App state lives in `AppModel` (`app/lib/state/app_model.dart`, a `ChangeNotifier`); calculation rules live in the shared core (`lib/rules/`), not in views. Do not add a state-management package for new screens.
+2. **Adaptive Widgets**: Use the helpers in `app/lib/core/adaptive/` (or `LayoutBuilder` / `MediaQuery.sizeOf(context).width`) to swap UI branches cleanly.
 3. **Overflow Prevention**: Wrap list content in `SingleChildScrollView` or `Flexible`/`Expanded` widgets to avoid `RenderFlex` yellow-and-black stripes on edge-case window dimensions.
 4. **Dart Strict Null Safety**: Ensure all Kréta JSON parser models handle missing or null fields gracefully with default fallback values.

@@ -41,7 +41,7 @@ export function DocsNewSections({ activePage, onSelectPage }: DocsNewSectionsPro
       <div className="space-y-8 min-w-0 w-full">
         <div>
           <span className="text-[11px] font-mono font-bold tracking-widest text-primary uppercase block mb-1">
-            FUNKCIÓ ÚTMUTATÓK / VEZÉRLŐPULT & ÓRAREND
+            HASZNÁLAT / VEZÉRLŐPULT ÉS ÓRAREND
           </span>
           <h1 className="text-2xl sm:text-4xl font-black text-fg tracking-tight mb-3">
             Élő Vezérlőpult és Órarend Kezelés
@@ -52,7 +52,7 @@ export function DocsNewSections({ activePage, onSelectPage }: DocsNewSectionsPro
           </p>
         </div>
 
-        <DocCallout type="note" title="Valós Idejű Órafigyelő (CountdownHeroCard)">
+        <DocCallout type="note" title="Valós idejű órafigyelő">
           Az Élő Vezérlőpult automatikusan felismeri az aktuális tanítási órát vagy óraközi szünetet,
           és másodperces pontosságú folyamatjelző sávval mutatja a hátralévő időt, a teremszámot és
           az oktató nevét.
@@ -62,7 +62,7 @@ export function DocsNewSections({ activePage, onSelectPage }: DocsNewSectionsPro
         <section id="elo-orafigyelo" className="bg-card border border-border rounded-2xl p-5 sm:p-6 space-y-4">
           <div className="flex items-center gap-2 text-sm font-bold text-fg">
             <Clock size={16} className="text-primary" />
-            <h2>1. Élő Óra-visszaszámláló (CountdownHeroCard)</h2>
+            <h2>1. Élő óra-visszaszámláló</h2>
           </div>
           <p className="text-xs text-muted leading-relaxed">
             A Vezérlőpult tetején elhelyezkedő <code className="text-primary font-mono">CountdownHeroCard</code> három
@@ -102,7 +102,7 @@ export function DocsNewSections({ activePage, onSelectPage }: DocsNewSectionsPro
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
             <div className="p-4 rounded-xl bg-primary/[0.06] border border-primary/40 space-y-1.5">
               <div className="flex items-center justify-between">
-                <strong className="text-primary">Helyettesítés (Substitution)</strong>
+                <strong className="text-primary">Helyettesítés</strong>
                 <span className="text-[10px] font-mono bg-primary/20 text-primary px-2 py-0.5 rounded font-bold">
                   HELYETTESÍTÉS
                 </span>
@@ -114,7 +114,7 @@ export function DocsNewSections({ activePage, onSelectPage }: DocsNewSectionsPro
             </div>
             <div className="p-4 rounded-xl bg-primary/[0.06] border border-primary/40 space-y-1.5">
               <div className="flex items-center justify-between">
-                <strong className="text-primary">Elmaradó óra (Cancelled)</strong>
+                <strong className="text-primary">Elmaradó óra</strong>
                 <span className="text-[10px] font-mono bg-primary/20 text-primary px-2 py-0.5 rounded font-bold">
                   ELMARAD
                 </span>
@@ -139,20 +139,20 @@ export function DocsNewSections({ activePage, onSelectPage }: DocsNewSectionsPro
           <CodeBlock
             title="Órarend exportálása Google / Apple / Outlook naptárhoz"
             language="bash"
-            code={`# Exportálás az alapértelmezett orarend.ics fájlba:
-pala --export-ics orarend.ics
+            code={`# Indítsd az élő TUI-t:
+pala dash
 
-# TUI felületen belül az Órarend [3] fülön nyomd meg az [e] billentyűt!`}
+# Az Órarend [3] fülön nyomd meg az [e] billentyűt.`}
           />
         </section>
 
         <div className="flex items-center justify-between pt-4 border-t border-border">
           <button
             type="button"
-            onClick={() => onSelectPage("installation")}
+            onClick={() => onSelectPage("troubleshooting")}
             className="text-xs font-bold text-muted hover:text-fg cursor-pointer"
           >
-            ← Előző: Telepítés & Beállítás
+            ← Előző: Gyakori kérdések
           </button>
           <button
             type="button"
@@ -171,7 +171,7 @@ pala --export-ics orarend.ics
       <div className="space-y-8 min-w-0 w-full">
         <div>
           <span className="text-[11px] font-mono font-bold tracking-widest text-primary uppercase block mb-1">
-            FUNKCIÓ ÚTMUTATÓK / JEGYEK & SZELLEM JEGY
+            HASZNÁLAT / JEGYEK ÉS SZELLEMJEGY
           </span>
           <h1 className="text-2xl sm:text-4xl font-black text-fg tracking-tight mb-3">
             Jegyek, Súlyozott Átlagok és „Szellem Jegy” Szimulátor
@@ -185,7 +185,7 @@ pala --export-ics orarend.ics
         <section id="sulyozott-atlag-szamitas" className="bg-card border border-border rounded-2xl p-5 sm:p-6 space-y-4">
           <div className="flex items-center gap-2 text-sm font-bold text-fg">
             <Calculator size={16} className="text-primary" />
-            <h2>1. Súlyozott Tanulmányi Átlag (Weighted GPA)</h2>
+            <h2>1. Súlyozott tanulmányi átlag</h2>
           </div>
           <p className="text-xs text-muted leading-relaxed">
             A Kréta naplóban minden érdemjegyhez tartozik egy százalékos súlyérték (<code className="text-primary font-mono">SulySzazalekErteke</code>:
@@ -216,7 +216,7 @@ pala --export-ics orarend.ics
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <h2 className="text-sm font-bold text-fg">
-                2. Interaktív „Szellem Jegy” (Ghost Grade) Szimulátor
+                2. Interaktív szellemjegy-szimulátor
               </h2>
               <p className="text-xs text-muted mt-0.5">
                 Próbáld ki élőben: hogyan változik egy 4.80-as Matematika átlag új szellem jegy hozzáadásakor?
@@ -309,7 +309,7 @@ pala --export-ics orarend.ics
       <div className="space-y-8 min-w-0 w-full">
         <div>
           <span className="text-[11px] font-mono font-bold tracking-widest text-primary uppercase block mb-1">
-            FUNKCIÓ ÚTMUTATÓK / JELENLÉT & 250 ÓRÁS LIMIT
+            HASZNÁLAT / MULASZTÁSOK
           </span>
           <h1 className="text-2xl sm:text-4xl font-black text-fg tracking-tight mb-3">
             Mulasztások, 250 Órás Törvényi Határ és Szülői Igazolások
@@ -338,11 +338,11 @@ pala --export-ics orarend.ics
           </p>
           <div id="tantargyi-30-szazalek" className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
             <div className="p-3.5 rounded-xl bg-sidebar border border-primary/30">
-              <strong className="text-primary block mb-1">0 – 119 óra (Biztonságos)</strong>
+              <strong className="text-primary block mb-1">0 – 149 óra (Biztonságos)</strong>
               <span className="text-muted">Zöld folyamatjelző sáv; bőven a törvényi határ alatt.</span>
             </div>
             <div className="p-3.5 rounded-xl bg-sidebar border border-primary/30">
-              <strong className="text-primary block mb-1">120 – 199 óra (Figyelmeztető)</strong>
+              <strong className="text-primary block mb-1">150 – 199 óra (Figyelmeztető)</strong>
               <span className="text-muted">Sárga jelzés; érdemes figyelni a tantárgyi 30%-os arányokat.</span>
             </div>
             <div className="p-3.5 rounded-xl bg-sidebar border border-primary/30">
@@ -358,8 +358,8 @@ pala --export-ics orarend.ics
           </h2>
           <p className="text-xs text-muted leading-relaxed">
             A Pala automatikusan összeszámolja a szülői/gondviselői igazolással lefedett napokat, és
-            összeveti az iskolai házirendben engedélyezett kerettel (alapértelmezetten 3 vagy 5 nap,
-            amely a <code className="font-mono text-primary">config.json</code> fájlban testreszabható).
+            összeveti az iskolai házirendben engedélyezett kerettel (alapértelmezés: 5 nap, a <code className="font-mono text-primary">state.json</code>
+            <code className="font-mono text-primary">parentalQuota</code> mezőjében állítható).
           </p>
           <div id="mulasztas-szurok" className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
             <div className="p-3 rounded-xl bg-primary/10 border border-primary/30 text-primary font-bold">
@@ -387,10 +387,10 @@ pala --export-ics orarend.ics
           </button>
           <button
             type="button"
-            onClick={() => onSelectPage("dev-architecture")}
+            onClick={() => onSelectPage("desktop")}
             className="text-xs font-bold text-primary hover:underline cursor-pointer"
           >
-            Következő: Fejlesztői Architektúra (&lt;600dp) →
+            Következő: Számítógépes alkalmazás →
           </button>
         </div>
       </div>
@@ -402,13 +402,13 @@ pala --export-ics orarend.ics
       <div className="space-y-8 min-w-0 w-full">
         <div>
           <span className="text-[11px] font-mono font-bold tracking-widest text-primary uppercase block mb-1">
-            FEJLESZTŐI SPECIFIKÁCIÓK / ARCHITEKTÚRA & ADAPTÍV LAYOUT
+            FEJLESZTŐKNEK / FELÉPÍTÉS
           </span>
           <h1 className="text-2xl sm:text-4xl font-black text-fg tracking-tight mb-3">
             Architektúra és Egykódos Flutter Layout (&lt;600dp vs &gt;=600dp)
           </h1>
           <p className="text-xs sm:text-sm text-muted leading-relaxed max-w-2xl">
-            A Pala „One Core, Several Clients” felépítése, a Material Design 3 adaptív 600dp
+            A Pala „egy mag, több kliens” felépítése, a Material Design 3 adaptív 600dp
             töréspontja, az állapotmegőrzési szabályok és a WCAG 2.1 AA akadálymentességi előírások.
           </p>
         </div>
@@ -416,7 +416,7 @@ pala --export-ics orarend.ics
         <section id="one-core-several-clients" className="bg-card border border-border rounded-2xl p-5 sm:p-6 space-y-4">
           <div className="flex items-center gap-2 text-sm font-bold text-fg">
             <Layers size={16} className="text-primary" />
-            <h2>1. „One Core, Several Clients” Monorepo Felépítés</h2>
+            <h2>1. „Egy mag, több kliens”: a monorepo felépítése</h2>
           </div>
           <p className="text-xs text-muted leading-relaxed">
             A Pala egyetlen közös adattípus- és üzletilogika-magot (<code className="text-primary font-mono">lib/</code>)
@@ -432,7 +432,7 @@ pala --export-ics orarend.ics
             <div className="p-3.5 rounded-xl bg-sidebar border border-border">
               <code className="text-primary font-mono font-bold">app/</code>
               <p className="text-muted mt-1">
-                Material Design 3 Flutter alkalmazás Androidra, Windowsra, Linuxra és macOS-re (<code className="font-mono">package:pala</code>).
+                Material Design 3 Flutter alkalmazás Androidra, iPhone-ra (kísérleti), Windowsra, Linuxra és macOS-re (<code className="font-mono">package:pala</code>).
               </p>
             </div>
             <div className="p-3.5 rounded-xl bg-sidebar border border-border">
@@ -504,17 +504,17 @@ pala --export-ics orarend.ics
         <div className="flex items-center justify-between pt-4 border-t border-border">
           <button
             type="button"
-            onClick={() => onSelectPage("guide-absences")}
+            onClick={() => onSelectPage("security")}
             className="text-xs font-bold text-muted hover:text-fg cursor-pointer"
           >
-            ← Előző: Mulasztások & 250 Órás Limit
+            ← Előző: Kréta API és titkosítás
           </button>
           <button
             type="button"
-            onClick={() => onSelectPage("security")}
+            onClick={() => onSelectPage("dev-ext-tui")}
             className="text-xs font-bold text-primary hover:underline cursor-pointer"
           >
-            Következő: Kréta API & Helyi Titkosítás →
+            Következő: Bővítmény és TUI →
           </button>
         </div>
       </div>
@@ -526,10 +526,10 @@ pala --export-ics orarend.ics
       <div className="space-y-8 min-w-0 w-full">
         <div>
           <span className="text-[11px] font-mono font-bold tracking-widest text-primary uppercase block mb-1">
-            FEJLESZTŐI SPECIFIKÁCIÓK / EXTENSION MV3 & TUI ARCHITEKTÚRA
+            FEJLESZTŐKNEK / BŐVÍTMÉNY ÉS TUI
           </span>
           <h1 className="text-2xl sm:text-4xl font-black text-fg tracking-tight mb-3">
-            Böngésző Bővítmény (Manifest V3) & TUI Renderelő Motor
+            Böngészőbővítmény (Manifest V3) és a TUI megjelenítője
           </h1>
           <p className="text-xs sm:text-sm text-muted leading-relaxed max-w-2xl">
             A Chrome/Firefox Manifest V3 bővítmény felépítése (380×580 Popup és Side Panel), valamint
@@ -540,7 +540,7 @@ pala --export-ics orarend.ics
         <section id="manifest-v3-architektura" className="bg-card border border-border rounded-2xl p-5 sm:p-6 space-y-4">
           <div className="flex items-center gap-2 text-sm font-bold text-fg">
             <Puzzle size={16} className="text-primary" />
-            <h2>1. Böngésző Bővítmény (Manifest V3 — Chrome & Firefox)</h2>
+            <h2>1. Böngészőbővítmény (Manifest V3, Chromium és Firefox)</h2>
           </div>
           <p id="popup-es-sidepanel" className="text-xs text-muted leading-relaxed">
             Az <code className="text-primary font-mono">extension/</code> mappa nem igényel Webpack vagy Vite
@@ -553,17 +553,18 @@ pala --export-ics orarend.ics
             language="json"
             code={`{
   "manifest_version": 3,
-  "name": "Pala — Kréta Kliens",
-  "permissions": ["storage", "alarms", "declarativeNetRequest", "sidePanel"],
+  "name": "Pala — Kréta Bővítmény",
+  "permissions": ["storage", "alarms", "notifications", "webNavigation", "sidePanel"],
+  "host_permissions": ["https://*.e-kreta.hu/*"],
   "action": {
     "default_popup": "popup/popup.html"
   },
   "side_panel": {
-    "default_path": "dashboard/dashboard.html"
+    "default_path": "sidepanel/sidepanel.html"
   },
   "sidebar_action": {
-    "default_panel": "dashboard/dashboard.html",
-    "default_title": "Pala Vezérlőpult"
+    "default_panel": "sidepanel/sidepanel.html",
+    "default_title": "Pala — Kréta Oldalsáv"
   }
 }`}
           />
@@ -600,10 +601,10 @@ if (out.isNotEmpty) {
         <div className="flex items-center justify-between pt-4 border-t border-border">
           <button
             type="button"
-            onClick={() => onSelectPage("security")}
+            onClick={() => onSelectPage("dev-architecture")}
             className="text-xs font-bold text-muted hover:text-fg cursor-pointer"
           >
-            ← Előző: Kréta API & Titkosítás
+            ← Előző: Felépítés
           </button>
           <button
             type="button"
@@ -622,7 +623,7 @@ if (out.isNotEmpty) {
       <div className="space-y-8 min-w-0 w-full">
         <div>
           <span className="text-[11px] font-mono font-bold tracking-widest text-primary uppercase block mb-1">
-            FEJLESZTŐI SPECIFIKÁCIÓK / KÖZREMŰKÖDÉS & I18N
+            FEJLESZTŐKNEK / KÖZREMŰKÖDÉS
           </span>
           <h1 className="text-2xl sm:text-4xl font-black text-fg tracking-tight mb-3">
             Fejlesztői Útmutató, Tesztelés és Honosítás (i18n)
@@ -674,7 +675,7 @@ if (out.isNotEmpty) {
 
         <section id="ci-ellenorzo-parancsok" className="bg-card border border-border rounded-2xl p-5 sm:p-6 space-y-3">
           <h2 className="text-sm font-bold text-fg">
-            2. Kötelező CI Ellenőrzések (Verification Suite)
+            2. Kötelező CI-ellenőrzések
           </h2>
           <p className="text-xs text-muted">
             Pull request beküldése előtt futtasd az összes módosított komponens ellenőrző parancsát:
@@ -791,10 +792,10 @@ export function DocsRightToc({ activePage, onSelectPage }: DocsRightTocProps) {
           <div className="space-y-1 text-xs font-semibold">
             <Link
               href="/docs/getting-started"
-              onClick={() => onSelectPage("installation")}
+              onClick={() => onSelectPage("kezdoknek")}
               className="flex items-center justify-between py-1 text-muted hover:text-primary transition-colors"
             >
-              <span>A. Kezdő Lépések</span>
+              <span>A. Első lépések</span>
               <span className="text-[10px] font-mono text-subtle">/getting-started</span>
             </Link>
             <Link

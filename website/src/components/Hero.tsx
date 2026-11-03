@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Download, ArrowDown } from "lucide-react";
-import { WindowsIcon, AppleIcon, AndroidIcon, LinuxIcon } from "./PlatformIcons";
+import { WindowsIcon, AppleIcon, AndroidIcon, LinuxIcon, GitHubIcon } from "./PlatformIcons";
 import { detectClientOS, type DetectedPlatform } from "@/lib/detectOS";
 import { useRelease } from "@/lib/useRelease";
 import { shownVersion } from "@/lib/ReleaseContext";
@@ -118,7 +118,16 @@ export function Hero() {
 
       {/* Small trust line instead of jargon in the headline */}
       <p className="text-xs sm:text-sm text-muted mb-8 px-2">
-        Ingyenes · Reklám és követés nélkül · Nyílt forráskódú
+        Ingyenes · Reklám és követés nélkül ·{" "}
+        <a
+          href="https://github.com/CsPS0/pala"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 align-bottom text-fg font-semibold underline underline-offset-2 hover:text-primary"
+        >
+          <GitHubIcon size={13} />
+          Nyílt forráskódú
+        </a>
         {version && <> · Legfrissebb kiadás: {version}</>}
       </p>
 
