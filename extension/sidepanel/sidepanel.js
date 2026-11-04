@@ -456,7 +456,7 @@ function renderDashboardView(data) {
   if (tasksEl) {
     tasksEl.innerHTML = "";
     const combined = [
-      ...exams.map(e => ({ type: "DOLGOZAT", color: "var(--danger)", sub: e.Tantargy?.Nev || e.Tantargy || "Tantárgy", text: e.Tema || e.Tipus || "Számonkérés" })),
+      ...exams.map(e => ({ type: "DOLGOZAT", color: "var(--danger)", sub: e.Tantargy?.Nev || e.Tantargy || "Tantárgy", text: KretaApi.examTopic(e) })),
       ...homework.map(h => ({ type: "HÁZI", color: "var(--info)", sub: h.Tantargy?.Nev || h.Tantargy || "Tantárgy", text: h.Szoveg || h.Feladat || "Házi feladat" }))
     ];
     if (combined.length === 0) {

@@ -172,3 +172,18 @@ test("runningAverages gives the weighted average after each grade", () => {
   assert.deepEqual(avgs.map((a) => Math.round(a * 100) / 100), [5, 3, 3.25]);
   assert.equal(KretaApi.runningAverages([]).length, 0);
 });
+
+test("examTopic reads Temaja, then the older names, then the exam mode", () => {
+  assert.equal(KretaApi.examTopic({ Temaja: "Mechanika" }), "Mechanika");
+  assert.equal(KretaApi.examTopic({ Tema: "Régi" }), "Régi");
+  assert.equal(KretaApi.examTopic({ Modja: { Leiras: "Írásbeli dolgozat" } }), "Írásbeli dolgozat");
+  assert.equal(KretaApi.examTopic({}), "Számonkérés");
+});
+
+test("isUpcoming keeps today and later, drops earlier days and missing dates", () => {
+  const now = new Date(2026, 10, 4, 15, 0);
+  assert.equal(KretaApi.isUpcoming("2026-11-04T08:00:00", now), true);
+  assert.equal(KretaApi.isUpcoming("2026-11-10T00:00:00", now), true);
+  assert.equal(KretaApi.isUpcoming("2026-11-03T23:00:00", now), false);
+  assert.equal(KretaApi.isUpcoming("", now), false);
+});

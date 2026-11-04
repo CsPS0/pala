@@ -1444,6 +1444,21 @@ class KretaApi {
    * Parser for Kréta evaluation objects.
    * Differentiates standard 1..5 grades, percentages (>5%), text evaluations, "Nem írt", and summary grades.
    */
+  /** True when the date is today or later (local time); false for earlier days and missing dates. */
+  static isUpcoming(date, now = new Date()) {
+    if (!date) return false;
+    const t = new Date(date).getTime();
+    if (!Number.isFinite(t)) return false;
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+    return t >= today.getTime();
+  }
+
+  /** An announced exam's topic: Kréta sends it as Temaja (Tema in older data), else the exam mode. */
+  static examTopic(e) {
+    return e?.Temaja || e?.Tema || e?.Modja?.Leiras || e?.Tipus?.Leiras || "Számonkérés";
+  }
+
   /** The weighted average after each item ({ grade, weight }), in the given order. */
   static runningAverages(items) {
     let sum = 0, weight = 0;

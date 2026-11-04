@@ -924,6 +924,20 @@
   </div>
 
   <!-- Modal: Message Viewer -->
+  <!-- Modal: Exam / homework details -->
+  <div id="task-detail-modal" class="modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="task-detail-title">
+    <div class="modal-card" style="max-width: 560px; width: 90%;">
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px;">
+        <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+          <span id="task-detail-badge" class="badge">Feladat</span>
+          <h2 id="task-detail-title" style="font-size: 1.1rem; font-weight: 800; margin: 0;">-</h2>
+        </div>
+        <button type="button" id="btn-close-task-detail" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.8rem;" aria-label="Bezárás">&#10005;</button>
+      </div>
+      <div id="task-detail-body"></div>
+    </div>
+  </div>
+
   <div id="msg-viewer-modal" class="modal-overlay" style="display: none;">
     <div class="modal-card" style="max-width: 580px; width: 90%;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">

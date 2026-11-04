@@ -943,7 +943,7 @@ function renderTasks(homework, exams) {
     ...exams.map(e => ({
       type: "exam",
       sub: escapeHtml(e.Tantargy?.Nev || e.Tantargy || "Dolgozat"),
-      title: escapeHtml(e.Tema || e.Tipus?.Leiras || "Számonkérés")
+      title: escapeHtml(KretaApi.examTopic(e))
     })),
     ...homework.map(h => ({
       type: "hw",

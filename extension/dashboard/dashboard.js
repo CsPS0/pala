@@ -316,6 +316,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("btn-week-next")?.addEventListener("click", () => showTimetableWeek(timetableWeekOffset + 1));
   document.getElementById("btn-week-today")?.addEventListener("click", () => showTimetableWeek(0));
 
+  // Task detail modal: close button, backdrop click, Escape.
+  const taskModal = document.getElementById("task-detail-modal");
+  const closeTaskModal = () => { if (taskModal) taskModal.style.display = "none"; };
+  document.getElementById("btn-close-task-detail")?.addEventListener("click", closeTaskModal);
+  taskModal?.addEventListener("click", e => { if (e.target === taskModal) closeTaskModal(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && taskModal?.style.display === "flex") closeTaskModal(); });
+
   setupMessageFilters();
   setupMessageModals();
 
@@ -667,7 +674,7 @@ function setupGlobalSearch() {
     // 4. Tasks & Exams
     (d.exams || []).forEach(ex => {
       const sub = getDisplaySubject(ex.Tantargy?.Nev || ex.Tantargy || "Dolgozat");
-      const tema = ex.Tema || "Számonkérés";
+      const tema = KretaApi.examTopic(ex);
       if (KretaApi.normalizeHu(`${sub} ${tema}`).includes(q)) {
         hits.push({
           category: "Számonkérés",
@@ -1510,16 +1517,17 @@ function renderDashboardUpcomingTasks(homework, exams) {
     ...(exams || []).map(e => ({
       isExam: true,
       sub: getDisplaySubject(e.Tantargy?.Nev || e.Tantargy || "Számonkérés"),
-      title: e.Tema || e.Tipus?.Leiras || "Bejelentett számonkérés",
+      title: KretaApi.examTopic(e),
       date: e.Datum || e.OraKezdete || ""
     })),
     ...(homework || []).map(h => ({
       isExam: false,
       sub: getDisplaySubject(h.Tantargy?.Nev || h.Tantargy || "Házi feladat"),
-      title: h.Szoveg || h.Feladat || "Házi feladat",
+      title: kretaHtmlToText(h.Szoveg || h.Feladat || "") || "Házi feladat",
       date: h.HataridoDatuma || h.HataridoIdopontja || h.Hatarido || ""
     }))
-  ].sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+  ].filter(it => KretaApi.isUpcoming(it.date))
+   .sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
 
   if (combined.length === 0) {
     listEl.innerHTML = `<div style="padding:16px; text-align:center; font-size:0.78rem; color:var(--text-muted);">Nincs közelgő számonkérés vagy házi feladat.</div>`;
@@ -2333,49 +2341,110 @@ function createSparklineSvg(validGrades, classAvg = null) {
     </div>`;
 }
 
+function taskItems(homework, exams) {
+  return [
+    ...(exams || []).map(e => ({
+      type: "exam", raw: e,
+      sub: getDisplaySubject(e.Tantargy?.Nev || e.TantargyNeve || e.Tantargy || "Dolgozat"),
+      title: KretaApi.examTopic(e),
+      date: e.Datum
+    })),
+    ...(homework || []).map(h => ({
+      type: "hw", raw: h,
+      sub: getDisplaySubject(h.Tantargy?.Nev || h.TantargyNeve || h.Tantargy || "Házi feladat"),
+      title: kretaHtmlToText(h.Szoveg || h.Feladat || "") || "Házi feladat",
+      date: h.HataridoDatuma || h.HataridoIdopontja || h.Hatarido
+    }))
+  ];
+}
+
+function formatHuDate(value) {
+  if (!value) return "-";
+  const d = new Date(value);
+  return Number.isFinite(d.getTime()) ? `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}.` : "-";
+}
+
+/** Detail view of one exam or homework, with every field Kréta sends. */
+function openTaskDetail(it) {
+  const modal = document.getElementById("task-detail-modal");
+  if (!modal) return;
+  const r = it.raw || {};
+  const isExam = it.type === "exam";
+  const lesson = r.OrarendiOraOraszama != null ? `, ${r.OrarendiOraOraszama}. óra` : "";
+  const rows = isExam
+    ? [
+        ["Tantárgy", it.sub],
+        ["Téma", it.title],
+        ["Módja", r.Modja?.Leiras || "-"],
+        ["Időpont", formatHuDate(r.Datum) + lesson],
+        ["Bejelentette", r.RogzitoTanarNeve || "-"],
+        ["Bejelentés napja", formatHuDate(r.BejelentesDatuma)]
+      ]
+    : [
+        ["Tantárgy", it.sub],
+        ["Határidő", formatHuDate(it.date)],
+        ["Feladva", formatHuDate(r.FeladasDatuma || r.RogzitesIdopontja)],
+        ["Tanár", r.RogzitoTanarNeve || (r.IsTanarRogzitette === false ? "Diák rögzítette" : "-")]
+      ];
+  document.getElementById("task-detail-badge").textContent = isExam ? "Számonkérés" : "Házi feladat";
+  document.getElementById("task-detail-title").textContent = isExam ? it.title : it.sub;
+  const body = document.getElementById("task-detail-body");
+  body.innerHTML = `<dl class="detail-list">${rows.map(([k, v]) => `<dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd>`).join("")}</dl>`;
+  if (!isExam) {
+    const text = document.createElement("div");
+    text.className = "detail-text";
+    text.textContent = it.title;
+    body.appendChild(text);
+  }
+  modal.style.display = "flex";
+  document.getElementById("btn-close-task-detail")?.focus();
+}
+
 function renderTasksView(homework, exams) {
   const container = document.getElementById("tasks-full-list");
   if (!container) return;
   container.innerHTML = "";
 
-  const allItems = [
-    ...exams.map(e => ({ type: "exam", sub: escapeHtml(getDisplaySubject(e.Tantargy?.Nev || e.Tantargy || "Dolgozat")), title: escapeHtml(e.Tema || e.Tipus?.Leiras || "Számonkérés"), date: e.Datum })),
-    ...homework.map(h => ({ type: "hw", sub: escapeHtml(getDisplaySubject(h.Tantargy?.Nev || h.Tantargy || "Házi feladat")), title: escapeHtml(h.Szoveg || h.Feladat || "Házi feladat"), date: h.HataridoDatuma || h.HataridoIdopontja || h.Hatarido }))
-  ];
+  const all = taskItems(homework, exams);
+  const filtered = currentTaskFilter === "all" ? all : all.filter(it => it.type === currentTaskFilter);
+  // By deadline: upcoming first (soonest on top), then past ones (latest on top).
+  const time = it => new Date(it.date || 0).getTime() || 0;
+  const upcoming = filtered.filter(it => KretaApi.isUpcoming(it.date)).sort((a, b) => time(a) - time(b));
+  const past = filtered.filter(it => !KretaApi.isUpcoming(it.date)).sort((a, b) => time(b) - time(a));
 
-  const items = currentTaskFilter === "all"
-    ? allItems
-    : allItems.filter(it => it.type === currentTaskFilter);
-
-  if (items.length === 0) {
+  if (upcoming.length + past.length === 0) {
     container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-muted);">Nincs a szűrésnek megfelelő házi feladat vagy számonkérés.</div>`;
     return;
   }
 
-  items.forEach(it => {
+  const addHeading = text => {
+    const h = document.createElement("div");
+    h.className = "tasks-group-title";
+    h.textContent = text;
+    container.appendChild(h);
+  };
+  const addCard = it => {
     const isExam = it.type === "exam";
     const tag = isExam
       ? `<span class="badge badge-warning-soft" style="font-size: 0.75rem;">SZÁMONKÉRÉS</span>`
       : `<span class="badge badge-subtle" style="color:var(--info); font-size: 0.75rem;">HÁZI FELADAT</span>`;
-
-    let dateText = "";
-    if (it.date) {
-      const d = new Date(it.date);
-      dateText = `Határidő: ${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}.`;
-    }
-
-    const card = document.createElement("div");
-    card.className = "card";
-    card.style.marginBottom = "10px";
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "card task-card";
+    card.setAttribute("aria-label", `${isExam ? "Számonkérés" : "Házi feladat"}: ${it.sub}, részletek`);
     card.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; gap:8px; flex-wrap:wrap;">
-        <div style="display:flex; align-items:center; gap:8px;">${tag} <strong style="font-size:0.92rem;">${it.sub}</strong></div>
-        <span style="font-size: 0.75rem; color:var(--text-muted);">${dateText}</span>
+        <div style="display:flex; align-items:center; gap:8px; min-width:0;">${tag} <strong style="font-size:0.92rem;">${escapeHtml(it.sub)}</strong></div>
+        <span style="font-size: 0.75rem; color:var(--text-muted);">${isExam ? "Időpont" : "Határidő"}: ${escapeHtml(formatHuDate(it.date))}</span>
       </div>
-      <div style="font-size:0.84rem; color:var(--text); line-height:1.45;">${it.title}</div>
+      <div class="task-card-text">${escapeHtml(it.title)}</div>
     `;
+    card.addEventListener("click", () => openTaskDetail(it));
     container.appendChild(card);
-  });
+  };
+
+  if (upcoming.length) { addHeading("Közelgő"); upcoming.forEach(addCard); }
+  if (past.length) { addHeading("Korábbi"); past.forEach(addCard); }
 }
 
 function renderAbsencesView(absences) {

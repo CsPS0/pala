@@ -4,8 +4,16 @@ import 'package:pala/models/absence.dart';
 import 'package:pala/models/note.dart';
 import 'package:pala/models/class_average.dart';
 import 'package:pala/models/message.dart';
+import 'package:pala/models/exam.dart';
 
 void main() {
+  group('Exam', () {
+    test('reads the topic from Temaja (the real Kréta field)', () {
+      final e = Exam.fromJson({'Tantargy': {'Nev': 'Fizika'}, 'Temaja': 'Mechanika', 'Modja': {'Nev': 'irasbeli_dolgozat', 'Leiras': 'Írásbeli dolgozat'}});
+      expect(e.theme, 'Mechanika');
+    });
+  });
+
   group('sortMessagesNewestFirst', () {
     test('puts the newest message first and undated ones last', () {
       Message m(int id, DateTime? d) => Message(id: id, senderName: 'T', subject: 'S', sentDate: d);

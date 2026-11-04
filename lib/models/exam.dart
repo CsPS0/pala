@@ -18,7 +18,8 @@ class Exam {
       subject: json['Tantargy']?['Nev'] ?? 'Ismeretlen tantárgy',
       date: json['Datum'] != null ? DateTime.tryParse(json['Datum'])?.toLocal() : null,
       mode: json['Modja']?['Nev'] ?? 'Számonkérés',
-      theme: json['Tema'],
+      // Kréta sends the topic as Temaja; Tema is kept for older cached data.
+      theme: json['Temaja'] ?? json['Tema'],
       uid: json['Uid'],
     );
   }
