@@ -54,3 +54,16 @@ class Message {
     );
   }
 }
+
+/// Message lists show the newest first; messages without a date go last.
+/// The extension mirrors this in `KretaApi.sortMessagesNewestFirst`.
+List<Message> sortMessagesNewestFirst(Iterable<Message> messages) {
+  return messages.toList()
+    ..sort((a, b) {
+      final da = a.sentDate, db = b.sentDate;
+      if (da == null && db == null) return 0;
+      if (da == null) return 1;
+      if (db == null) return -1;
+      return db.compareTo(da);
+    });
+}

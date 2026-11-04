@@ -891,7 +891,11 @@ async function syncMessagesIfEmpty() {
       KretaApi.getTeachers(token).catch(() => []),
       KretaApi.getQuestionnaires(token).catch(() => [])
     ]);
-    if (adminMsgs && adminMsgs.length > 0) fullState.data.messages = adminMsgs;
+    // Keep the notes and circulars already loaded; the inbox joins them.
+    if (adminMsgs && adminMsgs.length > 0) {
+      const others = (fullState.data.messages || []).filter(m => m.source !== "eugyintezes");
+      fullState.data.messages = KretaApi.sortMessagesNewestFirst([...others, ...adminMsgs]);
+    }
     if (teachers && teachers.length > 0) fullState.data.teachers = teachers;
     if (quests && quests.length > 0) fullState.data.questionnaires = quests;
     await chrome.storage.local.set({ pala_cached_data: fullState.data });

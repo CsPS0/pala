@@ -1125,7 +1125,7 @@ class KretaApi {
         });
       });
     }
-    parsedMessages.sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
+    const sortedMessages = KretaApi.sortMessagesNewestFirst(parsedMessages);
 
     return {
       student: student || null,
@@ -1136,7 +1136,7 @@ class KretaApi {
       exams: Array.isArray(exams) ? exams : [],
       absences: Array.isArray(absences) ? absences : [],
       groupAverages: Array.isArray(groupAverages) ? groupAverages : [],
-      messages: parsedMessages,
+      messages: sortedMessages,
       // teachers and questionnaires come from e-Ugyintezas (fetched separately).
       teachers: [],
       questionnaires: [],
@@ -1195,13 +1195,13 @@ class KretaApi {
         return [];
       }
 
-      return data.map(item => {
+      return KretaApi.sortMessagesNewestFirst(data.map(item => {
         const msg = item.uzenet || {};
         const sender = item.uzenetFeladoNev || msg.feladoNev || item.feladoNev || "Ismeretlen feladó";
         const senderTitle = item.uzenetFeladoTitulus || msg.feladoTitulus || "";
         const fullSender = senderTitle ? `${sender} (${senderTitle})` : sender;
         const subject = item.uzenetTargy || msg.targy || item.targy || "Nincs tárgy";
-        const date = item.uzenetKuldesDatum || msg.kuldesDatum || item.kuldesDatum || new Date().toISOString();
+        const date = item.uzenetKuldesDatum || msg.kuldesDatum || item.kuldesDatum || null;
         const content = item.uzenetSzoveg || item.szoveg || msg.szoveg || "";
 
         return {
@@ -1216,7 +1216,7 @@ class KretaApi {
           type: "Beérkezett üzenet",
           source: "eugyintezes"
         };
-      });
+      }));
     } catch (e) {
       console.warn("getAdminMessages error:", e);
       return [];
@@ -1446,6 +1446,21 @@ class KretaApi {
    * Parser for Kréta evaluation objects.
    * Differentiates standard 1..5 grades, percentages (>5%), text evaluations, "Nem írt", and summary grades.
    */
+  /** A copy of the list with the newest message first; messages without a date go last. Mirrors lib/models/message.dart. */
+  static sortMessagesNewestFirst(list) {
+    const time = (m) => {
+      const t = m?.date ? new Date(m.date).getTime() : NaN;
+      return Number.isFinite(t) ? t : null;
+    };
+    return [...(list || [])].sort((a, b) => {
+      const ta = time(a), tb = time(b);
+      if (ta === null && tb === null) return 0;
+      if (ta === null) return 1;
+      if (tb === null) return -1;
+      return tb - ta;
+    });
+  }
+
   /** Pala Wrapped opens from 14 June to 30 September. Mirrors lib/rules/wrapped_season.dart. */
   static isWrappedSeason(date = new Date()) {
     const m = date.getMonth() + 1, d = date.getDate();

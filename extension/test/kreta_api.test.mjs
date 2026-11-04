@@ -91,3 +91,13 @@ test("isWrappedSeason runs from 14 June to 30 September", () => {
   assert.equal(KretaApi.isWrappedSeason(new Date(2027, 8, 30, 23, 59)), true);
   assert.equal(KretaApi.isWrappedSeason(new Date(2027, 9, 1)), false);
 });
+
+test("sortMessagesNewestFirst puts the newest first and undated ones last", () => {
+  const list = [
+    { id: 1, date: "2026-10-01T08:00:00Z" },
+    { id: 2 },
+    { id: 3, date: "2026-11-02T08:00:00Z" },
+    { id: 4, date: "2026-10-15T08:00:00Z" },
+  ];
+  assert.deepEqual([...KretaApi.sortMessagesNewestFirst(list).map((m) => m.id)], [3, 4, 1, 2]);
+});

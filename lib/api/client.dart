@@ -805,7 +805,7 @@ class KretaClient {
     final url = KretaAPI.messages();
     final data = await _getAPI(url);
     if (data is List) {
-      return data.map((e) => Message.fromJson(e as Map<String, dynamic>)).toList();
+      return sortMessagesNewestFirst(data.map((e) => Message.fromJson(e as Map<String, dynamic>)));
     }
     return null;
   }

@@ -67,7 +67,7 @@ class DemoKretaClient extends KretaClient {
 
   @override
   Future<List<Message>?> getMessages() async {
-    return DemoData.getMessages();
+    return sortMessagesNewestFirst(DemoData.getMessages());
   }
 
   @override

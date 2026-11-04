@@ -3,8 +3,22 @@ import 'package:pala/models/grade.dart';
 import 'package:pala/models/absence.dart';
 import 'package:pala/models/note.dart';
 import 'package:pala/models/class_average.dart';
+import 'package:pala/models/message.dart';
 
 void main() {
+  group('sortMessagesNewestFirst', () {
+    test('puts the newest message first and undated ones last', () {
+      Message m(int id, DateTime? d) => Message(id: id, senderName: 'T', subject: 'S', sentDate: d);
+      final sorted = sortMessagesNewestFirst([
+        m(1, DateTime(2026, 10, 1)),
+        m(2, null),
+        m(3, DateTime(2026, 11, 2)),
+        m(4, DateTime(2026, 10, 15)),
+      ]);
+      expect(sorted.map((x) => x.id).toList(), [3, 4, 1, 2]);
+    });
+  });
+
   group('classAverageOf (OsztalyAtlagok item)', () {
     test('reads the real Kréta field OsztalyCsoportAtlag', () {
       expect(classAverageOf({'OsztalyCsoportAtlag': 3.42, 'TanuloAtlag': 4.1}), 3.42);
