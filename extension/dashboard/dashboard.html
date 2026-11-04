@@ -576,6 +576,8 @@
           <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px; display: flex; gap: 8px; flex-wrap: wrap;">
             <span>Igazolt: <strong id="absences-justified-count" style="color: var(--success);">0</strong></span>
             <span>•</span>
+            <span>Igazolandó: <strong id="absences-pending-count" style="color: var(--warning);">0</strong></span>
+            <span>•</span>
             <span>Igazolatlan: <strong id="absences-unexcused-count" style="color: var(--danger);">0</strong></span>
             <span>•</span>
             <span>Késés: <strong id="absences-delay-minutes" style="color: var(--warning);">0 perc</strong></span>
@@ -607,11 +609,22 @@
         </div>
       </div>
 
-      <!-- Legal Info Notice Card -->
-      <div class="legal-notice-card" style="margin-bottom: 20px;">
-        <svg class="icon" viewBox="0 0 24 24" style="color: var(--primary);"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        <span>A jogszabályok szerint 250 órát meghaladó összesített (vagy egy adott tantárgy óraszámának 30%-át meghaladó) mulasztás esetén a nevelőtestület osztályozó vizsgát írhat elő. 10 és 30 igazolatlan óránál hivatalos értesítési kötelezettség lép életbe.</span>
+      <!-- Per-subject and monthly breakdown -->
+      <div class="absences-overview-grid">
+        <div class="card absences-breakdown-card">
+          <h2 class="section-title" style="margin-bottom: 10px;">Tantárgyanként</h2>
+          <div id="absences-by-subject"></div>
+        </div>
+        <div class="card absences-breakdown-card">
+          <h2 class="section-title" style="margin-bottom: 10px;">Havonta</h2>
+          <div id="absences-by-month"></div>
+        </div>
       </div>
+
+      <details class="legal-notice-details">
+        <summary>Mit mond a jogszabály a hiányzásról?</summary>
+        <p>250 óránál több mulasztás után (vagy ha egy tantárgy óráinak több mint 30%-áról hiányzol) a nevelőtestület osztályozó vizsgát írhat elő. 10 és 30 igazolatlan óránál az iskola hivatalosan értesít.</p>
+      </details>
 
       <!-- Detailed Absences Table Container -->
       <div class="card" style="border-radius: 16px;">

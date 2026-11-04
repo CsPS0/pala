@@ -198,3 +198,20 @@ test("messageView filters by sender and sorts both ways; messageSenders lists ea
   assert.deepEqual([...KretaApi.messageView(list, { sender: "Kovács Anna", order: "newest" }).map((m) => m.id)], [3, 1]);
   assert.deepEqual([...KretaApi.messageView(list, { order: "oldest" }).map((m) => m.id)], [1, 3, 2]);
 });
+
+test("absencesBySubject and absencesByMonth group lessons by the shared absence rule", () => {
+  const a = (subject, date, status, late = null) => ({ Tantargy: { Nev: subject }, Datum: date, IgazolasAllapota: status, Tipus: { Nev: late ? "keses" : "hianyzas" }, KesesPercben: late });
+  const list = [
+    a("Matematika", "2026-09-10T00:00:00", "Igazolt"),
+    a("Matematika", "2026-10-02T00:00:00", "Igazolatlan"),
+    a("Fizika", "2026-10-03T00:00:00", "Igazolando"),
+    a("Fizika", "2026-10-04T00:00:00", "Igazolt", 5),
+  ];
+  const bySubject = [...KretaApi.absencesBySubject(list)];
+  assert.equal(bySubject[0].subject, "Matematika");
+  assert.equal(bySubject[0].missed, 2);
+  assert.equal(bySubject[0].unexcused, 1);
+  assert.equal(bySubject[1].pending, 1);
+  assert.equal(bySubject[1].lateCount, 1);
+  assert.deepEqual([...KretaApi.absencesByMonth(list)].map((m) => `${m.month}:${m.missed}`), ["2026-09:1", "2026-10:2"]);
+});

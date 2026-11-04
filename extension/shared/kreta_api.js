@@ -1763,6 +1763,31 @@ class KretaApi {
    * One absence summary for every view. Each absence entry is one missed
    * lesson; lateness is counted apart and does not go toward the 250 hours.
    */
+  /** summarizeAbsences per subject, most missed lessons first. */
+  static absencesBySubject(absences) {
+    const groups = new Map();
+    for (const a of absences || []) {
+      // Kréta sends Tantargy as an object; the demo data as a plain name.
+      const subject = a?.Tantargy?.Nev || (typeof a?.Tantargy === "string" ? a.Tantargy : "") || "Egyéb";
+      if (!groups.has(subject)) groups.set(subject, []);
+      groups.get(subject).push(a);
+    }
+    return [...groups.entries()]
+      .map(([subject, list]) => ({ subject, ...this.summarizeAbsences(list) }))
+      .sort((x, y) => y.missed - x.missed || y.lateCount - x.lateCount || x.subject.localeCompare(y.subject, "hu"));
+  }
+
+  /** Missed lessons (lateness apart) per calendar month ("YYYY-MM"), oldest month first. */
+  static absencesByMonth(absences) {
+    const months = new Map();
+    for (const a of absences || []) {
+      if (!a?.Datum || this.isLateness(a)) continue;
+      const month = localDateKey(new Date(a.Datum)).slice(0, 7);
+      months.set(month, (months.get(month) || 0) + 1);
+    }
+    return [...months.entries()].sort(([x], [y]) => x.localeCompare(y)).map(([month, missed]) => ({ month, missed }));
+  }
+
   static summarizeAbsences(absences) {
     const s = { missed: 0, excused: 0, pending: 0, unexcused: 0, lateCount: 0, lateMinutes: 0 };
     for (const a of absences || []) {

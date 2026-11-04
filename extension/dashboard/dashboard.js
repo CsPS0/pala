@@ -2447,13 +2447,53 @@ function renderTasksView(homework, exams) {
   if (past.length) { addHeading("Korábbi"); past.forEach(addCard); }
 }
 
+/** Mulasztások breakdown: hours per subject (with status split) and per month. */
+function renderAbsenceBreakdown(absences) {
+  const subjEl = document.getElementById("absences-by-subject");
+  if (subjEl) {
+    const rows = KretaApi.absencesBySubject(absences);
+    subjEl.innerHTML = rows.length === 0
+      ? `<div class="section-subtitle">Nincs rögzített mulasztás.</div>`
+      : `<table class="compact-table">
+          <thead><tr><th>Tantárgy</th><th title="Mulasztott órák">Óra</th><th title="Igazolt">Ig.</th><th title="Igazolandó">Függő</th><th title="Igazolatlan">Igazolatlan</th><th title="Késések száma">Késés</th></tr></thead>
+          <tbody>${rows.map(r => `<tr>
+            <td class="name" title="${escapeHtml(getDisplaySubject(r.subject))}">${escapeHtml(getDisplaySubject(r.subject))}</td>
+            <td><strong>${r.missed}</strong></td>
+            <td style="color:var(--success);">${r.excused}</td>
+            <td style="color:var(--warning);">${r.pending}</td>
+            <td style="color:${r.unexcused ? "var(--danger)" : "var(--text-muted)"};">${r.unexcused}</td>
+            <td style="color:var(--text-muted);">${r.lateCount}</td>
+          </tr>`).join("")}</tbody>
+        </table>`;
+  }
+  const monthEl = document.getElementById("absences-by-month");
+  if (monthEl) {
+    const months = KretaApi.absencesByMonth(absences);
+    const max = Math.max(1, ...months.map(m => m.missed));
+    monthEl.innerHTML = months.length === 0
+      ? `<div class="section-subtitle">Nincs rögzített mulasztás.</div>`
+      : months.map(m => {
+          const [y, mo] = m.month.split("-").map(Number);
+          const label = new Date(y, mo - 1, 1).toLocaleDateString("hu-HU", { year: "numeric", month: "long" });
+          return `<div class="month-bar-row" title="${escapeHtml(label)}: ${m.missed} óra">
+            <span class="month-name">${escapeHtml(label)}</span>
+            <span class="month-bar"><span style="width:${((m.missed / max) * 100).toFixed(1)}%"></span></span>
+            <b>${m.missed}</b>
+          </div>`;
+        }).join("");
+  }
+}
+
 function renderAbsencesView(absences) {
   const container = document.getElementById("absences-full-list");
   if (!container) return;
   container.innerHTML = "";
+  try { renderAbsenceBreakdown(absences); } catch (e) { console.error("Error rendering absence breakdown:", e); }
 
   // The shared rule: missed lessons count toward 250, lateness is apart.
   const summary = KretaApi.summarizeAbsences(absences);
+  const pendingEl = document.getElementById("absences-pending-count");
+  if (pendingEl) pendingEl.innerText = summary.pending;
   const totalHours = summary.missed;
   const pct = Math.min(100, (totalHours / 250) * 100);
 
@@ -2467,7 +2507,7 @@ function renderAbsencesView(absences) {
 
   if (limitPctEl) {
     limitPctEl.innerText = `${pct.toFixed(1)}%`;
-    limitPctEl.className = "stat-val " + (totalHours < 150 ? "green" : (totalHours < 220 ? "orange" : "danger"));
+    limitPctEl.className = "stat-val " + (totalHours < 150 ? "green" : (totalHours < 200 ? "orange" : "danger"));
   }
   if (remHoursEl) {
     remHoursEl.innerText = `${Math.max(0, 250 - totalHours)} óra maradt a határig`;
@@ -2478,7 +2518,7 @@ function renderAbsencesView(absences) {
       statusEl.innerText = `Biztonságos (${pct.toFixed(1)}%)`;
       statusEl.style.color = "var(--success)";
       statusEl.style.borderColor = "rgba(48,209,88,0.3)";
-    } else if (totalHours < 220) {
+    } else if (totalHours < 200) {
       statusEl.innerText = `Közelít a limithez (${pct.toFixed(1)}%)`;
       statusEl.style.color = "var(--warning)";
       statusEl.style.borderColor = "rgba(255,214,10,0.3)";
@@ -2491,7 +2531,7 @@ function renderAbsencesView(absences) {
 
   if (barEl) {
     barEl.style.width = `${pct}%`;
-    const glowClass = totalHours < 150 ? "progress-glow-success" : (totalHours < 220 ? "progress-glow-warning" : "progress-glow-danger");
+    const glowClass = totalHours < 150 ? "progress-glow-success" : (totalHours < 200 ? "progress-glow-warning" : "progress-glow-danger");
     barEl.className = `progress-bar-fill ${glowClass}`;
   }
 
