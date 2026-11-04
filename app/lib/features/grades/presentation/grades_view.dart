@@ -6,6 +6,7 @@ import '../../../core/utils/csv_exporter.dart';
 import '../../../core/widgets/empty_state_widget.dart';
 import '../../../core/widgets/skeleton_container.dart';
 import '../../../state/app_model.dart';
+import '../widgets/class_comparison_card.dart';
 import '../widgets/certificate_planner.dart';
 import '../widgets/ghost_grade_calculator.dart';
 import '../widgets/grade_summary_card.dart';
@@ -174,6 +175,13 @@ class _GradesViewState extends State<GradesView> with SingleTickerProviderStateM
                   key: const PageStorageKey<String>('grades_subject_list'),
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   children: [
+                    // My averages against the class (unfiltered view only).
+                    if (query.isEmpty && _selectedGradeFilter == null)
+                      ClassComparisonCard(
+                        myAverages: subjectAverages,
+                        classAverages: groupAverages,
+                        myOverall: widget.appModel.overallGpa > 0 ? widget.appModel.overallGpa : null,
+                      ),
                     // Search bar
                     TextField(
                       controller: _searchController,

@@ -1,3 +1,4 @@
+import 'average_trend_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pala/models/grade.dart';
@@ -172,6 +173,8 @@ class _GradeSummaryCardState extends State<GradeSummaryCard> {
                 // Expanded Grade details list
                 if (_isExpanded) ...[
                   const SizedBox(height: 14),
+                  AverageTrendChart(grades: widget.grades, classAverage: widget.classAverage),
+                  const SizedBox(height: 10),
                   const Divider(),
                   const SizedBox(height: 10),
                   ...widget.grades.map((grade) => _buildGradeItem(context, theme, colorScheme, grade)),
