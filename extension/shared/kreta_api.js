@@ -1364,8 +1364,11 @@ class KretaApi {
     }
 
     // 1. Backoff guard
+    // Old data shown while waiting is marked stale, so the UI does not call it live.
     if (!forceRefresh && store.pala_backoff_until && Date.now() < store.pala_backoff_until) {
-      if (store.pala_cached_data) return store.pala_cached_data;
+      if (store.pala_cached_data) {
+        return { ...store.pala_cached_data, isStale: true, cachedAt: store.pala_last_fetch || Date.now() };
+      }
     }
     if (forceRefresh) {
       await chrome.storage.local.remove(["pala_backoff_until"]);
@@ -1412,7 +1415,7 @@ class KretaApi {
     } catch (err) {
       // Rate limited: keep showing the last good data, as the backoff guard does.
       if (err.status === 429 && store.pala_cached_data) {
-        return store.pala_cached_data;
+        return { ...store.pala_cached_data, isStale: true, cachedAt: store.pala_last_fetch || Date.now() };
       }
       // Kréta rejected the login: show the saved data, marked as such, and ask for a new login.
       if (offlineReasonOf(err) === "expired" && store.pala_cached_data) {

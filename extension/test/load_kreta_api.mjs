@@ -4,8 +4,8 @@
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 
-export function loadKretaApi() {
-  const context = vm.createContext({ console, URL, URLSearchParams, TextEncoder, TextDecoder });
+export function loadKretaApi(extraGlobals = {}) {
+  const context = vm.createContext({ console, URL, URLSearchParams, TextEncoder, TextDecoder, ...extraGlobals });
   const source = readFileSync(new URL("../shared/kreta_api.js", import.meta.url), "utf8");
   vm.runInContext(source, context, { filename: "kreta_api.js" });
   // Top-level classes live in the script scope, not on the global object.

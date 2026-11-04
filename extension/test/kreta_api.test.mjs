@@ -101,3 +101,16 @@ test("sortMessagesNewestFirst puts the newest first and undated ones last", () =
   ];
   assert.deepEqual([...KretaApi.sortMessagesNewestFirst(list).map((m) => m.id)], [3, 4, 1, 2]);
 });
+
+test("data served during a backoff is marked stale, not live", async () => {
+  const store = {
+    pala_cached_data: { student: { Nev: "Teszt" }, grades: [] },
+    pala_last_fetch: Date.now() - 60 * 60 * 1000,
+    pala_backoff_until: Date.now() + 60 * 1000,
+  };
+  const chrome = { storage: { local: { get: async () => ({ ...store }), set: async () => {}, remove: async () => {} } } };
+  const { KretaApi: Api } = loadKretaApi({ chrome });
+  const data = await Api.getCachedOrFetchData({ institute: "x", token: "t" });
+  assert.equal(data.isStale, true);
+  assert.equal(data.cachedAt, store.pala_last_fetch);
+});

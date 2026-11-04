@@ -302,17 +302,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     await loadDashboardData(true);
   });
 
-  let isMatrixView = false;
-  document.getElementById("btn-timetable-toggle")?.addEventListener("click", () => {
-    isMatrixView = !isMatrixView;
-    const btn = document.getElementById("btn-timetable-toggle");
-    if (btn) btn.innerText = isMatrixView ? "5-napos Oszlopok" : "7-napos Mátrix";
-    const listGrid = document.getElementById("weekly-timetable-grid");
-    const mxGrid = document.getElementById("matrix-timetable-grid");
-    if (listGrid) listGrid.style.display = isMatrixView ? "none" : "grid";
-    if (mxGrid) mxGrid.style.display = isMatrixView ? "block" : "none";
-  });
-
   // Demo only: real week types come from Kréta, so there is nothing to flip.
   document.getElementById("btn-toggle-ab-week")?.addEventListener("click", () => {
     if (!fullState.isDemo || !fullState.data) return;
@@ -969,6 +958,9 @@ function setStatusBadge(className, text) {
   const demoBadge = document.getElementById("demo-indicator");
   const demoText = document.getElementById("demo-indicator-text");
   if (demoBadge) {
+    // Live, fresh data needs no badge: it only appears for demo mode, saved
+    // data and Kréta problems.
+    demoBadge.style.display = className === "badge-online" ? "none" : "";
     demoBadge.className = `badge status-pill-badge ${className}`;
     if (demoText) {
       demoText.innerText = text;
@@ -1100,6 +1092,8 @@ function renderDashboard() {
   if (!fullState.isMaintenance) {
     if (fullState.isDemo) {
       setStatusBadge("badge-demo", "Demó Mód (Teszt Elek)");
+    } else if (d.isStale) {
+      setStatusBadge("badge-maintenance", "Mentett adat • a Kréta most lassan válaszol");
     } else {
       setStatusBadge("badge-online", "Online • Élő Kréta Adatok");
     }
@@ -1829,10 +1823,8 @@ let showWeekType = true;
 
 function renderWeeklyTimetable(timetable) {
   const listGrid = document.getElementById("weekly-timetable-grid");
-  const matrixGrid = document.getElementById("matrix-timetable-grid");
-  if (!listGrid || !matrixGrid) return;
+  if (!listGrid) return;
   listGrid.innerHTML = "";
-  matrixGrid.innerHTML = "";
 
   // Week rotation name straight from Kréta ("A hét", "C hét", ...); schools
   // without a rotation get no badge. Only the demo can flip it.
@@ -1849,8 +1841,6 @@ function renderWeeklyTimetable(timetable) {
 
   const dayNames = ["Hétfő", "Kedd", "Szerda", "Csütörtök", "Péntek", "Szombat", "Vasárnap"];
   const dayBuckets = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [] };
-  const matrixData = {};
-  for (let i = 1; i <= 7; i++) matrixData[i] = {};
 
   (timetable || []).forEach(item => {
     if (item.KezdetIdopont) {
@@ -1858,8 +1848,6 @@ function renderWeeklyTimetable(timetable) {
       if (d === 0) d = 7; // Sunday
       if (d >= 1 && d <= 7) {
         dayBuckets[d].push(item);
-        const slot = item.Oraszam ?? 1;
-        matrixData[d][slot] = item;
       }
     }
   });
@@ -1944,55 +1932,6 @@ function renderWeeklyTimetable(timetable) {
     }
     listGrid.appendChild(col);
   }
-
-  // 2) 7-day Matrix View
-  let matrixHtml = `<table style="width: 100%; border-collapse: collapse; min-width: 600px; text-align: center; font-size: 0.75rem;">
-    <thead>
-      <tr style="border-bottom: 2px solid var(--border);">
-        <th style="padding: 10px; width: 44px; color: var(--text-muted);">Óra</th>`;
-  for (let i = 1; i <= 7; i++) {
-    const isToday = i === todayWeekday;
-    const headerStyle = isToday ? "color: var(--primary); font-weight: 800;" : "color: var(--text);";
-    matrixHtml += `<th style="padding: 10px; ${headerStyle}">${dayNames[i-1]}${isToday ? ' (Ma)' : ''}</th>`;
-  }
-  matrixHtml += `</tr></thead><tbody>`;
-
-  // Some schools have a 0th lesson or more than 10 a day.
-  const usedSlots = Object.values(matrixData).flatMap(day => Object.keys(day).map(Number));
-  const firstSlot = Math.min(1, ...usedSlots);
-  const lastSlot = Math.max(10, ...usedSlots);
-  for (let slot = firstSlot; slot <= lastSlot; slot++) {
-    matrixHtml += `<tr style="border-bottom: 1px solid var(--border);">
-      <td style="padding: 10px; font-weight: 800; color: var(--text-muted);">${slot}.</td>`;
-    for (let day = 1; day <= 7; day++) {
-      const l = matrixData[day][slot];
-      if (l) {
-        const sub = escapeHtml(getDisplaySubject(l.Tantargy?.Nev || l.Nev || "Tanóra"));
-        const room = escapeHtml(l.TeremNeve || "");
-        const stateName = l.Allapot?.Nev || l.Allapot || "Megtartott";
-        let cellStyle = "padding: 8px 10px; border-left: 1px solid var(--border);";
-        let contentStyle = "font-weight: 700; font-size: 0.78rem;";
-
-        if (stateName.toLowerCase().includes("elmaradt")) {
-          cellStyle += " background: rgba(255,69,58,0.1);";
-          contentStyle = "text-decoration: line-through; color: var(--danger); font-weight: 600;";
-        } else if (l.HelyettesTanarNeve) {
-          cellStyle += " background: rgba(255,214,10,0.1);";
-          contentStyle += " color: var(--warning);";
-        }
-
-        matrixHtml += `<td style="${cellStyle}">
-          <div style="${contentStyle}">${sub}</div>
-          <div style="font-size: 0.75rem; color: var(--text-muted);">${room}</div>
-        </td>`;
-      } else {
-        matrixHtml += `<td style="padding: 8px 10px; border-left: 1px solid var(--border);"></td>`;
-      }
-    }
-    matrixHtml += `</tr>`;
-  }
-  matrixHtml += `</tbody></table>`;
-  matrixGrid.innerHTML = matrixHtml;
 }
 
 
@@ -2943,7 +2882,7 @@ async function renderSettingsView() {
   if (statusEl) {
     if (fullState.isMaintenance) {
       statusEl.className = "badge badge-maintenance";
-      statusEl.innerText = "Karbantartás (503)";
+      statusEl.innerText = offlineLabel(fullState.offlineReason || fullState.data);
     } else if (fullState.isDemo) {
       statusEl.className = "badge badge-demo";
       statusEl.innerText = "Demó Mód";

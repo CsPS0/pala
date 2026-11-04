@@ -120,7 +120,9 @@ body {
 
 /* Collapsed Sidebar */
 .sidebar.collapsed { width: 68px; padding: 0 10px 16px; }
-.sidebar.collapsed .brand { justify-content: center; margin: 0 -10px 12px; padding: 16px 8px; gap: 0; }
+.sidebar.collapsed { overflow: hidden; }
+/* The 68px rail cannot hold the logo and the toggle side by side: stack them. */
+.sidebar.collapsed .brand { flex-direction: column; justify-content: center; margin: 0 -10px 12px; padding: 14px 8px; gap: 10px; }
 .sidebar.collapsed .brand-text { display: none; }
 .sidebar.collapsed .sidebar-toggle-btn .icon { transform: rotate(180deg); }
 .sidebar.collapsed .nav-item { justify-content: center; padding: 10px; gap: 0; }
@@ -315,7 +317,9 @@ body {
 /* Main Body & Top Command Bar */
 .main-body {
   flex: 1;
+  min-width: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 0 32px 32px;
   display: flex;
   flex-direction: column;
@@ -575,7 +579,7 @@ body {
 /* Hero Bento Grid (Live Countdown + Today's Schedule Strip) */
 .hero-bento-grid {
   display: grid;
-  grid-template-columns: 1.35fr 1fr;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
   gap: 16px;
   margin-bottom: 18px;
 }
@@ -710,20 +714,20 @@ body {
 /* 6-Card Modern Bento Stat Grid */
 .stat-grid-modern {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 18px;
 }
 @media (max-width: 1360px) {
-  .stat-grid-modern { grid-template-columns: repeat(3, 1fr); }
+  .stat-grid-modern { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (max-width: 780px) {
-  .stat-grid-modern { grid-template-columns: repeat(2, 1fr); }
+  .stat-grid-modern { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 .stat-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
   margin-bottom: 18px;
 }
@@ -763,10 +767,17 @@ body {
 /* Two-Column Workspace on Vezérlőpult */
 .dash-workspace-grid {
   display: grid;
-  grid-template-columns: 1.55fr 1fr;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
   gap: 18px;
   align-items: start;
 }
+/* Grid items default to min-width: auto, so one long chip row or title
+   would widen the whole column past the screen. */
+.hero-bento-grid > *,
+.stat-grid-modern > *,
+.stat-grid > *,
+.dash-workspace-grid > *,
+.workspace-side-col > * { min-width: 0; }
 @media (max-width: 1140px) {
   .dash-workspace-grid { grid-template-columns: 1fr; }
 }
@@ -1020,18 +1031,12 @@ body {
 /* Timetable */
 .timetable-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 14px;
 }
+.timetable-grid > * { min-width: 0; }
 @media (max-width: 1200px) {
   .timetable-grid { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
-}
-.matrix-timetable-wrap {
-  overflow-x: auto;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px;
 }
 .ab-week-btn {
   cursor: pointer;
@@ -1407,3 +1412,17 @@ body {
     transition: none !important;
   }
 }
+
+/* Custom scrollbars for every scrolling element (lists, dropdowns, modals,
+   tables). Element rules above may make a bar thinner or hide it. Do not add
+   scrollbar-color/scrollbar-width: in Chrome 121+ they turn these styles off. */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background-color: var(--text-muted); }
+::-webkit-scrollbar-corner { background: transparent; }

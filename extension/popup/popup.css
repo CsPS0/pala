@@ -1087,3 +1087,17 @@ body.size-large {
     transition: none !important;
   }
 }
+
+/* Custom scrollbars for every scrolling element (lists, dropdowns, modals,
+   tables). Element rules above may make a bar thinner or hide it. Do not add
+   scrollbar-color/scrollbar-width: in Chrome 121+ they turn these styles off. */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background-color: var(--text-muted); }
+::-webkit-scrollbar-corner { background: transparent; }
