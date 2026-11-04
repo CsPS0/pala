@@ -7,9 +7,11 @@ import '../../features/search/presentation/global_search_view.dart';
 import '../../features/wrapped/presentation/pala_wrapped_view.dart';
 import '../../state/app_model.dart';
 import '../../views/settings_view.dart';
+import '../../views/messages_view.dart';
 import '../../views/tasks_view.dart';
 import '../../views/timetable_view.dart';
 import 'adaptive_breakpoints.dart';
+import 'app_pages.dart';
 
 /// Unified adaptive root scaffold auto-swapping between NavigationBar (<600dp)
 /// and NavigationRail (>=600dp) while preserving state via IndexedStack and PageStorageKey.
@@ -27,13 +29,15 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
   final GlobalKey _indexedStackKey = GlobalKey();
   String? _lastShownError;
 
+  // Same pages, names and order as the extension's sidebar (see AppPages).
   static const _titles = [
     'Vezérlőpult',
-    'Érdemjegyek',
     'Órarend',
-    'Hiányzások',
-    'Feladatok & Üzenetek',
-    'Beállítások',
+    'Osztályzatok',
+    'Feladatok & Dolgozatok',
+    'Üzenetek',
+    'Mulasztások',
+    'Fiók & Profil',
   ];
 
   @override
@@ -97,16 +101,42 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
   // Bar labels stay short: five slots on a 320px phone leave about 64px each.
   static const _destinations = [
     (Icons.dashboard_outlined, Icons.dashboard, 'Vezérlőpult', 'Főoldal'),
-    (Icons.school_outlined, Icons.school, 'Jegyek & Átlagok', 'Jegyek'),
-    (Icons.calendar_today_outlined, Icons.calendar_today, 'Heti Órarend', 'Órarend'),
-    (Icons.person_off_outlined, Icons.person_off, 'Hiányzások', 'Hiányzások'),
-    (Icons.assignment_outlined, Icons.assignment, 'Feladatok & Üzenetek', 'Feladatok'),
-    (Icons.settings_outlined, Icons.settings, 'Beállítások', 'Profil'),
+    (Icons.calendar_today_outlined, Icons.calendar_today, 'Órarend', 'Órarend'),
+    (Icons.school_outlined, Icons.school, 'Osztályzatok', 'Jegyek'),
+    (Icons.assignment_outlined, Icons.assignment, 'Feladatok & Dolgozatok', 'Feladatok'),
+    (Icons.mail_outline, Icons.mail, 'Üzenetek', 'Üzenetek'),
+    (Icons.event_busy_outlined, Icons.event_busy, 'Mulasztások', 'Mulasztás'),
+    (Icons.person_outline, Icons.person, 'Fiók & Profil', 'Profil'),
   ];
 
-  // The phone bar fits five: absences stay reachable from the dashboard's
-  // quick action and KPI tile.
-  static const _compactBranches = [0, 1, 2, 4, 5];
+  // The phone bar fits five slots: four pages and "Több", a sheet with the rest.
+  static const _compactBranches = [AppPages.dashboard, AppPages.timetable, AppPages.grades, AppPages.absences];
+  static const _moreBranches = [AppPages.tasks, AppPages.messages, AppPages.profile];
+
+  void _openMoreSheet() {
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final i in _moreBranches)
+              ListTile(
+                leading: Icon(_currentIndex == i ? _destinations[i].$2 : _destinations[i].$1),
+                title: Text(_destinations[i].$3),
+                selected: _currentIndex == i,
+                onTap: () {
+                  Navigator.pop(context);
+                  _navigateToIndex(i);
+                },
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -123,20 +153,24 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
         ),
       ),
       KeyedSubtree(
-        key: const PageStorageKey<String>('branch_grades'),
-        child: GradesView(appModel: widget.appModel),
-      ),
-      KeyedSubtree(
         key: const PageStorageKey<String>('branch_timetable'),
         child: TimetableView(appModel: widget.appModel),
       ),
       KeyedSubtree(
-        key: const PageStorageKey<String>('branch_absences'),
-        child: AbsencesView(appModel: widget.appModel),
+        key: const PageStorageKey<String>('branch_grades'),
+        child: GradesView(appModel: widget.appModel),
       ),
       KeyedSubtree(
         key: const PageStorageKey<String>('branch_tasks'),
         child: TasksView(appModel: widget.appModel),
+      ),
+      KeyedSubtree(
+        key: const PageStorageKey<String>('branch_messages'),
+        child: MessagesView(appModel: widget.appModel),
+      ),
+      KeyedSubtree(
+        key: const PageStorageKey<String>('branch_absences'),
+        child: AbsencesView(appModel: widget.appModel),
       ),
       KeyedSubtree(
         key: const PageStorageKey<String>('branch_settings'),
@@ -148,8 +182,9 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
       builder: (context, constraints) {
         final isCompact = AdaptiveBreakpoints.isCompactConstraints(constraints);
         final isLargeDesktop = constraints.maxWidth >= 960;
-        // Absences has no bar slot; highlight the dashboard it was opened from.
-        final bottomNavIndex = _compactBranches.indexOf(_currentIndex).clamp(0, _compactBranches.length - 1);
+        // Pages in the "Több" sheet light up its slot (the last one).
+        final barSlot = _compactBranches.indexOf(_currentIndex);
+        final bottomNavIndex = barSlot >= 0 ? barSlot : _compactBranches.length;
 
         return Scaffold(
           appBar: _buildAppBar(context, theme, colorScheme, isCompact: isCompact),
@@ -193,7 +228,7 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
           bottomNavigationBar: isCompact
               ? NavigationBar(
                   selectedIndex: bottomNavIndex,
-                  onDestinationSelected: (i) => _navigateToIndex(_compactBranches[i]),
+                  onDestinationSelected: (i) => i < _compactBranches.length ? _navigateToIndex(_compactBranches[i]) : _openMoreSheet(),
                   destinations: [
                     for (final i in _compactBranches)
                       NavigationDestination(
@@ -201,6 +236,10 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
                         selectedIcon: Icon(_destinations[i].$2),
                         label: _destinations[i].$4,
                       ),
+                    const NavigationDestination(
+                      icon: Icon(Icons.more_horiz),
+                      label: 'Több',
+                    ),
                   ],
                 )
               : null,

@@ -7,6 +7,7 @@ import 'package:pala/api/client.dart';
 import 'package:pala/rules/absence_rules.dart';
 import 'package:pala/rules/grade_rules.dart';
 import 'package:pala/utils/csv.dart';
+import 'package:pala/utils/html_text.dart';
 import 'package:pala/api/demo_client.dart';
 import 'package:pala/models/absence.dart';
 import 'package:pala/models/class_average.dart';
@@ -472,6 +473,20 @@ class AppModel extends ChangeNotifier {
 
   String getDisplaySubject(String original) {
     return _aliases[original] ?? original;
+  }
+
+  /// A message's full text as plain text. The list may carry only part of
+  /// it, so an empty body is fetched from e-Ügyintézés.
+  Future<String> messageText(Message m) async {
+    if (m.text.trim().isNotEmpty) return htmlToText(m.text);
+    if (_isDemo || _client == null) return '';
+    return htmlToText(await _client!.getMessageContent(m.id));
+  }
+
+  /// Saves an attachment into the user's Downloads folder (desktop only).
+  Future<bool> downloadAttachment(MessageAttachment a) async {
+    if (_isDemo || _client == null) return false;
+    return _client!.downloadAttachment(a.id, a.name);
   }
 
   Future<void> clearLocalCache() async {

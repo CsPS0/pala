@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import '../../../core/adaptive/app_pages.dart';
 import 'package:intl/intl.dart';
 import 'package:pala/models/timetable_entry.dart';
 import 'package:pala/utils/ics_exporter.dart';
@@ -194,7 +195,7 @@ class _LiveDashboardViewState extends State<LiveDashboardView> {
                                   title: 'Mára nincs tanítás',
                                   description: 'Nincsenek bejegyzett tanórák mára a Kréta rendszerben.',
                                   primaryActionLabel: 'Órarend megnyitása',
-                                  onPrimaryAction: widget.onNavigate != null ? () => widget.onNavigate!(2) : null,
+                                  onPrimaryAction: widget.onNavigate != null ? () => widget.onNavigate!(AppPages.timetable) : null,
                                 )
                               else
                                 ...todayLessons.map((lesson) {
@@ -272,7 +273,7 @@ class _LiveDashboardViewState extends State<LiveDashboardView> {
                       title: 'Mára nincs tanítás',
                       description: 'Nincsenek bejegyzett tanórák mára a Kréta rendszerben.',
                       primaryActionLabel: 'Órarend megnyitása',
-                      onPrimaryAction: widget.onNavigate != null ? () => widget.onNavigate!(2) : null,
+                      onPrimaryAction: widget.onNavigate != null ? () => widget.onNavigate!(AppPages.timetable) : null,
                     ),
                   ),
                 )
@@ -358,21 +359,21 @@ class _LiveDashboardViewState extends State<LiveDashboardView> {
           label: 'Jegyek & Átlagok',
           color: colorScheme.primaryContainer,
           textColor: colorScheme.onPrimaryContainer,
-          onPressed: widget.onNavigate != null ? () => widget.onNavigate!(1) : null,
+          onPressed: widget.onNavigate != null ? () => widget.onNavigate!(AppPages.grades) : null,
         ),
         QuickActionButton(
           icon: Icons.calendar_today_outlined,
           label: 'Heti Órarend',
           color: colorScheme.secondaryContainer,
           textColor: colorScheme.onSecondaryContainer,
-          onPressed: widget.onNavigate != null ? () => widget.onNavigate!(2) : null,
+          onPressed: widget.onNavigate != null ? () => widget.onNavigate!(AppPages.timetable) : null,
         ),
         QuickActionButton(
           icon: Icons.person_off_outlined,
           label: 'Mulasztások',
           color: colorScheme.tertiaryContainer,
           textColor: colorScheme.onTertiaryContainer,
-          onPressed: widget.onNavigate != null ? () => widget.onNavigate!(3) : null,
+          onPressed: widget.onNavigate != null ? () => widget.onNavigate!(AppPages.absences) : null,
         ),
       ],
     );
@@ -392,7 +393,7 @@ class _LiveDashboardViewState extends State<LiveDashboardView> {
         title: 'Átlag',
         value: gpa > 0 ? gpa.toStringAsFixed(2) : '-',
         color: colorScheme.primary,
-        onTap: widget.onNavigate != null ? () => widget.onNavigate!(1) : null,
+        onTap: widget.onNavigate != null ? () => widget.onNavigate!(AppPages.grades) : null,
       ),
       _buildMetricTile(
         context,
@@ -401,7 +402,7 @@ class _LiveDashboardViewState extends State<LiveDashboardView> {
         title: 'Hiányzás',
         value: '$missed óra',
         color: missed >= 200 ? colorScheme.error : (missed >= 150 ? colorScheme.tertiary : colorScheme.primary),
-        onTap: widget.onNavigate != null ? () => widget.onNavigate!(3) : null,
+        onTap: widget.onNavigate != null ? () => widget.onNavigate!(AppPages.absences) : null,
       ),
       _buildMetricTile(
         context,
@@ -410,7 +411,7 @@ class _LiveDashboardViewState extends State<LiveDashboardView> {
         title: 'Házi',
         value: '$hwCount db',
         color: colorScheme.secondary,
-        onTap: widget.onNavigate != null ? () => widget.onNavigate!(4) : null,
+        onTap: widget.onNavigate != null ? () => widget.onNavigate!(AppPages.tasks) : null,
       ),
       _buildMetricTile(
         context,
@@ -419,7 +420,7 @@ class _LiveDashboardViewState extends State<LiveDashboardView> {
         title: 'Dolgozat',
         value: '$examCount db',
         color: colorScheme.tertiary,
-        onTap: widget.onNavigate != null ? () => widget.onNavigate!(4) : null,
+        onTap: widget.onNavigate != null ? () => widget.onNavigate!(AppPages.tasks) : null,
       ),
     ];
     Widget rowOf(List<Widget> items) => Row(

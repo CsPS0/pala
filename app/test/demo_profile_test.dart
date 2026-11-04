@@ -43,11 +43,22 @@ void main() {
       expect(find.text('DEMÓ'), findsOneWidget);
       expect(find.text('PALA'), findsNothing); // brand badge is wide-only
       expect(find.text('Vezérlőpult'), findsWidgets);
-      // Tasks & messages must stay reachable from the phone bar.
-      expect(find.descendant(of: find.byType(NavigationBar), matching: find.text('Feladatok')), findsOneWidget);
+      // The phone bar holds Mulasztások itself; the rest is under "Több".
+      final bar = find.byType(NavigationBar);
+      expect(find.descendant(of: bar, matching: find.text('Mulasztás')), findsOneWidget);
+      expect(find.descendant(of: bar, matching: find.text('Több')), findsOneWidget);
 
-      // Absences has no phone bar slot; reach it through the dashboard KPI tile.
-      await tester.tap(find.text('Hiányzás'));
+      // "Több" lists Feladatok & Dolgozatok, Üzenetek and Fiók & Profil.
+      await tester.tap(find.descendant(of: bar, matching: find.text('Több')));
+      await tester.pumpAndSettle();
+      expect(find.text('Üzenetek'), findsWidgets);
+      expect(find.text('Feladatok & Dolgozatok'), findsOneWidget);
+      expect(find.text('Fiók & Profil'), findsWidgets);
+      await tester.tap(find.text('Üzenetek').last);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Feljegyzések ('), findsOneWidget);
+
+      await tester.tap(find.descendant(of: bar, matching: find.text('Mulasztás')));
       await tester.pump(const Duration(milliseconds: 200));
       expect(find.textContaining('/ 250 óra'), findsOneWidget);
       expect(find.text('Igazolt'), findsOneWidget);

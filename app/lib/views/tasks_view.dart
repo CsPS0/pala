@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:pala/models/message.dart';
+import 'package:pala/models/exam.dart';
+import 'package:pala/models/homework.dart';
+import 'package:pala/rules/schedule_rules.dart';
 import '../state/app_model.dart';
 import '../theme/pala_theme.dart';
-import 'compose_message_view.dart';
 
 class TasksView extends StatefulWidget {
   final AppModel appModel;
@@ -20,7 +21,7 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
@@ -29,93 +30,20 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
     super.dispose();
   }
 
-  void _openMessageDetails(Message msg) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: PalaTheme.sidebar,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      msg.subject.isNotEmpty ? msg.subject : 'Üzenet',
-                      style: TextStyle(color: PalaTheme.text, fontSize: 17, fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.close, size: 20),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Feladó: ${msg.senderName} • ${msg.sentDate != null ? DateFormat('yyyy.MM.dd HH:mm').format(msg.sentDate!) : "-"}',
-                style: TextStyle(color: PalaTheme.textMuted, fontSize: 12),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: PalaTheme.card,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: PalaTheme.border),
-                ),
-                child: Text(
-                  msg.text.isNotEmpty ? msg.text : 'Nincs szöveges tartalom.',
-                  style: TextStyle(color: PalaTheme.text, fontSize: 13, height: 1.5),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        ComposeMessageModal.show(
-                          context,
-                          widget.appModel,
-                          initialRecipient: msg.senderName,
-                          initialSubject: 'Re: ${msg.subject}',
-                        );
-                      },
-                      icon: Icon(Icons.reply, size: 16),
-                      label: Text('Válasz a tanárnak'),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: Text('Bezárás'),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
-    );
+  static List<T> _byDeadline<T>(List<T> items, DateTime? Function(T) dateOf) {
+    final upcoming = items.where((i) => isUpcoming(dateOf(i))).toList()
+      ..sort((a, b) => dateOf(a)!.compareTo(dateOf(b)!));
+    final past = items.where((i) => !isUpcoming(dateOf(i))).toList()
+      ..sort((a, b) => (dateOf(b) ?? DateTime(0)).compareTo(dateOf(a) ?? DateTime(0)));
+    return [...upcoming, ...past];
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primary = theme.primaryColor;
+    final homework = _byDeadline<Homework>(widget.appModel.homework, (h) => h.deadline);
+    final exams = _byDeadline<Exam>(widget.appModel.exams, (e) => e.date);
 
     return Scaffold(
       appBar: PreferredSize(
@@ -131,7 +59,6 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
             tabs: const [
               Tab(text: 'Házi'),
               Tab(text: 'Dolgozatok'),
-              Tab(text: 'Üzenetek'),
             ],
           ),
         ),
@@ -143,13 +70,13 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
           RefreshIndicator(
             onRefresh: widget.appModel.refreshAll,
             color: primary,
-            child: widget.appModel.homework.isEmpty
+            child: homework.isEmpty
                 ? Center(child: Text('Nincsenek aktív házi feladatok.', style: TextStyle(color: PalaTheme.textMuted)))
                 : ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    itemCount: widget.appModel.homework.length,
+                    itemCount: homework.length,
                     itemBuilder: (context, idx) {
-                      final h = widget.appModel.homework[idx];
+                      final h = homework[idx];
                       final hwId = (h.uid != null && h.uid!.isNotEmpty) ? h.uid! : 'hw_$idx';
                       final isDone = widget.appModel.completedHomework.contains(hwId);
 
@@ -205,13 +132,13 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
           RefreshIndicator(
             onRefresh: widget.appModel.refreshAll,
             color: primary,
-            child: widget.appModel.exams.isEmpty
+            child: exams.isEmpty
                 ? Center(child: Text('Nincsenek bejelentett dolgozatok.', style: TextStyle(color: PalaTheme.textMuted)))
                 : ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    itemCount: widget.appModel.exams.length,
+                    itemCount: exams.length,
                     itemBuilder: (context, idx) {
-                      final e = widget.appModel.exams[idx];
+                      final e = exams[idx];
                       return Container(
                         margin: const EdgeInsets.only(bottom: 8),
                         padding: const EdgeInsets.all(14),
@@ -263,96 +190,6 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
                   ),
           ),
 
-          // 3. Messages Tab
-          RefreshIndicator(
-            onRefresh: widget.appModel.refreshAll,
-            color: primary,
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              children: [
-                // Top Composer Card
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: PalaTheme.card,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: primary.withValues(alpha: 0.3)),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: primary.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(Icons.mail_outline, color: primary, size: 20),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Kréta Üzenetküldés',
-                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: PalaTheme.text),
-                            ),
-                            SizedBox(height: 2),
-                            Text(
-                              'Írj közvetlen üzenetet tanáraidnak',
-                              style: TextStyle(fontSize: 11, color: PalaTheme.textMuted),
-                            ),
-                          ],
-                        ),
-                      ),
-                      ElevatedButton.icon(
-                        onPressed: () => ComposeMessageModal.show(context, widget.appModel),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        ),
-                        icon: Icon(Icons.edit, size: 14),
-                        label: Text('Új Üzenet', style: TextStyle(fontSize: 12)),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                if (widget.appModel.messages.isEmpty)
-                  Container(
-                    padding: const EdgeInsets.all(32),
-                    alignment: Alignment.center,
-                    child: Text('Nincsenek beérkezett üzenetek.', style: TextStyle(color: PalaTheme.textMuted)),
-                  )
-                else
-                  ...widget.appModel.messages.map((m) {
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      child: Material(
-                        color: PalaTheme.card,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(color: PalaTheme.border),
-                        ),
-                        child: ListTile(
-                          title: Text(
-                            m.subject.isNotEmpty ? m.subject : '(Nincs tárgy)',
-                            style: TextStyle(color: PalaTheme.text, fontWeight: FontWeight.w700, fontSize: 14),
-                          ),
-                          subtitle: Text(
-                            '${m.senderName} • ${m.sentDate != null ? DateFormat('yyyy.MM.dd').format(m.sentDate!) : "-"}',
-                            style: TextStyle(color: PalaTheme.textMuted, fontSize: 12),
-                          ),
-                          trailing: Icon(Icons.chevron_right, size: 20, color: PalaTheme.textMuted),
-                          onTap: () => _openMessageDetails(m),
-                        ),
-                      ),
-                    );
-                  }),
-                const SizedBox(height: 60),
-              ],
-            ),
-          ),
         ],
       ),
     );
