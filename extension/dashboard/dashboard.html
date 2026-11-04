@@ -901,6 +901,29 @@
             </div>
           </div>
 
+          <!-- In development: shown, but not usable yet -->
+          <div class="card dev-feature-card" aria-disabled="true">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px;">
+              <h2 style="font-size: 1.05rem; font-weight: 800; color: var(--primary); margin: 0;">Egyéni szín</h2>
+              <span class="badge badge-maintenance">Fejlesztés alatt</span>
+            </div>
+            <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">Saját kiemelőszín a narancs helyett. Hamarosan.</p>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="color" value="#ff8800" disabled aria-label="Kiemelőszín (fejlesztés alatt)" style="width: 44px; height: 32px; border: 1px solid var(--border); border-radius: 8px; background: none;">
+              <button type="button" class="btn btn-secondary btn-sm" disabled>Alkalmazás</button>
+            </div>
+          </div>
+          <div class="card dev-feature-card" aria-disabled="true">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px;">
+              <h2 style="font-size: 1.05rem; font-weight: 800; color: var(--primary); margin: 0;">Szinkronizálás eszközök között</h2>
+              <span class="badge badge-maintenance">Fejlesztés alatt</span>
+            </div>
+            <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">A beállítások (aliasok, téma) átvitele a többi Pala eszközödre. Kréta-adatot nem fog szinkronizálni, és nem lesz hozzá Pala szerver.</p>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.84rem; color: var(--text-muted);">
+              <input type="checkbox" disabled> Szinkronizálás bekapcsolása
+            </label>
+          </div>
+
           <!-- Card 6: About Pala and its links -->
           <div class="card" style="grid-column: 1 / -1;">
             <h2 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 8px; color: var(--primary);">Pala</h2>

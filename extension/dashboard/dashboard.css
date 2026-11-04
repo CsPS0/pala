@@ -1037,6 +1037,10 @@ body {
 .timetable-grid > * { min-width: 0; }
 .week-nav { display: inline-flex; gap: 6px; }
 
+/* Settings cards for features in development: visible, not usable */
+.dev-feature-card { opacity: 0.72; }
+.dev-feature-card input:disabled, .dev-feature-card button:disabled { cursor: not-allowed; }
+
 /* Mulasztások breakdown */
 .absences-overview-grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 16px; margin-bottom: 14px; align-items: start; }
 .absences-overview-grid > * { min-width: 0; }
