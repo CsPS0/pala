@@ -54,4 +54,12 @@ void main() {
       });
     }
   });
+
+  test('absence level: warning from 150 h, danger from 200 h, over from 250 h', () {
+    expect(AbsenceRules.levelOf(149), AbsenceLevel.ok);
+    expect(AbsenceRules.levelOf(150), AbsenceLevel.warning);
+    expect(AbsenceRules.levelOf(199), AbsenceLevel.warning);
+    expect(AbsenceRules.levelOf(200), AbsenceLevel.danger);
+    expect(AbsenceRules.levelOf(250), AbsenceLevel.over);
+  });
 }

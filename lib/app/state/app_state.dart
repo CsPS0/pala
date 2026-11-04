@@ -178,8 +178,21 @@ class AppState {
     return File('$configDir/aliases.json');
   }
 
+  /// Subject aliases live in aliases.json only. Versions before 2.0.0 wrote
+  /// new aliases into state.json (and never read them back); those are moved
+  /// over once, without overwriting an alias already in aliases.json.
   Map<String, String> getAliases() {
     final data = _load(aliasesFile);
+    final state = getAppState();
+    final legacy = state['aliases'];
+    if (legacy is Map) {
+      for (final e in legacy.entries) {
+        data.putIfAbsent(e.key.toString(), () => e.value.toString());
+      }
+      _save(aliasesFile, data);
+      state.remove('aliases');
+      saveAppState(state);
+    }
     return data.map((key, value) => MapEntry(key, value.toString()));
   }
 
@@ -230,18 +243,14 @@ class AppState {
   }
 
   void setAlias(String original, String alias) {
-    final state = getAppState();
-    if (state['aliases'] == null) state['aliases'] = <String, dynamic>{};
-    state['aliases'][original] = alias;
-    saveAppState(state);
+    final aliases = getAliases();
+    aliases[original] = alias;
+    _save(aliasesFile, aliases);
   }
 
   void removeAlias(String original) {
-    final state = getAppState();
-    if (state['aliases'] != null) {
-      state['aliases'].remove(original);
-      saveAppState(state);
-    }
+    final aliases = getAliases();
+    if (aliases.remove(original) != null) _save(aliasesFile, aliases);
   }
 
   void clearAllData() {

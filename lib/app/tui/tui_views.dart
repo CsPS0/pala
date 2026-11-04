@@ -1166,9 +1166,11 @@ class TuiViews {
     final usedParental = parentalDays.length;
 
     final ratio250 = (totalHours / 250.0).clamp(0.0, 1.0);
-    final barColor250 = totalHours >= 200
-        ? PalaTheme.grade1Fg
-        : (totalHours >= 120 ? PalaTheme.grade3Fg : PalaTheme.grade5Fg);
+    final barColor250 = switch (AbsenceRules.levelOf(totalHours)) {
+      AbsenceLevel.danger || AbsenceLevel.over => PalaTheme.grade1Fg,
+      AbsenceLevel.warning => PalaTheme.grade3Fg,
+      AbsenceLevel.ok => PalaTheme.grade5Fg,
+    };
     final bar250 = TuiScreenBuffer.progressBar(
       ratio250,
       max(12, (width * 0.35).round()),

@@ -529,18 +529,20 @@ extension PalaAppAbsencesView on PalaApp {
     _clearScreen();
     print('\n--- Veszélyzóna Kalkulátor ---');
     print('Kiszámoljuk, mennyire vagy közel a kritikus 250 órás (vagy 30%-os) határhoz.');
-    int totalAbsences = absences.length;
+    // Lateness does not count toward the 250 hours (the shared rule).
+    final totalAbsences = AbsenceRules.summarize(absences).missed;
     double percent = (totalAbsences / 250.0) * 100;
     print('Összes mulasztott órád: \x1B[1;36m$totalAbsences / 250\x1B[0m (\x1B[1;33m${percent.toStringAsFixed(1)}%\x1B[0m)');
-    
-    if (totalAbsences >= 250) {
-      print('\x1B[1;31m[!] FIGYELEM: Átlépted a 250 órás határt! Osztályozóvizsgára kötelezhetnek!\x1B[0m');
-    } else if (totalAbsences >= 200) {
-      print('\x1B[1;31m[!] KÖZEL A HATÁR: Nagyon vigyázz, majdnem elérted a 250 órát!\x1B[0m');
-    } else if (totalAbsences >= 150) {
-      print('\x1B[1;33m[!] FIGYELMEZTETÉS: Kezd felgyűlni a hiányzásod.\x1B[0m');
-    } else {
-      print('\x1B[1;32m[OK] Biztonságos zónában vagy.\x1B[0m');
+
+    switch (AbsenceRules.levelOf(totalAbsences)) {
+      case AbsenceLevel.over:
+        print('\x1B[1;31m[!] FIGYELEM: Átlépted a 250 órás határt! Osztályozóvizsgára kötelezhetnek!\x1B[0m');
+      case AbsenceLevel.danger:
+        print('\x1B[1;31m[!] KÖZEL A HATÁR: Nagyon vigyázz, majdnem elérted a 250 órát!\x1B[0m');
+      case AbsenceLevel.warning:
+        print('\x1B[1;33m[!] FIGYELMEZTETÉS: Kezd felgyűlni a hiányzásod.\x1B[0m');
+      case AbsenceLevel.ok:
+        print('\x1B[1;32m[OK] Biztonságos zónában vagy.\x1B[0m');
     }
 
     final Map<String, int> missedBySubject = {};

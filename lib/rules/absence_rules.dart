@@ -3,6 +3,9 @@ import '../models/absence.dart';
 /// Absence status after the Kréta IgazolasAllapota value.
 enum AbsenceStatus { excused, pending, unexcused }
 
+/// How close missed lessons are to the 250-hour limit, for warning colours.
+enum AbsenceLevel { ok, warning, danger, over }
+
 /// Counts shown by every client's absence view.
 class AbsenceSummary {
   /// Missed lessons (each absence entry is one lesson); this is what counts
@@ -54,6 +57,15 @@ class AbsenceRules {
     if (s.contains('igazolatlan')) return AbsenceStatus.unexcused;
     if (s.contains('igazolt')) return AbsenceStatus.excused;
     return AbsenceStatus.pending;
+  }
+
+  /// Warning from 150 hours, danger from 200, over the limit from 250. Every
+  /// client colours its absence bar and messages by this.
+  static AbsenceLevel levelOf(int hours) {
+    if (hours >= 250) return AbsenceLevel.over;
+    if (hours >= 200) return AbsenceLevel.danger;
+    if (hours >= 150) return AbsenceLevel.warning;
+    return AbsenceLevel.ok;
   }
 
   static AbsenceSummary summarize(Iterable<Absence> absences) {
