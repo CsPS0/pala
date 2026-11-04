@@ -95,4 +95,35 @@ class AbsenceRules {
       lateMinutes: lateMinutes,
     );
   }
+
+  /// [summarize] per subject, most missed lessons first. Mirrors
+  /// `KretaApi.absencesBySubject`.
+  static List<({String subject, AbsenceSummary summary})> bySubject(Iterable<Absence> absences) {
+    final groups = <String, List<Absence>>{};
+    for (final a in absences) {
+      groups.putIfAbsent(a.subject, () => []).add(a);
+    }
+    final rows = [for (final e in groups.entries) (subject: e.key, summary: summarize(e.value))];
+    rows.sort((x, y) {
+      final byMissed = y.summary.missed.compareTo(x.summary.missed);
+      if (byMissed != 0) return byMissed;
+      final byLate = y.summary.lateCount.compareTo(x.summary.lateCount);
+      return byLate != 0 ? byLate : x.subject.compareTo(y.subject);
+    });
+    return rows;
+  }
+
+  /// Missed lessons (lateness apart) per month ("YYYY-MM"), oldest first.
+  /// Mirrors `KretaApi.absencesByMonth`.
+  static List<({String month, int missed})> byMonth(Iterable<Absence> absences) {
+    final months = <String, int>{};
+    for (final a in absences) {
+      final d = a.date;
+      if (d == null || isLateness(a)) continue;
+      final key = '${d.year}-${d.month.toString().padLeft(2, '0')}';
+      months[key] = (months[key] ?? 0) + 1;
+    }
+    final keys = months.keys.toList()..sort();
+    return [for (final k in keys) (month: k, missed: months[k]!)];
+  }
 }

@@ -35,4 +35,19 @@ class GradeRules {
     if (values.isEmpty) return null;
     return values.reduce((a, b) => a + b) / values.length;
   }
+
+  /// The weighted average after each grade, in the given (chronological)
+  /// order, for "average over time" charts. Mirrors `KretaApi.runningAverages`.
+  static List<double> runningAverages(Iterable<Grade> grades) {
+    var sum = 0.0, weight = 0.0;
+    final out = <double>[];
+    for (final g in grades) {
+      final v = g.numericValue;
+      if (v == null) continue;
+      sum += v * g.weight;
+      weight += g.weight;
+      out.add(weight > 0 ? sum / weight : v.toDouble());
+    }
+    return out;
+  }
 }

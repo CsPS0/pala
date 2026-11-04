@@ -67,3 +67,21 @@ List<Message> sortMessagesNewestFirst(Iterable<Message> messages) {
       return db.compareTo(da);
     });
 }
+
+/// Each sender once, in Hungarian alphabetical order, for the sender filter.
+List<String> messageSenders(Iterable<Message> messages) {
+  final names = messages.map((m) => m.senderName).where((n) => n.isNotEmpty).toSet().toList();
+  names.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+  return names;
+}
+
+/// The message list on screen: only [sender]'s messages when set, newest
+/// first or (with [oldestFirst]) oldest first; undated messages always last.
+/// The extension mirrors this in `KretaApi.messageView`.
+List<Message> messageView(Iterable<Message> messages, {String? sender, bool oldestFirst = false}) {
+  final picked = (sender == null || sender.isEmpty) ? messages : messages.where((m) => m.senderName == sender);
+  final sorted = sortMessagesNewestFirst(picked);
+  if (!oldestFirst) return sorted;
+  final dated = sorted.where((m) => m.sentDate != null).toList().reversed;
+  return [...dated, ...sorted.where((m) => m.sentDate == null)];
+}
