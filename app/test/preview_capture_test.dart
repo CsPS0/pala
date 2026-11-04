@@ -17,6 +17,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 const _capture = bool.fromEnvironment('CAPTURE_PREVIEWS');
 
+/// Every page at phone size into build/walkthrough/ (for looking the app over):
+///   flutter test test/preview_capture_test.dart --dart-define=CAPTURE_PREVIEWS=true --dart-define=WALKTHROUGH=true
+const _walkthrough = bool.fromEnvironment('WALKTHROUGH');
+
 /// Test fonts are a placeholder box font; load the real Roboto and Material icons from the SDK.
 Future<void> _loadSdkFonts() async {
   // The test runs inside the Flutter SDK (flutter_tester); walk up to the folder that holds bin/cache.
@@ -64,15 +68,31 @@ class _Shot {
   final String name;
   final Size logicalSize;
   final double pixelRatio;
-  final String? tapLabel;
-  const _Shot(this.name, this.logicalSize, this.pixelRatio, [this.tapLabel]);
+  final List<String> taps;
+  const _Shot(this.name, this.logicalSize, this.pixelRatio, [this.taps = const []]);
 }
 
 const _shots = [
   _Shot('desktop-vezerlopult', Size(1280, 800), 2),
-  _Shot('desktop-jegyek', Size(1280, 800), 2, 'Jegyek & Átlagok'),
+  _Shot('desktop-jegyek', Size(1280, 800), 2, ['Osztályzatok']),
   _Shot('phone-fooldal', Size(390, 844), 3),
-  _Shot('phone-orarend', Size(390, 844), 3, 'Órarend'),
+  _Shot('phone-orarend', Size(390, 844), 3, ['Órarend']),
+];
+
+const _walkthroughShots = [
+  _Shot('phone-1-fooldal', Size(360, 740), 2),
+  _Shot('phone-2-orarend', Size(360, 740), 2, ['Órarend']),
+  _Shot('phone-3-jegyek', Size(360, 740), 2, ['Jegyek']),
+  _Shot('phone-4-mulasztas', Size(360, 740), 2, ['Mulasztás']),
+  _Shot('phone-5-tobb', Size(360, 740), 2, ['Több']),
+  _Shot('phone-6-feladatok', Size(360, 740), 2, ['Több', 'Feladatok & Dolgozatok']),
+  _Shot('phone-7-uzenetek', Size(360, 740), 2, ['Több', 'Üzenetek']),
+  _Shot('phone-8-profil', Size(360, 740), 2, ['Több', 'Fiók & Profil']),
+  _Shot('desktop-1-vezerlopult', Size(1440, 900), 1),
+  _Shot('desktop-2-orarend', Size(1440, 900), 1, ['Órarend']),
+  _Shot('desktop-3-osztalyzatok', Size(1440, 900), 1, ['Osztályzatok']),
+  _Shot('desktop-4-uzenetek', Size(1440, 900), 1, ['Üzenetek']),
+  _Shot('desktop-5-mulasztasok', Size(1440, 900), 1, ['Mulasztások']),
 ];
 
 void main() {
@@ -85,8 +105,8 @@ void main() {
     await _loadSdkFonts();
   });
 
-  for (final dark in [true, false]) {
-    for (final shot in _shots) {
+  for (final dark in _walkthrough ? [true] : [true, false]) {
+    for (final shot in _walkthrough ? _walkthroughShots : _shots) {
       final theme = dark ? 'dark' : 'light';
       testWidgets('capture ${shot.name}-$theme', skip: !_capture, (tester) async {
         final appModel = AppModel();
@@ -114,8 +134,8 @@ void main() {
         // The dashboard ticker never settles, so pump fixed frames instead of pumpAndSettle.
         await tester.pump(const Duration(milliseconds: 500));
 
-        if (shot.tapLabel != null) {
-          await tester.tap(find.text(shot.tapLabel!).last);
+        for (final label in shot.taps) {
+          await tester.tap(find.text(label).last);
           await tester.pump(const Duration(milliseconds: 500));
           await tester.pump(const Duration(milliseconds: 500));
         }
@@ -124,7 +144,7 @@ void main() {
           final boundary = boundaryKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
           final image = await boundary.toImage(pixelRatio: shot.pixelRatio);
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-          final out = File('../build/previews/${shot.name}-$theme.png');
+          final out = File('../build/${_walkthrough ? 'walkthrough' : 'previews'}/${shot.name}-$theme.png');
           await out.parent.create(recursive: true);
           await out.writeAsBytes(bytes!.buffer.asUint8List());
         });

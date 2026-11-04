@@ -111,7 +111,7 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                           onPressed: () => widget.appModel.setWeekOffset(0),
                           child: Text(
                             widget.appModel.weekOffset == 0
-                                ? 'Aktuális hét'
+                                ? 'Ez a hét'
                                 : (widget.appModel.weekOffset > 0 ? '+${widget.appModel.weekOffset}. hét' : '${widget.appModel.weekOffset}. hét'),
                             style: TextStyle(
                               color: widget.appModel.weekOffset == 0 ? primary : PalaTheme.text,
@@ -149,7 +149,10 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                                       const SizedBox(width: 4),
                                     ],
                                     Text(
-                                      '${widget.appModel.weekType} (${widget.appModel.currentWeekNumber}. hét)',
+                                      // Phones: just the week type, so the badge fits next to the arrows.
+                                      isDesktop
+                                          ? '${widget.appModel.weekType} (${widget.appModel.currentWeekNumber}. hét)'
+                                          : '${widget.appModel.weekType}',
                                       style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: primary),
                                     ),
                                   ],
@@ -280,23 +283,30 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text(
-                                          _days[dayIdx],
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w800,
-                                            fontSize: 13,
-                                            color: isToday ? primary : PalaTheme.text,
+                                        Flexible(
+                                          child: Text(
+                                            _days[dayIdx],
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 13,
+                                              color: isToday ? primary : PalaTheme.text,
+                                            ),
                                           ),
                                         ),
-                                        if (dateStr.isNotEmpty)
+                                        if (dateStr.isNotEmpty) ...[
+                                          const SizedBox(width: 6),
                                           Text(
                                             dateStr,
+                                            maxLines: 1,
                                             style: TextStyle(
                                               fontSize: 11,
                                               color: isToday ? primary : PalaTheme.textMuted,
                                               fontWeight: FontWeight.w600,
                                             ),
                                           ),
+                                        ],
                                       ],
                                     ),
                                   ),
@@ -426,6 +436,21 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
     final isPast = isToday && endTime != null && now.isAfter(endTime);
     final hasSubstitute = !isCancelled && (l.substituteTeacher?.isNotEmpty ?? false);
 
+    Widget badge(String text, Color color) => Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(color: color.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(4)),
+          child: Text(text, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w700)),
+        );
+    final Widget? status = isCancelled
+        ? badge('Elmarad', PalaTheme.danger)
+        : hasSubstitute
+            ? badge('Helyettesítés', PalaTheme.warning)
+            : isNow
+                ? badge('Most', primary)
+                : isPast
+                    ? Icon(Icons.check_circle, size: 15, color: PalaTheme.success)
+                    : null;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 6),
       padding: EdgeInsets.all(compact ? 10 : 14),
@@ -495,40 +520,16 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
+                // Narrow day columns have no room beside the text.
+                if (compact && status != null) ...[
+                  const SizedBox(height: 4),
+                  status,
+                ],
               ],
             ),
           ),
+          if (!compact && status != null) ...[const SizedBox(width: 8), status],
 
-          // Status indicator
-          if (isCancelled)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: PalaTheme.danger.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text('Elmarad', style: TextStyle(color: PalaTheme.danger, fontSize: 10, fontWeight: FontWeight.w700)),
-            )
-          else if (hasSubstitute)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: PalaTheme.warning.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text('Helyettesítés', style: TextStyle(color: PalaTheme.warning, fontSize: 10, fontWeight: FontWeight.w700)),
-            )
-          else if (isNow)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: primary.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text('Most', style: TextStyle(color: primary, fontSize: 10, fontWeight: FontWeight.w700)),
-            )
-          else if (isPast)
-            Icon(Icons.check_circle, size: 15, color: PalaTheme.success),
         ],
       ),
     );

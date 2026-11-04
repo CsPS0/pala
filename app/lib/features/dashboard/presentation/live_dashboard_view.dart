@@ -370,7 +370,9 @@ class _LiveDashboardViewState extends State<LiveDashboardView> {
   }
 
   Widget _buildRecentGrades(BuildContext context, ThemeData theme, ColorScheme colorScheme) {
-    final grades = [...widget.appModel.grades]
+    // Grades earned so far: midyear and year-end results are not "recent grades".
+    final now = DateTime.now();
+    final grades = widget.appModel.grades.where((g) => !g.isSummaryGrade && (g.date == null || !g.date!.isAfter(now))).toList()
       ..sort((a, b) => (b.date ?? DateTime(0)).compareTo(a.date ?? DateTime(0)));
     final shown = grades.take(6).toList();
     return _insightCard(
@@ -487,14 +489,14 @@ class _LiveDashboardViewState extends State<LiveDashboardView> {
       children: [
         QuickActionButton(
           icon: Icons.school_outlined,
-          label: 'Jegyek & Átlagok',
+          label: 'Osztályzatok',
           color: colorScheme.primaryContainer,
           textColor: colorScheme.onPrimaryContainer,
           onPressed: widget.onNavigate != null ? () => widget.onNavigate!(AppPages.grades) : null,
         ),
         QuickActionButton(
           icon: Icons.calendar_today_outlined,
-          label: 'Heti Órarend',
+          label: 'Órarend',
           color: colorScheme.secondaryContainer,
           textColor: colorScheme.onSecondaryContainer,
           onPressed: widget.onNavigate != null ? () => widget.onNavigate!(AppPages.timetable) : null,
