@@ -4,7 +4,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../../core/adaptive/app_pages.dart';
 import 'package:intl/intl.dart';
+import 'package:pala/models/grade.dart';
 import 'package:pala/models/timetable_entry.dart';
+import 'package:pala/rules/schedule_rules.dart';
+import '../../../core/theme/app_colors.dart';
 import 'package:pala/utils/ics_exporter.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -159,7 +162,14 @@ class _LiveDashboardViewState extends State<LiveDashboardView> {
                 SliverPadding(
                   padding: const EdgeInsets.all(16),
                   sliver: SliverToBoxAdapter(
-                    child: Row(
+                    child: Center(
+                      child: ConstrainedBox(
+                        // Very wide windows keep a readable width instead of stretching.
+                        constraints: const BoxConstraints(maxWidth: 1400),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                    Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
@@ -216,6 +226,12 @@ class _LiveDashboardViewState extends State<LiveDashboardView> {
                           ),
                         ),
                       ],
+                    ),
+                            const SizedBox(height: 20),
+                            _buildInsights(context, theme, colorScheme, sideBySide: constraints.maxWidth >= 1000),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -300,11 +316,126 @@ class _LiveDashboardViewState extends State<LiveDashboardView> {
                   ),
                 ),
 
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+                sliver: SliverToBoxAdapter(
+                  child: _buildInsights(context, theme, colorScheme, sideBySide: false),
+                ),
+              ),
+
               const SliverToBoxAdapter(child: SizedBox(height: 32)),
             ],
           ),
         );
       },
+    );
+  }
+
+  /// Recent grades and upcoming exams / homework, like the extension's dashboard.
+  Widget _buildInsights(BuildContext context, ThemeData theme, ColorScheme colorScheme, {required bool sideBySide}) {
+    final recent = _buildRecentGrades(context, theme, colorScheme);
+    final upcoming = _buildUpcoming(context, theme, colorScheme);
+    if (sideBySide) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [Expanded(child: recent), const SizedBox(width: 20), Expanded(child: upcoming)],
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [recent, const SizedBox(height: 16), upcoming],
+    );
+  }
+
+  Widget _insightCard(ThemeData theme, ColorScheme colorScheme, {required String title, String? action, VoidCallback? onAction, required List<Widget> children}) {
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(child: Text(title, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800))),
+                if (action != null && onAction != null) TextButton(onPressed: onAction, child: Text(action)),
+              ],
+            ),
+            const SizedBox(height: 4),
+            ...children,
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecentGrades(BuildContext context, ThemeData theme, ColorScheme colorScheme) {
+    final grades = [...widget.appModel.grades]
+      ..sort((a, b) => (b.date ?? DateTime(0)).compareTo(a.date ?? DateTime(0)));
+    final shown = grades.take(6).toList();
+    return _insightCard(
+      theme,
+      colorScheme,
+      title: 'Legutóbbi jegyek',
+      action: 'Összes',
+      onAction: widget.onNavigate != null ? () => widget.onNavigate!(AppPages.grades) : null,
+      children: shown.isEmpty
+          ? [Padding(padding: const EdgeInsets.all(8), child: Text('Még nincs rögzített jegy.', style: theme.textTheme.bodySmall))]
+          : [for (final g in shown) _gradeRow(theme, colorScheme, g)],
+    );
+  }
+
+  Widget _gradeRow(ThemeData theme, ColorScheme colorScheme, Grade g) {
+    final color = g.valueKind == GradeValueKind.grade ? AppColors.getGradeColor(g.numericValue, theme.brightness) : colorScheme.outline;
+    return ListTile(
+      dense: true,
+      contentPadding: const EdgeInsets.only(right: 8),
+      leading: Container(
+        width: 40,
+        height: 32,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(color: color.withValues(alpha: 0.18), borderRadius: BorderRadius.circular(8)),
+        child: Text(g.displayValue, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: color, fontWeight: FontWeight.w900)),
+      ),
+      title: Text(widget.appModel.getDisplaySubject(g.subject), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)),
+      subtitle: Text(
+        [if (g.theme != null && g.theme!.isNotEmpty) g.theme!, if (g.date != null) DateFormat('yyyy.MM.dd').format(g.date!)].join(' • '),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      trailing: g.weight != 100 ? Text('${g.weight.round()}%', style: theme.textTheme.bodySmall) : null,
+    );
+  }
+
+  Widget _buildUpcoming(BuildContext context, ThemeData theme, ColorScheme colorScheme) {
+    // Today and later only, soonest first (the same rule as the extension's "Közelgő").
+    final items = <({bool isExam, String subject, String title, DateTime date})>[
+      for (final e in widget.appModel.exams)
+        if (isUpcoming(e.date)) (isExam: true, subject: e.subject, title: e.theme ?? 'Számonkérés', date: e.date!),
+      for (final h in widget.appModel.homework)
+        if (isUpcoming(h.deadline) && !widget.appModel.completedHomework.contains(h.uid))
+          (isExam: false, subject: h.subject, title: h.text, date: h.deadline!),
+    ]..sort((a, b) => a.date.compareTo(b.date));
+    final shown = items.take(6).toList();
+    return _insightCard(
+      theme,
+      colorScheme,
+      title: 'Közelgő számonkérések és házik',
+      action: 'Összes',
+      onAction: widget.onNavigate != null ? () => widget.onNavigate!(AppPages.tasks) : null,
+      children: shown.isEmpty
+          ? [Padding(padding: const EdgeInsets.all(8), child: Text('Nincs közelgő számonkérés vagy házi feladat.', style: theme.textTheme.bodySmall))]
+          : [
+              for (final it in shown)
+                ListTile(
+                  dense: true,
+                  contentPadding: const EdgeInsets.only(right: 8),
+                  leading: Icon(it.isExam ? Icons.edit_note : Icons.menu_book_outlined, color: it.isExam ? colorScheme.error : colorScheme.primary),
+                  title: Text(widget.appModel.getDisplaySubject(it.subject), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)),
+                  subtitle: Text(it.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  trailing: Text(DateFormat('MM.dd').format(it.date), style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w700)),
+                ),
+            ],
     );
   }
 
@@ -382,8 +513,9 @@ class _LiveDashboardViewState extends State<LiveDashboardView> {
   Widget _buildKpiMetrics(BuildContext context, ThemeData theme, ColorScheme colorScheme) {
     final gpa = widget.appModel.overallGpa;
     final missed = widget.appModel.totalMissedHours;
-    final hwCount = widget.appModel.homework.where((h) => !widget.appModel.completedHomework.contains(h.uid)).length;
-    final examCount = widget.appModel.exams.length;
+    // Only what is still ahead, like the extension: past homework and exams do not count.
+    final hwCount = widget.appModel.homework.where((h) => isUpcoming(h.deadline) && !widget.appModel.completedHomework.contains(h.uid)).length;
+    final examCount = widget.appModel.exams.where((e) => isUpcoming(e.date)).length;
 
     final tiles = <Widget>[
       _buildMetricTile(
