@@ -211,31 +211,23 @@ function localDateKey(value) {
 }
 
 const DEMO_STUDENT = {
+  // Same field names as Kréta's TanuloAdatlap (fictional values).
   Nev: "Teszt Elek",
   SzuletesiNev: "Teszt Elek",
   SzuletesiDatum: "2008-03-15",
   SzuletesiHely: "Budapest",
   AnyjaNeve: "Minta Mária",
-  OktatasiAzonosito: "72458912345",
-  AdoazonositoJel: "8514643002",
-  TajSzam: "126831612",
-  IgazolvanyTipus: "Személyi Igazolvány",
-  IgazolvanySzam: "123456AB",
-  DiakigazolvanySzam: "00789456123",
-  DiakigazolvanyKelte: "2022. 09. 01.",
-  Bankszamlaszam: "11773425-06294344-00000000",
-  SzamlavezetoBank: "OTP Bank Nyrt.",
-  BankszamlaTulajdonosNeve: "Teszt Elek",
-  BankszamlaTulajdonosa: "saját",
-  Osztaly: "11.I",
-  Email: "elek.teszt@pala.edu.hu",
+  EmailCim: "elek.teszt@pala.edu.hu",
   Telefonszam: "+36 30 123 4567",
-  Cim: "1111 Budapest, Példa utca 12. II/4",
+  Cimek: ["1111 Budapest, Példa utca 12. II/4"],
+  IntezmenyNev: "Pala Minta Gimnázium és Technikum",
+  IntezmenyAzonosito: "pala-minta",
+  Bankszamla: { BankszamlaSzam: "11773425-06294344-00000000", BankszamlaTulajdonosNeve: "Teszt Elek", BankszamlaTulajdonosTipusId: 1, IsReadOnly: false },
   Gondviselok: [
-    { Nev: "Teszt Gábor", Email: "szulo@teszt.hu", Telefonszam: "+36 20 987 6543" },
-    { Nev: "Minta Mária", Email: "anya@teszt.hu", Telefonszam: "+36 30 555 4444" }
+    { Nev: "Teszt Gábor", EmailCim: "szulo@teszt.hu", Telefonszam: "+36 20 987 6543" },
+    { Nev: "Minta Mária", EmailCim: "anya@teszt.hu", Telefonszam: "+36 30 555 4444" }
   ],
-  Intezmeny: { Nev: "Pala Minta Gimnázium és Technikum", Kod: "pala-minta" }
+  Intezmeny: { TeljesNev: "Pala Minta Gimnázium és Technikum", RovidNev: "Pala Minta" }
 };
 
 const DEMO_GRADES = [
@@ -1046,11 +1038,13 @@ class KretaApi {
 
     // Class/group averages need the group's task UID first, then the averages
     // endpoint itself — two sequential calls, run alongside everything else.
+    let className = null;
     const groupAveragesPromise = (async () => {
       try {
         const groups = await fetchEndpoint("OsztalyCsoportok");
-        if (!Array.isArray(groups) || groups.length === 0) return [];
-        const group = groups.find(g => g.Tipus === "Osztaly" || g.Tipus === "OSZTALY") || groups[0];
+        const group = KretaApi.mainClassGroup(groups);
+        if (!group) return [];
+        className = group.Nev || null;
         const taskUid = group?.OktatasNevelesiFeladat?.Uid;
         if (!taskUid) return [];
         const avgs = await fetchEndpoint(`Ertekelesek/Atlagok/OsztalyAtlagok?oktatasiNevelesiFeladatUid=${encodeURIComponent(taskUid)}`);
@@ -1136,6 +1130,7 @@ class KretaApi {
       exams: Array.isArray(exams) ? exams : [],
       absences: Array.isArray(absences) ? absences : [],
       groupAverages: Array.isArray(groupAverages) ? groupAverages : [],
+      className,
       messages: sortedMessages,
       // teachers and questionnaires come from e-Ugyintezas (fetched separately).
       teachers: [],
@@ -1449,6 +1444,46 @@ class KretaApi {
    * Parser for Kréta evaluation objects.
    * Differentiates standard 1..5 grades, percentages (>5%), text evaluations, "Nem írt", and summary grades.
    */
+  /** The student's class among OsztalyCsoportok (Tipus "Osztaly"), else the first group, else null. */
+  static mainClassGroup(groups) {
+    if (!Array.isArray(groups) || groups.length === 0) return null;
+    return groups.find(g => String(g?.Tipus || "").toLowerCase() === "osztaly") || groups[0];
+  }
+
+  /**
+   * Profile fields from Kréta's TanuloAdatlap, by the names Kréta really uses.
+   * Anything Kréta does not send (OM id, TAJ, tax id, ID cards) is "-" here and
+   * can only come from the user's own manual entries. className comes from
+   * OsztalyCsoportok, not from TanuloAdatlap.
+   */
+  static studentProfile(student, className = null) {
+    const s = student || {};
+    const bank = s.Bankszamla || {};
+    const text = (v) => (v === undefined || v === null || v === "" ? "-" : String(v));
+    const birthDate = s.SzuletesiDatum
+      ? (String(s.SzuletesiDatum).includes("T") ? new Date(s.SzuletesiDatum).toLocaleDateString("hu-HU") : s.SzuletesiDatum)
+      : null;
+    const address = Array.isArray(s.Cimek) ? s.Cimek.filter(Boolean).join("; ") : s.Cim;
+    return {
+      name: text(s.Nev),
+      birthName: text(s.SzuletesiNev || s.Nev),
+      birthPlace: text(s.SzuletesiHely),
+      birthDate: text(birthDate),
+      motherName: text(s.AnyjaNeve),
+      address: text(address),
+      instituteName: text(s.IntezmenyNev || s.Intezmeny?.TeljesNev),
+      instituteCode: text(s.IntezmenyAzonosito),
+      className: text(className),
+      email: text(s.EmailCim),
+      phone: text(s.Telefonszam),
+      bankAccount: text(bank.BankszamlaSzam),
+      bankOwner: text(bank.BankszamlaTulajdonosNeve),
+      // Kréta sends the owner type only as a numeric id with no published names.
+      bankOwnerType: "-",
+      omId: "-",
+    };
+  }
+
   /** A copy of the list with the newest message first; messages without a date go last. Mirrors lib/models/message.dart. */
   static sortMessagesNewestFirst(list) {
     const time = (m) => {
@@ -1763,6 +1798,7 @@ class KretaApi {
   static getDemoDataset(overrideAWeek = null) {
     return {
       student: DEMO_STUDENT,
+      className: "11.I",
       grades: DEMO_GRADES,
       timetable: generateDemoTimetable(overrideAWeek),
       weekType: demoWeekType(overrideAWeek),

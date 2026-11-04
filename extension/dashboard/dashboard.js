@@ -2951,9 +2951,6 @@ async function renderStudentView(student) {
     return;
   }
 
-  // Debug log for checking exact raw fields returned by Kréta
-  console.log("Pala Student Raw Object:", student);
-
   const extraStore = await chrome.storage.local.get(["pala_student_extra"]);
   // In demo mode, strictly prevent real student extra data from leaking into Teszt Elek's profile
   const extra = fullState.isDemo ? {} : (extraStore.pala_student_extra || {});
@@ -2986,7 +2983,7 @@ async function renderStudentView(student) {
       <div style="background: var(--sidebar); border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-bottom: 8px;">
         <strong style="font-size: 0.85rem;">${escapeHtml(g.Nev || "-")}</strong>
         <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; display: flex; flex-direction: column; gap: 2px;">
-          <div>Email: ${escapeHtml(g.Email || g.EmailCim || "Nincs megadva")}</div>
+          <div>Email: ${escapeHtml(g.EmailCim || g.Email || "Nincs megadva")}</div>
           <div>Telefon: ${escapeHtml(g.Telefonszam || "Nincs megadva")}</div>
         </div>
       </div>
@@ -2995,34 +2992,33 @@ async function renderStudentView(student) {
     guardiansHtml = `<div style="font-size: 0.75rem; color: var(--text-muted);">Nincs rögzített gondviselő.</div>`;
   }
 
-  // Personal data extraction (from extra or student)
-  const studentName = extra.name || student.Nev || "-";
-  const birthName = extra.birthName || student.SzuletesiNev || student.Nev || "-";
-  const omId = extra.omId || student.OktatasiAzonosito || "-";
-  const birthPlace = extra.birthPlace || student.SzuletesiHely || "-";
-  const birthDate = extra.birthDate || (student.SzuletesiDatum ? (student.SzuletesiDatum.includes("T") ? new Date(student.SzuletesiDatum).toLocaleDateString("hu-HU") : student.SzuletesiDatum) : "-");
-  const motherName = extra.motherName || student.AnyjaNeve || "-";
-  const address = extra.address || student.Cim || student.Cimek?.[0] || "-";
+  // Kréta's own fields first (KretaApi.studentProfile), the user's manual
+  // entries over them. Nothing is made up: missing data shows "-".
+  const kp = KretaApi.studentProfile(student, d.className);
+  const studentName = extra.name || kp.name;
+  const birthName = extra.birthName || kp.birthName;
+  const omId = extra.omId || kp.omId;
+  const birthPlace = extra.birthPlace || kp.birthPlace;
+  const birthDate = extra.birthDate || kp.birthDate;
+  const motherName = extra.motherName || kp.motherName;
+  const address = extra.address || kp.address;
 
-  // Institutional data extraction
-  const instName = extra.instituteName || student.IntezmenyNev || student.Intezmeny?.TeljesNev || student.Intezmeny?.Nev || "-";
-  const instCode = extra.instituteCode || student.Intezmeny?.Kod || student.IntezmenyKod || "-";
-  const classGrade = extra.classGrade || student.Osztaly || student.Evfolyam || "-";
-  const email = extra.email || student.Email || student.EmailCim || "-";
-  const phone = extra.phone || student.Telefonszam || "-";
+  const instName = extra.instituteName || kp.instituteName;
+  const instCode = extra.instituteCode || kp.instituteCode;
+  const classGrade = extra.classGrade || kp.className;
+  const email = extra.email || kp.email;
+  const phone = extra.phone || kp.phone;
 
-  // Bank details extraction
-  const bankObj = student.Bankszamla || student.BankiAdatok || student.BankszamlaAdatok || {};
-  const bankAccount = extra.bankAccount || findField(student, "Bankszamlaszam", "BankszamlaSzam", "Szamlaszam", "Iban") || findField(bankObj, "Bankszamlaszam", "Szamlaszam", "Iban") || "-";
-  const bankName = extra.bankName || findField(student, "SzamlavezetoBank", "BankNev", "Bank") || findField(bankObj, "SzamlavezetoBank", "BankNev", "Bank") || "-";
-  const bankOwner = extra.bankOwner || findField(student, "BankszamlaTulajdonosNeve", "BankszamlaTulajdonos", "Szamlatulajdonos") || findField(bankObj, "TulajdonosNev", "BankszamlaTulajdonosNeve", "Nev") || studentName || "-";
-  const bankOwnerType = extra.bankOwnerType || findField(student, "BankszamlaTulajdonosa", "TulajdonosTipus") || findField(bankObj, "TulajdonosTipus", "Tulajdonosa") || "saját";
+  const bankAccount = extra.bankAccount || kp.bankAccount;
+  const bankName = extra.bankName || "-";
+  const bankOwner = extra.bankOwner || kp.bankOwner;
+  const bankOwnerType = extra.bankOwnerType || kp.bankOwnerType;
 
   // Official IDs extraction
   const okmanyObj = student.Okmanyok || student.OkmanyAdatok || {};
   const taxId = extra.taxId || findField(student, "AdoazonositoJel", "Adoazonosito", "AdoazonositoSzam", "Adoszam") || findField(okmanyObj, "AdoazonositoJel", "Adoazonosito") || "-";
   const tajNumber = extra.tajNumber || findField(student, "TajSzam", "Taj", "Tajszam") || findField(okmanyObj, "TajSzam", "Taj") || "-";
-  const idType = extra.idType || findField(student, "IgazolvanyTipus", "OkmanyTipus") || findField(okmanyObj, "IgazolvanyTipus", "OkmanyTipus") || "Személyi Igazolvány";
+  const idType = extra.idType || findField(student, "IgazolvanyTipus", "OkmanyTipus") || findField(okmanyObj, "IgazolvanyTipus", "OkmanyTipus") || "-";
   const idNumber = extra.idNumber || findField(student, "SzemelyiIgazolvanySzam", "IgazolvanySzam", "OkmanySzam") || findField(okmanyObj, "IgazolvanySzam", "OkmanySzam") || "-";
   const studentCardNumber = extra.studentCardNumber || findField(student, "DiakigazolvanySzam", "Diakigazolvany") || findField(okmanyObj, "DiakigazolvanySzam", "Diakigazolvany") || "-";
   const rawStudentCardDate = extra.studentCardDate || findField(student, "DiakigazolvanyKelte", "DiakigazolvanyErvenyesseg") || findField(okmanyObj, "DiakigazolvanyKelte");
@@ -3163,7 +3159,7 @@ async function renderStudentView(student) {
       <div style="display: flex; align-items: center; gap: 8px;">
         <h2 style="font-size: 1.05rem; font-weight: 800; color: var(--primary); margin: 0;">Bankszámla Adatok</h2>
         <span class="badge ${hasBankData ? "badge-verified" : "badge-maintenance"}" style="font-size: 0.75rem;">
-          ${hasBankData ? "Rögzítve • Ösztöndíjhoz aktív" : "Nincs rögzítve"}
+          ${hasBankData ? (extra.bankAccount ? "Kézzel megadva" : "A Krétából") : "Nincs rögzítve"}
         </span>
       </div>
     </div>
@@ -3287,17 +3283,22 @@ async function renderStudentView(student) {
   container.appendChild(card4);
   container.appendChild(card5);
 
-  document.getElementById("btn-global-edit-profile")?.addEventListener("click", () => openExtraModal());
-  document.getElementById("btn-toggle-api-warning")?.addEventListener("click", () => {
+  // These buttons are static and this view re-renders often: assign the
+  // handlers (not addEventListener), or a second listener cancels the toggle.
+  const editBtn = document.getElementById("btn-global-edit-profile");
+  if (editBtn) editBtn.onclick = () => openExtraModal();
+  const warnBtn = document.getElementById("btn-toggle-api-warning");
+  if (warnBtn) warnBtn.onclick = () => {
     const banner = document.getElementById("student-api-banner");
     if (banner) {
       banner.style.display = banner.style.display === "none" ? "flex" : "none";
     }
-  });
-  document.getElementById("btn-close-api-banner")?.addEventListener("click", () => {
+  };
+  const closeBtn = document.getElementById("btn-close-api-banner");
+  if (closeBtn) closeBtn.onclick = () => {
     const banner = document.getElementById("student-api-banner");
     if (banner) banner.style.display = "none";
-  });
+  };
 }
 
 async function openExtraModal() {
@@ -3314,33 +3315,34 @@ async function openExtraModal() {
     if (el) el.value = (val && val !== "-") ? val : "";
   };
 
+  // Kréta's own fields (KretaApi.studentProfile) prefill what the user has not typed.
+  const kp = KretaApi.studentProfile(student, fullState.data?.className);
   // Group 1: Personal
-  setVal("extra-input-name", extra.name || student.Nev);
-  setVal("extra-input-birth-name", extra.birthName || student.SzuletesiNev || student.Nev);
-  setVal("extra-input-om-id", extra.omId || student.OktatasiAzonosito);
-  setVal("extra-input-birth-place", extra.birthPlace || student.SzuletesiHely);
-  const rawBirth = student.SzuletesiDatum ? (student.SzuletesiDatum.includes("T") ? new Date(student.SzuletesiDatum).toLocaleDateString("hu-HU") : student.SzuletesiDatum) : "";
-  setVal("extra-input-birth-date", extra.birthDate || rawBirth);
-  setVal("extra-input-mother-name", extra.motherName || student.AnyjaNeve);
-  setVal("extra-input-address", extra.address || student.Cim || student.Cimek?.[0]);
+  setVal("extra-input-name", extra.name || kp.name);
+  setVal("extra-input-birth-name", extra.birthName || kp.birthName);
+  setVal("extra-input-om-id", extra.omId);
+  setVal("extra-input-birth-place", extra.birthPlace || kp.birthPlace);
+  setVal("extra-input-birth-date", extra.birthDate || kp.birthDate);
+  setVal("extra-input-mother-name", extra.motherName || kp.motherName);
+  setVal("extra-input-address", extra.address || kp.address);
 
   // Group 2: Institutional & Contacts
-  setVal("extra-input-inst-name", extra.instituteName || student.IntezmenyNev || student.Intezmeny?.TeljesNev || student.Intezmeny?.Nev);
-  setVal("extra-input-inst-code", extra.instituteCode || student.Intezmeny?.Kod || student.IntezmenyKod);
-  setVal("extra-input-class-grade", extra.classGrade || student.Osztaly || student.Evfolyam);
-  setVal("extra-input-email", extra.email || student.Email || student.EmailCim);
-  setVal("extra-input-phone", extra.phone || student.Telefonszam);
+  setVal("extra-input-inst-name", extra.instituteName || kp.instituteName);
+  setVal("extra-input-inst-code", extra.instituteCode || kp.instituteCode);
+  setVal("extra-input-class-grade", extra.classGrade || kp.className);
+  setVal("extra-input-email", extra.email || kp.email);
+  setVal("extra-input-phone", extra.phone || kp.phone);
 
   // Group 3: Bank
-  setVal("extra-input-bank-account", extra.bankAccount || student.Bankszamlaszam || student.Bankszamla?.Szamlaszam);
-  setVal("extra-input-bank-name", extra.bankName || student.SzamlavezetoBank || student.Bankszamla?.BankNev);
-  setVal("extra-input-bank-owner", extra.bankOwner || student.BankszamlaTulajdonosNeve || extra.name || student.Nev);
-  setVal("extra-input-bank-type", extra.bankOwnerType || student.BankszamlaTulajdonosa || "saját");
+  setVal("extra-input-bank-account", extra.bankAccount || kp.bankAccount);
+  setVal("extra-input-bank-name", extra.bankName);
+  setVal("extra-input-bank-owner", extra.bankOwner || kp.bankOwner);
+  setVal("extra-input-bank-type", extra.bankOwnerType);
 
   // Group 4: Official IDs
   setVal("extra-input-tax-id", extra.taxId || student.AdoazonositoJel || student.Adoazonosito);
   setVal("extra-input-taj", extra.tajNumber || student.TajSzam || student.Taj);
-  setVal("extra-input-id-type", extra.idType || student.IgazolvanyTipus || "Személyi Igazolvány");
+  setVal("extra-input-id-type", extra.idType || student.IgazolvanyTipus);
   setVal("extra-input-id-number", extra.idNumber || student.SzemelyiIgazolvanySzam || student.IgazolvanySzam);
   setVal("extra-input-student-card", extra.studentCardNumber || student.DiakigazolvanySzam);
   setVal("extra-input-student-card-date", extra.studentCardDate || student.DiakigazolvanyKelte);

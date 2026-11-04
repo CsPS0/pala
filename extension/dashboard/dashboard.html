@@ -643,7 +643,7 @@
             <div>
               <div style="font-weight: 800; font-size: 0.92rem; color: var(--primary); margin-bottom: 4px;">Kréta API Korlátozás — Hiányozhatnak adatok</div>
               <p style="font-size: 0.8rem; color: var(--text); line-height: 1.5; margin: 0;">
-                A hivatalos Kréta mobil gateway adatvédelmi szabályai miatt a <code>TanuloAdatlap</code> végpont nem minden személyes, pénzügyi vagy okmány adatot továbbít (például bankszámlaszám, adóazonosító, TAJ-szám). Ha bármely mezőnél <em>"Nincs rögzítve"</em> szerepel, kattints a <strong>"Profil Szerkesztése"</strong> gombra, ahol manuálisan kitöltheted.
+                A Kréta a <code>TanuloAdatlap</code> végponton nem küld el minden adatot: az OM-azonosító, az adóazonosító, a TAJ-szám, az igazolványok és a számlavezető bank neve hiányzik. A bankszámlaszámot és a tulajdonos nevét elküldi, ha az iskola rögzítette. Ahol „-” áll, a <strong>„Profil Szerkesztése”</strong> gombbal kézzel kitöltheted. A Pala ezeket csak ezen az eszközön tárolja.
               </p>
             </div>
           </div>
@@ -941,7 +941,7 @@
       </div>
 
       <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 16px; line-height: 1.45;">
-        A Kréta mobil API adatvédelmi okokból nem minden személyes, banki vagy intézményi adatot szolgáltat ki külső klienseknek. Itt a profil adatait kézzel egészítheted ki.
+        A Kréta nem küld el minden személyes és okmányadatot (például OM-azonosító, adóazonosító, TAJ-szám). Itt kézzel kiegészítheted a profilodat. Az adatok csak ezen az eszközön maradnak.
       </p>
 
       <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
@@ -957,11 +957,11 @@
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px;">
             <div>
               <label class="field-label">Tanuló teljes neve:</label>
-              <input type="text" id="extra-input-name" placeholder="pl. Solti Csongor Péter" class="modern-input">
+              <input type="text" id="extra-input-name" placeholder="pl. Minta Anna" class="modern-input">
             </div>
             <div>
               <label class="field-label">Születési név:</label>
-              <input type="text" id="extra-input-birth-name" placeholder="pl. Solti Csongor Péter" class="modern-input">
+              <input type="text" id="extra-input-birth-name" placeholder="pl. Minta Anna" class="modern-input">
             </div>
             <div>
               <label class="field-label">Oktatási azonosító (OM, 11 számjegy):</label>
@@ -1027,11 +1027,12 @@
             </div>
             <div>
               <label class="field-label">Számlatulajdonos neve:</label>
-              <input type="text" id="extra-input-bank-owner" placeholder="pl. Solti Csongor Péter" class="modern-input">
+              <input type="text" id="extra-input-bank-owner" placeholder="pl. Minta Anna" class="modern-input">
             </div>
             <div>
               <label class="field-label">Tulajdonos típusa:</label>
               <select id="extra-input-bank-type" class="modern-select">
+                <option value="">Nincs megadva</option>
                 <option value="saját">saját</option>
                 <option value="szülő / gondviselő">szülő / gondviselő</option>
                 <option value="egyéb">egyéb</option>

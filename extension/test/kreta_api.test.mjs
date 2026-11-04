@@ -114,3 +114,28 @@ test("data served during a backoff is marked stale, not live", async () => {
   assert.equal(data.isStale, true);
   assert.equal(data.cachedAt, store.pala_last_fetch);
 });
+
+test("mainClassGroup picks the Osztaly group over subject groups", () => {
+  const groups = [{ Tipus: "Csoport", Nev: "11.B angol" }, { Tipus: "Osztaly", Nev: "11.B" }];
+  assert.equal(KretaApi.mainClassGroup(groups).Nev, "11.B");
+  assert.equal(KretaApi.mainClassGroup([]), null);
+});
+
+test("studentProfile reads the real TanuloAdatlap fields and invents nothing", () => {
+  const p = KretaApi.studentProfile({
+    Nev: "Minta Anna",
+    IntezmenyNev: "Minta Iskola",
+    IntezmenyAzonosito: "minta-123",
+    EmailCim: "anna@example.com",
+    Cimek: ["1111 Budapest, Minta utca 1."],
+    Bankszamla: { BankszamlaSzam: "11111111-22222222", BankszamlaTulajdonosNeve: "Minta Béla", BankszamlaTulajdonosTipusId: 2 },
+  }, "11.B");
+  assert.equal(p.instituteCode, "minta-123");
+  assert.equal(p.className, "11.B");
+  assert.equal(p.email, "anna@example.com");
+  assert.equal(p.address, "1111 Budapest, Minta utca 1.");
+  assert.equal(p.bankAccount, "11111111-22222222");
+  assert.equal(p.bankOwner, "Minta Béla");
+  assert.equal(p.bankOwnerType, "-");
+  assert.equal(p.omId, "-");
+});

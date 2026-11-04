@@ -73,6 +73,6 @@ A Pala böngésző kiterjesztése (Manifest V3) a TUI-hoz hasonlóan szigorúan 
 - **Offline Gyorsítótár Védelem**: A korábban letöltött adatok a `chrome.storage.local` izolált tárhelyében tárolódnak. Kréta leálláskor az adatok offline módban azonnal elérhetők.
 
 ### Kréta API Adatvédelmi Korlátozások és Kiegészítő Adatok
-- **Miért hiányoznak bizonyos adatok?**: A hivatalos Kréta mobil gateway adatvédelmi okokból a `TanuloAdatlap` végponton nem adja ki a diák bankszámla adatait (bankszámlaszám, bank neve) és okmányait (adóazonosító, TAJ, diákigazolvány adatok).
+- **Milyen adatokat küld a Kréta?**: A `TanuloAdatlap` végpont elküldi a diák bankszámlaszámát és a számlatulajdonos nevét (ha az iskola rögzítette), de az OM-azonosítót, az okmányokat (adóazonosító, TAJ, diákigazolvány) és a bank nevét nem. A Pala a bankszámla adatait csak az eszközön jeleníti meg, nem naplózza és nem küldi tovább.
 - **Helyi és Manuális Adattárolás (`pala_student_extra`)**: A kiterjesztés Globális Profil Szerkesztőjében kézzel megadott kiegészítő adatok kizárólag a böngésződ helyi, elszeparált tárhelyében (`chrome.storage.local.pala_student_extra`) tárolódnak. Ezeket az adatokat a Pala soha nem küldi el semmilyen külső szerverre, és a "Kréta adatok visszaállítása" gombbal azonnal törölhetők.
 

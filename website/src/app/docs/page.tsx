@@ -2667,7 +2667,7 @@ dart run bin/pala.dart`}</pre>
                 <div className="text-xs text-muted space-y-3 leading-relaxed">
                   <p>
                     <strong className="text-fg">Miért látod bizonyos adatoknál a „Nincs rögzítve” állapotot?</strong><br />
-                    A hivatalos Kréta mobil API gateway adatvédelmi és 2FA biztonsági okokból a <code className="text-primary font-mono">TanuloAdatlap</code> végponton nem adja át a diák bankszámla adatait (bankszámlaszám, bank neve, számlatulajdonos), sem a hivatalos okmányait (adóazonosító jel, TAJ-szám, diákigazolvány adatok). Ezeket a Kréta csak a kétfaktoros hitelesítésű webes e-Ügyintézés felületén jeleníti meg.
+                    A Kréta a <code className="text-primary font-mono">TanuloAdatlap</code> végponton nem küldi el az OM-azonosítót, a hivatalos okmányokat (adóazonosító jel, TAJ-szám, igazolványok, diákigazolvány) és a számlavezető bank nevét. A bankszámlaszámot és a számlatulajdonos nevét elküldi, ha az iskola rögzítette; a Pala ezeket csak az eszközödön jeleníti meg.
                   </p>
 
                   <div className="p-4 bg-sidebar border border-border rounded-xl space-y-2">
@@ -2693,7 +2693,7 @@ dart run bin/pala.dart`}</pre>
                   <div className="p-4 bg-sidebar border border-primary/30 rounded-xl space-y-2">
                     <strong className="text-primary block">Hiányzó adatok kézi kitöltése</strong>
                     <p>
-                      Amit a Kréta mobil API nem ad át (például bankszámlaszám, adóazonosító, TAJ-szám), azt a <strong>„Profil Szerkesztése”</strong> gombbal magad töltheted ki.
+                      Amit a Kréta nem küld el (például OM-azonosító, adóazonosító, TAJ-szám), azt a <strong>„Profil Szerkesztése”</strong> gombbal magad töltheted ki.
                     </p>
                     <p>
                       A mentett adatok kizárólag a te böngésződ helyi tárhelyében (<code className="text-primary font-mono">chrome.storage.local.pala_student_extra</code>) tárolódnak, és a <strong>„Kréta adatok visszaállítása”</strong> gombbal bármikor visszaállíthatók a gyári állapotra.

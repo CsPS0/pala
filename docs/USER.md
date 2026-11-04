@@ -83,7 +83,7 @@ A Pala böngésző kiterjesztése (Manifest V3) a Chromium alapú böngészőkbe
 - **Offline gyorsítótár védelem**: Hálózati hiba vagy Kréta szerverkarbantartás esetén a `pala_cached_data` révén minden korábbi jegy, órarend és adat offline is azonnal megtekinthető.
 
 ### 8.3. Tanulói Profil & Kréta API Korlátozások (Hiányzó Adatok Kezelése)
-- **Miért jelenik meg a "Nincs rögzítve" felirat?**: A hivatalos Kréta mobil API gateway adatvédelmi és 2FA biztonsági korlátozások miatt a `TanuloAdatlap` végponton nem adja át a tanuló bankszámla adatait (bankszámlaszám, bank neve, számlatulajdonos), sem a hivatalos okmányait (adóazonosító jel, TAJ-szám, diákigazolvány adatok). Ezek a Kréta rendszerében kizárólag a kétfaktoros webes felületen érhetők el.
+- **Miért áll „-” egyes mezőkben?**: A Kréta a `TanuloAdatlap` végponton nem küldi el az OM-azonosítót, a hivatalos okmányokat (adóazonosító jel, TAJ-szám, igazolványok, diákigazolvány) és a számlavezető bank nevét. A bankszámlaszámot és a számlatulajdonos nevét elküldi, ha az iskola rögzítette; a Pala ezeket csak megjeleníti, máshová nem küldi.
 - **Nagy [!] Figyelmeztető Ikon & Értesítő sáv**: A Profilom nézet jobb felső sarkában kihelyezett nagy felkiáltójel gomb és az információs banner azonnal tájékoztat erről az API korlátozásról.
 - **Globális Profil Szerkesztő (Teljes Profil Testreszabása)**: A fejlécben lévő "Profil Szerkesztése" gombra kattintva mind a 4 fő kategória (Személyes Adatok, Intézmény & Elérhetőségek, Bankszámla Adatok, Hivatalos Okmányok) manuálisan kitölthető és szerkeszthető.
 - **Gyári Adatok Visszaállítása**: Bármikor 1 kattintással törölhetők a manuális felülbírálások, visszaállítva az eredeti Kréta szerver által küldött állapotot.
