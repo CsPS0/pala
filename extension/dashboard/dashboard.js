@@ -1993,7 +1993,55 @@ function renderWeeklyTimetable(timetable, { weekOffset = 0 } = {}) {
 }
 
 
+/**
+ * Osztályzatok overview: my average next to the class average for every
+ * subject (bars on a 1-5 scale) and overall. Hidden class bars when Kréta
+ * sends no class averages (schools can switch them off).
+ */
+function renderClassComparison(grades, groupAverages = []) {
+  const box = document.getElementById("grades-class-compare");
+  if (!box) return;
+  const mine = KretaApi.subjectAverages(grades);
+  const classBy = {};
+  (groupAverages || []).forEach(a => {
+    const v = KretaApi.classAverageOf(a);
+    if (a?.Tantargy?.Nev && v !== null) classBy[a.Tantargy.Nev] = v;
+  });
+  const subjects = Object.keys(mine).sort((a, b) => mine[b] - mine[a]);
+  if (subjects.length === 0) {
+    box.innerHTML = `<h2 class="compare-title">Átlagom és az osztályátlag</h2><div class="section-subtitle">Még nincs beszámított jegy.</div>`;
+    return;
+  }
+  const both = subjects.filter(s => classBy[s] !== undefined);
+  const myOverall = KretaApi.overallAverage(grades);
+  const classOverall = both.length ? both.reduce((sum, s) => sum + classBy[s], 0) / both.length : null;
+  const pct = v => `${Math.max(0, Math.min(100, ((v - 1) / 4) * 100)).toFixed(1)}%`;
+  const bar = (v, cls, label) => `<div class="compare-bar-row" title="${label}: ${v.toFixed(2)}"><div class="compare-bar ${cls}"><span style="width:${pct(v)}"></span></div><b>${v.toFixed(2)}</b></div>`;
+
+  const rows = subjects.map(s => `
+    <div class="compare-row">
+      <div class="compare-name" title="${escapeHtml(getDisplaySubject(s))}">${escapeHtml(getDisplaySubject(s))}</div>
+      <div class="compare-bars">
+        ${bar(mine[s], "mine", "Saját átlag")}
+        ${classBy[s] !== undefined ? bar(classBy[s], "class", "Osztályátlag") : ""}
+      </div>
+    </div>`).join("");
+
+  const delta = myOverall !== null && classOverall !== null ? myOverall - classOverall : null;
+  const deltaText = delta === null ? "" : `<span style="color:${delta >= 0 ? "var(--success)" : "var(--danger)"}; font-weight:800;">${delta >= 0 ? "+" : ""}${delta.toFixed(2)}</span>`;
+  box.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
+      <div>
+        <h2 class="compare-title">Átlagom és az osztályátlag</h2>
+        <div class="section-subtitle">${both.length ? `Összesítve: ${myOverall !== null ? myOverall.toFixed(2) : "-"} vs. ${classOverall.toFixed(2)} ${deltaText}` : "Az iskolád nem teszi közzé az osztályátlagokat a Krétában."}</div>
+      </div>
+      <div class="compare-legend"><span class="mine"></span> Saját ${both.length ? `<span class="class"></span> Osztály` : ""}</div>
+    </div>
+    <div class="compare-list">${rows}</div>`;
+}
+
 function renderAllGradesView(grades, groupAverages = []) {
+  try { renderClassComparison(grades, groupAverages); } catch (e) { console.error("Error rendering class comparison:", e); }
   const container = document.getElementById("all-grades-grid");
   if (!container) return;
   container.innerHTML = "";
@@ -2122,7 +2170,7 @@ function renderAllGradesView(grades, groupAverages = []) {
       ? `<span class="badge badge-demo" style="font-size: 0.75rem;">Szimulált (${numAvg.toFixed(2)} → ${projNumAvg.toFixed(2)})</span>`
       : "";
 
-    const sparklineHtml = createSparklineSvg(validGrades);
+    const sparklineHtml = createSparklineSvg(validGrades, classAvgBySubject[subName] ?? null);
 
     card.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -2235,89 +2283,52 @@ function renderGradesMatrixTable(grades, groupAverages = []) {
   container.innerHTML = html;
 }
 
-function createSparklineSvg(validGrades) {
+/**
+ * Subject chart: my running weighted average over time (line), each grade as
+ * a dot, and the class average as a dashed line when Kréta sends one.
+ */
+function createSparklineSvg(validGrades, classAvg = null) {
   if (!validGrades || validGrades.length === 0) return "";
+  const dateOf = item => (item.original?.KeszitesDatuma || item.original?.RogzitesDatuma || item.original?.Datum || "");
+  const items = [...validGrades].sort((a, b) => new Date(dateOf(a) || 0) - new Date(dateOf(b) || 0));
+  const running = KretaApi.runningAverages(items);
 
-  if (validGrades.length === 1) {
-    const g = validGrades[0].grade;
-    const y = 45 - ((g - 1) / 4) * 30 - 6;
-    let dotColor = "var(--primary)";
-    if (g >= 5) dotColor = "var(--success)";
-    else if (g === 4) dotColor = "var(--info)";
-    else if (g === 3) dotColor = "var(--warning)";
-    else if (g <= 2) dotColor = "var(--danger)";
+  const width = 260, height = 56, padX = 14, padY = 8;
+  const plotW = width - padX * 2, plotH = height - padY * 2;
+  const yOf = v => padY + plotH * (1 - (v - 1) / 4);
+  const xOf = idx => items.length === 1 ? width / 2 : padX + (idx / (items.length - 1)) * plotW;
+  const colorOf = g => g >= 5 ? "var(--success)" : g === 4 ? "var(--info)" : g === 3 ? "var(--warning)" : "var(--danger)";
 
-    return `
-      <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06);">
-        <div style="font-size: 0.75rem; color:var(--text-muted); margin-bottom:4px; display:flex; justify-content:space-between;">
-          <span>Időbeli alakulás</span>
-          <span>1 jegy</span>
-        </div>
-        <svg viewBox="0 0 240 45" style="width:100%; height:36px; overflow:visible; display:block;">
-          <line x1="12" y1="${y.toFixed(1)}" x2="228" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="3,3" stroke-width="1"/>
-          <circle cx="120" cy="${y.toFixed(1)}" r="4.5" fill="${dotColor}" stroke="var(--card)" stroke-width="1.5">
-            <title>${g}</title>
-          </circle>
-          <text x="120" y="${(y - 6).toFixed(1)}" font-size="9" fill="var(--text)" text-anchor="middle" font-weight="800">${g}</text>
-        </svg>
-      </div>`;
-  }
-
-  const width = 260;
-  const height = 50;
-  const padX = 14;
-  const padY = 8;
-  const plotW = width - padX * 2;
-  const plotH = height - padY * 2;
-
-  const pts = validGrades.map((item, idx) => {
-    const x = padX + (idx / (validGrades.length - 1)) * plotW;
-    const y = padY + plotH * (1 - (item.grade - 1) / 4);
-    const dStr = (item.original?.KeszitesDatuma || item.original?.RogzitesDatuma || item.original?.Datum || "").split("T")[0];
-    return { x, y, grade: item.grade, date: dStr, theme: item.original?.Tema || "" };
-  });
-
-  const pathD = pts.map((p, idx) => `${idx === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ");
-  const areaD = `${pathD} L ${pts[pts.length - 1].x.toFixed(1)} ${height} L ${pts[0].x.toFixed(1)} ${height} Z`;
-
-  let circlesSvg = "";
-  pts.forEach(p => {
-    let cColor = "var(--primary)";
-    if (p.grade >= 5) cColor = "var(--success)";
-    else if (p.grade === 4) cColor = "var(--info)";
-    else if (p.grade === 3) cColor = "var(--warning)";
-    else if (p.grade <= 2) cColor = "var(--danger)";
-
-    circlesSvg += `
-      <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="${cColor}" stroke="var(--card)" stroke-width="1.5">
-        <title>${p.grade} (${escapeHtml(p.date)}${p.theme ? ' - ' + escapeHtml(p.theme) : ''})</title>
+  const linePts = running.map((v, idx) => `${idx === 0 ? "M" : "L"} ${xOf(idx).toFixed(1)} ${yOf(v).toFixed(1)}`).join(" ");
+  const dots = items.map((item, idx) => {
+    const d = dateOf(item).split("T")[0];
+    const theme = item.original?.Tema || "";
+    return `<circle cx="${xOf(idx).toFixed(1)}" cy="${yOf(item.grade).toFixed(1)}" r="3" fill="${colorOf(item.grade)}" stroke="var(--card)" stroke-width="1.2">
+        <title>${item.grade} (${escapeHtml(d)}${theme ? " - " + escapeHtml(theme) : ""}), átlag utána: ${running[idx].toFixed(2)}</title>
       </circle>`;
-  });
-
-  const gradId = `spark-grad-${Math.random().toString(36).substr(2, 7)}`;
-  const startDate = pts[0].date;
-  const endDate = pts[pts.length - 1].date;
-  const dateRangeStr = (startDate && endDate) ? `${startDate} → ${endDate}` : `${validGrades.length} jegy`;
+  }).join("");
+  const hasClass = Number.isFinite(classAvg) && classAvg > 0;
+  const classLine = hasClass
+    ? `<line x1="${padX}" y1="${yOf(classAvg).toFixed(1)}" x2="${width - padX}" y2="${yOf(classAvg).toFixed(1)}" stroke="var(--text-muted)" stroke-dasharray="4,3" stroke-width="1.4"><title>Osztályátlag: ${classAvg.toFixed(2)}</title></line>`
+    : "";
+  const grid = [1, 3, 5].map(v => `<line x1="${padX}" y1="${yOf(v).toFixed(1)}" x2="${width - padX}" y2="${yOf(v).toFixed(1)}" stroke="var(--border)" stroke-dasharray="2,2" stroke-width="1"/>`).join("");
+  const first = dateOf(items[0]).split("T")[0], last = dateOf(items[items.length - 1]).split("T")[0];
+  const range = first && last ? `${first} → ${last}` : `${items.length} jegy`;
 
   return `
-    <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06);">
-      <div style="font-size: 0.75rem; color:var(--text-muted); margin-bottom:4px; display:flex; justify-content:space-between;">
-        <span>Időbeli alakulás (${escapeHtml(dateRangeStr)})</span>
-        <span style="font-weight:600;">${validGrades.length} jegy</span>
+    <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border);">
+      <div style="font-size: 0.75rem; color:var(--text-muted); margin-bottom:4px; display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap;">
+        <span>Átlag alakulása (${escapeHtml(range)})</span>
+        <span style="display:inline-flex; gap:10px;">
+          <span><span style="display:inline-block; width:12px; height:2px; background:var(--primary); vertical-align:middle;"></span> Saját</span>
+          ${hasClass ? `<span><span style="display:inline-block; width:12px; border-top:2px dashed var(--text-muted); vertical-align:middle;"></span> Osztály</span>` : ""}
+        </span>
       </div>
-      <svg viewBox="0 0 ${width} ${height}" style="width:100%; height:44px; overflow:visible; display:block;">
-        <defs>
-          <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.32"/>
-            <stop offset="100%" stop-color="var(--primary)" stop-opacity="0.0"/>
-          </linearGradient>
-        </defs>
-        <line x1="${padX}" y1="${padY}" x2="${width - padX}" y2="${padY}" stroke="rgba(255,255,255,0.06)" stroke-dasharray="2,2" stroke-width="1"/>
-        <line x1="${padX}" y1="${(padY + plotH / 2).toFixed(1)}" x2="${width - padX}" y2="${(padY + plotH / 2).toFixed(1)}" stroke="rgba(255,255,255,0.06)" stroke-dasharray="2,2" stroke-width="1"/>
-        <line x1="${padX}" y1="${(padY + plotH).toFixed(1)}" x2="${width - padX}" y2="${(padY + plotH).toFixed(1)}" stroke="rgba(255,255,255,0.06)" stroke-dasharray="2,2" stroke-width="1"/>
-        <path d="${areaD}" fill="url(#${gradId})"/>
-        <path d="${pathD}" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        ${circlesSvg}
+      <svg viewBox="0 0 ${width} ${height}" style="width:100%; height:48px; overflow:visible; display:block;" role="img" aria-label="Saját átlag${hasClass ? " és osztályátlag" : ""} az idő függvényében">
+        ${grid}
+        ${classLine}
+        ${items.length > 1 ? `<path d="${linePts}" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>` : ""}
+        ${dots}
       </svg>
     </div>`;
 }
@@ -3129,7 +3140,9 @@ async function renderStudentView(student) {
     subjectSums[subName].weight += w;
   });
 
-  const weightedAvg = totalWeight > 0 ? (weightedSum / totalWeight).toFixed(2) : "-";
+  // The overall average by the shared rule (mean of subject averages), as on the dashboard.
+  const overall = KretaApi.overallAverage(grades);
+  const weightedAvg = overall !== null ? overall.toFixed(2) : "-";
   const unweightedAvg = gradeCount > 0 ? (unweightedSum / gradeCount).toFixed(2) : "-";
 
   let bestSub = "-", bestAvg = 0;
@@ -3302,7 +3315,7 @@ async function renderStudentView(student) {
     
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 18px;">
       <div style="background: var(--sidebar); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px;">
-        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Súlyozott tanulmányi átlag</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Tanulmányi átlag</div>
         <div style="font-size: 1.4rem; font-weight: 800; color: var(--primary);">${weightedAvg}</div>
         <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Súlyozatlan: ${unweightedAvg} (${gradeCount} jegy)</div>
       </div>
@@ -3355,7 +3368,13 @@ async function renderStudentView(student) {
   container.appendChild(card2);
   container.appendChild(card3);
   container.appendChild(card4);
-  container.appendChild(card5);
+  // The milestones card lives on Osztályzatok, next to the class comparison.
+  const milestonesSlot = document.getElementById("grades-milestones-slot");
+  if (milestonesSlot) {
+    card5.style.gridColumn = "";
+    card5.style.marginBottom = "0";
+    milestonesSlot.replaceChildren(card5);
+  }
 
   // These buttons are static and this view re-renders often: assign the
   // handlers (not addEventListener), or a second listener cancels the toggle.

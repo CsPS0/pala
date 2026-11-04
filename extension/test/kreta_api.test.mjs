@@ -166,3 +166,9 @@ test("shiftLessons moves lesson times by whole days and keeps the rest", () => {
   assert.equal(new Date(l.VegIdopont).getDate(), 9);
   assert.equal(l.Uid, "a");
 });
+
+test("runningAverages gives the weighted average after each grade", () => {
+  const avgs = [...KretaApi.runningAverages([{ grade: 5, weight: 1 }, { grade: 2, weight: 2 }, { grade: 4, weight: 1 }])];
+  assert.deepEqual(avgs.map((a) => Math.round(a * 100) / 100), [5, 3, 3.25]);
+  assert.equal(KretaApi.runningAverages([]).length, 0);
+});

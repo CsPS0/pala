@@ -1444,6 +1444,18 @@ class KretaApi {
    * Parser for Kréta evaluation objects.
    * Differentiates standard 1..5 grades, percentages (>5%), text evaluations, "Nem írt", and summary grades.
    */
+  /** The weighted average after each item ({ grade, weight }), in the given order. */
+  static runningAverages(items) {
+    let sum = 0, weight = 0;
+    const out = [];
+    for (const it of items || []) {
+      sum += it.grade * it.weight;
+      weight += it.weight;
+      out.push(weight > 0 ? sum / weight : it.grade);
+    }
+    return out;
+  }
+
   /** Monday 00:00 and Sunday 23:59:59.999 (local time) of the week of `date`, moved by `offsetWeeks`. */
   static weekRange(date = new Date(), offsetWeeks = 0) {
     const monday = new Date(date);
