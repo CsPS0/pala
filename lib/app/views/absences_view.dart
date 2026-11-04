@@ -350,8 +350,7 @@ extension PalaAppAbsencesView on PalaApp {
               for (var item in classAverages) {
                 if (item is Map) {
                   final subject = item['Tantargy']?['Nev'] ?? 'Ismeretlen';
-                  final valStr = (item['OsztalyAtlag'] ?? item['Atlag'] ?? item['Ertek'] ?? '0').toString();
-                  final val = double.tryParse(valStr.replaceAll(',', '.')) ?? 0.0;
+                  final val = classAverageOf(item) ?? 0.0;
                   if (val > 0) {
                     classAvgMap[subject.toLowerCase()] = val;
                   }

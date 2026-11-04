@@ -439,16 +439,16 @@ const DEMO_ABSENCES = [
 ];
 
 const DEMO_GROUP_AVERAGES = [
-  { Tantargy: { Nev: "Matematika" }, OsztalyAtlag: 3.82 },
-  { Tantargy: { Nev: "Magyar nyelv és irodalom" }, OsztalyAtlag: 4.15 },
-  { Tantargy: { Nev: "Történelem" }, OsztalyAtlag: 3.95 },
-  { Tantargy: { Nev: "Angol nyelv" }, OsztalyAtlag: 4.30 },
-  { Tantargy: { Nev: "Informatika / Digitális kultúra" }, OsztalyAtlag: 4.60 },
-  { Tantargy: { Nev: "Fizika" }, OsztalyAtlag: 3.45 },
-  { Tantargy: { Nev: "Kémia" }, OsztalyAtlag: 3.60 },
-  { Tantargy: { Nev: "Biológia" }, OsztalyAtlag: 4.05 },
-  { Tantargy: { Nev: "Testnevelés és egészségfejlesztés" }, OsztalyAtlag: 4.70 },
-  { Tantargy: { Nev: "Földrajz" }, OsztalyAtlag: 3.75 }
+  { Tantargy: { Nev: "Matematika" }, OsztalyCsoportAtlag: 3.82 },
+  { Tantargy: { Nev: "Magyar nyelv és irodalom" }, OsztalyCsoportAtlag: 4.15 },
+  { Tantargy: { Nev: "Történelem" }, OsztalyCsoportAtlag: 3.95 },
+  { Tantargy: { Nev: "Angol nyelv" }, OsztalyCsoportAtlag: 4.30 },
+  { Tantargy: { Nev: "Informatika / Digitális kultúra" }, OsztalyCsoportAtlag: 4.60 },
+  { Tantargy: { Nev: "Fizika" }, OsztalyCsoportAtlag: 3.45 },
+  { Tantargy: { Nev: "Kémia" }, OsztalyCsoportAtlag: 3.60 },
+  { Tantargy: { Nev: "Biológia" }, OsztalyCsoportAtlag: 4.05 },
+  { Tantargy: { Nev: "Testnevelés és egészségfejlesztés" }, OsztalyCsoportAtlag: 4.70 },
+  { Tantargy: { Nev: "Földrajz" }, OsztalyCsoportAtlag: 3.75 }
 ];
 
 const KRETA_IDP = "https://idp.e-kreta.hu";
@@ -1446,6 +1446,18 @@ class KretaApi {
    * Parser for Kréta evaluation objects.
    * Differentiates standard 1..5 grades, percentages (>5%), text evaluations, "Nem írt", and summary grades.
    */
+  /**
+   * The class average from one OsztalyAtlagok item. Kréta sends it as
+   * OsztalyCsoportAtlag; older names are kept for cached and demo data.
+   * Null when missing or not above 0. Mirrors lib/models/class_average.dart.
+   */
+  static classAverageOf(item) {
+    const raw = item?.OsztalyCsoportAtlag ?? item?.OsztalyAtlag ?? item?.Atlag ?? item?.Ertek;
+    if (raw === null || raw === undefined) return null;
+    const value = typeof raw === "number" ? raw : parseFloat(String(raw).replace(",", "."));
+    return Number.isFinite(value) && value > 0 ? value : null;
+  }
+
   /** Maps Kréta's ErtekFajta to "grade" | "percent" | "text", or null when it is missing. */
   static valueKindFromKreta(ertekFajta) {
     const name = ertekFajta?.Nev;

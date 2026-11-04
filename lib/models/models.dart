@@ -6,4 +6,4 @@ export 'student.dart';
 export 'timetable_entry.dart';
 export 'homework.dart';
 export 'note.dart';
-
+export 'class_average.dart';

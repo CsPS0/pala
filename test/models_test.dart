@@ -2,8 +2,23 @@ import 'package:test/test.dart';
 import 'package:pala/models/grade.dart';
 import 'package:pala/models/absence.dart';
 import 'package:pala/models/note.dart';
+import 'package:pala/models/class_average.dart';
 
 void main() {
+  group('classAverageOf (OsztalyAtlagok item)', () {
+    test('reads the real Kréta field OsztalyCsoportAtlag', () {
+      expect(classAverageOf({'OsztalyCsoportAtlag': 3.42, 'TanuloAtlag': 4.1}), 3.42);
+    });
+    test('falls back to older names and parses comma decimals', () {
+      expect(classAverageOf({'OsztalyAtlag': 4.0}), 4.0);
+      expect(classAverageOf({'Atlag': '3,5'}), 3.5);
+    });
+    test('is null when missing or not positive', () {
+      expect(classAverageOf({}), isNull);
+      expect(classAverageOf({'OsztalyCsoportAtlag': 0}), isNull);
+    });
+  });
+
   group('Grade value kind (ErtekFajta)', () {
     test('a Szazalekos evaluation keeps its number out of numericValue', () {
       final g = Grade.fromJson({

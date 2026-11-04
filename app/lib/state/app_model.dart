@@ -9,6 +9,7 @@ import 'package:pala/rules/grade_rules.dart';
 import 'package:pala/utils/csv.dart';
 import 'package:pala/api/demo_client.dart';
 import 'package:pala/models/absence.dart';
+import 'package:pala/models/class_average.dart';
 import 'package:pala/models/exam.dart';
 import 'package:pala/models/grade.dart';
 import 'package:pala/models/homework.dart';
@@ -496,11 +497,8 @@ class AppModel extends ChangeNotifier {
     for (final item in _groupAverages) {
       if (item is Map) {
         final sub = item['Tantargy']?['Nev']?.toString();
-        final rawVal = item['OsztalyAtlag'] ?? item['Atlag'] ?? item['Ertek'];
-        if (sub != null && rawVal != null) {
-          final val = double.tryParse(rawVal.toString().replaceAll(',', '.')) ?? 0.0;
-          if (val > 0) map[getDisplaySubject(sub)] = val;
-        }
+        final val = classAverageOf(item);
+        if (sub != null && val != null) map[getDisplaySubject(sub)] = val;
       }
     }
     return map;

@@ -76,3 +76,11 @@ test("demo grades include a percentage and a text evaluation that do not count",
   assert.deepEqual([...kinds.map((p) => p.displayValue)].sort(), ["4%", "Nem írt"]);
   assert.ok(kinds.every((p) => !KretaApi.countsForAverage(p)));
 });
+
+test("classAverageOf reads OsztalyCsoportAtlag, older names and comma decimals", () => {
+  assert.equal(KretaApi.classAverageOf({ OsztalyCsoportAtlag: 3.42, TanuloAtlag: 4.1 }), 3.42);
+  assert.equal(KretaApi.classAverageOf({ OsztalyAtlag: 4 }), 4);
+  assert.equal(KretaApi.classAverageOf({ Atlag: "3,5" }), 3.5);
+  assert.equal(KretaApi.classAverageOf({}), null);
+  assert.equal(KretaApi.classAverageOf({ OsztalyCsoportAtlag: 0 }), null);
+});

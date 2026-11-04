@@ -2001,8 +2001,8 @@ function renderAllGradesView(grades, groupAverages = []) {
   const classAvgBySubject = {};
   (groupAverages || []).forEach(a => {
     const sub = a?.Tantargy?.Nev;
-    const val = parseFloat(a?.OsztalyAtlag ?? a?.OsztalyCsoportAtlag ?? a?.Atlag ?? a?.Ertek);
-    if (sub && !isNaN(val)) classAvgBySubject[sub] = val;
+    const val = KretaApi.classAverageOf(a);
+    if (sub && val !== null) classAvgBySubject[sub] = val;
   });
 
   const subjectMap = {};
@@ -2157,8 +2157,8 @@ function renderGradesMatrixTable(grades, groupAverages = []) {
   const classAvgBySubject = {};
   (groupAverages || []).forEach(a => {
     const sub = a?.Tantargy?.Nev;
-    const val = parseFloat(a?.OsztalyAtlag ?? a?.OsztalyCsoportAtlag ?? a?.Atlag ?? a?.Ertek);
-    if (sub && !isNaN(val)) classAvgBySubject[sub] = val;
+    const val = KretaApi.classAverageOf(a);
+    if (sub && val !== null) classAvgBySubject[sub] = val;
   });
 
   const subjectMap = {};

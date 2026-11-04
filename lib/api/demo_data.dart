@@ -980,16 +980,16 @@ class DemoData {
   /// Class/Group averages per subject.
   static List<Map<String, dynamic>> getGroupAverages() {
     return [
-      {'Tantargy': {'Nev': 'Matematika'}, 'OsztalyAtlag': 3.82},
-      {'Tantargy': {'Nev': 'Magyar nyelv és irodalom'}, 'OsztalyAtlag': 4.15},
-      {'Tantargy': {'Nev': 'Történelem'}, 'OsztalyAtlag': 3.95},
-      {'Tantargy': {'Nev': 'Angol nyelv'}, 'OsztalyAtlag': 4.30},
-      {'Tantargy': {'Nev': 'Digitális kultúra'}, 'OsztalyAtlag': 4.60},
-      {'Tantargy': {'Nev': 'Fizika'}, 'OsztalyAtlag': 3.45},
-      {'Tantargy': {'Nev': 'Kémia'}, 'OsztalyAtlag': 3.70},
-      {'Tantargy': {'Nev': 'Biológia'}, 'OsztalyAtlag': 4.25},
-      {'Tantargy': {'Nev': 'Testnevelés és egészségfejlesztés'}, 'OsztalyAtlag': 4.85},
-      {'Tantargy': {'Nev': 'Földrajz'}, 'OsztalyAtlag': 4.10},
+      {'Tantargy': {'Nev': 'Matematika'}, 'OsztalyCsoportAtlag': 3.82},
+      {'Tantargy': {'Nev': 'Magyar nyelv és irodalom'}, 'OsztalyCsoportAtlag': 4.15},
+      {'Tantargy': {'Nev': 'Történelem'}, 'OsztalyCsoportAtlag': 3.95},
+      {'Tantargy': {'Nev': 'Angol nyelv'}, 'OsztalyCsoportAtlag': 4.30},
+      {'Tantargy': {'Nev': 'Digitális kultúra'}, 'OsztalyCsoportAtlag': 4.60},
+      {'Tantargy': {'Nev': 'Fizika'}, 'OsztalyCsoportAtlag': 3.45},
+      {'Tantargy': {'Nev': 'Kémia'}, 'OsztalyCsoportAtlag': 3.70},
+      {'Tantargy': {'Nev': 'Biológia'}, 'OsztalyCsoportAtlag': 4.25},
+      {'Tantargy': {'Nev': 'Testnevelés és egészségfejlesztés'}, 'OsztalyCsoportAtlag': 4.85},
+      {'Tantargy': {'Nev': 'Földrajz'}, 'OsztalyCsoportAtlag': 4.10},
     ];
   }
 

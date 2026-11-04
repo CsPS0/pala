@@ -613,7 +613,8 @@ function renderGradeMatrixView(grades, groupAverages) {
   const classAvgMap = {};
   (groupAverages || []).forEach(ga => {
     const name = ga.Tantargy?.Nev || ga.TantargyNev || ga.Tantargy;
-    if (name && ga.OsztalyAtlag) classAvgMap[name] = Number(ga.OsztalyAtlag);
+    const val = KretaApi.classAverageOf(ga);
+    if (name && val !== null) classAvgMap[name] = val;
   });
 
   const subjectMap = {};

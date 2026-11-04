@@ -644,9 +644,7 @@ class TuiViews {
     final classAvgMap = <String, double>{};
     for (final item in state.groupAverages) {
       final sub = item['Tantargy']?['Nev']?.toString() ?? '';
-      final valStr =
-          (item['OsztalyAtlag'] ?? item['Atlag'] ?? item['Ertek'] ?? '0').toString();
-      final val = double.tryParse(valStr.replaceAll(',', '.')) ?? 0.0;
+      final val = classAverageOf(item) ?? 0.0;
       if (sub.isNotEmpty && val > 0) {
         classAvgMap[sub.toLowerCase()] = val;
       }
