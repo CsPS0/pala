@@ -292,9 +292,11 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
+          # Without the release key the APKs would be signed with a throwaway
+          # debug key, and users could not update to the next release. Stop.
           if [ -z "$ANDROID_KEYSTORE_BASE64" ] || [ -z "$ANDROID_KEYSTORE_PASSWORD" ] || [ -z "$ANDROID_KEY_ALIAS" ] || [ -z "$ANDROID_KEY_PASSWORD" ]; then
-            echo "::warning::Android signing secrets missing, APKs will be signed with a throwaway debug key."
-            exit 0
+            echo "::error::Android signing secrets missing (see docs/DEV.md, 'Android aláíró kulcs'). Refusing to sign with a debug key."
+            exit 1
           fi
           echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > app/pala-release.jks
           cat > key.properties <<EOF
@@ -318,6 +320,19 @@ jobs:
           cp app-arm64-v8a-release.apk pala-arm64-v8a.apk
           cp app-armeabi-v7a-release.apk pala-armeabi-v7a.apk
           cp app-x86_64-release.apk pala-x86_64.apk
+
+      - name: Check that the APKs carry the release signature
+        working-directory: app/build/app/outputs/flutter-apk
+        run: |
+          APKSIGNER="$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -n 1)"
+          for apk in pala-*.apk; do
+            "$APKSIGNER" verify --print-certs "$apk" > "$apk.certs"
+            grep -m1 "certificate DN" "$apk.certs" | sed "s|^|$apk: |"
+            if grep -q "CN=Android Debug" "$apk.certs"; then
+              echo "::error::$apk is signed with the debug key."
+              exit 1
+            fi
+          done
 
       - name: Upload APKs to release
         if: github.event_name == 'release'
@@ -369,6 +384,8 @@ jobs:
   apt-repo:
     name: Build APT Repository
     needs: build
+    # Only real releases go to the APT repository, never a manual test run.
+    if: github.event_name == 'release' && !github.event.release.prerelease
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository

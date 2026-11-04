@@ -149,7 +149,7 @@ A `flutter_secure_storage` miatt az asztali alkalmazás buildjéhez kell:
 
 ### Android aláíró kulcs
 
-Az Android csak akkor telepít frissítést, ha az ugyanazzal a kulccsal van aláírva, mint a már telepített verzió. Ezért a kiadott APK-kat egy állandó kulcs írja alá, amelyet a `release.yml` a GitHub titkokból állít elő. Ha a titkok hiányoznak, a build figyelmeztetéssel lefut, de az APK egy eldobható debug kulccsal lesz aláírva, amely nem frissíthető a következő kiadással.
+Az Android csak akkor telepít frissítést, ha az ugyanazzal a kulccsal van aláírva, mint a már telepített verzió. Ezért a kiadott APK-kat egy állandó kulcs írja alá, amelyet a `release.yml` a GitHub titkokból állít elő. Ha a titkok hiányoznak, az Android build hibával leáll, mert egy eldobható debug kulccsal aláírt APK nem frissíthető a következő kiadással. A build az aláírást is ellenőrzi.
 
 Egyszeri beállítás (a karbantartó végzi):
 

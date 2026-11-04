@@ -58,6 +58,7 @@ Az első kiadás a Pala néven: TUI, asztali és Android-alkalmazás, böngész�
 - Linuxon és macOS-en a beállítás- és gyorsítótár-mappát csak a saját felhasználód olvashatja. A `DATA_SECURITY.md` pontosabban írja le, mit véd a titkosítás.
 - Egy CSV- és egy `.ics`-író van nyelvenként: pontosvessző, BOM, helyi dátum, szabályos sorvég és sortördelés.
 - A CI a Flutter-teszteket, a kiterjesztés tesztjeit és a weboldal buildjét is futtatja.
+- Az Android APK-kat állandó kiadási kulcs írja alá, így a következő verziók frissítésként települnek. Kulcs nélkül a kiadás nem készül el, és a build ellenőrzi az aláírást.
 
 ## [1.2.3]
 - Pala rebrand: TUI, Flutter Desktop App, böngésző-kiterjesztés (Manifest V3) és weboldal egy kiadás alatt.
