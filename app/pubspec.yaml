@@ -40,6 +40,7 @@ dependencies:
   awesome_notifications: ^0.12.1
   webview_flutter: ^4.14.1
   flutter_secure_storage: ^10.0.0
+  url_launcher: ^6.3.3
 # The shared core pins ffi ^1 and win32 ^2 through interact/dart_console (TUI only, never
 # imported by the app); flutter_secure_storage_windows needs current ffi/win32.
 dependency_overrides:

@@ -303,7 +303,11 @@ extension PalaAppSettingsView on PalaApp {
       _clearScreen();
       _showMainMenuBanner();
       print('\n--- Speciális Beállítások ---');
-      print('Jelenlegi verzió: \x1B[1;36m$appVersion\x1B[0m\n');
+      print('Jelenlegi verzió: \x1B[1;36m$appVersion\x1B[0m');
+      for (final link in PalaLinks.visible()) {
+        print('${link.label}: \x1B[4m${link.url}\x1B[0m');
+      }
+      print('');
 
       final layout = [
         {'type': 'action', 'id': 0, 'label': 'Frissítések keresése'},

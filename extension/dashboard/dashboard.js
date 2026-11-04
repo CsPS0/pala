@@ -2862,6 +2862,22 @@ async function openMessageViewer(msg) {
 }
 
 async function renderSettingsView() {
+  // About Pala: version and public links (an empty URL is left out).
+  const versionEl = document.getElementById("settings-pala-version");
+  if (versionEl) versionEl.textContent = chrome.runtime?.getManifest?.().version || "-";
+  const linksEl = document.getElementById("settings-pala-links");
+  if (linksEl) {
+    linksEl.replaceChildren(...KretaApi.palaLinks().map(l => {
+      const a = document.createElement("a");
+      a.href = l.url;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.className = "btn btn-secondary btn-sm";
+      a.textContent = l.label;
+      return a;
+    }));
+  }
+
   const store = await chrome.storage.local.get([
     "pala_session",
     "pala_use_demo",

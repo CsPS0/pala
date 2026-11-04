@@ -13,6 +13,7 @@ import 'package:pala/models/models.dart';
 import 'package:pala/rules/absence_rules.dart';
 import 'package:pala/rules/grade_rules.dart';
 import 'package:pala/rules/wrapped_season.dart';
+import 'package:pala/links.dart';
 import 'package:pala/utils/chart_generator.dart';
 import 'package:pala/utils/csv.dart';
 import 'package:pala/utils/ics_exporter.dart';

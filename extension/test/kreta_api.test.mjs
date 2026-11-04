@@ -139,3 +139,10 @@ test("studentProfile reads the real TanuloAdatlap fields and invents nothing", (
   assert.equal(p.bankOwnerType, "-");
   assert.equal(p.omId, "-");
 });
+
+test("palaLinks lists the website and GitHub and hides empty URLs", () => {
+  const links = [...KretaApi.palaLinks()];
+  assert.ok(links.some((l) => l.url === "https://pala-app.hu"));
+  assert.ok(links.some((l) => l.url === "https://github.com/CsPS0/pala"));
+  assert.ok(links.every((l) => l.url));
+});

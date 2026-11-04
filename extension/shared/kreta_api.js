@@ -1444,6 +1444,15 @@ class KretaApi {
    * Parser for Kréta evaluation objects.
    * Differentiates standard 1..5 grades, percentages (>5%), text evaluations, "Nem írt", and summary grades.
    */
+  /** Pala's public links for the settings footer; an empty URL hides its entry. Mirrors lib/links.dart. */
+  static palaLinks() {
+    return [
+      { label: "Weboldal", url: "https://pala-app.hu" },
+      { label: "GitHub", url: "https://github.com/CsPS0/pala" },
+      { label: "Instagram", url: "" },
+    ].filter(l => l.url);
+  }
+
   /** The student's class among OsztalyCsoportok (Tipus "Osztaly"), else the first group, else null. */
   static mainClassGroup(groups) {
     if (!Array.isArray(groups) || groups.length === 0) return null;
