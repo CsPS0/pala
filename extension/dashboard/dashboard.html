@@ -398,10 +398,16 @@
             <span id="timetable-ab-badge">A hét</span>
           </button>
         </div>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-          <button id="btn-export-ics" class="btn btn-primary btn-sm">Naptár exportálása (.ics)</button>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+          <div class="week-nav" role="group" aria-label="Hét választása">
+            <button type="button" id="btn-week-prev" class="btn btn-secondary btn-sm" aria-label="Előző hét">&#8249; Előző</button>
+            <button type="button" id="btn-week-today" class="btn btn-secondary btn-sm">Ez a hét</button>
+            <button type="button" id="btn-week-next" class="btn btn-secondary btn-sm" aria-label="Következő hét">Következő &#8250;</button>
+          </div>
+          <button id="btn-export-ics" class="btn btn-primary btn-sm" title="A megjelenített hét órái naptárfájlba">Naptár exportálása (.ics)</button>
         </div>
       </header>
+      <div id="timetable-week-label" class="section-subtitle" style="margin: -6px 0 12px;" aria-live="polite"></div>
       <div id="weekly-timetable-grid" class="timetable-grid">
         <!-- Injected dynamically -->
       </div>

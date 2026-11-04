@@ -120,7 +120,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   weekTypeToggle?.addEventListener("change", async (e) => {
     showWeekType = e.target.checked;
     await chrome.storage.local.set({ pala_show_week_type: showWeekType });
-    renderWeeklyTimetable(fullState.data?.timetable || []);
+    showTimetableWeek(timetableWeekOffset);
   });
 
   const sidebarStore = await chrome.storage.local.get("pala_sidebar_collapsed");
@@ -308,8 +308,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     abWeekOverride = fullState.data.weekType !== "A hét";
     fullState.data.timetable = KretaApi.generateDemoTimetable(abWeekOverride);
     fullState.data.weekType = KretaApi.demoWeekType(abWeekOverride);
-    renderWeeklyTimetable(fullState.data.timetable);
+    otherTimetableWeeks.clear();
+    showTimetableWeek(0);
   });
+
+  document.getElementById("btn-week-prev")?.addEventListener("click", () => showTimetableWeek(timetableWeekOffset - 1));
+  document.getElementById("btn-week-next")?.addEventListener("click", () => showTimetableWeek(timetableWeekOffset + 1));
+  document.getElementById("btn-week-today")?.addEventListener("click", () => showTimetableWeek(0));
 
   setupMessageFilters();
   setupMessageModals();
@@ -369,8 +374,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // iCalendar (.ics) Timetable Export
   document.getElementById("btn-export-ics")?.addEventListener("click", () => {
-    const lessons = fullState.data?.timetable || [];
-    if (!lessons.length) return alert("Nincsenek elérhető órarendi adatok.");
+    // The week on screen, so earlier or later weeks can be exported too.
+    const lessons = shownTimetable;
+    if (!lessons.length) return alert("Ezen a héten nincs exportálható óra.");
 
     // The shared iCalendar writer, with the user's subject aliases.
     const ics = KretaApi.timetableToIcs(lessons, l => getDisplaySubject(l.Tantargy?.Nev || l.Tantargy || "Tanóra"));
@@ -1265,7 +1271,9 @@ function renderDashboard() {
   try { renderDashboardSubjectCards(subjectMap); } catch (e) { console.error("Error rendering subject cards:", e); }
 
   // View 2: Weekly Timetable Grid
-  try { renderWeeklyTimetable(d.timetable || []); } catch (e) { console.error("Error rendering timetable:", e); }
+  // Fresh data: forget fetched weeks so they reload, keep the shown week.
+  otherTimetableWeeks.clear();
+  showTimetableWeek(timetableWeekOffset).catch(e => console.error("Error rendering timetable:", e));
 
   // View 3: Full Subject Breakdown, Grades & Matrix
   try {
@@ -1821,14 +1829,61 @@ function renderDashboardSubjectCards(subjectMap) {
 let abWeekOverride = null;
 let showWeekType = true;
 
-function renderWeeklyTimetable(timetable) {
+// Week navigation: 0 is the current week (from the main data load), other
+// weeks are fetched on demand and kept for this page's lifetime.
+let timetableWeekOffset = 0;
+let shownTimetable = [];
+const otherTimetableWeeks = new Map();
+
+async function showTimetableWeek(offset) {
+  timetableWeekOffset = offset;
+  const label = document.getElementById("timetable-week-label");
+  const { monday, sunday } = KretaApi.weekRange(new Date(), offset);
+  const day = d => d.toLocaleDateString("hu-HU", { month: "long", day: "numeric" });
+  const range = `${monday.getFullYear()}. ${day(monday)} – ${day(sunday)}`;
+  const setLabel = text => { if (label) label.textContent = text; };
+
+  if (offset === 0) {
+    setLabel(`Ez a hét: ${range}`);
+    renderWeeklyTimetable(fullState.data?.timetable || []);
+    return;
+  }
+  let lessons = otherTimetableWeeks.get(offset);
+  if (!lessons) {
+    setLabel(`${range} • betöltés...`);
+    try {
+      if (fullState.isDemo) {
+        lessons = KretaApi.shiftLessons(fullState.data?.timetable || [], offset * 7);
+      } else {
+        const session = await SecureSession.load();
+        if (!session?.token) throw new Error("Lépj be a többi hét megtekintéséhez.");
+        const token = await KretaApi.ensureValidToken(session);
+        lessons = await KretaApi.getTimetableWeek(session.institute, token, monday);
+      }
+      otherTimetableWeeks.set(offset, lessons);
+    } catch (e) {
+      if (timetableWeekOffset !== offset) return;
+      setLabel(`${range} • ${e.message || "Nem sikerült betölteni ezt a hetet."}`);
+      renderWeeklyTimetable([], { weekOffset: offset });
+      return;
+    }
+  }
+  if (timetableWeekOffset !== offset) return; // the user already moved on
+  setLabel(range);
+  renderWeeklyTimetable(lessons, { weekOffset: offset });
+}
+
+function renderWeeklyTimetable(timetable, { weekOffset = 0 } = {}) {
   const listGrid = document.getElementById("weekly-timetable-grid");
   if (!listGrid) return;
   listGrid.innerHTML = "";
+  shownTimetable = timetable || [];
+  const weekMonday = KretaApi.weekRange(new Date(), weekOffset).monday;
 
   // Week rotation name straight from Kréta ("A hét", "C hét", ...); schools
-  // without a rotation get no badge. Only the demo can flip it.
-  const weekType = showWeekType ? fullState.data?.weekType || null : null;
+  // without a rotation get no badge. Only the demo can flip it. Other weeks'
+  // rotation is not loaded, so they show none.
+  const weekType = showWeekType && weekOffset === 0 ? fullState.data?.weekType || null : null;
   const abBadge = document.getElementById("timetable-ab-badge");
   const toggleBtn = document.getElementById("btn-toggle-ab-week");
   if (abBadge) abBadge.textContent = weekType || "";
@@ -1853,7 +1908,7 @@ function renderWeeklyTimetable(timetable) {
   });
 
   // 1) List View (Only Mon-Fri usually, but we can do 1-5 to keep it as before)
-  const todayWeekday = new Date().getDay() === 0 ? 7 : new Date().getDay();
+  const todayWeekday = weekOffset !== 0 ? -1 : (new Date().getDay() === 0 ? 7 : new Date().getDay());
   const nowMs = Date.now();
 
   for (let i = 1; i <= 5; i++) {
@@ -1861,7 +1916,10 @@ function renderWeeklyTimetable(timetable) {
     const col = document.createElement("div");
     col.className = isToday ? "timetable-day-card today" : "timetable-day-card";
     const todayBadge = isToday ? `<span class="badge" style="background:var(--primary-fill); color:var(--on-primary); font-weight:900; font-size: 0.75rem; border:none;">Ma</span>` : "";
-    col.innerHTML = `<div class="day-title" style="display:flex; justify-content:space-between; align-items:center;"><span>${dayNames[i - 1]}</span>${todayBadge}</div>`;
+    const dayDate = new Date(weekMonday);
+    dayDate.setDate(weekMonday.getDate() + i - 1);
+    const dateText = dayDate.toLocaleDateString("hu-HU", { month: "short", day: "numeric" });
+    col.innerHTML = `<div class="day-title" style="display:flex; justify-content:space-between; align-items:center;"><span>${dayNames[i - 1]} <span style="color:var(--text-muted); font-weight:600;">${escapeHtml(dateText)}</span></span>${todayBadge}</div>`;
 
     const lessons = dayBuckets[i];
     if (lessons.length === 0) {

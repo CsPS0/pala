@@ -146,3 +146,23 @@ test("palaLinks lists the website and GitHub and hides empty URLs", () => {
   assert.ok(links.some((l) => l.url === "https://github.com/CsPS0/pala"));
   assert.ok(links.every((l) => l.url));
 });
+
+test("weekRange gives Monday 00:00 to Sunday 23:59 of the week, offset by whole weeks", () => {
+  const { monday, sunday } = KretaApi.weekRange(new Date(2026, 10, 4, 15, 0), 0); // Wednesday
+  assert.equal(monday.getDate(), 2);
+  assert.equal(monday.getHours(), 0);
+  assert.equal(sunday.getDate(), 8);
+  assert.equal(sunday.getHours(), 23);
+  const next = KretaApi.weekRange(new Date(2026, 10, 8, 12, 0), 1); // Sunday, next week
+  assert.equal(next.monday.getDate(), 9);
+  const prev = KretaApi.weekRange(new Date(2026, 10, 2, 0, 0), -1);
+  assert.equal(prev.monday.getDate(), 26);
+  assert.equal(prev.monday.getMonth(), 9);
+});
+
+test("shiftLessons moves lesson times by whole days and keeps the rest", () => {
+  const [l] = KretaApi.shiftLessons([{ Uid: "a", KezdetIdopont: "2026-11-02T08:00:00", VegIdopont: "2026-11-02T08:45:00" }], 7);
+  assert.equal(new Date(l.KezdetIdopont).getDate(), 9);
+  assert.equal(new Date(l.VegIdopont).getDate(), 9);
+  assert.equal(l.Uid, "a");
+});

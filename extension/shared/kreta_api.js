@@ -1444,6 +1444,51 @@ class KretaApi {
    * Parser for Kréta evaluation objects.
    * Differentiates standard 1..5 grades, percentages (>5%), text evaluations, "Nem írt", and summary grades.
    */
+  /** Monday 00:00 and Sunday 23:59:59.999 (local time) of the week of `date`, moved by `offsetWeeks`. */
+  static weekRange(date = new Date(), offsetWeeks = 0) {
+    const monday = new Date(date);
+    monday.setHours(0, 0, 0, 0);
+    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7) + offsetWeeks * 7);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
+    return { monday, sunday };
+  }
+
+  /** Copies of the lessons with their start and end moved by `days` (demo mode's other weeks). */
+  static shiftLessons(lessons, days) {
+    const move = (iso) => {
+      if (!iso) return iso;
+      const d = new Date(iso);
+      d.setDate(d.getDate() + days);
+      return `${localDateKey(d)}T${formatLocalTime(d)}:00`;
+    };
+    return (lessons || []).map(l => ({ ...l, KezdetIdopont: move(l.KezdetIdopont), VegIdopont: move(l.VegIdopont) }));
+  }
+
+  /**
+   * One week's timetable (OrarendElemek) for the week navigation, sorted by
+   * start time. Throws on any HTTP error so the UI can say what went wrong.
+   */
+  static async getTimetableWeek(instituteCode, accessToken, monday) {
+    const code = String(instituteCode ?? "").trim().toLowerCase();
+    if (!this.isValidInstituteCode(code)) throw new Error("Érvénytelen intézménykód.");
+    const { monday: from, sunday: to } = KretaApi.weekRange(monday, 0);
+    const url = `https://${code}.e-kreta.hu/ellenorzo/V3/Sajat/OrarendElemek?datumTol=${encodeURIComponent(from.toISOString())}&datumIg=${encodeURIComponent(to.toISOString())}`;
+    const res = await fetch(url, {
+      headers: { "Authorization": `Bearer ${accessToken}`, "apiKey": KRETA_API_KEY, "User-Agent": USER_AGENT, "Accept": "application/json" },
+      signal: AbortSignal.timeout(8000)
+    });
+    if (res.status >= 500) throw outageError(res.status);
+    if (!res.ok) {
+      const err = new Error(`Az órarend nem tölthető be (${res.status}).`);
+      err.status = res.status;
+      throw err;
+    }
+    const data = await res.json();
+    return (Array.isArray(data) ? data : []).sort((a, b) => new Date(a.KezdetIdopont) - new Date(b.KezdetIdopont));
+  }
+
   /** Pala's public links for the settings footer; an empty URL hides its entry. Mirrors lib/links.dart. */
   static palaLinks() {
     return [

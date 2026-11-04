@@ -1035,6 +1035,7 @@ body {
   gap: 14px;
 }
 .timetable-grid > * { min-width: 0; }
+.week-nav { display: inline-flex; gap: 6px; }
 @media (max-width: 1200px) {
   .timetable-grid { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
 }
