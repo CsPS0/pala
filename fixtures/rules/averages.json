@@ -170,6 +170,104 @@
       "overall": 4
     },
     {
+      "name": "a percentage evaluation with a 1-5 number does not count (ErtekFajta Szazalekos)",
+      "grades": [
+        {
+          "Tantargy": {
+            "Nev": "Matematika"
+          },
+          "ErtekFajta": {
+            "Uid": "1,Osztalyzat",
+            "Nev": "Osztalyzat"
+          },
+          "SzamErtek": 5,
+          "SzovegesErtek": "Jeles(5)",
+          "Tipus": {
+            "Nev": "evkozi_jegy_ertekeles",
+            "Leiras": "Évközi jegy/értékelés"
+          },
+          "SulySzazalekErteke": 100
+        },
+        {
+          "Tantargy": {
+            "Nev": "Matematika"
+          },
+          "ErtekFajta": {
+            "Uid": "3,Szazalekos",
+            "Nev": "Szazalekos"
+          },
+          "SzamErtek": 4,
+          "SzovegesErtek": "4%",
+          "Tipus": {
+            "Nev": "evkozi_jegy_ertekeles",
+            "Leiras": "Évközi jegy/értékelés"
+          },
+          "SulySzazalekErteke": null
+        },
+        {
+          "Tantargy": {
+            "Nev": "Fizika"
+          },
+          "ErtekFajta": {
+            "Uid": "3,Szazalekos",
+            "Nev": "Szazalekos"
+          },
+          "SzamErtek": 3,
+          "SzovegesErtek": "3",
+          "Tipus": {
+            "Nev": "evkozi_jegy_ertekeles",
+            "Leiras": "Évközi jegy/értékelés"
+          },
+          "SulySzazalekErteke": null
+        }
+      ],
+      "subjectAverages": {
+        "Matematika": 5
+      },
+      "overall": 5
+    },
+    {
+      "name": "a text evaluation does not count (ErtekFajta Szoveges)",
+      "grades": [
+        {
+          "Tantargy": {
+            "Nev": "Rajz"
+          },
+          "ErtekFajta": {
+            "Uid": "2,Szoveges",
+            "Nev": "Szoveges"
+          },
+          "SzamErtek": 2,
+          "SzovegesErtek": "Nem írt",
+          "Tipus": {
+            "Nev": "evkozi_jegy_ertekeles",
+            "Leiras": "Évközi jegy/értékelés"
+          },
+          "SulySzazalekErteke": null
+        },
+        {
+          "Tantargy": {
+            "Nev": "Fizika"
+          },
+          "ErtekFajta": {
+            "Uid": "1,Osztalyzat",
+            "Nev": "Osztalyzat"
+          },
+          "SzamErtek": 3,
+          "SzovegesErtek": "Közepes(3)",
+          "Tipus": {
+            "Nev": "evkozi_jegy_ertekeles",
+            "Leiras": "Évközi jegy/értékelés"
+          },
+          "SulySzazalekErteke": null
+        }
+      ],
+      "subjectAverages": {
+        "Fizika": 3
+      },
+      "overall": 3
+    },
+    {
       "name": "no counted grade gives no overall average",
       "grades": [
         {

@@ -212,7 +212,7 @@ class _GlobalSearchViewState extends State<GlobalSearchView> {
                               _buildCategoryHeader(theme, colorScheme, 'JEGYEK', matchGrades.length),
                               ...matchGrades.map((g) {
                                 final dateStr = g.date != null ? DateFormat('yyyy.MM.dd').format(g.date!) : '';
-                                final val = g.numericValue?.toString() ?? g.textValue ?? '?';
+                                final val = g.displayValue;
                                 final gradeColor = AppColors.getGradeColor(g.numericValue, Theme.of(context).brightness);
 
                                 return SearchResultTile(

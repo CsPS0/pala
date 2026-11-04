@@ -42,6 +42,29 @@ class DemoData {
 
     return [
       // --- MATEMATIKA (Tanár: Dr. Számoló Szilárd) ---
+      // A percentage evaluation with a 1-5 number and a text evaluation:
+      // neither counts toward averages (ErtekFajta Szazalekos / Szoveges).
+      Grade(
+        subject: 'Matematika',
+        subjectCategory: 'Matematika',
+        textValue: '4%',
+        percentValue: 4,
+        date: d(y1, 9, 10),
+        type: 'Évközi jegy/értékelés',
+        theme: 'Bemeneti felmérő',
+        teacherName: 'Dr. Számoló Szilárd',
+        valueKind: GradeValueKind.percent,
+      ),
+      Grade(
+        subject: 'Matematika',
+        subjectCategory: 'Matematika',
+        textValue: 'Nem írt',
+        date: d(y1, 9, 12),
+        type: 'Évközi jegy/értékelés',
+        theme: 'Pótló röpdolgozat',
+        teacherName: 'Dr. Számoló Szilárd',
+        valueKind: GradeValueKind.text,
+      ),
       Grade(
         subject: 'Matematika',
         subjectCategory: 'Matematika',

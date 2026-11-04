@@ -66,7 +66,7 @@ Minden kliens (TUI, asztali és mobil app, kiterjesztés, helyi webes felület) 
 **Átlag**
 - Egy jegy akkor számít, ha 1 és 5 közötti számjegy, nem félévi, év végi, negyedéves vagy osztályozó vizsga eredménye, és a súlya 0-nál nagyobb.
 - A hiányzó súly 100%. A 0%-os súlyú jegy nem számít bele az átlagba.
-- A szöveges és a százalékos értékelés nem számít.
+- A szöveges és a százalékos értékelés nem számít. Az értékelés fajtáját az `ErtekFajta.Nev` adja meg (`Osztalyzat`, `Szazalekos`, `Szoveges`). A százalékos értékelés `SzamErtek` mezője lehet 1 és 5 közötti szám is (például „4%”-nál 4), ezért csak az `Osztalyzat` számít jegynek. Ha az `ErtekFajta` hiányzik, a `%` végű szöveg vagy az 5-nél nagyobb szám százalékos értékelés.
 - A tantárgyi átlag a beszámított jegyek súlyozott átlaga.
 - Az összesített (tanulmányi) átlag a tantárgyi átlagok egyszerű átlaga, ahogy a bizonyítványban. A tantárgy, amelyben nincs beszámított jegy, kimarad.
 

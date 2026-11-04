@@ -218,7 +218,7 @@ async function checkForNewGrades(force = false) {
     if (newGrades.length > 0 && knownIds.size > 0) {
       const latest = newGrades[0];
       const sub = latest.Tantargy?.Nev || "Tantárgy";
-      const val = latest.SzamErtek || latest.SzovegesErtek || "5";
+      const val = KretaApi.parseGrade(latest).displayValue;
       const topic = latest.Tema || latest.Tipus?.Leiras || "Értékelés";
 
       chrome.notifications.create(`pala_grade_${Date.now()}`, {

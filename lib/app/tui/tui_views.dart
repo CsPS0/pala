@@ -532,7 +532,7 @@ class TuiViews {
       for (final g in sortedGrades.take(8)) {
         final pill = PalaTheme.formatGradePill(
           g.numericValue,
-          fallback: g.textValue,
+          fallback: g.numericValue == null ? g.displayValue : null,
         );
         final subj = AppState.instance.applyAlias(g.subject);
         final dateStr = g.date != null

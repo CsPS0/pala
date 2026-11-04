@@ -903,7 +903,7 @@ function renderGrades(grades) {
     const card = document.createElement("div");
     card.className = "item-card";
     const sub = g.Tantargy?.Nev || g.TantargyNev || g.Tantargy || "Tantárgy";
-    const topic = g.Tema || g.Tipus?.Leiras || g.Tipus?.Nev || g.ErtekelesFajtaja?.Leiras || "Értékelés";
+    const topic = g.Tema || g.Tipus?.Leiras || g.Tipus?.Nev || "Értékelés";
     const weightText = parsed.weightPercent !== 100 ? ` (${parsed.weightPercent}%)` : "";
 
     let dateText = "";

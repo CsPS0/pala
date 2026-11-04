@@ -1777,15 +1777,6 @@ function renderDashboardSubjectCards(subjectMap) {
         weightSum += parsed.weight;
       }
     });
-    if (weightSum === 0) {
-      subGrades.forEach(g => {
-        const parsed = KretaApi.parseGrade(g);
-        if (parsed.numericGrade !== null) {
-          sum += parsed.numericGrade * parsed.weight;
-          weightSum += parsed.weight;
-        }
-      });
-    }
 
     const avg = weightSum > 0 ? (sum / weightSum).toFixed(2) : "-";
     const numAvg = parseFloat(avg);
@@ -2058,16 +2049,6 @@ function renderAllGradesView(grades, groupAverages = []) {
       }
     });
 
-    if (weightSum === 0) {
-      subGrades.forEach(g => {
-        const parsed = KretaApi.parseGrade(g);
-        if (parsed.numericGrade !== null) {
-          validGrades.push({ grade: parsed.numericGrade, weight: parsed.weight, original: g, parsed });
-          sum += parsed.numericGrade * parsed.weight;
-          weightSum += parsed.weight;
-        }
-      });
-    }
 
     // Include ghost grades for this subject
     const subGhostItems = dashGhostState.items.filter(m => m.subject === subName);

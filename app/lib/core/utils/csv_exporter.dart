@@ -15,7 +15,7 @@ class CsvExporter {
       ['Tantárgy', 'Jegy', 'Szöveges Érték', 'Súly (%)', 'Típus', 'Dátum', 'Téma', 'Tanár'],
       grades.map((g) => [
             g.subject,
-            g.numericValue?.toString() ?? '',
+            g.displayValue,
             g.textValue ?? '',
             '${g.weight.round()}%',
             g.type ?? '',

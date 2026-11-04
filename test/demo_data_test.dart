@@ -1,6 +1,8 @@
 import 'package:test/test.dart';
 import 'package:pala/api/demo_data.dart';
 import 'package:pala/api/demo_client.dart';
+import 'package:pala/models/models.dart';
+import 'package:pala/rules/grade_rules.dart';
 
 void main() {
   group('DemoData Grades and Failing Subjects', () {
@@ -11,6 +13,12 @@ void main() {
 
       expect(ones.isNotEmpty, isTrue, reason: 'Must contain grade 1');
       expect(twos.isNotEmpty, isTrue, reason: 'Must contain grade 2');
+    });
+
+    test('a percentage and a text evaluation are shown but do not count', () {
+      final others = DemoData.getGrades().where((g) => g.valueKind != GradeValueKind.grade).toList();
+      expect(others.map((g) => g.displayValue).toList()..sort(), ['4%', 'Nem írt']);
+      expect(others.any(GradeRules.countsForAverage), isFalse);
     });
 
     test('Fizika and Kémia have failing averages (< 2.0)', () {

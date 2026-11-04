@@ -608,7 +608,7 @@ class AppModel extends ChangeNotifier {
         ['Tantárgy', 'Érték', 'Súly', 'Dátum', 'Téma', 'Tanár'],
         _grades.map((g) => [
               getDisplaySubject(g.subject),
-              g.numericValue?.toString() ?? g.textValue ?? '',
+              g.displayValue,
               '${g.weight.toInt()}%',
               csvDate(g.date),
               g.theme ?? '',

@@ -21,7 +21,7 @@ extension PalaAppExportView on PalaApp {
           // The shared CSV format (utils/csv.dart): BOM, ';', every value quoted.
           csvFile.writeAsStringSync(toCsv(
             ['Tantárgy', 'Érték', 'Dátum', 'Téma'],
-            grades.map((g) => [g.subject, g.numericValue ?? g.textValue ?? '', csvDate(g.date), g.theme ?? '']),
+            grades.map((g) => [g.subject, g.displayValue, csvDate(g.date), g.theme ?? '']),
           ));
           print('Jegyek elmentve: ${csvFile.path}');
         }
@@ -90,7 +90,7 @@ extension PalaAppExportView on PalaApp {
         if (outputData[subj] == null) outputData[subj] = [];
         outputData[subj].add({
           'datum': g.date?.toString().split(' ').first.split('T').first ?? '',
-          'ertek': g.numericValue ?? g.textValue ?? '',
+          'ertek': g.displayValue,
           'tema': g.theme ?? '',
           'tipus': g.type ?? ''
         });

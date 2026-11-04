@@ -203,7 +203,7 @@ class _GradeSummaryCardState extends State<GradeSummaryCard> {
               border: Border.all(color: gradeColor.withValues(alpha: 0.3)),
             ),
             child: Text(
-              grade.numericValue?.toString() ?? grade.textValue ?? '?',
+              grade.displayValue,
               style: TextStyle(
                 color: gradeColor,
                 fontWeight: FontWeight.w800,

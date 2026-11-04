@@ -159,7 +159,7 @@ extension PalaAppGradesView on PalaApp {
             final limit = action == 0 ? 10 : grades.length;
             for (var grade in grades.take(limit)) {
               final subject = grade.subject;
-              final val = grade.numericValue ?? grade.textValue ?? '';
+              final val = grade.displayValue;
               
               String coloredVal = val.toString();
               if (grade.numericValue != null && grade.numericValue! > 0 && grade.numericValue! <= 5) {
@@ -263,7 +263,7 @@ extension PalaAppGradesView on PalaApp {
       if (_matches(g.subject, queryClean) || _matches(g.theme, queryClean) || _matches(g.teacherName, queryClean) || _matches(g.textValue, queryClean)) {
         final dateStr = g.date?.toString().split(' ').first ?? '';
         resultsList.add({
-          'label': '[Jegy] ${AppState.instance.applyAlias(g.subject)}: ${g.numericValue ?? g.textValue} ($dateStr)',
+          'label': '[Jegy] ${AppState.instance.applyAlias(g.subject)}: ${g.displayValue} ($dateStr)',
           'type': 'grade',
           'data': g,
         });
@@ -395,7 +395,7 @@ extension PalaAppGradesView on PalaApp {
     _showMainMenuBanner();
     print('\n\x1B[1;36m=== Jegy Részletei ===\x1B[0m\n');
     print('Tantárgy:      ${AppState.instance.applyAlias(g.subject)}');
-    print('Érték:         \x1B[1m${g.numericValue ?? g.textValue}\x1B[0m');
+    print('Érték:         \x1B[1m${g.displayValue}\x1B[0m');
     print('Súly:          ${g.weight}%');
     print('Típus:         ${g.type}');
     print('Dátum:         ${g.date?.toString().split(' ').first ?? "-"}');

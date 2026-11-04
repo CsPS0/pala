@@ -9,7 +9,7 @@ export function loadKretaApi() {
   const source = readFileSync(new URL("../shared/kreta_api.js", import.meta.url), "utf8");
   vm.runInContext(source, context, { filename: "kreta_api.js" });
   // Top-level classes live in the script scope, not on the global object.
-  return vm.runInContext("({ KretaApi, offlineReasonOf, offlineLabel, offlineNotice })", context);
+  return vm.runInContext("({ KretaApi, offlineReasonOf, offlineLabel, offlineNotice, DEMO_GRADES })", context);
 }
 
 export function loadFixture(name) {

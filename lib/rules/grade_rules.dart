@@ -7,11 +7,12 @@ import '../models/grade.dart';
 class GradeRules {
   GradeRules._();
 
-  /// A grade counts toward averages when it is a 1-5 grade, not a midyear or
+  /// A grade counts toward averages when it is a 1-5 grade (not a percentage
+  /// or text evaluation, even one with a 1-5 number), not a midyear or
   /// year-end result, and its weight is above 0 (a missing weight is 100%).
   static bool countsForAverage(Grade g) {
     final v = g.numericValue;
-    return v != null && v >= 1 && v <= 5 && !g.isSummaryGrade && g.weight > 0;
+    return g.valueKind == GradeValueKind.grade && v != null && v >= 1 && v <= 5 && !g.isSummaryGrade && g.weight > 0;
   }
 
   /// Weighted average per subject. Subjects without a counted grade are left out.

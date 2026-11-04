@@ -4,6 +4,36 @@ import 'package:pala/models/absence.dart';
 import 'package:pala/models/note.dart';
 
 void main() {
+  group('Grade value kind (ErtekFajta)', () {
+    test('a Szazalekos evaluation keeps its number out of numericValue', () {
+      final g = Grade.fromJson({
+        'Tantargy': {'Nev': 'Matematika'},
+        'ErtekFajta': {'Nev': 'Szazalekos'},
+        'SzamErtek': 4,
+        'SzovegesErtek': '4%',
+        'SulySzazalekErteke': null,
+      });
+      expect(g.valueKind, GradeValueKind.percent);
+      expect(g.numericValue, isNull);
+      expect(g.percentValue, 4);
+      expect(g.displayValue, '4%');
+    });
+
+    test('a Szoveges evaluation is text even with a number', () {
+      final g = Grade.fromJson({'ErtekFajta': {'Nev': 'Szoveges'}, 'SzamErtek': 2, 'SzovegesErtek': 'Nem írt'});
+      expect(g.valueKind, GradeValueKind.text);
+      expect(g.numericValue, isNull);
+      expect(g.displayValue, 'Nem írt');
+    });
+
+    test('without ErtekFajta a 1-5 number is a grade and 85 a percentage', () {
+      expect(Grade.fromJson({'SzamErtek': 3}).numericValue, 3);
+      final p = Grade.fromJson({'SzamErtek': 85});
+      expect(p.valueKind, GradeValueKind.percent);
+      expect(p.percentValue, 85);
+    });
+  });
+
   group('Grade', () {
     test('fromJson parses core fields and converts date to local time', () {
       final grade = Grade.fromJson({

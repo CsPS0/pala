@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { loadKretaApi } from "./load_kreta_api.mjs";
 
-const { KretaApi, offlineReasonOf, offlineLabel } = loadKretaApi();
+const { KretaApi, offlineReasonOf, offlineLabel, DEMO_GRADES } = loadKretaApi();
 
 test("parseGrade reads the numeric grade and weight", () => {
   const p = KretaApi.parseGrade({ SzamErtek: 4, SulySzazalekErteke: 200, Tipus: { Leiras: "Évközi jegy/értékelés" } });
@@ -62,4 +62,17 @@ test("timetableToIcs: escaped text, stable UID, cancelled status, folded CRLF li
   for (const line of ics.split("\r\n")) {
     assert.ok(new TextEncoder().encode(line).length <= 75, line);
   }
+});
+
+test("parseGrade shows a Szazalekos evaluation with a 1-5 number as a percentage", () => {
+  const p = KretaApi.parseGrade({ SzamErtek: 4, SzovegesErtek: "4", ErtekFajta: { Nev: "Szazalekos" } });
+  assert.equal(p.valueKind, "percent");
+  assert.equal(p.displayValue, "4%");
+  assert.equal(KretaApi.countsForAverage(p), false);
+});
+
+test("demo grades include a percentage and a text evaluation that do not count", () => {
+  const kinds = DEMO_GRADES.map((g) => KretaApi.parseGrade(g)).filter((p) => p.valueKind !== "grade");
+  assert.deepEqual([...kinds.map((p) => p.displayValue)].sort(), ["4%", "Nem írt"]);
+  assert.ok(kinds.every((p) => !KretaApi.countsForAverage(p)));
 });

@@ -240,52 +240,56 @@ const DEMO_STUDENT = {
 
 const DEMO_GRADES = [
   // Matematika (Dr. Számoló Szilárd)
-  { Id: 101, Tantargy: { Nev: "Matematika" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 200, Tema: "Függvények & Analízis témazáró", RogzitesDatuma: new Date().toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 1011, Tantargy: { Nev: "Matematika" }, SzovegesErtek: "Elégtelen (1)", SzamErtek: 1, SulySzazalek: 100, Tema: "Váratlan röpdolgozat: Algebrai törtek", RogzitesDatuma: new Date(Date.now() - 50000000).toISOString(), Tipus: { Leiras: "Írásbeli röpdolgozat" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 1012, Tantargy: { Nev: "Matematika" }, SzovegesErtek: "Elégséges (2)", SzamErtek: 2, SulySzazalek: 200, Tema: "Trigonometria és szögfüggvények témazáró", RogzitesDatuma: new Date(Date.now() - 100000000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 1013, Tantargy: { Nev: "Matematika" }, SzovegesErtek: "Jó (4)", SzamErtek: 4, SulySzazalek: 100, Tema: "Vektorok koordinátái", RogzitesDatuma: new Date(Date.now() - 150000000).toISOString(), Tipus: { Leiras: "Órai munka" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+  { Id: 101, Tantargy: { Nev: "Matematika" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 200, Tema: "Függvények & Analízis témazáró", RogzitesDatuma: new Date().toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
+  { Id: 1011, Tantargy: { Nev: "Matematika" }, SzovegesErtek: "Elégtelen (1)", SzamErtek: 1, SulySzazalek: 100, Tema: "Váratlan röpdolgozat: Algebrai törtek", RogzitesDatuma: new Date(Date.now() - 50000000).toISOString(), Tipus: { Leiras: "Írásbeli röpdolgozat" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
+  { Id: 1012, Tantargy: { Nev: "Matematika" }, SzovegesErtek: "Elégséges (2)", SzamErtek: 2, SulySzazalek: 200, Tema: "Trigonometria és szögfüggvények témazáró", RogzitesDatuma: new Date(Date.now() - 100000000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
+  { Id: 1013, Tantargy: { Nev: "Matematika" }, SzovegesErtek: "Jó (4)", SzamErtek: 4, SulySzazalek: 100, Tema: "Vektorok koordinátái", RogzitesDatuma: new Date(Date.now() - 150000000).toISOString(), Tipus: { Leiras: "Órai munka" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
 
   // Magyar nyelv és irodalom (Arany Jánosné)
-  { Id: 102, Tantargy: { Nev: "Magyar nyelv és irodalom" }, SzovegesErtek: "Jó (4)", SzamErtek: 4, SulySzazalek: 100, Tema: "Nyugat lírája", RogzitesDatuma: new Date(Date.now() - 86400000).toISOString(), Tipus: { Leiras: "Szóbeli felelet" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 1021, Tantargy: { Nev: "Magyar nyelv és irodalom" }, SzovegesErtek: "Elégséges (2)", SzamErtek: 2, SulySzazalek: 100, Tema: "Helyesírási röpdolgozat", RogzitesDatuma: new Date(Date.now() - 90000000).toISOString(), Tipus: { Leiras: "Röpdolgozat" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 1022, Tantargy: { Nev: "Magyar nyelv és irodalom" }, SzovegesErtek: "Közepes (3)", SzamErtek: 3, SulySzazalek: 200, Tema: "Romantika és reformkori irodalom témazáró", RogzitesDatuma: new Date(Date.now() - 120000000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+  { Id: 102, Tantargy: { Nev: "Magyar nyelv és irodalom" }, SzovegesErtek: "Jó (4)", SzamErtek: 4, SulySzazalek: 100, Tema: "Nyugat lírája", RogzitesDatuma: new Date(Date.now() - 86400000).toISOString(), Tipus: { Leiras: "Szóbeli felelet" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
+  { Id: 1021, Tantargy: { Nev: "Magyar nyelv és irodalom" }, SzovegesErtek: "Elégséges (2)", SzamErtek: 2, SulySzazalek: 100, Tema: "Helyesírási röpdolgozat", RogzitesDatuma: new Date(Date.now() - 90000000).toISOString(), Tipus: { Leiras: "Röpdolgozat" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
+  { Id: 1022, Tantargy: { Nev: "Magyar nyelv és irodalom" }, SzovegesErtek: "Közepes (3)", SzamErtek: 3, SulySzazalek: 200, Tema: "Romantika és reformkori irodalom témazáró", RogzitesDatuma: new Date(Date.now() - 120000000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
 
   // Történelem (Kossuth Lajos)
-  { Id: 103, Tantargy: { Nev: "Történelem" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 100, Tema: "A reformkor gazdasági törekvései", RogzitesDatuma: new Date(Date.now() - 172800000).toISOString(), Tipus: { Leiras: "Órai munka" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 1031, Tantargy: { Nev: "Történelem" }, SzovegesErtek: "Elégséges (2)", SzamErtek: 2, SulySzazalek: 100, Tema: "Évszám röpdolgozat", RogzitesDatuma: new Date(Date.now() - 180000000).toISOString(), Tipus: { Leiras: "Röpdolgozat" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 1032, Tantargy: { Nev: "Történelem" }, SzovegesErtek: "Közepes (3)", SzamErtek: 3, SulySzazalek: 200, Tema: "Az 1848-as forradalmak témazáró", RogzitesDatuma: new Date(Date.now() - 190000000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+  { Id: 103, Tantargy: { Nev: "Történelem" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 100, Tema: "A reformkor gazdasági törekvései", RogzitesDatuma: new Date(Date.now() - 172800000).toISOString(), Tipus: { Leiras: "Órai munka" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
+  { Id: 1031, Tantargy: { Nev: "Történelem" }, SzovegesErtek: "Elégséges (2)", SzamErtek: 2, SulySzazalek: 100, Tema: "Évszám röpdolgozat", RogzitesDatuma: new Date(Date.now() - 180000000).toISOString(), Tipus: { Leiras: "Röpdolgozat" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
+  { Id: 1032, Tantargy: { Nev: "Történelem" }, SzovegesErtek: "Közepes (3)", SzamErtek: 3, SulySzazalek: 200, Tema: "Az 1848-as forradalmak témazáró", RogzitesDatuma: new Date(Date.now() - 190000000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
 
   // Angol nyelv (Smith John)
-  { Id: 104, Tantargy: { Nev: "Angol nyelv" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 100, Tema: "Conditionals & Essay writing", RogzitesDatuma: new Date(Date.now() - 259200000).toISOString(), Tipus: { Leiras: "Írásbeli dolgozat" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 1041, Tantargy: { Nev: "Angol nyelv" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 200, Tema: "B2 Mock Exam témazáró", RogzitesDatuma: new Date(Date.now() - 300000000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+  { Id: 104, Tantargy: { Nev: "Angol nyelv" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 100, Tema: "Conditionals & Essay writing", RogzitesDatuma: new Date(Date.now() - 259200000).toISOString(), Tipus: { Leiras: "Írásbeli dolgozat" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
+  { Id: 1041, Tantargy: { Nev: "Angol nyelv" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 200, Tema: "B2 Mock Exam témazáró", RogzitesDatuma: new Date(Date.now() - 300000000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
 
   // Fizika (Eötvös Loránd) - BUKÁSRA ÁLL (~1.71)
-  { Id: 105, Tantargy: { Nev: "Fizika" }, SzovegesErtek: "Elégtelen (1)", SzamErtek: 1, SulySzazalek: 200, Tema: "Newton törvényei témazáró dolgozat", RogzitesDatuma: new Date(Date.now() - 345600000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 1051, Tantargy: { Nev: "Fizika" }, SzovegesErtek: "Elégtelen (1)", SzamErtek: 1, SulySzazalek: 100, Tema: "Vektoriális gyorsulás röpdolgozat", RogzitesDatuma: new Date(Date.now() - 360000000).toISOString(), Tipus: { Leiras: "Röpdolgozat" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 1052, Tantargy: { Nev: "Fizika" }, SzovegesErtek: "Elégséges (2)", SzamErtek: 2, SulySzazalek: 100, Tema: "Kinematika és szabadesés felelet", RogzitesDatuma: new Date(Date.now() - 370000000).toISOString(), Tipus: { Leiras: "Szóbeli felelet" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 1053, Tantargy: { Nev: "Fizika" }, SzovegesErtek: "Elégséges (2)", SzamErtek: 2, SulySzazalek: 200, Tema: "Elektrosztatika és Coulomb-törvény TZ", RogzitesDatuma: new Date(Date.now() - 400000000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+  { Id: 105, Tantargy: { Nev: "Fizika" }, SzovegesErtek: "Elégtelen (1)", SzamErtek: 1, SulySzazalek: 200, Tema: "Newton törvényei témazáró dolgozat", RogzitesDatuma: new Date(Date.now() - 345600000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
+  { Id: 1051, Tantargy: { Nev: "Fizika" }, SzovegesErtek: "Elégtelen (1)", SzamErtek: 1, SulySzazalek: 100, Tema: "Vektoriális gyorsulás röpdolgozat", RogzitesDatuma: new Date(Date.now() - 360000000).toISOString(), Tipus: { Leiras: "Röpdolgozat" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
+  { Id: 1052, Tantargy: { Nev: "Fizika" }, SzovegesErtek: "Elégséges (2)", SzamErtek: 2, SulySzazalek: 100, Tema: "Kinematika és szabadesés felelet", RogzitesDatuma: new Date(Date.now() - 370000000).toISOString(), Tipus: { Leiras: "Szóbeli felelet" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
+  { Id: 1053, Tantargy: { Nev: "Fizika" }, SzovegesErtek: "Elégséges (2)", SzamErtek: 2, SulySzazalek: 200, Tema: "Elektrosztatika és Coulomb-törvény TZ", RogzitesDatuma: new Date(Date.now() - 400000000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
 
   // Informatika / Digitális kultúra (Neumann János)
-  { Id: 106, Tantargy: { Nev: "Informatika / Digitális kultúra" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 200, Tema: "Python algoritmusok & Adatbázisok", RogzitesDatuma: new Date(Date.now() - 432000000).toISOString(), Tipus: { Leiras: "Gyakorlati feladat" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 1061, Tantargy: { Nev: "Informatika / Digitális kultúra" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 100, Tema: "Relációs adatmodellek házi feladat", RogzitesDatuma: new Date(Date.now() - 440000000).toISOString(), Tipus: { Leiras: "Házi feladat" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+  { Id: 106, Tantargy: { Nev: "Informatika / Digitális kultúra" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 200, Tema: "Python algoritmusok & Adatbázisok", RogzitesDatuma: new Date(Date.now() - 432000000).toISOString(), Tipus: { Leiras: "Gyakorlati feladat" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
+  { Id: 1061, Tantargy: { Nev: "Informatika / Digitális kultúra" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 100, Tema: "Relációs adatmodellek házi feladat", RogzitesDatuma: new Date(Date.now() - 440000000).toISOString(), Tipus: { Leiras: "Házi feladat" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
 
   // Kémia (Irinyi János) - BUKÁSRA ÁLL (~1.33)
-  { Id: 107, Tantargy: { Nev: "Kémia" }, SzovegesErtek: "Elégtelen (1)", SzamErtek: 1, SulySzazalek: 100, Tema: "Atomszerkezet és periódusos rendszer", RogzitesDatuma: new Date(Date.now() - 190000000).toISOString(), Tipus: { Leiras: "Röpdolgozat" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 1071, Tantargy: { Nev: "Kémia" }, SzovegesErtek: "Elégtelen (1)", SzamErtek: 1, SulySzazalek: 200, Tema: "Kémiai kötések és molekulák témazáró", RogzitesDatuma: new Date(Date.now() - 260000000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 1072, Tantargy: { Nev: "Kémia" }, SzovegesErtek: "Elégtelen (1)", SzamErtek: 1, SulySzazalek: 200, Tema: "Sav-bázis reakciók és titrálás témazáró", RogzitesDatuma: new Date(Date.now() - 290000000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 1073, Tantargy: { Nev: "Kémia" }, SzovegesErtek: "Elégséges (2)", SzamErtek: 2, SulySzazalek: 100, Tema: "Indikátorok pH vizsgálata labor", RogzitesDatuma: new Date(Date.now() - 320000000).toISOString(), Tipus: { Leiras: "Gyakorlati" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+  { Id: 107, Tantargy: { Nev: "Kémia" }, SzovegesErtek: "Elégtelen (1)", SzamErtek: 1, SulySzazalek: 100, Tema: "Atomszerkezet és periódusos rendszer", RogzitesDatuma: new Date(Date.now() - 190000000).toISOString(), Tipus: { Leiras: "Röpdolgozat" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
+  { Id: 1071, Tantargy: { Nev: "Kémia" }, SzovegesErtek: "Elégtelen (1)", SzamErtek: 1, SulySzazalek: 200, Tema: "Kémiai kötések és molekulák témazáró", RogzitesDatuma: new Date(Date.now() - 260000000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
+  { Id: 1072, Tantargy: { Nev: "Kémia" }, SzovegesErtek: "Elégtelen (1)", SzamErtek: 1, SulySzazalek: 200, Tema: "Sav-bázis reakciók és titrálás témazáró", RogzitesDatuma: new Date(Date.now() - 290000000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
+  { Id: 1073, Tantargy: { Nev: "Kémia" }, SzovegesErtek: "Elégséges (2)", SzamErtek: 2, SulySzazalek: 100, Tema: "Indikátorok pH vizsgálata labor", RogzitesDatuma: new Date(Date.now() - 320000000).toISOString(), Tipus: { Leiras: "Gyakorlati" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
 
   // Biológia (Szent-Györgyi Albert)
-  { Id: 108, Tantargy: { Nev: "Biológia" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 100, Tema: "Sejtbiológia és citoplazma", RogzitesDatuma: new Date(Date.now() - 210000000).toISOString(), Tipus: { Leiras: "Órai munka" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 1081, Tantargy: { Nev: "Biológia" }, SzovegesErtek: "Jó (4)", SzamErtek: 4, SulySzazalek: 200, Tema: "Genetika és molekuláris biológia témazáró", RogzitesDatuma: new Date(Date.now() - 280000000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+  { Id: 108, Tantargy: { Nev: "Biológia" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 100, Tema: "Sejtbiológia és citoplazma", RogzitesDatuma: new Date(Date.now() - 210000000).toISOString(), Tipus: { Leiras: "Órai munka" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
+  { Id: 1081, Tantargy: { Nev: "Biológia" }, SzovegesErtek: "Jó (4)", SzamErtek: 4, SulySzazalek: 200, Tema: "Genetika és molekuláris biológia témazáró", RogzitesDatuma: new Date(Date.now() - 280000000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
 
   // Testnevelés és egészségfejlesztés (Hajós Alfréd)
-  { Id: 109, Tantargy: { Nev: "Testnevelés és egészségfejlesztés" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 100, Tema: "Kosárlabda technikai gyakorlatok", RogzitesDatuma: new Date(Date.now() - 150000000).toISOString(), Tipus: { Leiras: "Gyakorlati" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
+  { Id: 109, Tantargy: { Nev: "Testnevelés és egészségfejlesztés" }, SzovegesErtek: "Jeles (5)", SzamErtek: 5, SulySzazalek: 100, Tema: "Kosárlabda technikai gyakorlatok", RogzitesDatuma: new Date(Date.now() - 150000000).toISOString(), Tipus: { Leiras: "Gyakorlati" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
 
   // Földrajz (Teleki Pál) - Gyenge 2-es (~2.00)
-  { Id: 110, Tantargy: { Nev: "Földrajz" }, SzovegesErtek: "Elégtelen (1)", SzamErtek: 1, SulySzazalek: 100, Tema: "Földrajzi fokhálózat röpdolgozat", RogzitesDatuma: new Date(Date.now() - 230000000).toISOString(), Tipus: { Leiras: "Röpdolgozat" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 1101, Tantargy: { Nev: "Földrajz" }, SzovegesErtek: "Elégséges (2)", SzamErtek: 2, SulySzazalek: 200, Tema: "A Föld szerkezete és vulkánosság témazáró", RogzitesDatuma: new Date(Date.now() - 270000000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } },
-  { Id: 1102, Tantargy: { Nev: "Földrajz" }, SzovegesErtek: "Elégséges (2)", SzamErtek: 2, SulySzazalek: 100, Tema: "Európa vaktérkép", RogzitesDatuma: new Date(Date.now() - 310000000).toISOString(), Tipus: { Leiras: "Gyakorlati" }, ErtekelesFajtaja: { Leiras: "Érdemjegy" } }
+  { Id: 110, Tantargy: { Nev: "Földrajz" }, SzovegesErtek: "Elégtelen (1)", SzamErtek: 1, SulySzazalek: 100, Tema: "Földrajzi fokhálózat röpdolgozat", RogzitesDatuma: new Date(Date.now() - 230000000).toISOString(), Tipus: { Leiras: "Röpdolgozat" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
+  { Id: 1101, Tantargy: { Nev: "Földrajz" }, SzovegesErtek: "Elégséges (2)", SzamErtek: 2, SulySzazalek: 200, Tema: "A Föld szerkezete és vulkánosság témazáró", RogzitesDatuma: new Date(Date.now() - 270000000).toISOString(), Tipus: { Leiras: "Írásbeli témazáró" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
+  { Id: 1102, Tantargy: { Nev: "Földrajz" }, SzovegesErtek: "Elégséges (2)", SzamErtek: 2, SulySzazalek: 100, Tema: "Európa vaktérkép", RogzitesDatuma: new Date(Date.now() - 310000000).toISOString(), Tipus: { Leiras: "Gyakorlati" }, ErtekFajta: { Uid: "1,Osztalyzat", Nev: "Osztalyzat" } },
+  // A percentage evaluation with a 1-5 number and a text evaluation: neither
+  // counts toward averages (ErtekFajta Szazalekos / Szoveges).
+  { Id: 1014, Tantargy: { Nev: "Matematika" }, SzovegesErtek: "4%", SzamErtek: 4, SulySzazalek: null, Tema: "Bemeneti felmérő", RogzitesDatuma: new Date(Date.now() - 200000000).toISOString(), Tipus: { Leiras: "Évközi jegy/értékelés" }, ErtekFajta: { Uid: "3,Szazalekos", Nev: "Szazalekos" } },
+  { Id: 1015, Tantargy: { Nev: "Matematika" }, SzovegesErtek: "Nem írt", SzamErtek: null, SulySzazalek: null, Tema: "Pótló röpdolgozat", RogzitesDatuma: new Date(Date.now() - 210000000).toISOString(), Tipus: { Leiras: "Évközi jegy/értékelés" }, ErtekFajta: { Uid: "2,Szoveges", Nev: "Szoveges" } }
 ];
 
 function currentMonday() {
@@ -1442,12 +1446,25 @@ class KretaApi {
    * Parser for Kréta evaluation objects.
    * Differentiates standard 1..5 grades, percentages (>5%), text evaluations, "Nem írt", and summary grades.
    */
+  /** Maps Kréta's ErtekFajta to "grade" | "percent" | "text", or null when it is missing. */
+  static valueKindFromKreta(ertekFajta) {
+    const name = ertekFajta?.Nev;
+    if (!name) return null;
+    if (name === "Osztalyzat") return "grade";
+    if (name === "Szazalekos") return "percent";
+    return "text";
+  }
+
   static parseGrade(g) {
     if (!g) return { displayValue: "-", badgeClass: "grade-unknown", numericGrade: null, weight: 1, isSummary: false };
 
     const rawNum = typeof g.SzamErtek === "number" ? g.SzamErtek : parseInt(g.SzamErtek, 10);
     const text = (g.SzovegesErtek || "").trim();
-    const typeStr = (g.Tipus?.Leiras || g.Tipus?.Nev || g.ErtekelesFajtaja?.Leiras || "").toLowerCase();
+    const typeStr = (g.Tipus?.Leiras || g.Tipus?.Nev || "").toLowerCase();
+    // Kréta's value type (ErtekFajta.Nev): Osztalyzat, Szazalekos or Szoveges.
+    // A percentage can carry a 1-5 SzamErtek ("4%"), so the number alone does
+    // not make a grade. Without ErtekFajta the old heuristics below decide.
+    const kretaKind = KretaApi.valueKindFromKreta(g.ErtekFajta);
 
     // Check if summary grade (félévi, év végi, osztályozó)
     const isSummary = typeStr.includes("év végi") ||
@@ -1466,10 +1483,12 @@ class KretaApi {
                      text.toLowerCase() === "nem irt";
 
     // Check if percentage evaluation
-    const isPercentage = (!isNaN(rawNum) && rawNum > 5) || 
-                         text.endsWith("%") || 
-                         typeStr.includes("százalék") || 
-                         typeStr.includes("szazalek");
+    const isPercentage = kretaKind ? kretaKind === "percent" :
+                         ((!isNaN(rawNum) && rawNum > 5) ||
+                          text.endsWith("%") ||
+                          typeStr.includes("százalék") ||
+                          typeStr.includes("szazalek"));
+    const isText = kretaKind === "text";
 
     let displayValue = "";
     let badgeClass = "";
@@ -1482,6 +1501,9 @@ class KretaApi {
       const pct = (!isNaN(rawNum) && rawNum > 5) ? rawNum : (parseInt(text, 10) || rawNum || 0);
       displayValue = `${pct}%`;
       badgeClass = "grade-percent";
+    } else if (isText) {
+      displayValue = text || "-";
+      badgeClass = text ? "grade-text" : "grade-unknown";
     } else if (!isNaN(rawNum) && rawNum >= 1 && rawNum <= 5) {
       numericGrade = rawNum;
       displayValue = `${rawNum}`;
@@ -1517,6 +1539,7 @@ class KretaApi {
       badgeClass,
       isSummary,
       isPercentage,
+      valueKind: numericGrade !== null ? "grade" : (isPercentage ? "percent" : "text"),
       isNemIrt,
       weight,
       weightPercent
@@ -1529,7 +1552,7 @@ class KretaApi {
 
   /** True when a parsed grade counts toward averages: a 1-5 grade, not a summary grade, weight above 0. */
   static countsForAverage(p) {
-    return p.numericGrade !== null && p.numericGrade >= 1 && p.numericGrade <= 5 && !p.isSummary && p.weight > 0;
+    return p.valueKind === "grade" && p.numericGrade !== null && p.numericGrade >= 1 && p.numericGrade <= 5 && !p.isSummary && p.weight > 0;
   }
 
   /** Weighted average per subject name, from raw Kréta grades. Subjects without a counted grade are left out. */
