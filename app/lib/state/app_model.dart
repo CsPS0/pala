@@ -309,7 +309,8 @@ class AppModel extends ChangeNotifier {
         _fetchWeekType(),
       ]);
 
-      _student = futures[0] as Student?;
+      // TanuloAdatlap has no class name; the client learnt it from the class groups.
+      _student = (futures[0] as Student?)?.withClassName(_client!.className);
       _grades = (futures[1] as List<Grade>?) ?? [];
       _timetable = (futures[2] as List<TimetableEntry>?) ?? [];
       _homework = (futures[3] as List<Homework>?) ?? [];

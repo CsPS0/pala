@@ -94,4 +94,14 @@ void main() {
       expect(b!.any((l) => l.startTime?.weekday == DateTime.wednesday), isFalse);
     });
   });
+
+  test('demo profile matches the extension demo (AGENTS.md rule 7)', () async {
+    final client = DemoKretaClient();
+    await client.getGroupAverages();
+    final st = (await client.getStudentData())!.withClassName(client.className);
+    expect(st.schoolCode, 'pala-minta');
+    expect(st.className, '11.I');
+    expect(st.bankAccount, '11773425-06294344-00000000');
+    expect(st.addresses.single, '1111 Budapest, Példa utca 12. II/4');
+  });
 }

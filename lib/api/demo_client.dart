@@ -42,6 +42,7 @@ class DemoKretaClient extends KretaClient {
 
   @override
   Future<List<dynamic>?> getGroupAverages() async {
+    className = DemoData.className;
     return DemoData.getGroupAverages();
   }
 

@@ -92,6 +92,10 @@ class KretaClient {
   /// True once Kréta has rejected the refresh token itself (not a network
   /// blip), so the user has to log in again.
   bool sessionExpired = false;
+
+  /// The student's class name, learnt from OsztalyCsoportok while fetching
+  /// the class averages (TanuloAdatlap does not send it).
+  String? className;
   Future<bool>? _activeRefreshFuture;
   DateTime? _backoffUntil;
   static final _RequestGate _gate = _RequestGate();
@@ -634,6 +638,7 @@ class KretaClient {
     final groupsUrl = KretaAPI.groups(instituteCode);
     final groupsData = await _getAPI(groupsUrl, silent: true);
     if (groupsData is List && groupsData.isNotEmpty) {
+      className = classNameOf(groupsData);
       final group = groupsData.firstWhere(
         (g) => g is Map && (g['Tipus'] == 'Osztaly' || g['Tipus'] == 'OSZTALY'),
         orElse: () => groupsData.first,

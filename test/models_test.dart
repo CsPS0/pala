@@ -5,8 +5,31 @@ import 'package:pala/models/note.dart';
 import 'package:pala/models/class_average.dart';
 import 'package:pala/models/message.dart';
 import 'package:pala/models/exam.dart';
+import 'package:pala/models/student.dart';
 
 void main() {
+  group('Student profile fields', () {
+    test('reads the school code and the bank account by their real Kréta names', () {
+      final st = Student.fromJson({
+        'Nev': 'Minta Anna',
+        'IntezmenyNev': 'Minta Iskola',
+        'IntezmenyAzonosito': 'minta-123',
+        'Bankszamla': {'BankszamlaSzam': '11111111-22222222', 'BankszamlaTulajdonosNeve': 'Minta Béla'},
+      });
+      expect(st.schoolCode, 'minta-123');
+      expect(st.bankAccount, '11111111-22222222');
+      expect(st.bankAccountOwner, 'Minta Béla');
+    });
+
+    test('the class name comes from the Osztaly group of OsztalyCsoportok', () {
+      expect(classNameOf([
+        {'Tipus': 'Csoport', 'Nev': '11.B angol'},
+        {'Tipus': 'Osztaly', 'Nev': '11.B'},
+      ]), '11.B');
+      expect(classNameOf([]), isNull);
+    });
+  });
+
   group('Exam', () {
     test('reads the topic from Temaja (the real Kréta field)', () {
       final e = Exam.fromJson({'Tantargy': {'Nev': 'Fizika'}, 'Temaja': 'Mechanika', 'Modja': {'Nev': 'irasbeli_dolgozat', 'Leiras': 'Írásbeli dolgozat'}});

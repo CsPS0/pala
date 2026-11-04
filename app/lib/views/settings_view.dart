@@ -152,7 +152,7 @@ class _SettingsViewState extends State<SettingsView> with SingleTickerProviderSt
                         '${student.birthPlace != null && student.birthPlace!.isNotEmpty ? student.birthPlace : ""}${student.birthDate != null ? ", ${student.birthDate}" : ""}',
                       ),
                       _buildInfoRow('Anyja neve', student.mothersName ?? '-'),
-                      _buildInfoRow('Oktatási Azonosító', student.uid ?? '-', highlight: true),
+                      // Kréta does not send the OM id; Uid is only its internal key.
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -173,10 +173,24 @@ class _SettingsViewState extends State<SettingsView> with SingleTickerProviderSt
                     title: 'Oktatási Intézmény',
                     children: [
                       _buildInfoRow('Intézmény', student.institutionName),
+                      _buildInfoRow('Intézménykód', student.schoolCode ?? '-'),
+                      _buildInfoRow('Osztály', student.className ?? '-', highlight: true),
                       _buildInfoRow('Karbantartás', student.nextDowntime != null ? DateFormat('yyyy.MM.dd HH:mm').format(student.nextDowntime!) : 'Nincs tervezett leállás'),
                     ],
                   ),
                   const SizedBox(height: 12),
+
+                  // Bank account: sent by Kréta when the school recorded it; shown only here.
+                  if (student.bankAccount != null) ...[
+                    _buildSectionCard(
+                      title: 'Bankszámla',
+                      children: [
+                        _buildInfoRow('Számlaszám', student.bankAccount!),
+                        _buildInfoRow('Tulajdonos', student.bankAccountOwner ?? '-'),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                  ],
 
                   // Guardians Card
                   _buildSectionCard(

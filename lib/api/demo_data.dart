@@ -4,6 +4,7 @@ import '../models/models.dart';
 class DemoData {
   static const String studentName = 'Teszt Elek';
   static const String schoolName = 'Pala Minta Gimnázium és Technikum';
+  static const String className = '11.I';
   static const String schoolCode = 'pala-minta-001';
 
   static Student getStudent() {
@@ -14,18 +15,17 @@ class DemoData {
       birthName: studentName,
       birthPlace: 'Budapest',
       mothersName: 'Minta Mária',
-      email: 'teszt.elek@pala.hu',
+      email: 'elek.teszt@pala.edu.hu',
       phone: '+36 30 123 4567',
-      addresses: const ['1054 Budapest, Szemere utca 12.'],
-      birthDate: '2008-04-01',
+      addresses: const ['1111 Budapest, Példa utca 12. II/4'],
+      birthDate: '2008-03-15',
       guardians: const [
-        {
-          'Nev': 'Minta Mária',
-          'EmailCim': 'minta.maria@pelda.hu',
-          'Telefonszam': '+36 30 987 6543',
-          'Tipus': {'Nev': 'Anyja'}
-        }
+        {'Nev': 'Teszt Gábor', 'EmailCim': 'szulo@teszt.hu', 'Telefonszam': '+36 20 987 6543'},
+        {'Nev': 'Minta Mária', 'EmailCim': 'anya@teszt.hu', 'Telefonszam': '+36 30 555 4444'},
       ],
+      schoolCode: 'pala-minta',
+      bankAccount: '11773425-06294344-00000000',
+      bankAccountOwner: studentName,
     );
   }
 
