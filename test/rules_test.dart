@@ -5,6 +5,7 @@ import 'package:test/test.dart';
 import 'package:pala/models/models.dart';
 import 'package:pala/rules/absence_rules.dart';
 import 'package:pala/rules/grade_rules.dart';
+import 'package:pala/rules/wrapped_season.dart';
 
 /// Runs the shared rule vectors in fixtures/rules/. The extension runs the
 /// same files in extension/test/rules.test.mjs.
@@ -61,5 +62,13 @@ void main() {
     expect(AbsenceRules.levelOf(199), AbsenceLevel.warning);
     expect(AbsenceRules.levelOf(200), AbsenceLevel.danger);
     expect(AbsenceRules.levelOf(250), AbsenceLevel.over);
+  });
+
+  test('Pala Wrapped season runs from 14 June to 30 September', () {
+    expect(isWrappedSeason(DateTime(2027, 6, 13, 23, 59)), isFalse);
+    expect(isWrappedSeason(DateTime(2027, 6, 14)), isTrue);
+    expect(isWrappedSeason(DateTime(2027, 8, 1)), isTrue);
+    expect(isWrappedSeason(DateTime(2027, 9, 30, 23, 59)), isTrue);
+    expect(isWrappedSeason(DateTime(2027, 10, 1)), isFalse);
   });
 }

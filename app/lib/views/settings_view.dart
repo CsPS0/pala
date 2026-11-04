@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pala/rules/wrapped_season.dart';
 import '../state/app_model.dart';
 import '../theme/pala_theme.dart';
 import '../features/wrapped/presentation/pala_wrapped_view.dart';
@@ -431,7 +432,8 @@ class _SettingsViewState extends State<SettingsView> with SingleTickerProviderSt
               _buildSectionCard(
                 title: 'Eszközök & Összesítők',
                 children: [
-                  // Pala Wrapped Button
+                  // Pala Wrapped: summer break only (or demo mode).
+                  if (isWrappedSeason(DateTime.now()) || widget.appModel.isDemo) ...[
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     leading: Container(
@@ -440,7 +442,7 @@ class _SettingsViewState extends State<SettingsView> with SingleTickerProviderSt
                         color: PalaTheme.accent.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Icon(Icons.auto_awesome, color: PalaTheme.accent, size: 20),
+                      child: Icon(Icons.summarize_outlined, color: PalaTheme.accent, size: 20),
                     ),
                     title: Text('Pala Wrapped', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
                     subtitle: Text('Nézd meg az idei tanéved összesítőjét!', style: TextStyle(color: PalaTheme.textMuted, fontSize: 12)),
@@ -448,6 +450,7 @@ class _SettingsViewState extends State<SettingsView> with SingleTickerProviderSt
                     onTap: () => PalaWrappedView.show(context, widget.appModel),
                   ),
                   Divider(height: 16),
+                  ],
 
                   // Export Grades
                   ListTile(

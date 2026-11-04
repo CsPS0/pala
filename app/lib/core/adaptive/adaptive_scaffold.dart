@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pala/rules/wrapped_season.dart';
 import '../../features/absences/presentation/absences_view.dart';
 import '../../features/dashboard/presentation/live_dashboard_view.dart';
 import '../../features/grades/presentation/grades_view.dart';
@@ -284,13 +285,14 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
               ),
             ),
           ),
-        // Pala Wrapped: wide layouts only; phones reach it from Settings > Eszközök.
-        if (!isCompact)
-          IconButton(
-          tooltip: 'Pala Wrapped éves összegző',
-          icon: const Icon(Icons.auto_awesome, size: 22),
-          onPressed: () => PalaWrappedView.show(context, widget.appModel),
-        ),
+        // Pala Wrapped: wide layouts only (phones reach it from Settings >
+        // Eszközök), and only in the summer break or demo mode. A text button,
+        // so it does not read as an AI feature.
+        if (!isCompact && (isWrappedSeason(DateTime.now()) || widget.appModel.isDemo))
+          TextButton(
+            onPressed: () => PalaWrappedView.show(context, widget.appModel),
+            child: const Text('Pala Wrapped', style: TextStyle(fontWeight: FontWeight.w700)),
+          ),
         // Global Search Trigger
         IconButton(
           tooltip: 'Globális kereső',

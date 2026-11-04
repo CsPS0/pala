@@ -5,12 +5,7 @@ extension PalaAppWrappedView on PalaApp {
     if (!await _ensureClientReady()) return;
 
     final now = DateTime.now();
-    final isSummer = (now.month == 6 && now.day >= 14) || 
-                     (now.month == 7) || 
-                     (now.month == 8) || 
-                     (now.month == 9 && now.day <= 30);
-
-    if (!isSummer && !isDemo) {
+    if (!isWrappedSeason(now) && !isDemo) {
       _clearScreen();
       print('\n\x1B[1;33m─────────────────────────────────────────────────────────────\x1B[0m');
       print('\x1B[1;36m  PALA WRAPPED — Nyári Szüneti Tanévzáró\x1B[0m');

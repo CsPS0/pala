@@ -1446,6 +1446,12 @@ class KretaApi {
    * Parser for Kréta evaluation objects.
    * Differentiates standard 1..5 grades, percentages (>5%), text evaluations, "Nem írt", and summary grades.
    */
+  /** Pala Wrapped opens from 14 June to 30 September. Mirrors lib/rules/wrapped_season.dart. */
+  static isWrappedSeason(date = new Date()) {
+    const m = date.getMonth() + 1, d = date.getDate();
+    return (m === 6 && d >= 14) || m === 7 || m === 8 || m === 9;
+  }
+
   /**
    * The class average from one OsztalyAtlagok item. Kréta sends it as
    * OsztalyCsoportAtlag; older names are kept for cached and demo data.

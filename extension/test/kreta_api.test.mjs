@@ -84,3 +84,10 @@ test("classAverageOf reads OsztalyCsoportAtlag, older names and comma decimals",
   assert.equal(KretaApi.classAverageOf({}), null);
   assert.equal(KretaApi.classAverageOf({ OsztalyCsoportAtlag: 0 }), null);
 });
+
+test("isWrappedSeason runs from 14 June to 30 September", () => {
+  assert.equal(KretaApi.isWrappedSeason(new Date(2027, 5, 13, 23, 59)), false);
+  assert.equal(KretaApi.isWrappedSeason(new Date(2027, 5, 14)), true);
+  assert.equal(KretaApi.isWrappedSeason(new Date(2027, 8, 30, 23, 59)), true);
+  assert.equal(KretaApi.isWrappedSeason(new Date(2027, 9, 1)), false);
+});

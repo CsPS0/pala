@@ -1101,6 +1101,10 @@ function renderDashboard() {
     }
   }
 
+  // Pala Wrapped sums up a finished year: only in the summer break (or demo).
+  const wrappedBtn = document.getElementById("btn-open-wrapped");
+  if (wrappedBtn) wrappedBtn.style.display = (KretaApi.isWrappedSeason() || fullState.isDemo) ? "" : "none";
+
   // 1. Overall average by the shared rule (mean of the subject averages)
   const subjectMap = {};
   (d.grades || []).forEach(g => {
@@ -3781,12 +3785,7 @@ function openWrappedModal() {
   const content = document.getElementById("wrapped-content");
   if (!modal || !content) return;
 
-  const now = new Date();
-  const month = now.getMonth() + 1; // 1-12
-  const day = now.getDate();
-  const isSummer = (month === 6 && day >= 14) || (month === 7) || (month === 8) || (month === 9 && day <= 30);
-
-  if (!isSummer && !fullState.isDemo) {
+  if (!KretaApi.isWrappedSeason() && !fullState.isDemo) {
     content.innerHTML = `
       <div style="text-align: center; padding: 24px 12px;">
         <div style="width: 54px; height: 54px; border-radius: 50%; background: rgba(255, 136, 0, 0.12); border: 1px solid rgba(255, 136, 0, 0.3); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto;">
@@ -3807,7 +3806,7 @@ function openWrappedModal() {
           A hivatalos tanévzáró összefoglaló kizárólag június 14. és szeptember 30. között aktív, amikor az adott tanév összes érdemjegye és mulasztása hivatalosan lezárult.
         </p>
         <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 24px;">
-          A tanév közben a Faliújság és az Osztályzatok fülön követheted az eredményeidet és átlagaidat.
+          A tanév közben a Vezérlőpult és az Osztályzatok oldalon követheted az eredményeidet és átlagaidat.
         </p>
         <button class="btn btn-secondary" onclick="document.getElementById('wrapped-modal').style.display='none'">Rendben, bezárás</button>
       </div>
@@ -3928,7 +3927,7 @@ function openWrappedModal() {
 
         <div class="card" style="padding: 12px 14px; background: var(--sidebar); margin: 0;">
           <div style="font-size: 0.75rem; color: var(--text-muted);">Legaktívabb hónap</div>
-          <div style="font-size: 1rem; font-weight: 800; color: #fff; margin: 4px 0;">${topMonthName}</div>
+          <div style="font-size: 1rem; font-weight: 800; color: var(--text); margin: 4px 0;">${topMonthName}</div>
           <div style="font-size: 0.75rem; color: var(--text-muted);">${topMonthCount} rögzített jegy</div>
         </div>
       </div>

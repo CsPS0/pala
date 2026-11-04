@@ -12,6 +12,7 @@ import 'package:pala/api/demo_client.dart';
 import 'package:pala/models/models.dart';
 import 'package:pala/rules/absence_rules.dart';
 import 'package:pala/rules/grade_rules.dart';
+import 'package:pala/rules/wrapped_season.dart';
 import 'package:pala/utils/chart_generator.dart';
 import 'package:pala/utils/csv.dart';
 import 'package:pala/utils/ics_exporter.dart';
@@ -336,7 +337,9 @@ class PalaApp {
       final layout = [
         {'type': 'separator', 'label': '──────────────────────'},
         {'type': 'action', 'id': -2, 'label': 'Dashboard (Élő nézet)', 'key': 'd'},
-        {'type': 'action', 'id': 10, 'label': 'Pala Wrapped (Év végi összefoglaló)', 'key': 'w'},
+        // Pala Wrapped sums up a finished year: summer break only (or demo).
+        if (isWrappedSeason(DateTime.now()) || isDemo)
+          {'type': 'action', 'id': 10, 'label': 'Pala Wrapped (Év végi összefoglaló)', 'key': 'w'},
         {'type': 'action', 'id': 0, 'label': 'Tanulói adatlap'},
         {'type': 'action', 'id': 2, 'label': 'Órarend', 'key': 'o'},
         {'type': 'separator', 'label': '──────────────────────'},
