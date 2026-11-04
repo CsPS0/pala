@@ -187,3 +187,14 @@ test("isUpcoming keeps today and later, drops earlier days and missing dates", (
   assert.equal(KretaApi.isUpcoming("2026-11-03T23:00:00", now), false);
   assert.equal(KretaApi.isUpcoming("", now), false);
 });
+
+test("messageView filters by sender and sorts both ways; messageSenders lists each sender once", () => {
+  const list = [
+    { id: 1, sender: "Kovács Anna", date: "2026-10-01T08:00:00Z" },
+    { id: 2, sender: "Nagy Béla", date: "2026-11-02T08:00:00Z" },
+    { id: 3, sender: "Kovács Anna", date: "2026-10-20T08:00:00Z" },
+  ];
+  assert.deepEqual([...KretaApi.messageSenders(list)], ["Kovács Anna", "Nagy Béla"]);
+  assert.deepEqual([...KretaApi.messageView(list, { sender: "Kovács Anna", order: "newest" }).map((m) => m.id)], [3, 1]);
+  assert.deepEqual([...KretaApi.messageView(list, { order: "oldest" }).map((m) => m.id)], [1, 3, 2]);
+});

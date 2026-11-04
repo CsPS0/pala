@@ -1565,6 +1565,22 @@ class KretaApi {
     };
   }
 
+  /** Each sender once, in Hungarian alphabetical order, for the sender filter. */
+  static messageSenders(list) {
+    const names = new Set((list || []).map(m => m?.sender).filter(Boolean));
+    return [...names].sort((a, b) => a.localeCompare(b, "hu"));
+  }
+
+  /** The message list on screen: only one sender's messages if `sender` is set, newest or oldest first. */
+  static messageView(list, { sender = "", order = "newest" } = {}) {
+    const picked = sender ? (list || []).filter(m => m?.sender === sender) : (list || []);
+    const sorted = KretaApi.sortMessagesNewestFirst(picked);
+    if (order !== "oldest") return sorted;
+    // Oldest first, undated messages still last.
+    const dated = sorted.filter(m => m?.date), undated = sorted.filter(m => !m?.date);
+    return [...dated.reverse(), ...undated];
+  }
+
   /** A copy of the list with the newest message first; messages without a date go last. Mirrors lib/models/message.dart. */
   static sortMessagesNewestFirst(list) {
     const time = (m) => {

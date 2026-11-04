@@ -1037,6 +1037,11 @@ body {
 .timetable-grid > * { min-width: 0; }
 .week-nav { display: inline-flex; gap: 6px; }
 
+/* Üzenetek toolbar */
+.msg-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: -4px 0 16px; }
+.msg-toolbar .field-label { margin: 0; }
+.msg-toolbar-select { width: auto; min-width: 170px; max-width: 280px; padding-top: 6px; padding-bottom: 6px; }
+
 /* Feladatok & Dolgozatok */
 .tasks-group-title { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); margin: 14px 0 8px; }
 .task-card { display: block; width: 100%; text-align: left; margin-bottom: 10px; cursor: pointer; color: inherit; font: inherit; }

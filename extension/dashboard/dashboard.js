@@ -2623,6 +2623,8 @@ function renderAbsencesView(absences) {
 }
 
 let currentMessageFilter = "all";
+let currentMessageSender = "";
+let currentMessageOrder = "newest";
 
 function setupMessageFilters() {
   const chips = [
@@ -2631,6 +2633,19 @@ function setupMessageFilters() {
     { id: "filter-msg-questionnaires", filter: "questionnaires" },
     { id: "filter-msg-notes", filter: "notes" }
   ];
+
+  const rerender = () => renderMessagesView(
+    Array.isArray(fullState.data?.messages) ? fullState.data.messages : [],
+    Array.isArray(fullState.data?.questionnaires) ? fullState.data.questionnaires : []
+  );
+  document.getElementById("msg-sender-filter")?.addEventListener("change", e => {
+    currentMessageSender = e.target.value;
+    rerender();
+  });
+  document.getElementById("msg-sort-order")?.addEventListener("change", e => {
+    currentMessageOrder = e.target.value;
+    rerender();
+  });
 
   chips.forEach(c => {
     const btn = document.getElementById(c.id);
@@ -2872,11 +2887,23 @@ function renderMessagesView(messages, questionnaires) {
     return;
   }
 
-  let displayList = allMsgs;
+  // Sender filter options follow the loaded messages; a sender that is gone resets the filter.
+  const senderSelect = document.getElementById("msg-sender-filter");
+  if (senderSelect) {
+    const senders = KretaApi.messageSenders(allMsgs);
+    if (currentMessageSender && !senders.includes(currentMessageSender)) currentMessageSender = "";
+    senderSelect.replaceChildren(
+      new Option("Minden feladó", ""),
+      ...senders.map(s => new Option(s, s))
+    );
+    senderSelect.value = currentMessageSender;
+  }
+
+  let displayList = KretaApi.messageView(allMsgs, { sender: currentMessageSender, order: currentMessageOrder });
   if (currentMessageFilter === "inbox") {
-    displayList = allMsgs.filter(m => m.source === "eugyintezes" || m.type === "e-Ügyintézés" || m.type === "Beérkezett üzenet" || m.type === "Elküldött üzenet");
+    displayList = displayList.filter(m => m.source === "eugyintezes" || m.type === "e-Ügyintézés" || m.type === "Beérkezett üzenet" || m.type === "Elküldött üzenet");
   } else if (currentMessageFilter === "notes") {
-    displayList = allMsgs.filter(m => m.source !== "eugyintezes" && m.type !== "e-Ügyintézés" && m.type !== "Beérkezett üzenet" && m.type !== "Elküldött üzenet");
+    displayList = displayList.filter(m => m.source !== "eugyintezes" && m.type !== "e-Ügyintézés" && m.type !== "Beérkezett üzenet" && m.type !== "Elküldött üzenet");
   }
 
   if (displayList.length === 0) {

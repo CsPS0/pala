@@ -538,6 +538,20 @@
         <button class="chip-btn" id="filter-msg-notes">Tanári feljegyzések & Hirdetmények</button>
       </div>
 
+      <!-- Sender filter, order and refresh -->
+      <div class="msg-toolbar">
+        <label class="field-label" for="msg-sender-filter">Feladó</label>
+        <select id="msg-sender-filter" class="modern-select msg-toolbar-select">
+          <option value="">Minden feladó</option>
+        </select>
+        <label class="field-label" for="msg-sort-order">Sorrend</label>
+        <select id="msg-sort-order" class="modern-select msg-toolbar-select">
+          <option value="newest">Legújabb elöl</option>
+          <option value="oldest">Legrégebbi elöl</option>
+        </select>
+        <button type="button" id="btn-refresh-messages" class="btn btn-secondary btn-sm">Frissítés</button>
+      </div>
+
       <!-- Messages List Container -->
       <div id="messages-list-container" style="display: flex; flex-direction: column; gap: 12px;">
         <!-- Injected dynamically -->
