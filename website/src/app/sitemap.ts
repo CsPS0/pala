@@ -12,6 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/docs/developers",
     "/tortenet",
     "/adatvedelem",
+    "/felhasznalasi-feltetelek",
     "/ai-hasznalat",
   ];
 

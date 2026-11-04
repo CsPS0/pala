@@ -10,7 +10,7 @@ import { Footer } from "@/components/Footer";
 
 export default function HomePage() {
   return (
-    <div className="flex flex-col min-h-screen bg-[var(--bg)] text-fg">
+    <div className="flex flex-col min-h-screen bg-[var(--bg)] text-fg pt-[68px]">
       <main className="flex flex-col items-center w-full">
         <Hero />
         <Wave />

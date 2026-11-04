@@ -45,6 +45,11 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-lg font-bold text-fg mb-3">A böngészőbővítmény</h2>
+            <p className="mb-3">
+              <strong>A bővítmény egyetlen célja:</strong> a saját e-Kréta adataid (jegyek, órarend,
+              mulasztások, feladatok, üzenetek) áttekinthető megjelenítése a böngésződben. Nem gyűjt
+              adatot, nem jelenít meg hirdetést, és nem küld semmit a Kréta szerverein kívül máshova.
+            </p>
             <p>
               A bővítmény csak a <code className="text-primary font-mono text-xs">*.e-kreta.hu</code> oldalakhoz
               fér hozzá. A <code className="text-primary font-mono text-xs">storage</code> engedélyt a beállításaid

@@ -1,17 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { ThemeToggle } from "./ThemeToggle";
 import { GitHubIcon } from "./PlatformIcons";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import {
-  Download,
-  Menu,
-  Search,
-  X,
-} from "lucide-react";
+import { Menu, Search, X } from "lucide-react";
 import { useRelease } from "@/lib/useRelease";
 import { shownVersion } from "@/lib/ReleaseContext";
 import { useDocsUI } from "@/lib/DocsUIContext";
@@ -19,51 +14,21 @@ import { useDocsUI } from "@/lib/DocsUIContext";
 export function Navbar() {
   const version = shownVersion(useRelease());
   const { isDocsPage, mobileMenuOpen, setMobileMenuOpen, openDocsSearch } = useDocsUI();
-  const [visible, setVisible] = useState(true);
   const pathname = usePathname();
 
-  useEffect(() => {
-    const heroEl = document.getElementById("hero");
-    if (!heroEl) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setVisible(true);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setVisible(!entry.isIntersecting);
-      },
-      {
-        root: null,
-        threshold: 0,
-        rootMargin: "-40px 0px 0px 0px",
-      }
-    );
-
-    observer.observe(heroEl);
-    return () => observer.disconnect();
-  }, [pathname]);
-
+  // In the order the sections follow each other on the home page, then the other pages.
   const NAV_LINKS = [
     { label: "Funkciók", href: "/#funkciok" },
-    { label: "Letöltés", href: "/#letoltes" },
     { label: "Hogyan működik?", href: "/#hogyan-mukodik" },
-    { label: "Dokumentáció", href: "/docs" },
+    { label: "Letöltés", href: "/#letoltes" },
+    { label: "Ütemterv", href: "/#utemterv" },
     { label: "Történet", href: "/tortenet" },
+    { label: "Dokumentáció", href: "/docs" },
   ];
 
   return (
-    <header
-      // While hidden over the hero, keep its links out of the Tab order too.
-      inert={!visible}
-      className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-200 ease-out ${
-        visible
-          ? // A solid surface with a visible edge, so it never melts into the docs page below it.
-            "translate-y-0 opacity-100 pointer-events-auto bg-sidebar/95 backdrop-blur-md border-b border-border shadow-[0_10px_24px_-18px_rgba(0,0,0,0.7)]"
-          : "-translate-y-full opacity-0 pointer-events-none"
-      }`}
-    >
+    // Always visible, with a solid surface and an edge so it never melts into the page below.
+    <header className="fixed top-0 left-0 right-0 z-50 w-full bg-sidebar/95 backdrop-blur-md border-b border-border shadow-[0_10px_24px_-18px_rgba(0,0,0,0.7)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-[68px] flex items-center justify-between gap-4">
         {/* Brand */}
         <Link href="/" className="flex items-center gap-2.5 group shrink-0">
@@ -120,14 +85,6 @@ export function Navbar() {
               Ctrl K
             </kbd>
           </button>
-
-          <Link
-            href="/#letoltes"
-            className="inline-flex items-center gap-1.5 text-xs font-extrabold px-3.5 py-2 rounded-xl bg-primary-fill hover:bg-primary-fill-hover text-on-primary transition-all"
-          >
-            <Download size={13} />
-            <span>Letöltés</span>
-          </Link>
         </div>
 
         <a
@@ -177,7 +134,7 @@ export function Navbar() {
             </Link>
           ))}
 
-          <div className="pt-3 border-t border-border flex items-center justify-between gap-3">
+          <div className="pt-3 border-t border-border flex items-center gap-3">
             <a
               href="https://github.com/CsPS0/pala"
               target="_blank"
@@ -187,15 +144,6 @@ export function Navbar() {
               <GitHubIcon size={14} />
               <span>GitHub</span>
             </a>
-
-            <Link
-              href="/#letoltes"
-              onClick={() => setMobileMenuOpen(false)}
-              className="inline-flex items-center gap-1.5 text-xs font-extrabold px-4 py-2 rounded-xl bg-primary-fill text-on-primary"
-            >
-              <Download size={13} />
-              <span>Letöltés</span>
-            </Link>
           </div>
         </div>
       )}

@@ -136,6 +136,11 @@ export function Footer() {
               </Link>
             </li>
             <li>
+              <Link href="/felhasznalasi-feltetelek" className="hover:text-primary transition-colors">
+                Felhasználási feltételek
+              </Link>
+            </li>
+            <li>
               <Link href="/tortenet" className="hover:text-primary transition-colors">
                 Kliensek Története
               </Link>
