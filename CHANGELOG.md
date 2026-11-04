@@ -5,23 +5,30 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) elvein al
 
 ## [Nem kiadott]
 
+## [2.0.0] - 2026-11-05
+
+Az első kiadás a Pala néven: TUI, asztali, Android- és kísérleti iPhone-alkalmazás, böngésző-kiterjesztés.
+
 ### Hozzáadva
 - Kísérleti iPhone-os változat: a kiadás egy aláíratlan `Pala.ipa` fájlt is tartalmaz, amelyet a felhasználó a saját ingyenes Apple ID-jével tesz fel (AltStore vagy Sideloadly). Útmutató a weboldal Telepítés → iOS fülén. Az ötletet Pacuka ([pacuka.hu](https://pacuka.hu/)) adta.
-- Weboldal: „Hogyan működik?” szakasz ábrával, „Első lépések” kezdőoldal a dokumentációban, GitHub-link a fejlécben és a nyitóoldalon.
-
-### Változott
-- Weboldal: közérthetőbb szövegek nem műszaki látogatóknak, a haladó letöltési lehetőségek egy lenyitható részben, a fejléc elválik a dokumentáció oldalától, a verziószám csak valódi kiadásnál jelenik meg.
-- Dokumentáció: frissített fejlesztői leírás (CI, kiadási fájlok, iOS-build), felhasználói kézikönyv (parancssori kapcsolók, mobil alkalmazás), adatvédelmi leírások (mobil alkalmazás), valamint új README az `app/` és a `website/` mappában.
-
-## [2.0.0] - 2026-10-31
-
-Az első kiadás a Pala néven: TUI, asztali és Android-alkalmazás, böngésző-kiterjesztés.
-
-### Hozzáadva
+- Az alkalmazásnak ugyanazok az oldalai vannak, mint a kiterjesztésnek: Vezérlőpult, Órarend, Osztályzatok, Feladatok & Dolgozatok, Üzenetek, Mulasztások, Fiók & Profil. Telefonon a Mulasztások a menüsorban van, a többi a „Több” alatt.
+- Önálló Üzenetek oldal az alkalmazásban: feladó szerinti szűrés, legújabb vagy legrégebbi elöl, olvasatlan jelölés, teljes szöveg és mellékletek, valamint a tanári feljegyzések külön fülön.
+- A Vezérlőpult a legutóbbi jegyeket és a közelgő számonkéréseket, házikat is mutatja, széles ablakban kihasználja a helyet.
+- Osztályzatok: a saját átlag és az osztályátlag összevetése tantárgyanként és összesítve, a tantárgyi grafikonon a saját átlag alakulása és az osztályátlag vonala (alkalmazás és kiterjesztés).
+- Kiterjesztés: korábbi és következő hetek az Órarendben (a naptárexport a látható hetet menti), részletek minden számonkéréshez és házihoz, üzenetek rendezése és szűrése feladóra, mulasztások tantárgyanként és havonta.
+- A beállítások alján a Pala weboldala és GitHub-oldala; az „Egyéni szín” és az „Eszközök közötti szinkronizálás” fejlesztés alatt áll (látszik, de még nem használható).
+- Weboldal: „Hogyan működik?” szakasz ábrával, „Első lépések” kezdőoldal a dokumentációban, GitHub-link a fejlécben és a nyitóoldalon, Felhasználási feltételek oldal.
 - CI workflow (`ci.yml`): `dart analyze` + `dart test` a CLI-hez, `flutter analyze` a Desktop App-hoz, minden push/PR esetén.
 - Alap teszt lefedettség a `lib/models/` réteghez (`test/models_test.dart`).
 - `CHANGELOG.md` bevezetése.
 - Bejelentkezés CAPTCHA-val vagy kétlépcsős azonosítással védett Kréta fiókkal: a Pala felismeri a további ellenőrzési lépést, és a Kréta saját oldalára irányít (telefonon és macOS-en beépített ablakban, Windowson, Linuxon, a TUI-ban és a Webes Felületen böngészőben, a kapott kód beillesztésével).
+
+### Változott
+- A Pala Wrapped csak a nyári szünetben (június 14. és szeptember 30. között) érhető el, demó módban bármikor. Az alkalmazásban szöveges gomb nyitja.
+- Az üzenetlisták a legújabb üzenettel kezdődnek.
+- A kiterjesztés csak demó módban, mentett adatnál vagy Kréta-hibánál mutat állapotjelzőt; a 7 napos mátrix-nézet megszűnt.
+- Weboldal: a fejléc mindig látszik (téma- és GitHub-gomb görgetés nélkül), a menüpontok a lap sorrendjét követik, egyetlen Letöltés pont. Közérthetőbb szövegek, a haladó letöltési lehetőségek egy lenyitható részben, a verziószám csak valódi kiadásnál jelenik meg.
+- Dokumentáció: frissített fejlesztői leírás (CI, kiadási fájlok, iOS-build), felhasználói kézikönyv (parancssori kapcsolók, mobil alkalmazás), adatvédelmi leírások (mobil alkalmazás, bankszámlaadat), valamint új README az `app/` és a `website/` mappában.
 
 ### Javítva
 - CAPTCHA vagy kétlépcsős azonosítás esetén a TUI korábban "Hibás adatok" hibát írt ki, vagy csendben offline módba lépett.
@@ -59,6 +66,14 @@ Az első kiadás a Pala néven: TUI, asztali és Android-alkalmazás, böngész�
 - Egy CSV- és egy `.ics`-író van nyelvenként: pontosvessző, BOM, helyi dátum, szabályos sorvég és sortördelés.
 - A CI a Flutter-teszteket, a kiterjesztés tesztjeit és a weboldal buildjét is futtatja.
 - Az Android APK-kat állandó kiadási kulcs írja alá, így a következő verziók frissítésként települnek. Kulcs nélkül a kiadás nem készül el, és a build ellenőrzi az aláírást.
+- A százalékos („4%”) és a szöveges értékelés nem számít jegynek és nem kerül az átlagba, akkor sem, ha a Kréta 1 és 5 közötti számot küld mellé (`ErtekFajta`).
+- Az alkalmazás és a TUI megjeleníti az osztályátlagot (a Kréta `OsztalyCsoportAtlag` mezőjéből).
+- A számonkérések témája megjelenik (a Kréta `Temaja` mezőjéből).
+- A TUI-ban, a parancssorban és a webes felületen beállított tantárgy-aliasok megmaradnak és érvényesülnek.
+- A mulasztási figyelmeztetés minden kliensben 150 óránál kezdődik, a késés nem számít a 250 órába a veszélyzóna-kalkulátorban sem.
+- A profil a Kréta valódi mezőit mutatja (intézménykód, osztály, bankszámla), és nem talál ki adatot; a dokumentáció pontosan írja le, hogy a Kréta elküldi a bankszámlaszámot.
+- A kiterjesztés Vezérlőpultja nem lóg ki oldalra, az összecsukott oldalsáv rendben van, és minden görgetősáv egyedi stílusú.
+- Az alkalmazás Órarendje széles ablakban sem csúszik szét, a telefonos nézet minden oldala hiba nélkül jelenik meg.
 
 ## [1.2.3]
 - Pala rebrand: TUI, Flutter Desktop App, böngésző-kiterjesztés (Manifest V3) és weboldal egy kiadás alatt.

@@ -422,6 +422,7 @@ class PalaWebHtml {
     .grade-3 { background-color: rgba(255, 214, 10, 0.2); color: var(--warning); }
     .grade-2 { background-color: rgba(255, 149, 0, 0.2); color: #ff9500; }
     .grade-1 { background-color: rgba(255, 69, 58, 0.2); color: var(--danger); }
+    .grade-other { background-color: rgba(140, 140, 148, 0.18); color: var(--text-muted); }
 
     /* Timetable Grid */
     .timetable-grid {
@@ -1579,8 +1580,9 @@ class PalaWebHtml {
         return;
       }
       tbody.innerHTML = grades.map(g => {
-        const val = g.numericValue || g.textValue || '-';
-        const badgeClass = g.numericValue ? 'grade-' + g.numericValue : 'grade-5';
+        // Percentages and text evaluations are shown as such, in a neutral badge.
+        const val = escapeHtml(g.displayValue || '-');
+        const badgeClass = g.valueKind === 'grade' && g.numericValue ? 'grade-' + Math.round(g.numericValue) : 'grade-other';
         const dateStr = g.date ? g.date.split('T')[0] : '-';
         return `<tr>
           <td><span class="grade-badge \${badgeClass}">\${val}</span></td>

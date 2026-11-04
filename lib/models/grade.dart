@@ -62,7 +62,11 @@ class Grade {
     final f = json['ErtekFajta'];
     final name = f is Map ? f['Nev']?.toString() : null;
     if (name != null && name.isNotEmpty) {
-      if (name == 'Osztalyzat') return GradeValueKind.grade;
+      // An Osztalyzat without a 1-5 number ("Nem írt" with 0) is shown as its text.
+      if (name == 'Osztalyzat') {
+        final v = json['SzamErtek'];
+        return (v is num && v >= 1 && v <= 5) ? GradeValueKind.grade : GradeValueKind.text;
+      }
       if (name == 'Szazalekos') return GradeValueKind.percent;
       return GradeValueKind.text;
     }

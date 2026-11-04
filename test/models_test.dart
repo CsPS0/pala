@@ -86,6 +86,12 @@ void main() {
       expect(g.displayValue, 'Nem írt');
     });
 
+    test('an Osztalyzat without a 1-5 number is shown as its text, not as 0', () {
+      final g = Grade.fromJson({'ErtekFajta': {'Nev': 'Osztalyzat'}, 'SzamErtek': 0, 'SzovegesErtek': 'Nem írt'});
+      expect(g.valueKind, GradeValueKind.text);
+      expect(g.displayValue, 'Nem írt');
+    });
+
     test('without ErtekFajta a 1-5 number is a grade and 85 a percentage', () {
       expect(Grade.fromJson({'SzamErtek': 3}).numericValue, 3);
       final p = Grade.fromJson({'SzamErtek': 85});

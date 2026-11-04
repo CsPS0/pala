@@ -9,6 +9,7 @@ import 'package:pala/api/demo_client.dart';
 import 'package:pala/app/state/app_state.dart';
 import 'package:pala/utils/encryption.dart';
 import 'package:pala/rules/absence_rules.dart';
+import 'package:pala/models/grade.dart';
 import 'package:pala/rules/grade_rules.dart';
 import 'package:pala/utils/logger.dart';
 import 'package:pala/utils/loopback_host.dart';
@@ -278,19 +279,7 @@ class PalaWebServer {
       }
     } else if (request.method == 'GET' && path == '/api/grades') {
       final grades = await client?.getGrades() ?? [];
-      final list = grades.map((g) => {
-        'subject': AppState.instance.applyAlias(g.subject),
-        'numericValue': g.numericValue,
-        'textValue': g.textValue,
-        'weight': g.weight,
-        'date': g.date?.toIso8601String(),
-        'type': g.type,
-        'isSummary': g.isSummaryGrade,
-        // The shared rule decides what counts; the page only adds it up.
-        'countsForAverage': GradeRules.countsForAverage(g),
-        'theme': g.theme,
-        'teacherName': g.teacherName,
-      }).toList();
+      final list = grades.map((g) => webGradeJson(g, AppState.instance.applyAlias)).toList();
       final overall = GradeRules.overallAverage(grades, subjectOf: (g) => AppState.instance.applyAlias(g.subject));
       _sendJson(request, {'grades': list, 'overallAverage': overall});
     } else if (request.method == 'GET' && path == '/api/timetable') {
@@ -572,3 +561,21 @@ class PalaWebServer {
     print('\x1B[1;32m[OK] Webszerver sikeresen leállítva.\x1B[0m\n');
   }
 }
+
+/// One grade as the web UI gets it. displayValue and valueKind let the page
+/// show "4%" or a text evaluation as such instead of as a grade.
+Map<String, dynamic> webGradeJson(Grade g, String Function(String subject) alias) => {
+      'subject': alias(g.subject),
+      'numericValue': g.numericValue,
+      'textValue': g.textValue,
+      'displayValue': g.displayValue,
+      'valueKind': g.valueKind.name,
+      'weight': g.weight,
+      'date': g.date?.toIso8601String(),
+      'type': g.type,
+      'isSummary': g.isSummaryGrade,
+      // The shared rule decides what counts; the page only adds it up.
+      'countsForAverage': GradeRules.countsForAverage(g),
+      'theme': g.theme,
+      'teacherName': g.teacherName,
+    };

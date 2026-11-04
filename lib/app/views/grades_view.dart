@@ -164,8 +164,9 @@ extension PalaAppGradesView on PalaApp {
               String coloredVal = val.toString();
               if (grade.numericValue != null && grade.numericValue! > 0 && grade.numericValue! <= 5) {
                 coloredVal = '${PalaTheme.gradeColor(grade.numericValue)}$val${PalaTheme.reset}';
-              } else if (grade.numericValue != null && grade.numericValue! > 5) {
-                coloredVal = '$val%';
+              } else if (grade.valueKind == GradeValueKind.percent) {
+                // displayValue already ends in "%"; a muted colour sets it apart from grades.
+                coloredVal = '${PalaTheme.muted}$val${PalaTheme.reset}';
               } else if (coloredVal.toLowerCase() == 'nem írt') {
                 coloredVal = '\x1B[3;31m$val\x1B[0m';
               }

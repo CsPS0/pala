@@ -215,3 +215,9 @@ test("absencesBySubject and absencesByMonth group lessons by the shared absence 
   assert.equal(bySubject[1].lateCount, 1);
   assert.deepEqual([...KretaApi.absencesByMonth(list)].map((m) => `${m.month}:${m.missed}`), ["2026-09:1", "2026-10:2"]);
 });
+
+test("manualOverrides keeps only what the user changed, not Kréta's own values", () => {
+  const kp = KretaApi.studentProfile({ Nev: "Minta Anna", Telefonszam: "+36 1", Bankszamla: { BankszamlaSzam: "1111-2222" } }, "11.B");
+  const saved = { ...KretaApi.manualOverrides({ name: "Minta Anna", phone: "+36 30 999", classGrade: "11.B", bankAccount: "1111-2222", taxId: "123", omId: "" }, kp) };
+  assert.deepEqual(saved, { phone: "+36 30 999", taxId: "123" });
+});

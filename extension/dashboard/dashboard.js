@@ -3029,8 +3029,11 @@ async function openMessageViewer(msg) {
   if (titleEl) titleEl.innerText = msg.title || msg.subject || "Üzenet";
   if (senderEl) senderEl.innerText = msg.sender || "Ismeretlen feladó";
   if (dateEl) {
-    const d = msg.date ? new Date(msg.date) : new Date();
-    dateEl.innerText = `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}. ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+    // An undated message shows "-", not today's date.
+    const d = msg.date ? new Date(msg.date) : null;
+    dateEl.innerText = d && Number.isFinite(d.getTime())
+      ? `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}. ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`
+      : "-";
   }
   if (badgeEl) badgeEl.innerText = msg.type || "e-Ügyintézés";
 
@@ -3646,7 +3649,9 @@ function setupStudentExtraModal() {
       studentCardDate: document.getElementById("extra-input-student-card-date")?.value.trim()
     };
 
-    await chrome.storage.local.set({ pala_student_extra: data });
+    // Store only real changes, so Kréta's own data is not pinned as "manual".
+    const kp = KretaApi.studentProfile(fullState.data?.student || {}, fullState.data?.className);
+    await chrome.storage.local.set({ pala_student_extra: KretaApi.manualOverrides(data, kp) });
 
     if (statusEl) {
       statusEl.innerText = "Profil adatok sikeresen mentve!";

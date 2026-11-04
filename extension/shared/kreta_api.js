@@ -1581,6 +1581,24 @@ class KretaApi {
     return [...dated.reverse(), ...undated];
   }
 
+  /**
+   * The profile editor's values worth saving: only what the user typed and
+   * Kréta does not already send the same way. Kréta's own values stay live
+   * (a new class in September, a changed account) instead of being pinned.
+   */
+  static manualOverrides(entered, kretaProfile) {
+    const kretaKey = { classGrade: "className" };
+    const out = {};
+    for (const [key, raw] of Object.entries(entered || {})) {
+      const value = typeof raw === "string" ? raw.trim() : raw;
+      if (!value) continue;
+      const fromKreta = kretaProfile?.[kretaKey[key] || key];
+      if (fromKreta && fromKreta !== "-" && fromKreta === value) continue;
+      out[key] = value;
+    }
+    return out;
+  }
+
   /** A copy of the list with the newest message first; messages without a date go last. Mirrors lib/models/message.dart. */
   static sortMessagesNewestFirst(list) {
     const time = (m) => {
