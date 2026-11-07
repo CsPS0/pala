@@ -75,7 +75,8 @@ try {
     for (const [name, tab] of Object.entries(SHOTS)) {
       // about:blank first so the hash-only change still reloads the page and the stub re-reads it.
       await send("Page.navigate", { url: "about:blank" });
-      await send("Page.navigate", { url: `${pathToFileURL(popupPath).href}#theme=${theme}&tab=${tab}` });
+      // A school Monday morning, like the app's captures (the demo has no lessons on Wednesdays).
+      await send("Page.navigate", { url: `${pathToFileURL(popupPath).href}#theme=${theme}&tab=${tab}&now=2026-11-09T09:10:00` });
       await sleep(2500);
       const { data } = await send("Page.captureScreenshot", { format: "png" });
       const out = join(outDir, `popup-${name}-${theme}.png`);

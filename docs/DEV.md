@@ -101,6 +101,7 @@ python scripts/previews/to_webp.py
 
 - Az első parancs az asztali és a telefonos nézetet rögzíti (sötét és világos téma), a második a bővítmény felugró ablakát egy Chromium-alapú böngészővel (Edge, Chrome vagy Brave), a harmadik WebP-be alakítja és átméretezi a képeket.
 - A nyers PNG-k a `build/previews/` mappába kerülnek (gitignore alatt).
+- A képek mindig egy iskolai hétfő reggelt mutatnak (2026. november 9., 9:10, a 2. óra közben), bármikor készülnek: az alkalmazásban a `PalaClock`, a kiterjesztésben a `chrome_stub.js` `now=` beállítása rögzíti az időt.
 - A képek a futtatás napjának órarendjét mutatják: hétköznap, tanítási időben futtatva a vezérlőpult a következő órát jeleníti meg.
 - A `to_webp.py` a Pillow csomagot igényli (`pip install pillow`).
 

@@ -18,6 +18,7 @@ import '../../../core/widgets/skeleton_container.dart';
 import '../../../state/app_model.dart';
 import '../widgets/countdown_hero_card.dart';
 import '../widgets/timetable_tile.dart';
+import 'package:pala/utils/pala_clock.dart';
 
 /// Overhauled Live Dashboard ("Élő Dashboard") View for real-time academic tracking.
 class LiveDashboardView extends StatefulWidget {
@@ -48,7 +49,7 @@ class _LiveDashboardViewState extends State<LiveDashboardView> {
   }
 
   List<TimetableEntry> _getTodayLessons() {
-    final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final todayStr = DateFormat('yyyy-MM-dd').format(PalaClock.now());
     return widget.appModel.timetable.where((l) {
       if (l.startTime == null) return false;
       final dateStr = DateFormat('yyyy-MM-dd').format(l.startTime!);
@@ -71,7 +72,7 @@ class _LiveDashboardViewState extends State<LiveDashboardView> {
         widget.appModel.exams,
       );
       final dir = await getApplicationDocumentsDirectory();
-      final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+      final timestamp = DateFormat('yyyyMMdd_HHmmss').format(PalaClock.now());
       final file = File('${dir.path}${Platform.pathSeparator}orarend_$timestamp.ics');
       await file.writeAsString(ics);
 
@@ -102,7 +103,7 @@ class _LiveDashboardViewState extends State<LiveDashboardView> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final now = DateTime.now();
+    final now = PalaClock.now();
     final todayLessons = _getTodayLessons();
 
     TimetableEntry? currentLesson;
@@ -371,7 +372,7 @@ class _LiveDashboardViewState extends State<LiveDashboardView> {
 
   Widget _buildRecentGrades(BuildContext context, ThemeData theme, ColorScheme colorScheme) {
     // Grades earned so far: midyear and year-end results are not "recent grades".
-    final now = DateTime.now();
+    final now = PalaClock.now();
     final grades = widget.appModel.grades.where((g) => !g.isSummaryGrade && (g.date == null || !g.date!.isAfter(now))).toList()
       ..sort((a, b) => (b.date ?? DateTime(0)).compareTo(a.date ?? DateTime(0)));
     final shown = grades.take(6).toList();

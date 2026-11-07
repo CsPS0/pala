@@ -1,4 +1,5 @@
 import '../models/models.dart';
+import '../utils/pala_clock.dart';
 
 /// Provides rich, realistic mock data for "Teszt Elek" in Pala TUI.
 class DemoData {
@@ -31,7 +32,7 @@ class DemoData {
 
   /// Generates realistic grades spanning from September 1 to June 21.
   static List<Grade> getGrades() {
-    final now = DateTime.now();
+    final now = PalaClock.now();
     final currentAcademicYear = (now.month >= 9) ? now.year : now.year - 1;
     final y1 = currentAcademicYear;
     final y2 = currentAcademicYear + 1;
@@ -1021,7 +1022,7 @@ class DemoData {
 
   /// Returns dynamic timetable for requested Monday-Friday dates.
   static List<TimetableEntry> getTimetable({DateTime? start, DateTime? end, bool? overrideAWeek}) {
-    final now = DateTime.now();
+    final now = PalaClock.now();
     DateTime baseMonday = start ?? now.subtract(Duration(days: now.weekday - 1));
     baseMonday = DateTime(baseMonday.year, baseMonday.month, baseMonday.day);
 
@@ -1116,7 +1117,7 @@ class DemoData {
 
   /// Announced upcoming / yearly exams.
   static List<Exam> getExams() {
-    final now = DateTime.now();
+    final now = PalaClock.now();
     return [
       Exam(
         subject: 'Matematika',
@@ -1158,7 +1159,7 @@ class DemoData {
 
   /// Homework assignments.
   static List<Homework> getHomework({DateTime? start, String? id}) {
-    final now = DateTime.now();
+    final now = PalaClock.now();
     return [
       Homework(
         uid: 'DEMO-HW-1',
@@ -1203,7 +1204,7 @@ class DemoData {
   /// Electronic diary messages.
   static List<Message> getMessages() {
     if (_cachedMessages != null) return _cachedMessages!;
-    final now = DateTime.now();
+    final now = PalaClock.now();
     _cachedMessages = [
       Message(
         id: 101,
@@ -1273,7 +1274,7 @@ class DemoData {
   /// Electronic diary notes and disciplinary/praise records.
   static List<Note> getNotes() {
     if (_cachedNotes != null) return _cachedNotes!;
-    final now = DateTime.now();
+    final now = PalaClock.now();
     _cachedNotes = [
       Note(
         id: '105',
@@ -1313,7 +1314,7 @@ class DemoData {
         id: newId,
         senderName: 'Címzett: $recipientName (Elküldve)',
         subject: subject,
-        sentDate: DateTime.now(),
+        sentDate: PalaClock.now(),
         isRead: true,
         text: text,
         attachments: attachments,
@@ -1340,7 +1341,7 @@ class DemoData {
 
   /// Realistic absences and delays.
   static List<Absence> getAbsences() {
-    final now = DateTime.now();
+    final now = PalaClock.now();
     return [
       // Parental excused day (2 lessons)
       Absence(

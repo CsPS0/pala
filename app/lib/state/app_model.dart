@@ -24,6 +24,7 @@ import '../notifications/background_check.dart';
 import '../notifications/notification_service.dart';
 import '../theme/pala_theme.dart';
 import 'session_store.dart';
+import 'package:pala/utils/pala_clock.dart';
 
 class AppModel extends ChangeNotifier {
   KretaClient? _client;
@@ -88,7 +89,7 @@ class AppModel extends ChangeNotifier {
 
   DateTime get currentWeekMonday {
     // Calendar arithmetic: a Duration step drifts an hour across DST changes.
-    final now = DateTime.now();
+    final now = PalaClock.now();
     return DateTime(now.year, now.month, now.day - (now.weekday - 1) + _weekOffset * 7);
   }
 
@@ -384,7 +385,7 @@ class AppModel extends ChangeNotifier {
 
   Future<List<TimetableEntry>> _fetchTimetableForOffset(int offset) async {
     if (_client == null) return [];
-    final now = DateTime.now();
+    final now = PalaClock.now();
     final start = DateTime(now.year, now.month, now.day - (now.weekday - 1) + offset * 7);
     final end = DateTime(start.year, start.month, start.day + 4, 23, 59, 59);
 

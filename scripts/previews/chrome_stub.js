@@ -1,8 +1,25 @@
 // Minimal chrome.* stand-in so extension/popup/popup.html runs as a plain page in demo mode,
 // for capturing website preview screenshots only (never shipped with the extension).
-// URL hash options: #theme=light|dark&tab=<data-tab id>, e.g. #theme=light&tab=tab-today
+// URL hash options: #theme=light|dark&tab=<data-tab id>&now=<local ISO time>,
+// e.g. #theme=light&tab=tab-today&now=2026-11-09T09:10:00
 (() => {
   const opts = Object.fromEntries(new URLSearchParams(location.hash.slice(1)));
+
+  // now=: the page sees that moment as the current time (still ticking), so the
+  // demo shows a school morning whenever the screenshot is taken.
+  if (opts.now) {
+    const RealDate = Date;
+    const offset = new RealDate(opts.now).getTime() - RealDate.now();
+    class FakeDate extends RealDate {
+      constructor(...args) {
+        super(...(args.length ? args : [RealDate.now() + offset]));
+      }
+      static now() {
+        return RealDate.now() + offset;
+      }
+    }
+    window.Date = FakeDate;
+  }
   const store = { pala_use_demo: true, pala_dark_mode: opts.theme !== "light" };
   const noop = () => {};
   const asyncNoop = async () => undefined;

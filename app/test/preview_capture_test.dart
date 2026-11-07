@@ -10,6 +10,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:pala/utils/pala_clock.dart';
 import 'package:pala_app/core/theme/m3_theme.dart';
 import 'package:pala_app/main.dart';
 import 'package:pala_app/state/app_model.dart';
@@ -100,6 +101,9 @@ void main() {
 
   setUpAll(() async {
     if (!_capture) return;
+    // Screenshots show a school Monday morning, during the second lesson,
+    // whenever they are taken (the demo has no lessons on Wednesdays).
+    PalaClock.fix(DateTime(2026, 11, 9, 9, 10));
     SharedPreferences.setMockInitialValues({});
     await initializeDateFormatting('hu_HU', null);
     await _loadSdkFonts();

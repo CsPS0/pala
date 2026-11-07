@@ -12,6 +12,7 @@ import '../../views/tasks_view.dart';
 import '../../views/timetable_view.dart';
 import 'adaptive_breakpoints.dart';
 import 'app_pages.dart';
+import 'package:pala/utils/pala_clock.dart';
 
 /// Unified adaptive root scaffold auto-swapping between NavigationBar (<600dp)
 /// and NavigationRail (>=600dp) while preserving state via IndexedStack and PageStorageKey.
@@ -327,7 +328,7 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
         // Pala Wrapped: wide layouts only (phones reach it from Settings >
         // Eszközök), and only in the summer break or demo mode. A text button,
         // so it does not read as an AI feature.
-        if (!isCompact && (isWrappedSeason(DateTime.now()) || widget.appModel.isDemo))
+        if (!isCompact && (isWrappedSeason(PalaClock.now()) || widget.appModel.isDemo))
           TextButton(
             onPressed: () => PalaWrappedView.show(context, widget.appModel),
             child: const Text('Pala Wrapped', style: TextStyle(fontWeight: FontWeight.w700)),

@@ -6,6 +6,7 @@ import 'package:pala/models/timetable_entry.dart';
 import 'package:pala/utils/ics_exporter.dart';
 import '../state/app_model.dart';
 import '../theme/pala_theme.dart';
+import 'package:pala/utils/pala_clock.dart';
 
 class TimetableView extends StatefulWidget {
   final AppModel appModel;
@@ -26,7 +27,7 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
-    final todayWeekday = DateTime.now().weekday;
+    final todayWeekday = PalaClock.now().weekday;
     final initialIndex = (todayWeekday >= 1 && todayWeekday <= 5) ? todayWeekday - 1 : 0;
     _tabController = TabController(length: 5, vsync: this, initialIndex: initialIndex);
   }
@@ -258,7 +259,7 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                         children: List.generate(5, (dayIdx) {
                           final lessons = _getLessonsForDay(dayIdx);
                           final dateStr = _getDateForDay(dayIdx);
-                          final isToday = DateTime.now().weekday == (dayIdx + 1) && widget.appModel.weekOffset == 0;
+                          final isToday = PalaClock.now().weekday == (dayIdx + 1) && widget.appModel.weekOffset == 0;
 
                           return Expanded(
                             child: Container(
@@ -428,7 +429,7 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
 
   Widget _buildLessonCard(TimetableEntry l, Color primary, {required bool compact}) {
     final isCancelled = l.isCancelled;
-    final now = DateTime.now();
+    final now = PalaClock.now();
     final startTime = l.startTime;
     final endTime = l.endTime;
     final isToday = startTime != null && startTime.year == now.year && startTime.month == now.month && startTime.day == now.day;
@@ -562,7 +563,7 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                 child: Text('Óra', style: TextStyle(color: PalaTheme.textMuted, fontSize: 12, fontWeight: FontWeight.w800)),
               ),
               ...List.generate(days.length, (dayIdx) {
-                final isToday = DateTime.now().weekday == (dayIdx + 1) && widget.appModel.weekOffset == 0;
+                final isToday = PalaClock.now().weekday == (dayIdx + 1) && widget.appModel.weekOffset == 0;
                 return Expanded(
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
