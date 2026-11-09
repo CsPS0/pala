@@ -9,6 +9,7 @@ import 'package:interact/interact.dart';
 import 'package:pala/api/api.dart';
 import 'package:pala/api/client.dart';
 import 'package:pala/api/demo_client.dart';
+import 'package:pala/api/moodle_client.dart';
 import 'package:pala/models/models.dart';
 import 'package:pala/rules/absence_rules.dart';
 import 'package:pala/rules/grade_rules.dart';
@@ -160,6 +161,7 @@ class PalaApp {
     _runAlerts = [];
     try {
       await _checkNewItems();
+      await _checkMoodle();
     } finally {
       final alerts = _runAlerts!;
       _runAlerts = null;

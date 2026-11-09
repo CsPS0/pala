@@ -187,6 +187,78 @@ extension PalaAppDaemonLogic on PalaApp {
     await slack.send('Pala', body.toString());
   }
 
+  // Moodle is optional: it runs only when PALA_MOODLE_URL is set. The first run
+  // logs in with PALA_MOODLE_USER and PALA_MOODLE_PASSWORD and keeps only the
+  // token in the auth data, later runs reuse that token.
+  Future<void> _checkMoodle() async {
+    final url = Platform.environment['PALA_MOODLE_URL']?.trim();
+    if (url == null || url.isEmpty) return;
+    if (!MoodleClient.isValidBaseUrl(url)) {
+      await _showToast('Pala (Moodle)', 'A PALA_MOODLE_URL érvénytelen, https cím kell.');
+      return;
+    }
+
+    final state = AppState.instance;
+    var authData = state.getAuthData();
+    final moodle = MoodleClient(url, token: authData['moodleToken']?.toString());
+
+    try {
+      if (moodle.token == null) {
+        final user = Platform.environment['PALA_MOODLE_USER'];
+        final password = Platform.environment['PALA_MOODLE_PASSWORD'];
+        if (user == null || password == null) return;
+        await moodle.login(user, password);
+        authData = state.getAuthData();
+        authData['moodleToken'] = moodle.token;
+        state.saveAuthData(authData);
+      }
+
+      final firstRun = authData['moodleNotifiedIds'] == null;
+      final seenNotifications =
+          ((authData['moodleNotifiedIds'] as List?)?.map((e) => e.toString()) ?? const <String>[]).toSet();
+      final seenEvents =
+          ((authData['moodleEventIds'] as List?)?.map((e) => e.toString()) ?? const <String>[]).toSet();
+
+      final notifications = await moodle.getNotifications();
+      if (notifications != null) {
+        for (final n in notifications) {
+          if (seenNotifications.add('${n.id}') && !firstRun) {
+            await _showToast('Pala (Moodle)', 'Moodle: ${n.subject}');
+          }
+        }
+        seenNotifications.retainWhere(notifications.map((n) => '${n.id}').toSet().contains);
+      }
+
+      final events = await moodle.getUpcomingEvents();
+      if (events != null) {
+        for (final e in events) {
+          if (seenEvents.add('${e.id}') && !firstRun) {
+            final due = e.due;
+            final dueLabel = due == null
+                ? ''
+                : ', határidő: ${due.year}.${due.month.toString().padLeft(2, '0')}.${due.day.toString().padLeft(2, '0')}.';
+            final course = e.course != null ? ' (${e.course})' : '';
+            await _showToast('Pala (Moodle)', 'Új Moodle esemény: ${e.name}$course$dueLabel');
+          }
+        }
+        seenEvents.retainWhere(events.map((e) => '${e.id}').toSet().contains);
+      }
+
+      authData = state.getAuthData();
+      authData['moodleNotifiedIds'] = seenNotifications.toList();
+      authData['moodleEventIds'] = seenEvents.toList();
+      state.saveAuthData(authData);
+    } on MoodleLoginException catch (e) {
+      // Drop a dead token so the next run logs in again.
+      authData = state.getAuthData();
+      authData.remove('moodleToken');
+      state.saveAuthData(authData);
+      await _showToast('Pala (Moodle)', '$e');
+    } catch (e) {
+      PalaLogger.debug('Moodle ellenőrzés sikertelen: $e');
+    }
+  }
+
   void _setupDaemon(bool enable) {
     if (enable) {
       installDaemon();
