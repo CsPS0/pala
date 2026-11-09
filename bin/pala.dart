@@ -133,7 +133,8 @@ void main(List<String> arguments) async {
 
   if (argResults['daemon']) {
     await app.runDaemon();
-    exit(0);
+    // A failed login sets exitCode, so a scheduled run shows up as failed.
+    exit(exitCode);
   }
 
   if (argResults['demo']) {

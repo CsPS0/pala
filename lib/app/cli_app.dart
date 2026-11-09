@@ -28,6 +28,7 @@ import 'package:pala/app/tui/screen_buffer.dart';
 import 'package:pala/app/tui/tui_state.dart';
 import 'package:pala/app/tui/tui_views.dart';
 import 'package:pala/utils/logger.dart';
+import 'package:pala/utils/slack_notifier.dart';
 import 'package:pala/utils/win32_console.dart';
 import 'package:pala/version.dart';
 import 'package:path/path.dart' as p;
@@ -63,6 +64,11 @@ class PalaApp {
   }
 
   KretaClient? _client;
+
+  /// Alert lines of the current daemon run. While it is non-null, Slack gets
+  /// one combined message at the end (with the optional Gemini summary)
+  /// instead of one message per alert.
+  List<String>? _runAlerts;
   String? studentUid;
 
   File _getAuthFile() {
@@ -144,9 +150,21 @@ class PalaApp {
 
   Future<void> runDaemon() async {
     if (!await _tryAutoLogin()) {
+      // A scheduled run has no one watching it, so say on Slack that the
+      // login failed instead of failing silently.
+      await SlackNotifier.fromConfig(AppState.instance.configDir)
+          .send('Pala (hiba)', 'A Kréta bejelentkezés nem sikerült. Jelentkezz be újra a Palában.');
+      exitCode = 1;
       return;
     }
-    await _checkNewItems();
+    _runAlerts = [];
+    try {
+      await _checkNewItems();
+    } finally {
+      final alerts = _runAlerts!;
+      _runAlerts = null;
+      await _flushAlertsToSlack(alerts);
+    }
   }
 
   void _showBanner() {
