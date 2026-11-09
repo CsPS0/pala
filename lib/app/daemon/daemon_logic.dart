@@ -176,14 +176,19 @@ extension PalaAppDaemonLogic on PalaApp {
       }
     }
 
-  /// Sends the alerts of one run as a single Slack message. A run without
-  /// news posts nothing.
+  /// Sends the alerts of one run as a single Slack message. The Gemini
+  /// summary is added only when there is at least one alert, so a run without
+  /// news posts nothing and costs no API call.
   Future<void> _flushAlertsToSlack(List<String> alerts) async {
     if (alerts.isEmpty) return;
     final configDir = AppState.instance.configDir;
     final slack = SlackNotifier.fromConfig(configDir);
     if (!slack.isEnabled) return;
+    final summary = await GeminiSummarizer.fromConfig(configDir).summarize(alerts);
     final body = StringBuffer(alerts.map((a) => '• $a').join('\n'));
+    if (summary != null) {
+      body.write('\n\nÖsszefoglaló: $summary');
+    }
     await slack.send('Pala', body.toString());
   }
 

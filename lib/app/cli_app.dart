@@ -29,6 +29,7 @@ import 'package:pala/app/tui/screen_buffer.dart';
 import 'package:pala/app/tui/tui_state.dart';
 import 'package:pala/app/tui/tui_views.dart';
 import 'package:pala/utils/logger.dart';
+import 'package:pala/utils/gemini_summarizer.dart';
 import 'package:pala/utils/slack_notifier.dart';
 import 'package:pala/utils/win32_console.dart';
 import 'package:pala/version.dart';
