@@ -80,6 +80,35 @@ void main() {
       final text = request['contents'][0]['parts'][0]['text'] as String;
       expect(text.length, lessThanOrEqualTo(4000));
     });
+
+    // 2.5 Flash thinks by default and the thinking tokens count against
+    // maxOutputTokens, which can leave no room for the answer.
+    test('turns thinking off for 2.5 Flash models', () {
+      for (final model in ['gemini-2.5-flash', 'gemini-2.5-flash-lite']) {
+        final config = GeminiSummarizer.buildRequest(['x'], model: model)['generationConfig'] as Map;
+        expect(config['thinkingConfig'], {'thinkingBudget': 0}, reason: model);
+        expect(config['maxOutputTokens'], 300, reason: model);
+      }
+    });
+
+    // Other models may reject a zero thinking budget, and their thinking
+    // would eat a small output cap, so neither is sent.
+    test('sends no thinking budget or output cap for other models', () {
+      final config = GeminiSummarizer.buildRequest(['x'], model: 'gemini-2.5-pro')['generationConfig'] as Map;
+      expect(config.containsKey('thinkingConfig'), isFalse);
+      expect(config.containsKey('maxOutputTokens'), isFalse);
+    });
+
+    test('the request body uses the configured model settings', () async {
+      late http.Request captured;
+      final client = MockClient((req) async {
+        captured = req;
+        return http.Response('{}', 200);
+      });
+      await GeminiSummarizer('k', client: client).summarize(['x']);
+      final body = jsonDecode(captured.body) as Map;
+      expect(body['generationConfig']['thinkingConfig'], {'thinkingBudget': 0});
+    });
   });
 
   group('MoodleClient', () {

@@ -12,10 +12,12 @@ import 'package:pala/utils/logger.dart';
 /// The summary is optional: when the key is missing or the call fails,
 /// [summarize] returns null and the plain alerts still go out.
 ///
-/// Privacy: the prompt only holds the alert lines (subject names, grade
-/// values, dates, Moodle course titles). No student name, class or school id
-/// is added. Free-tier content may be used by Google to improve its products,
-/// so keep the alert lines free of personal data.
+/// Privacy: the prompt only holds the Gemini form of each alert line
+/// (subject names, grade values, grade and exam topics, dates, Moodle course
+/// and deadline titles). Teacher names and Moodle notification text stay in
+/// the Slack message and are left out here, and no student name, class or
+/// school id is added. Free-tier content may be used by Google to improve its
+/// products, so a new alert that holds a name must pass a separate Gemini text.
 class GeminiSummarizer {
   static const defaultModel = 'gemini-2.5-flash';
   static const _host = 'generativelanguage.googleapis.com';
@@ -60,7 +62,23 @@ class GeminiSummarizer {
       'konkrét teendőt. Ne találj ki adatot, csak a megadott sorokból '
       'dolgozz. Ne használj emojit és formázást.';
 
-  static Map<String, dynamic> buildRequest(List<String> alerts) {
+  /// 2.5 Flash thinks by default, and the thinking tokens count against
+  /// maxOutputTokens, so a small cap can leave no room for the answer. A
+  /// short summary needs no thinking, so it is turned off there. Other models
+  /// may reject a zero budget, so they get neither setting and the
+  /// instruction keeps the answer short.
+  static Map<String, dynamic> _generationConfig(String model) {
+    if (model.startsWith('gemini-2.5-flash')) {
+      return {
+        'temperature': 0.3,
+        'maxOutputTokens': 300,
+        'thinkingConfig': {'thinkingBudget': 0},
+      };
+    }
+    return {'temperature': 0.3};
+  }
+
+  static Map<String, dynamic> buildRequest(List<String> alerts, {String model = defaultModel}) {
     var text = alerts.join('\n');
     if (text.length > _maxInputChars) {
       text = text.substring(0, _maxInputChars);
@@ -79,7 +97,7 @@ class GeminiSummarizer {
           ]
         }
       ],
-      'generationConfig': {'temperature': 0.3, 'maxOutputTokens': 300},
+      'generationConfig': _generationConfig(model),
     };
   }
 
@@ -110,7 +128,7 @@ class GeminiSummarizer {
               'Content-Type': 'application/json',
               'x-goog-api-key': apiKey!,
             },
-            body: jsonEncode(buildRequest(alerts)),
+            body: jsonEncode(buildRequest(alerts, model: model)),
           )
           .timeout(_timeout);
       if (response.statusCode != 200) {

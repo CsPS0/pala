@@ -69,8 +69,9 @@ class PalaApp {
 
   /// Alert lines of the current daemon run. While it is non-null, Slack gets
   /// one combined message at the end (with the optional Gemini summary)
-  /// instead of one message per alert.
-  List<String>? _runAlerts;
+  /// instead of one message per alert. [gemini] is the same alert without
+  /// names or free text, the only form that goes to the Gemini prompt.
+  List<({String slack, String gemini})>? _runAlerts;
   String? studentUid;
 
   File _getAuthFile() {

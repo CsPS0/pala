@@ -122,7 +122,8 @@ extension PalaAppDaemonLogic on PalaApp {
       if (lesson.isCancelled) {
         await _showToast('Pala (Kréta)', '$dayLabel elmarad: ${lesson.subject} (${lesson.lessonNumber}. óra)');
       } else {
-        await _showToast('Pala (Kréta)', '$dayLabel helyettesítés: ${lesson.subject} — ${lesson.substituteTeacher}');
+        await _showToast('Pala (Kréta)', '$dayLabel helyettesítés: ${lesson.subject} — ${lesson.substituteTeacher}',
+            geminiText: '$dayLabel helyettesítés: ${lesson.subject}');
       }
       notifiedIds.add(id);
     }
@@ -136,13 +137,18 @@ extension PalaAppDaemonLogic on PalaApp {
 
   // The text comes from Kréta (subject and teacher names), so it is passed as
   // data (environment variables or argv) and never spliced into script source.
-  Future<void> _showToast(String title, String message) async {
+  //
+  // [geminiText] is what the Gemini summary sees instead of [message]. Pass it
+  // whenever the message holds a person's name or free text from a server
+  // (a teacher, a Moodle notification), so only subjects, grades, dates and
+  // course or deadline titles reach Gemini.
+  Future<void> _showToast(String title, String message, {String? geminiText}) async {
       // Slack goes first: it is the channel that reaches the phone, and a
       // missing desktop notifier (no notify-send on a server or in Termux)
       // must not block it.
       final collecting = _runAlerts;
       if (collecting != null) {
-        collecting.add(message);
+        collecting.add((slack: message, gemini: geminiText ?? message));
       } else {
         await SlackNotifier.fromConfig(AppState.instance.configDir).send(title, message);
       }
@@ -179,13 +185,13 @@ extension PalaAppDaemonLogic on PalaApp {
   /// Sends the alerts of one run as a single Slack message. The Gemini
   /// summary is added only when there is at least one alert, so a run without
   /// news posts nothing and costs no API call.
-  Future<void> _flushAlertsToSlack(List<String> alerts) async {
+  Future<void> _flushAlertsToSlack(List<({String slack, String gemini})> alerts) async {
     if (alerts.isEmpty) return;
     final configDir = AppState.instance.configDir;
     final slack = SlackNotifier.fromConfig(configDir);
     if (!slack.isEnabled) return;
-    final summary = await GeminiSummarizer.fromConfig(configDir).summarize(alerts);
-    final body = StringBuffer(alerts.map((a) => '• $a').join('\n'));
+    final summary = await GeminiSummarizer.fromConfig(configDir).summarize(alerts.map((a) => a.gemini).toList());
+    final body = StringBuffer(alerts.map((a) => '• ${a.slack}').join('\n'));
     if (summary != null) {
       body.write('\n\nÖsszefoglaló: $summary');
     }
@@ -228,7 +234,8 @@ extension PalaAppDaemonLogic on PalaApp {
       if (notifications != null) {
         for (final n in notifications) {
           if (seenNotifications.add('${n.id}') && !firstRun) {
-            await _showToast('Pala (Moodle)', 'Moodle: ${n.subject}');
+            // Notification subjects often name the sender or the poster.
+            await _showToast('Pala (Moodle)', 'Moodle: ${n.subject}', geminiText: 'Új Moodle értesítés');
           }
         }
         seenNotifications.retainWhere(notifications.map((n) => '${n.id}').toSet().contains);
