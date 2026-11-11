@@ -143,14 +143,14 @@ extension PalaAppDaemonLogic on PalaApp {
   // (a teacher, a Moodle notification), so only subjects, grades, dates and
   // course or deadline titles reach Gemini.
   Future<void> _showToast(String title, String message, {String? geminiText}) async {
-      // Slack goes first: it is the channel that reaches the phone, and a
+      // Chat goes first: it is the channel that reaches the phone, and a
       // missing desktop notifier (no notify-send on a server or in Termux)
       // must not block it.
       final collecting = _runAlerts;
       if (collecting != null) {
-        collecting.add((slack: message, gemini: geminiText ?? message));
+        collecting.add((text: message, gemini: geminiText ?? message));
       } else {
-        await SlackNotifier.fromConfig(AppState.instance.configDir).send(title, message);
+        await sendToAllSinks(configuredAlertSinks(AppState.instance.configDir), title, message);
       }
 
       if (Platform.isWindows) {
@@ -182,20 +182,11 @@ extension PalaAppDaemonLogic on PalaApp {
       }
     }
 
-  /// Sends the alerts of one run as a single Slack message. The Gemini
-  /// summary is added only when there is at least one alert, so a run without
-  /// news posts nothing and costs no API call.
-  Future<void> _flushAlertsToSlack(List<({String slack, String gemini})> alerts) async {
-    if (alerts.isEmpty) return;
+  /// Sends the alerts of one run as a single message to every configured chat
+  /// sink. See [sendAlertDigest].
+  Future<void> _flushAlerts(List<RunAlert> alerts) async {
     final configDir = AppState.instance.configDir;
-    final slack = SlackNotifier.fromConfig(configDir);
-    if (!slack.isEnabled) return;
-    final summary = await GeminiSummarizer.fromConfig(configDir).summarize(alerts.map((a) => a.gemini).toList());
-    final body = StringBuffer(alerts.map((a) => '• ${a.slack}').join('\n'));
-    if (summary != null) {
-      body.write('\n\nÖsszefoglaló: $summary');
-    }
-    await slack.send('Pala', body.toString());
+    await sendAlertDigest(alerts, configuredAlertSinks(configDir), GeminiSummarizer.fromConfig(configDir));
   }
 
   // Moodle is optional: it runs only when PALA_MOODLE_URL is set. The first run
@@ -218,54 +209,51 @@ extension PalaAppDaemonLogic on PalaApp {
         final user = Platform.environment['PALA_MOODLE_USER'];
         final password = Platform.environment['PALA_MOODLE_PASSWORD'];
         if (user == null || password == null) return;
-        await moodle.login(user, password);
+        // The guard remembers a refused login, so a wrong password is reported
+        // once and not on every scheduled run.
         authData = state.getAuthData();
-        authData['moodleToken'] = moodle.token;
-        state.saveAuthData(authData);
+        try {
+          if (!await moodleLoginWithGuard(moodle, authData, user, password)) {
+            PalaLogger.debug('Moodle login skipped: these credentials were refused before.');
+            return;
+          }
+        } finally {
+          state.saveAuthData(authData);
+        }
       }
 
-      final firstRun = authData['moodleNotifiedIds'] == null;
-      final seenNotifications =
-          ((authData['moodleNotifiedIds'] as List?)?.map((e) => e.toString()) ?? const <String>[]).toSet();
-      final seenEvents =
-          ((authData['moodleEventIds'] as List?)?.map((e) => e.toString()) ?? const <String>[]).toSet();
-
+      // Each list is recorded only after the server returned it. If a fetch
+      // fails, the next run still counts that list as unrecorded, instead of
+      // announcing every item that was already there.
       final notifications = await moodle.getNotifications();
-      if (notifications != null) {
-        for (final n in notifications) {
-          if (seenNotifications.add('${n.id}') && !firstRun) {
-            // Notification subjects often name the sender or the poster.
-            await _showToast('Pala (Moodle)', 'Moodle: ${n.subject}', geminiText: 'Új Moodle értesítés');
-          }
-        }
-        seenNotifications.retainWhere(notifications.map((n) => '${n.id}').toSet().contains);
+      final seenNotifications = MoodleSeenIds.update(notifications, (n) => '${n.id}', authData['moodleNotifiedIds']);
+      for (final n in seenNotifications.fresh) {
+        // Notification subjects often name the sender or the poster.
+        await _showToast('Pala (Moodle)', 'Moodle: ${n.subject}', geminiText: 'Új Moodle értesítés');
       }
 
       final events = await moodle.getUpcomingEvents();
-      if (events != null) {
-        for (final e in events) {
-          if (seenEvents.add('${e.id}') && !firstRun) {
-            final due = e.due;
-            final dueLabel = due == null
-                ? ''
-                : ', határidő: ${due.year}.${due.month.toString().padLeft(2, '0')}.${due.day.toString().padLeft(2, '0')}.';
-            final course = e.course != null ? ' (${e.course})' : '';
-            await _showToast('Pala (Moodle)', 'Új Moodle esemény: ${e.name}$course$dueLabel');
-          }
-        }
-        seenEvents.retainWhere(events.map((e) => '${e.id}').toSet().contains);
+      final seenEvents = MoodleSeenIds.update(events, (e) => '${e.id}', authData['moodleEventIds']);
+      for (final e in seenEvents.fresh) {
+        final due = e.due;
+        final dueLabel = due == null
+            ? ''
+            : ', határidő: ${due.year}.${due.month.toString().padLeft(2, '0')}.${due.day.toString().padLeft(2, '0')}.';
+        final course = e.course != null ? ' (${e.course})' : '';
+        await _showToast('Pala (Moodle)', 'Új Moodle esemény: ${e.name}$course$dueLabel');
       }
 
       authData = state.getAuthData();
-      authData['moodleNotifiedIds'] = seenNotifications.toList();
-      authData['moodleEventIds'] = seenEvents.toList();
+      if (seenNotifications.next != null) authData['moodleNotifiedIds'] = seenNotifications.next;
+      if (seenEvents.next != null) authData['moodleEventIds'] = seenEvents.next;
       state.saveAuthData(authData);
     } on MoodleLoginException catch (e) {
       // Drop a dead token so the next run logs in again.
       authData = state.getAuthData();
       authData.remove('moodleToken');
       state.saveAuthData(authData);
-      await _showToast('Pala (Moodle)', '$e');
+      final hint = e.isBadCredentials ? ' Új próbálkozás csak a felhasználónév vagy a jelszó módosítása után.' : '';
+      await _showToast('Pala (Moodle)', '$e.$hint');
     } catch (e) {
       PalaLogger.debug('Moodle ellenőrzés sikertelen: $e');
     }

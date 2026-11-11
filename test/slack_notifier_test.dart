@@ -6,6 +6,8 @@ import 'package:http/testing.dart';
 import 'package:pala/utils/slack_notifier.dart';
 import 'package:test/test.dart';
 
+import 'support/log_capture.dart';
+
 void main() {
   const hook = 'https://hooks.slack.com/services/T000/B000/XXXX';
 
@@ -46,6 +48,22 @@ void main() {
 
     final failing = MockClient((_) async => throw const SocketException('offline'));
     expect(await SlackNotifier(hook, client: failing).send('a', 'b'), isFalse);
+  });
+
+  test('a failed send never logs the webhook URL', () async {
+    // The http package puts the request URI into ClientException messages.
+    final failing = MockClient((req) async => throw http.ClientException('connection closed', req.url));
+    final log = await captureDebugLog(() async {
+      expect(await SlackNotifier(hook, client: failing).send('a', 'b'), isFalse);
+    });
+    expect(log, contains('Slack webhook failed: ClientException'));
+    expect(log, isNot(contains(hook)));
+    expect(log, isNot(contains('XXXX')));
+    expect(log, isNot(contains('hooks.slack.com')));
+  });
+
+  test('bold uses Slack markup', () {
+    expect(SlackNotifier(null).bold('x'), '*x*');
   });
 
   test('disabled notifier sends nothing', () async {

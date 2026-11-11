@@ -25,7 +25,15 @@ class MoodleEvent {
 
 class MoodleLoginException implements Exception {
   final String reason;
-  const MoodleLoginException(this.reason);
+
+  /// Moodle's own error code (`invalidlogin`, `invalidtoken`, ...), when the
+  /// server sent one.
+  final String? errorCode;
+  const MoodleLoginException(this.reason, {this.errorCode});
+
+  /// The server answered and refused the username or password. Trying the same
+  /// credentials again cannot work and can lock the account.
+  bool get isBadCredentials => errorCode == 'invalidlogin';
   @override
   String toString() => 'Moodle bejelentkezés sikertelen: $reason';
 }
@@ -76,7 +84,7 @@ class MoodleClient {
       return;
     }
     final reason = data is Map ? (data['error'] ?? data['errorcode'] ?? 'ismeretlen hiba') : 'ismeretlen válasz';
-    throw MoodleLoginException(reason.toString());
+    throw MoodleLoginException(reason.toString(), errorCode: data is Map ? data['errorcode']?.toString() : null);
   }
 
   Future<dynamic> _call(String function, Map<String, String> params) async {
