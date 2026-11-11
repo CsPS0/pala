@@ -209,54 +209,51 @@ extension PalaAppDaemonLogic on PalaApp {
         final user = Platform.environment['PALA_MOODLE_USER'];
         final password = Platform.environment['PALA_MOODLE_PASSWORD'];
         if (user == null || password == null) return;
-        await moodle.login(user, password);
+        // The guard remembers a refused login, so a wrong password is reported
+        // once and not on every scheduled run.
         authData = state.getAuthData();
-        authData['moodleToken'] = moodle.token;
-        state.saveAuthData(authData);
+        try {
+          if (!await moodleLoginWithGuard(moodle, authData, user, password)) {
+            PalaLogger.debug('Moodle login skipped: these credentials were refused before.');
+            return;
+          }
+        } finally {
+          state.saveAuthData(authData);
+        }
       }
 
-      final firstRun = authData['moodleNotifiedIds'] == null;
-      final seenNotifications =
-          ((authData['moodleNotifiedIds'] as List?)?.map((e) => e.toString()) ?? const <String>[]).toSet();
-      final seenEvents =
-          ((authData['moodleEventIds'] as List?)?.map((e) => e.toString()) ?? const <String>[]).toSet();
-
+      // Each list is recorded only after the server returned it. If a fetch
+      // fails, the next run still counts that list as unrecorded, instead of
+      // announcing every item that was already there.
       final notifications = await moodle.getNotifications();
-      if (notifications != null) {
-        for (final n in notifications) {
-          if (seenNotifications.add('${n.id}') && !firstRun) {
-            // Notification subjects often name the sender or the poster.
-            await _showToast('Pala (Moodle)', 'Moodle: ${n.subject}', geminiText: 'Új Moodle értesítés');
-          }
-        }
-        seenNotifications.retainWhere(notifications.map((n) => '${n.id}').toSet().contains);
+      final seenNotifications = MoodleSeenIds.update(notifications, (n) => '${n.id}', authData['moodleNotifiedIds']);
+      for (final n in seenNotifications.fresh) {
+        // Notification subjects often name the sender or the poster.
+        await _showToast('Pala (Moodle)', 'Moodle: ${n.subject}', geminiText: 'Új Moodle értesítés');
       }
 
       final events = await moodle.getUpcomingEvents();
-      if (events != null) {
-        for (final e in events) {
-          if (seenEvents.add('${e.id}') && !firstRun) {
-            final due = e.due;
-            final dueLabel = due == null
-                ? ''
-                : ', határidő: ${due.year}.${due.month.toString().padLeft(2, '0')}.${due.day.toString().padLeft(2, '0')}.';
-            final course = e.course != null ? ' (${e.course})' : '';
-            await _showToast('Pala (Moodle)', 'Új Moodle esemény: ${e.name}$course$dueLabel');
-          }
-        }
-        seenEvents.retainWhere(events.map((e) => '${e.id}').toSet().contains);
+      final seenEvents = MoodleSeenIds.update(events, (e) => '${e.id}', authData['moodleEventIds']);
+      for (final e in seenEvents.fresh) {
+        final due = e.due;
+        final dueLabel = due == null
+            ? ''
+            : ', határidő: ${due.year}.${due.month.toString().padLeft(2, '0')}.${due.day.toString().padLeft(2, '0')}.';
+        final course = e.course != null ? ' (${e.course})' : '';
+        await _showToast('Pala (Moodle)', 'Új Moodle esemény: ${e.name}$course$dueLabel');
       }
 
       authData = state.getAuthData();
-      authData['moodleNotifiedIds'] = seenNotifications.toList();
-      authData['moodleEventIds'] = seenEvents.toList();
+      if (seenNotifications.next != null) authData['moodleNotifiedIds'] = seenNotifications.next;
+      if (seenEvents.next != null) authData['moodleEventIds'] = seenEvents.next;
       state.saveAuthData(authData);
     } on MoodleLoginException catch (e) {
       // Drop a dead token so the next run logs in again.
       authData = state.getAuthData();
       authData.remove('moodleToken');
       state.saveAuthData(authData);
-      await _showToast('Pala (Moodle)', '$e');
+      final hint = e.isBadCredentials ? ' Új próbálkozás csak a felhasználónév vagy a jelszó módosítása után.' : '';
+      await _showToast('Pala (Moodle)', '$e.$hint');
     } catch (e) {
       PalaLogger.debug('Moodle ellenőrzés sikertelen: $e');
     }
