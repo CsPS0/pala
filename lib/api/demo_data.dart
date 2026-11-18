@@ -1,4 +1,5 @@
 import '../models/models.dart';
+import '../rules/grade_rules.dart';
 import '../utils/pala_clock.dart';
 
 /// Provides rich, realistic mock data for "Teszt Elek" in Pala TUI.
@@ -994,19 +995,14 @@ class DemoData {
     ];
   }
 
-  /// Subject averages calculated for Teszt Elek.
+  /// Subject averages for Teszt Elek, as Kréta's averages endpoint would send
+  /// them: worked out from [getGrades] with [GradeRules] and rounded to two
+  /// decimals, so they always agree with the grades on screen.
   static List<Map<String, dynamic>> getAverages() {
+    final averages = GradeRules.subjectAverages(getGrades());
     return [
-      {'Tantargy': {'Nev': 'Matematika'}, 'Atlag': 4.30},
-      {'Tantargy': {'Nev': 'Magyar nyelv és irodalom'}, 'Atlag': 4.50},
-      {'Tantargy': {'Nev': 'Történelem'}, 'Atlag': 4.60},
-      {'Tantargy': {'Nev': 'Angol nyelv'}, 'Atlag': 4.85},
-      {'Tantargy': {'Nev': 'Digitális kultúra'}, 'Atlag': 5.00},
-      {'Tantargy': {'Nev': 'Fizika'}, 'Atlag': 1.72},
-      {'Tantargy': {'Nev': 'Kémia'}, 'Atlag': 1.27},
-      {'Tantargy': {'Nev': 'Biológia'}, 'Atlag': 5.00},
-      {'Tantargy': {'Nev': 'Testnevelés és egészségfejlesztés'}, 'Atlag': 5.00},
-      {'Tantargy': {'Nev': 'Földrajz'}, 'Atlag': 2.11},
+      for (final e in averages.entries)
+        {'Tantargy': {'Nev': e.key}, 'Atlag': double.parse(e.value.toStringAsFixed(2))},
     ];
   }
 

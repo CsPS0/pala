@@ -34,6 +34,16 @@ void main() {
       expect(kemiaAvg, isNotNull);
       expect(kemiaAvg!['Atlag'], lessThan(2.0), reason: 'Kémia should be failing');
     });
+
+    test('averages agree with the demo grades', () {
+      final fromGrades = GradeRules.subjectAverages(DemoData.getGrades());
+      final averages = {for (final a in DemoData.getAverages()) a['Tantargy']['Nev'] as String: a['Atlag'] as double};
+      expect(averages.keys, unorderedEquals(fromGrades.keys));
+      for (final e in fromGrades.entries) {
+        expect(averages[e.key], closeTo(e.value, 0.005), reason: e.key);
+      }
+      expect(averages['Matematika'], 4.52);
+    });
   });
 
   group('DemoData Timetable and A/B Week', () {
