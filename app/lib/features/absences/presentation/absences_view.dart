@@ -8,6 +8,7 @@ import '../../../core/widgets/skeleton_container.dart';
 import '../../../state/app_model.dart';
 import '../widgets/absence_category_tile.dart';
 import '../widgets/absence_progress_gauge.dart';
+import '../../../core/theme/app_shapes.dart';
 
 /// Attendance tracking and statutory 250-hour limit monitoring view ("Hiányzások").
 class AbsencesView extends StatefulWidget {
@@ -280,7 +281,7 @@ class _AbsencesViewState extends State<AbsencesView> with SingleTickerProviderSt
                 Card(
                   color: colorScheme.surfaceContainerHigh,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(AppShapes.card),
                     side: BorderSide(color: colorScheme.outlineVariant),
                   ),
                   child: Padding(
@@ -315,7 +316,7 @@ class _AbsencesViewState extends State<AbsencesView> with SingleTickerProviderSt
                       color: colorScheme.surfaceContainerLow,
                       margin: const EdgeInsets.symmetric(vertical: 4),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(AppShapes.card),
                         side: BorderSide(color: colorScheme.outlineVariant),
                       ),
                       child: ListTile(
@@ -325,7 +326,7 @@ class _AbsencesViewState extends State<AbsencesView> with SingleTickerProviderSt
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
                             color: colorScheme.surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(AppShapes.card),
                           ),
                           child: Text(
                             '$count',
@@ -376,7 +377,7 @@ class _AbsencesViewState extends State<AbsencesView> with SingleTickerProviderSt
       elevation: 0,
       margin: const EdgeInsets.symmetric(vertical: 4),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppShapes.card),
         side: BorderSide(color: colorScheme.outlineVariant),
       ),
       child: Padding(

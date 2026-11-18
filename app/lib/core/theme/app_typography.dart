@@ -95,7 +95,7 @@ class AppTypography {
       labelLarge: TextStyle(
         fontFamily: fontFamily,
         fontSize: 14,
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w600,
         letterSpacing: 0.1,
         color: textColor,
       ),

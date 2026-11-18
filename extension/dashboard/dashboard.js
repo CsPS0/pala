@@ -553,10 +553,10 @@ async function renderDashProfileDropdown() {
     row.className = `profile-item-row ${!fullState.isDemo && p.isActive ? "active" : ""}`;
     row.innerHTML = `
       <div style="min-width:0; flex:1;">
-        <div style="font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(p.user || "Diák")}</div>
+        <div style="font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(p.user || "Diák")}</div>
         <div style="font-size: 0.75rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(p.instituteName || p.institute || "")}</div>
       </div>
-      ${!fullState.isDemo && p.isActive ? '<span style="font-weight:900; color:var(--primary);">&#10003;</span>' : ""}
+      ${!fullState.isDemo && p.isActive ? '<span style="font-weight:700; color:var(--primary);">&#10003;</span>' : ""}
     `;
     row.addEventListener("click", async () => {
       if (menu) menu.style.display = "none";
@@ -571,10 +571,10 @@ async function renderDashProfileDropdown() {
   demoRow.className = `profile-item-row ${fullState.isDemo ? "active" : ""}`;
   demoRow.innerHTML = `
     <div style="min-width:0; flex:1;">
-      <div style="font-weight:800;">Teszt Elek (Demó)</div>
+      <div style="font-weight:700;">Teszt Elek (Demó)</div>
       <div style="font-size: 0.75rem; color:var(--text-muted);">Pala Minta Gimnázium</div>
     </div>
-    ${fullState.isDemo ? '<span style="font-weight:900; color:var(--primary);">&#10003;</span>' : ""}
+    ${fullState.isDemo ? '<span style="font-weight:700; color:var(--primary);">&#10003;</span>' : ""}
   `;
   demoRow.addEventListener("click", async () => {
     if (menu) menu.style.display = "none";
@@ -726,7 +726,7 @@ function setupGlobalSearch() {
       row.className = "search-result-item";
       row.innerHTML = `
         <div style="min-width:0; flex:1;">
-          <div style="font-size:0.8rem; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(hit.title)}</div>
+          <div style="font-size:0.8rem; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(hit.title)}</div>
           <div style="font-size: 0.75rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(hit.sub || "")}</div>
         </div>
         <span class="search-cat-tag">${escapeHtml(hit.category)}</span>
@@ -1052,7 +1052,7 @@ function renderDashboard() {
           errCard.className = "card";
           errCard.style.cssText = "margin-bottom:18px; border-left:3px solid var(--danger); background:rgba(255,69,58,0.06);";
           const errTitle = document.createElement("div");
-          errTitle.style.cssText = "font-weight:700; color:var(--danger); margin-bottom:8px;";
+          errTitle.style.cssText = "font-weight:600; color:var(--danger); margin-bottom:8px;";
           errTitle.innerText = "Nem sikerült adatot betölteni";
           const errBody = document.createElement("div");
           errBody.style.cssText = "font-size:0.82rem; color:var(--text-muted); margin-bottom:14px;";
@@ -1498,7 +1498,7 @@ function renderDashboardTodayTimeline(todayLessons) {
       <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
         <span class="lesson-slot-badge" style="width:22px; height:22px; font-size: 0.75rem;">${escapeHtml(slot)}</span>
         <div style="min-width:0; flex:1;">
-          <div style="font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; ${isCanc ? 'text-decoration:line-through; color:var(--text-muted);' : ''}">${escapeHtml(sub)}</div>
+          <div style="font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; ${isCanc ? 'text-decoration:line-through; color:var(--text-muted);' : ''}">${escapeHtml(sub)}</div>
           <div style="font-size: 0.75rem; color:var(--text-muted);">${escapeHtml(timeRange)}</div>
         </div>
       </div>
@@ -1763,11 +1763,11 @@ function renderRecentGradesTable(grades, subjectMap) {
       <div style="display:flex; align-items:center; gap:12px;">
         <div class="grade-badge ${parsed.badgeClass}">${escapeHtml(parsed.displayValue)}</div>
         <div>
-          <div style="font-weight:700; font-size:0.88rem;">${escapeHtml(sub)}</div>
+          <div style="font-weight:600; font-size:0.88rem;">${escapeHtml(sub)}</div>
           <div style="font-size:0.75rem; color:var(--text-muted);">${escapeHtml(topic)} ${dateText ? "• " + dateText : ""}</div>
         </div>
       </div>
-      <span style="font-size:0.75rem; font-weight:700; color:var(--primary);">${weightRaw}%</span>
+      <span style="font-size:0.75rem; font-weight:600; color:var(--primary);">${weightRaw}%</span>
     `;
     table.appendChild(row);
   });
@@ -1798,7 +1798,7 @@ function renderDashboardSubjectCards(subjectMap) {
 
     const avg = weightSum > 0 ? (sum / weightSum).toFixed(2) : "-";
     const numAvg = parseFloat(avg);
-    const avgColor = isNaN(numAvg) ? "var(--text-muted)" : (numAvg >= 4.5 ? "var(--success)" : (numAvg >= 3.5 ? "var(--info)" : (numAvg >= 2.5 ? "var(--warning)" : "var(--danger)")));
+    const avgColor = isNaN(numAvg) ? "var(--text-muted)" : (numAvg >= 4.5 ? "var(--success)" : (numAvg >= 3.5 ? "var(--grade-4)" : (numAvg >= 2.5 ? "var(--warning)" : "var(--danger)")));
 
     const card = document.createElement("div");
     card.className = "subject-mini-card";
@@ -1823,7 +1823,7 @@ function renderDashboardSubjectCards(subjectMap) {
     card.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
         <strong style="font-size:0.85rem; line-height:1.2;">${escapeHtml(getDisplaySubject(sub))}</strong>
-        <span style="font-size:1.1rem; font-weight:900; color:${avgColor};">${avg}</span>
+        <span style="font-size:1.1rem; font-weight:700; color:${avgColor};">${avg}</span>
       </div>
       <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
         ${gradePills}
@@ -1923,7 +1923,7 @@ function renderWeeklyTimetable(timetable, { weekOffset = 0 } = {}) {
     const isToday = i === todayWeekday;
     const col = document.createElement("div");
     col.className = isToday ? "timetable-day-card today" : "timetable-day-card";
-    const todayBadge = isToday ? `<span class="badge" style="background:var(--primary-fill); color:var(--on-primary); font-weight:900; font-size: 0.75rem; border:none;">Ma</span>` : "";
+    const todayBadge = isToday ? `<span class="badge" style="background:var(--primary-fill); color:var(--on-primary); font-weight:700; font-size: 0.75rem; border:none;">Ma</span>` : "";
     const dayDate = new Date(weekMonday);
     dayDate.setDate(weekMonday.getDate() + i - 1);
     const dateText = dayDate.toLocaleDateString("hu-HU", { month: "short", day: "numeric" });
@@ -1934,7 +1934,7 @@ function renderWeeklyTimetable(timetable, { weekOffset = 0 } = {}) {
       col.innerHTML += `
         <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 36px 12px; text-align: center; color: var(--text-muted);">
           <svg class="icon" viewBox="0 0 24 24" style="width: 26px; height: 26px; stroke: currentColor; stroke-width: 1.5; fill: none; opacity: 0.4; margin-bottom: 8px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg>
-          <div style="font-size: 0.8rem; font-weight: 700; color: var(--text);">Nincs tanóra ezen a napon</div>
+          <div style="font-size: 0.8rem; font-weight: 600; color: var(--text);">Nincs tanóra ezen a napon</div>
           <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Tanítás nélküli munkanap / Szabadnap</div>
         </div>
       `;
@@ -1966,13 +1966,13 @@ function renderWeeklyTimetable(timetable, { weekOffset = 0 } = {}) {
 
         let statusBadgeHtml = "";
         if (isActive) {
-          statusBadgeHtml = `<span class="badge" style="background:var(--primary-fill); color:var(--on-primary); font-weight:900; font-size: 0.75rem; border:none; flex-shrink:0;">Folyamatban</span>`;
+          statusBadgeHtml = `<span class="badge" style="background:var(--primary-fill); color:var(--on-primary); font-weight:700; font-size: 0.75rem; border:none; flex-shrink:0;">Folyamatban</span>`;
         } else if (isCancelled) {
           statusBadgeHtml = `<span class="badge" style="background:rgba(255,69,58,0.15); color:var(--danger); border:1px solid rgba(255,69,58,0.35); font-size: 0.75rem; flex-shrink:0;">Elmaradt</span>`;
         } else if (isSub) {
           statusBadgeHtml = `<span class="badge" style="background:rgba(255,214,10,0.15); color:var(--warning); border:1px solid rgba(255,214,10,0.35); font-size: 0.75rem; flex-shrink:0;">Helyettesítés</span>`;
         } else if (isPast) {
-          statusBadgeHtml = `<span style="color:var(--success); font-weight:900; font-size:0.75rem; flex-shrink:0;">✓</span>`;
+          statusBadgeHtml = `<span style="color:var(--success); font-weight:700; font-size:0.75rem; flex-shrink:0;">✓</span>`;
         }
 
         const slotNum = l.Oraszam ?? idx + 1;
@@ -1986,7 +1986,7 @@ function renderWeeklyTimetable(timetable, { weekOffset = 0 } = {}) {
           <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
             <span class="lesson-slot-badge">${escapeHtml(slotNum)}</span>
             <div style="min-width:0; flex:1;">
-              <div style="font-size:0.8rem; font-weight:700; ${titleStyle}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${sub}</div>
+              <div style="font-size:0.8rem; font-weight:600; ${titleStyle}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${sub}</div>
               <div style="font-size: 0.75rem; color:var(--text-muted);">${timeSpan ? timeSpan + ' • ' : ''}${room}${substitute ? ' • ' + substitute : ''}</div>
               ${theme}
             </div>
@@ -2036,7 +2036,7 @@ function renderClassComparison(grades, groupAverages = []) {
     </div>`).join("");
 
   const delta = myOverall !== null && classOverall !== null ? myOverall - classOverall : null;
-  const deltaText = delta === null ? "" : `<span style="color:${delta >= 0 ? "var(--success)" : "var(--danger)"}; font-weight:800;">${delta >= 0 ? "+" : ""}${delta.toFixed(2)}</span>`;
+  const deltaText = delta === null ? "" : `<span style="color:${delta >= 0 ? "var(--success)" : "var(--danger)"}; font-weight:700;">${delta >= 0 ? "+" : ""}${delta.toFixed(2)}</span>`;
   box.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
       <div>
@@ -2124,7 +2124,7 @@ function renderAllGradesView(grades, groupAverages = []) {
     const numAvg = weightSum > 0 ? (sum / weightSum) : 0;
     const projNumAvg = (weightSum + ghostW) > 0 ? ((sum + ghostSum) / (weightSum + ghostW)) : numAvg;
     const avg = (weightSum + ghostW) > 0 ? projNumAvg.toFixed(2) : "-";
-    const avgColor = projNumAvg >= 4.5 ? "var(--success)" : (projNumAvg >= 3.5 ? "var(--info)" : (projNumAvg >= 2.5 ? "var(--warning)" : "var(--danger)"));
+    const avgColor = projNumAvg >= 4.5 ? "var(--success)" : (projNumAvg >= 3.5 ? "var(--grade-4)" : (projNumAvg >= 2.5 ? "var(--warning)" : "var(--danger)"));
 
     let trendArrow = "→";
     if (validGrades.length > 3) {
@@ -2158,7 +2158,7 @@ function renderAllGradesView(grades, groupAverages = []) {
       classAvgHtml = `
         <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">
           Osztályátlag: <strong style="color:var(--text);">${classAvg.toFixed(2)}</strong>
-          <span style="color:${deltaColor}; font-weight:700; margin-left:4px;">(${deltaText})</span>
+          <span style="color:${deltaColor}; font-weight:600; margin-left:4px;">(${deltaText})</span>
         </div>`;
     }
 
@@ -2168,10 +2168,10 @@ function renderAllGradesView(grades, groupAverages = []) {
     let badgesHtml = "";
     subGrades.forEach(g => {
       const parsed = KretaApi.parseGrade(g);
-      badgesHtml += `<div class="grade-badge ${parsed.badgeClass}" style="height:28px; border-radius:8px; font-size:0.8rem; font-weight:800;" title="${escapeHtml(g.Tema || '')} (${parsed.weightPercent}%)">${escapeHtml(parsed.displayValue)}</div>`;
+      badgesHtml += `<div class="grade-badge ${parsed.badgeClass}" style="height:28px; border-radius:var(--radius-sm); font-size:0.8rem; font-weight:700;" title="${escapeHtml(g.Tema || '')} (${parsed.weightPercent}%)">${escapeHtml(parsed.displayValue)}</div>`;
     });
     subGhostItems.forEach(m => {
-      badgesHtml += `<div class="grade-badge grade-${m.grade} ghost-preview-pill" style="height:28px; border-radius:8px; font-size:0.8rem; font-weight:800;" title="Szellem jegy (${m.weight}%)">${m.grade}</div>`;
+      badgesHtml += `<div class="grade-badge grade-${m.grade} ghost-preview-pill" style="height:28px; border-radius:var(--radius-sm); font-size:0.8rem; font-weight:700;" title="Szellem jegy (${m.weight}%)">${m.grade}</div>`;
     });
 
     const ghostTagHtml = ghostW > 0
@@ -2191,7 +2191,7 @@ function renderAllGradesView(grades, groupAverages = []) {
         <div style="text-align: right;">
           <div style="display:flex; align-items:center; gap: 8px; justify-content: flex-end;">
             <span style="font-size:1.1rem; color:var(--text-muted);">${trendArrow}</span>
-            <div style="font-size:1.05rem; font-weight:900; padding: 4px 10px; border-radius: 10px; background: ${avgColor}20; color: ${avgColor}; border: 1px solid ${avgColor}40;">${avg}</div>
+            <div style="font-size:1.05rem; font-weight:700; padding: 4px 10px; border-radius: var(--radius); background: ${avgColor}20; color: ${avgColor}; border: 1px solid ${avgColor}40;">${avg}</div>
           </div>
           ${classAvgHtml}
         </div>
@@ -2273,16 +2273,16 @@ function renderGradesMatrixTable(grades, groupAverages = []) {
 
     const avgVal = wSum > 0 ? (sum / wSum) : 0;
     const avgStr = wSum > 0 ? avgVal.toFixed(2) : "-";
-    const avgColor = avgVal >= 4.5 ? "var(--success)" : (avgVal >= 3.5 ? "var(--info)" : (avgVal >= 2.5 ? "var(--warning)" : "var(--danger)"));
+    const avgColor = avgVal >= 4.5 ? "var(--success)" : (avgVal >= 3.5 ? "var(--grade-4)" : (avgVal >= 2.5 ? "var(--warning)" : "var(--danger)"));
     const classAvg = classAvgBySubject[subName];
     const classAvgStr = classAvg !== undefined ? classAvg.toFixed(2) : "-";
 
     html += `
       <tr style="border-bottom:1px solid var(--border);">
-        <td style="padding:10px 12px; font-weight:800;">${escapeHtml(getDisplaySubject(subName))}</td>
+        <td style="padding:10px 12px; font-weight:700;">${escapeHtml(getDisplaySubject(subName))}</td>
         <td style="padding:10px 12px;">${pillsHtml}</td>
-        <td style="padding:10px 12px; text-align:center; color:var(--text-muted); font-weight:700;">${classAvgStr}</td>
-        <td style="padding:10px 12px; text-align:right; font-weight:900; font-size:0.95rem; color:${avgColor};">${avgStr}</td>
+        <td style="padding:10px 12px; text-align:center; color:var(--text-muted); font-weight:600;">${classAvgStr}</td>
+        <td style="padding:10px 12px; text-align:right; font-weight:700; font-size:0.95rem; color:${avgColor};">${avgStr}</td>
       </tr>
     `;
   });
@@ -2305,7 +2305,7 @@ function createSparklineSvg(validGrades, classAvg = null) {
   const plotW = width - padX * 2, plotH = height - padY * 2;
   const yOf = v => padY + plotH * (1 - (v - 1) / 4);
   const xOf = idx => items.length === 1 ? width / 2 : padX + (idx / (items.length - 1)) * plotW;
-  const colorOf = g => g >= 5 ? "var(--success)" : g === 4 ? "var(--info)" : g === 3 ? "var(--warning)" : "var(--danger)";
+  const colorOf = g => g >= 5 ? "var(--success)" : g === 4 ? "var(--grade-4)" : g === 3 ? "var(--warning)" : "var(--danger)";
 
   const linePts = running.map((v, idx) => `${idx === 0 ? "M" : "L"} ${xOf(idx).toFixed(1)} ${yOf(v).toFixed(1)}`).join(" ");
   const dots = items.map((item, idx) => {
@@ -2598,7 +2598,7 @@ function renderAbsencesView(absences) {
 
   if (highRiskSubjects.length > 0) {
     const riskBanner = document.createElement("div");
-    riskBanner.style.cssText = "background: rgba(255,69,58,0.1); border: 1px solid rgba(255,69,58,0.3); border-radius: 12px; padding: 12px 16px; margin-bottom: 14px; font-size: 0.78rem; color: var(--danger); line-height: 1.45;";
+    riskBanner.style.cssText = "background: rgba(255,69,58,0.1); border: 1px solid rgba(255,69,58,0.3); border-radius: var(--radius); padding: 12px 16px; margin-bottom: 14px; font-size: 0.78rem; color: var(--danger); line-height: 1.45;";
     riskBanner.innerHTML = `<strong>Figyelem!</strong> Az alábbi tantárgy(ak)ból a hiányzások elérték a 20%-os kritikus határt: <strong>${highRiskSubjects.join(", ")}</strong>. (Osztályozó vizsga kockázat!)`;
     container.appendChild(riskBanner);
   }
@@ -2654,7 +2654,7 @@ function renderAbsencesView(absences) {
         </div>
         <div style="font-size: 0.75rem; color:var(--text-muted); margin-top:2px;">${type} • ${dateText}</div>
       </div>
-      <span class="badge" style="background:${statusBg}; color:${statusColor}; border:1px solid ${statusBorder}; font-size: 0.75rem; font-weight:700;">
+      <span class="badge" style="background:${statusBg}; color:${statusColor}; border:1px solid ${statusBorder}; font-size: 0.75rem; font-weight:600;">
         ${status}
       </span>
     `;
@@ -2864,7 +2864,7 @@ function renderMessagesView(messages, questionnaires) {
     if (allQuests.length === 0) {
       container.innerHTML = `
         <div style="text-align:center; padding:40px; color:var(--text-muted);">
-          <div style="font-size:1rem; font-weight:700; margin-bottom:8px;">Nincs jelenleg aktív kérdőív vagy adatbekérés.</div>
+          <div style="font-size:1rem; font-weight:600; margin-bottom:8px;">Nincs jelenleg aktív kérdőív vagy adatbekérés.</div>
           <div style="font-size:0.82rem; margin-bottom:16px;">Az intézmény által kiküldött hivatalos adatbekéréseket közvetlenül az e-Ügyintézés felületén is megtekintheted.</div>
           <a href="https://eugyintezes.e-kreta.hu/adatbekeresek" target="_blank" class="btn btn-primary" style="text-decoration:none; display:inline-block;">Kérdőívek megnyitása (e-Ügyintézés)</a>
         </div>
@@ -2876,7 +2876,7 @@ function renderMessagesView(messages, questionnaires) {
     tableWrapper.className = "table-container";
     tableWrapper.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
-        <span style="font-size:0.85rem; font-weight:700; color:var(--text);">Kitöltendő és lezárt kérdőívek (${allQuests.length})</span>
+        <span style="font-size:0.85rem; font-weight:600; color:var(--text);">Kitöltendő és lezárt kérdőívek (${allQuests.length})</span>
         <a href="https://eugyintezes.e-kreta.hu/adatbekeresek" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration:none; font-size:0.75rem;">Kérdőívek megnyitása a Krétán</a>
       </div>
       <table class="data-table" style="width:100%; border-collapse:collapse;">
@@ -2911,7 +2911,7 @@ function renderMessagesView(messages, questionnaires) {
         : `<span style="color:var(--text-muted); font-size:0.78rem;">-</span>`;
 
       tr.innerHTML = `
-        <td style="padding:10px 12px; font-weight:700; color:var(--text);">${escapeHtml(q.title || "Adatbekérés")}</td>
+        <td style="padding:10px 12px; font-weight:600; color:var(--text);">${escapeHtml(q.title || "Adatbekérés")}</td>
         <td style="padding:10px 12px;">${statusBadge}</td>
         <td style="padding:10px 12px; color:var(--text-muted);">${escapeHtml(q.sender || "Iskola")}</td>
         <td style="padding:10px 12px; color:var(--text-muted);">${escapeHtml(q.deadline || "-")}</td>
@@ -2956,7 +2956,7 @@ function renderMessagesView(messages, questionnaires) {
 
     container.innerHTML = `
       <div style="text-align:center; padding:40px 20px; color:var(--text-muted); max-width:540px; margin:0 auto;">
-        <div style="font-size:1.05rem; font-weight:700; color:var(--text); margin-bottom:8px;">${emptyTitle}</div>
+        <div style="font-size:1.05rem; font-weight:600; color:var(--text); margin-bottom:8px;">${emptyTitle}</div>
         <div style="font-size:0.84rem; margin-bottom:20px; line-height:1.5;">
           Az üzeneteid a frissítés gombbal tölthetők be újra, vagy megnézheted őket az e-Ügyintézés webes felületén.
         </div>
@@ -3004,7 +3004,7 @@ function renderMessagesView(messages, questionnaires) {
         </div>
         <span style="font-size: 0.75rem; color: var(--text-muted);">${dateText}</span>
       </div>
-      <h3 style="font-size: 1rem; font-weight: 800; margin-bottom: 6px; color: var(--text);">${escapeHtml(m.title || m.subject || "Tájékoztató")}</h3>
+      <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 6px; color: var(--text);">${escapeHtml(m.title || m.subject || "Tájékoztató")}</h3>
       <p style="font-size: 0.84rem; line-height: 1.5; color: var(--text-muted); margin: 0; white-space: pre-line; max-height: 48px; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(kretaHtmlToText(m.content) || "(Kattints a részletek megtekintéséhez)")}</p>
     `;
 
@@ -3023,8 +3023,6 @@ async function openMessageViewer(msg) {
   const dateEl = document.getElementById("viewer-msg-date");
   const contentEl = document.getElementById("viewer-msg-content");
   const badgeEl = document.getElementById("viewer-msg-type-badge");
-  const attachBox = document.getElementById("viewer-attachments-box");
-  const attachList = document.getElementById("viewer-attachments-list");
 
   if (titleEl) titleEl.innerText = msg.title || msg.subject || "Üzenet";
   if (senderEl) senderEl.innerText = msg.sender || "Ismeretlen feladó";
@@ -3037,36 +3035,107 @@ async function openMessageViewer(msg) {
   }
   if (badgeEl) badgeEl.innerText = msg.type || "e-Ügyintézés";
 
+  // The inbox list only carries the first 100 characters of an e-Ügyintézés
+  // message, so the full text and the attachments are fetched on opening.
+  const needsFull = msg.source === "eugyintezes" && !msg.fullLoaded && !fullState.isDemo && typeof msg.id === "number";
+  openViewerMessage = msg;
   if (contentEl) {
-    renderKretaContent(contentEl, msg.content || "Szövegtartalom betöltése...");
+    if (needsFull) contentEl.innerText = "Üzenet betöltése...";
+    else renderKretaContent(contentEl, msg.content || "Nincs szöveges tartalom.");
   }
+  renderViewerAttachments(msg);
+  if (viewerModal) viewerModal.style.display = "flex";
 
-  // If content is empty and it's an e-ugyintezes message, fetch full content
-  if (!msg.content && msg.source === "eugyintezes" && msg.id) {
+  if (!needsFull) return;
+  let full = null;
+  try {
     const session = await SecureSession.load();
     if (session?.token) {
       const token = await KretaApi.ensureValidToken(session);
-      const fullText = await KretaApi.getMessageContent(token, msg.id);
-      if (fullText && contentEl) {
-        renderKretaContent(contentEl, fullText);
-        msg.content = fullText;
-      }
+      full = await KretaApi.getMessage(token, msg.id);
     }
+  } catch (e) {
+    console.warn("openMessageViewer error:", e);
   }
+  if (full) {
+    msg.content = full.content;
+    msg.attachments = full.attachments;
+    msg.fullLoaded = true;
+  }
+  // Another message may have been opened while this one was loading.
+  if (openViewerMessage !== msg) return;
+  if (full) {
+    if (contentEl) renderKretaContent(contentEl, msg.content || "Nincs szöveges tartalom.");
+    renderViewerAttachments(msg);
+  } else if (contentEl) {
+    const note = document.createElement("div");
+    note.style.cssText = "color: var(--danger); font-weight: 600; margin-bottom: 8px;";
+    note.innerText = "A teljes szöveg most nem tölthető be, csak az eleje látszik.";
+    const preview = document.createElement("div");
+    renderKretaContent(preview, msg.content || "");
+    contentEl.replaceChildren(note, preview);
+  }
+}
 
-  // Attachments
-  if (attachBox && attachList) {
-    const atts = msg.attachments || [];
-    if (atts.length > 0) {
-      attachBox.style.display = "block";
-      attachList.innerHTML = atts.map(a => `<span class="badge" style="background:var(--sidebar);">${escapeHtml(a.fajlNev || a.name || "Csatolmány")}</span>`).join("");
-    } else {
-      attachBox.style.display = "none";
-      attachList.innerHTML = "";
+// The message shown in the viewer, so a slow load never overwrites a newer one.
+let openViewerMessage = null;
+
+function renderViewerAttachments(msg) {
+  const attachBox = document.getElementById("viewer-attachments-box");
+  const attachList = document.getElementById("viewer-attachments-list");
+  const statusEl = document.getElementById("viewer-attachments-status");
+  if (!attachBox || !attachList) return;
+  const atts = msg.attachments || [];
+  attachBox.style.display = atts.length > 0 ? "block" : "none";
+  if (statusEl) statusEl.innerText = "";
+  attachList.replaceChildren(...atts.map(a => {
+    const name = a.fajlNev || a.name || "Csatolmány";
+    const btn = document.createElement("button");
+    btn.className = "btn btn-secondary";
+    btn.style.cssText = "padding: 4px 10px; font-size: 0.78rem;";
+    btn.title = "Letöltés";
+    btn.innerText = name;
+    btn.addEventListener("click", () => downloadViewerAttachment(a.azonosito ?? a.id, name, btn, statusEl));
+    return btn;
+  }));
+}
+
+async function downloadViewerAttachment(id, name, btn, statusEl) {
+  const say = (text, isError) => {
+    if (!statusEl) return;
+    statusEl.style.color = isError ? "var(--danger)" : "var(--text-muted)";
+    statusEl.innerText = text;
+  };
+  if (fullState.isDemo) {
+    say("Demó módban a csatolmányok nem tölthetők le.", true);
+    return;
+  }
+  btn.disabled = true;
+  say(`${name} letöltése...`, false);
+  let blob = null;
+  try {
+    const session = await SecureSession.load();
+    if (session?.token && id !== undefined && id !== null) {
+      const token = await KretaApi.ensureValidToken(session);
+      blob = await KretaApi.downloadAttachment(token, id);
     }
+  } catch (e) {
+    console.warn("downloadViewerAttachment error:", e);
   }
-
-  if (viewerModal) viewerModal.style.display = "flex";
+  btn.disabled = false;
+  if (!blob) {
+    say("A csatolmány most nem tölthető le. Próbáld újra később.", true);
+    return;
+  }
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = name;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+  say(`${name} letöltve.`, false);
 }
 
 async function renderSettingsView() {
@@ -3204,7 +3273,7 @@ async function renderStudentView(student) {
   let guardiansHtml = "";
   if (guardians.length > 0) {
     guardiansHtml = guardians.map(g => `
-      <div style="background: var(--sidebar); border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-bottom: 8px;">
+      <div style="background: var(--sidebar); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px; margin-bottom: 8px;">
         <strong style="font-size: 0.85rem;">${escapeHtml(g.Nev || "-")}</strong>
         <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; display: flex; flex-direction: column; gap: 2px;">
           <div>Email: ${escapeHtml(g.EmailCim || g.Email || "Nincs megadva")}</div>
@@ -3311,7 +3380,7 @@ async function renderStudentView(student) {
   const card1 = document.createElement("div");
   card1.className = "card";
   card1.innerHTML = `
-    <h2 style="font-size: 1.05rem; font-weight: 800; color: var(--primary); margin-bottom: 16px;">Személyes Adatok</h2>
+    <h2 style="font-size: 1.05rem; font-weight: 700; color: var(--primary); margin-bottom: 16px;">Személyes Adatok</h2>
     <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.85rem;">
       <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
         <span style="color: var(--text-muted);">Név:</span>
@@ -3348,7 +3417,7 @@ async function renderStudentView(student) {
   const card2 = document.createElement("div");
   card2.className = "card";
   card2.innerHTML = `
-    <h2 style="font-size: 1.05rem; font-weight: 800; color: var(--primary); margin-bottom: 16px;">Intézmény & Elérhetőségek</h2>
+    <h2 style="font-size: 1.05rem; font-weight: 700; color: var(--primary); margin-bottom: 16px;">Intézmény & Elérhetőségek</h2>
     <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.85rem; margin-bottom: 16px;">
       <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
         <span style="color: var(--text-muted);">Intézmény neve:</span>
@@ -3372,7 +3441,7 @@ async function renderStudentView(student) {
       </div>
     </div>
     
-    <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 10px; color: var(--text);">Gondviselők</h3>
+    <h3 style="font-size: 0.95rem; font-weight: 600; margin-bottom: 10px; color: var(--text);">Gondviselők</h3>
     ${guardiansHtml}
   `;
 
@@ -3383,7 +3452,7 @@ async function renderStudentView(student) {
   card3.innerHTML = `
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
       <div style="display: flex; align-items: center; gap: 8px;">
-        <h2 style="font-size: 1.05rem; font-weight: 800; color: var(--primary); margin: 0;">Bankszámla Adatok</h2>
+        <h2 style="font-size: 1.05rem; font-weight: 700; color: var(--primary); margin: 0;">Bankszámla Adatok</h2>
         <span class="badge ${hasBankData ? "badge-verified" : "badge-maintenance"}" style="font-size: 0.75rem;">
           ${hasBankData ? (extra.bankAccount ? "Kézzel megadva" : "A Krétából") : "Nincs rögzítve"}
         </span>
@@ -3407,7 +3476,7 @@ async function renderStudentView(student) {
         <strong style="text-transform: capitalize;">${escapeHtml(bankOwnerType)}</strong>
       </div>
     </div>
-    <div style="background: rgba(255,136,0,0.08); border: 1px solid rgba(255,136,0,0.25); border-radius: 8px; padding: 10px 12px; font-size: 0.75rem; color: var(--text-muted); line-height: 1.4;">
+    <div style="background: rgba(255,136,0,0.08); border: 1px solid rgba(255,136,0,0.25); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 0.75rem; color: var(--text-muted); line-height: 1.4;">
       A tanulói bankszámla adatok a szakképzési ösztöndíj, a rászorultsági támogatás és a duális képzés munkabérének átutalásához szükségesek.
     </div>
   `;
@@ -3416,7 +3485,7 @@ async function renderStudentView(student) {
   const card4 = document.createElement("div");
   card4.className = "card";
   card4.innerHTML = `
-    <h2 style="font-size: 1.05rem; font-weight: 800; color: var(--primary); margin-bottom: 16px;">Hivatalos Okmányok</h2>
+    <h2 style="font-size: 1.05rem; font-weight: 700; color: var(--primary); margin-bottom: 16px;">Hivatalos Okmányok</h2>
     <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.85rem;">
       <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 5px;">
         <span style="color: var(--text-muted);">Adóazonosító jel:</span>
@@ -3450,55 +3519,55 @@ async function renderStudentView(student) {
   card5.className = "card";
   card5.style.gridColumn = "1 / -1";
   card5.innerHTML = `
-    <h2 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 16px; color: var(--primary);">Tanulmányi & Mulasztási Mérföldkövek</h2>
+    <h2 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 16px; color: var(--primary);">Tanulmányi & Mulasztási Mérföldkövek</h2>
     
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 18px;">
-      <div style="background: var(--sidebar); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px;">
+      <div style="background: var(--sidebar); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px;">
         <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Tanulmányi átlag</div>
-        <div style="font-size: 1.4rem; font-weight: 800; color: var(--primary);">${weightedAvg}</div>
+        <div style="font-size: 1.4rem; font-weight: 700; color: var(--primary);">${weightedAvg}</div>
         <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Súlyozatlan: ${unweightedAvg} (${gradeCount} jegy)</div>
       </div>
-      <div style="background: var(--sidebar); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px;">
+      <div style="background: var(--sidebar); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px;">
         <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Legjobb tantárgy</div>
-        <div style="font-size: 1rem; font-weight: 700; color: var(--success); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(bestSub)}</div>
+        <div style="font-size: 1rem; font-weight: 600; color: var(--success); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(bestSub)}</div>
         <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Átlag: ${bestAvg > 0 ? bestAvg.toFixed(2) : "-"}</div>
       </div>
-      <div style="background: var(--sidebar); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px;">
+      <div style="background: var(--sidebar); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px;">
         <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Leggyengébb tantárgy</div>
-        <div style="font-size: 1rem; font-weight: 700; color: ${worstAvg < 3 ? "var(--danger)" : "var(--warning)"}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(worstSub)}</div>
+        <div style="font-size: 1rem; font-weight: 600; color: ${worstAvg < 3 ? "var(--danger)" : "var(--warning)"}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(worstSub)}</div>
         <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Átlag: ${worstAvg <= 5 ? worstAvg.toFixed(2) : "-"}</div>
       </div>
-      <div style="background: var(--sidebar); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px;">
+      <div style="background: var(--sidebar); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px;">
         <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Mulasztott órák / 250h keret</div>
-        <div style="font-size: 1.2rem; font-weight: 800; color: ${totalAbsenceHours > 100 ? "var(--warning)" : "var(--text)"};">${totalAbsenceHours} óra</div>
+        <div style="font-size: 1.2rem; font-weight: 700; color: ${totalAbsenceHours > 100 ? "var(--warning)" : "var(--text)"};">${totalAbsenceHours} óra</div>
         <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Hátralévő biztonságos: ${remaining250} óra</div>
       </div>
     </div>
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-      <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">Érdemjegyek Eloszlása</span>
+      <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">Érdemjegyek Eloszlása</span>
       <span style="font-size: 0.75rem; color: var(--text-muted);">Összesen ${gradeCount} db értékelés</span>
     </div>
     <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; text-align: center;">
-      <div style="background: rgba(48,209,88,0.12); border: 1px solid rgba(48,209,88,0.3); border-radius: 8px; padding: 8px 4px;">
-        <div style="font-size: 0.75rem; font-weight: 700; color: var(--success);">5-ös</div>
-        <div style="font-size: 1.15rem; font-weight: 800; color: var(--success);">${count5}</div>
+      <div style="background: rgba(48,209,88,0.12); border: 1px solid rgba(48,209,88,0.3); border-radius: var(--radius-sm); padding: 8px 4px;">
+        <div style="font-size: 0.75rem; font-weight: 600; color: var(--success);">5-ös</div>
+        <div style="font-size: 1.15rem; font-weight: 700; color: var(--success);">${count5}</div>
       </div>
-      <div style="background: rgba(10,132,255,0.12); border: 1px solid rgba(10,132,255,0.3); border-radius: 8px; padding: 8px 4px;">
-        <div style="font-size: 0.75rem; font-weight: 700; color: var(--info);">4-es</div>
-        <div style="font-size: 1.15rem; font-weight: 800; color: var(--info);">${count4}</div>
+      <div style="background: rgba(var(--grade-4-rgb), 0.12); border: 1px solid rgba(var(--grade-4-rgb), 0.3); border-radius: var(--radius-sm); padding: 8px 4px;">
+        <div style="font-size: 0.75rem; font-weight: 600; color: var(--grade-4);">4-es</div>
+        <div style="font-size: 1.15rem; font-weight: 700; color: var(--grade-4);">${count4}</div>
       </div>
-      <div style="background: rgba(255,214,10,0.12); border: 1px solid rgba(255,214,10,0.3); border-radius: 8px; padding: 8px 4px;">
-        <div style="font-size: 0.75rem; font-weight: 700; color: var(--warning);">3-as</div>
-        <div style="font-size: 1.15rem; font-weight: 800; color: var(--warning);">${count3}</div>
+      <div style="background: rgba(255,214,10,0.12); border: 1px solid rgba(255,214,10,0.3); border-radius: var(--radius-sm); padding: 8px 4px;">
+        <div style="font-size: 0.75rem; font-weight: 600; color: var(--warning);">3-as</div>
+        <div style="font-size: 1.15rem; font-weight: 700; color: var(--warning);">${count3}</div>
       </div>
-      <div style="background: rgba(255,159,10,0.12); border: 1px solid rgba(255,159,10,0.3); border-radius: 8px; padding: 8px 4px;">
-        <div style="font-size: 0.75rem; font-weight: 700; color: var(--primary);">2-es</div>
-        <div style="font-size: 1.15rem; font-weight: 800; color: var(--primary);">${count2}</div>
+      <div style="background: rgba(255,159,10,0.12); border: 1px solid rgba(255,159,10,0.3); border-radius: var(--radius-sm); padding: 8px 4px;">
+        <div style="font-size: 0.75rem; font-weight: 600; color: var(--primary);">2-es</div>
+        <div style="font-size: 1.15rem; font-weight: 700; color: var(--primary);">${count2}</div>
       </div>
-      <div style="background: rgba(255,69,58,0.12); border: 1px solid rgba(255,69,58,0.3); border-radius: 8px; padding: 8px 4px;">
-        <div style="font-size: 0.75rem; font-weight: 700; color: var(--danger);">1-es</div>
-        <div style="font-size: 1.15rem; font-weight: 800; color: var(--danger);">${count1}</div>
+      <div style="background: rgba(255,69,58,0.12); border: 1px solid rgba(255,69,58,0.3); border-radius: var(--radius-sm); padding: 8px 4px;">
+        <div style="font-size: 0.75rem; font-weight: 600; color: var(--danger);">1-es</div>
+        <div style="font-size: 1.15rem; font-weight: 700; color: var(--danger);">${count1}</div>
       </div>
     </div>
   `;
@@ -3750,7 +3819,7 @@ function renderGhostGradesAndPlanner(subjectMap) {
     ghostResult.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <span>Új átlag: <strong>${newAvg.toFixed(2)}</strong></span>
-        <span style="color:${diffColor}; font-weight:700;">${diffStr}</span>
+        <span style="color:${diffColor}; font-weight:600;">${diffStr}</span>
       </div>
       <div style="font-size: 0.75rem; color:var(--text-muted); margin-top:2px;">
         Jelenlegi: ${currentAvg.toFixed(2)} &rarr; Szimulált: ${newAvg.toFixed(2)}
@@ -3789,10 +3858,10 @@ function renderGhostGradesAndPlanner(subjectMap) {
     if (next) {
       plannerHtml += `
           <tr style="border-bottom: 1px solid var(--border);">
-            <td style="padding: 8px; font-weight:700;">${escapeHtml(sub)}</td>
+            <td style="padding: 8px; font-weight:600;">${escapeHtml(sub)}</td>
             <td style="padding: 8px; text-align:center;">${currentAvg.toFixed(2)}</td>
             <td style="padding: 8px; text-align:center;">${next.threshold.toFixed(1)}</td>
-            <td style="padding: 8px; text-align:center; font-weight:800; color:var(--primary);">${next.needed} db</td>
+            <td style="padding: 8px; text-align:center; font-weight:700; color:var(--primary);">${next.needed} db</td>
           </tr>
         `;
     }
@@ -3944,7 +4013,7 @@ function renderAliases() {
   keys.forEach(orig => {
     const custom = aliases[orig];
     const chip = document.createElement("div");
-    chip.style.cssText = "background: var(--sidebar); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; display: inline-flex; align-items: center; gap: 8px; font-size: 0.78rem;";
+    chip.style.cssText = "background: var(--sidebar); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 4px 10px; display: inline-flex; align-items: center; gap: 8px; font-size: 0.78rem;";
     chip.innerHTML = `
       <span><span style="color: var(--text-muted);">${escapeHtml(orig)}</span> &rarr; <strong style="color: var(--primary);">${escapeHtml(custom)}</strong></span>
       <button class="btn-del-alias" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; padding: 0 2px;">✕</button>
@@ -3980,7 +4049,7 @@ function openWrappedModal() {
             <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
           </svg>
         </div>
-        <h3 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 8px;">A Pala Wrapped a nyári szünetben érhető el</h3>
+        <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 8px;">A Pala Wrapped a nyári szünetben érhető el</h3>
         <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 14px;">
           A hivatalos tanévzáró összefoglaló kizárólag június 14. és szeptember 30. között aktív, amikor az adott tanév összes érdemjegye és mulasztása hivatalosan lezárult.
         </p>
@@ -4076,9 +4145,9 @@ function openWrappedModal() {
 
   content.innerHTML = `
     <div style="display: flex; flex-direction: column; gap: 14px;">
-      <div style="background: rgba(var(--primary-rgb), 0.08); border: 1px solid rgba(var(--primary-rgb), 0.3); border-radius: 12px; padding: 18px; text-align: center;">
-        <span class="badge" style="background: var(--primary-fill); color: var(--on-primary); font-weight: 800; margin-bottom: 8px;">HIVATALOS TANÉVZÁRÓ</span>
-        <div style="font-size: 2.2rem; font-weight: 900; color: var(--primary); margin: 6px 0;">${overallGpa}</div>
+      <div style="background: rgba(var(--primary-rgb), 0.08); border: 1px solid rgba(var(--primary-rgb), 0.3); border-radius: var(--radius); padding: 18px; text-align: center;">
+        <span class="badge" style="background: var(--primary-fill); color: var(--on-primary); font-weight: 700; margin-bottom: 8px;">HIVATALOS TANÉVZÁRÓ</span>
+        <div style="font-size: 2.2rem; font-weight: 700; color: var(--primary); margin: 6px 0;">${overallGpa}</div>
         <div style="font-size: 0.85rem; color: var(--text-muted);">Súlyozott Tanulmányi Átlag</div>
         <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">Összesen <strong>${grades.length}</strong> rögzített érdemjegy alapján</div>
       </div>
@@ -4086,13 +4155,13 @@ function openWrappedModal() {
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
         <div class="card" style="padding: 12px 14px; background: var(--sidebar); margin: 0;">
           <div style="font-size: 0.75rem; color: var(--text-muted);">Ötösök száma</div>
-          <div style="font-size: 1.5rem; font-weight: 800; color: var(--success); margin: 2px 0;">${total5s} db</div>
+          <div style="font-size: 1.5rem; font-weight: 700; color: var(--success); margin: 2px 0;">${total5s} db</div>
           <div style="font-size: 0.75rem; color: var(--text-muted);">${((total5s / grades.length) * 100).toFixed(0)}% a jegyeknek</div>
         </div>
 
         <div class="card" style="padding: 12px 14px; background: var(--sidebar); margin: 0;">
           <div style="font-size: 0.75rem; color: var(--text-muted);">Egyesek száma</div>
-          <div style="font-size: 1.5rem; font-weight: 800; color: var(--danger); margin: 2px 0;">${total1s} db</div>
+          <div style="font-size: 1.5rem; font-weight: 700; color: var(--danger); margin: 2px 0;">${total1s} db</div>
           <div style="font-size: 0.75rem; color: var(--text-muted);">${((total1s / grades.length) * 100).toFixed(0)}% a jegyeknek</div>
         </div>
       </div>
@@ -4100,13 +4169,13 @@ function openWrappedModal() {
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
         <div class="card" style="padding: 12px 14px; background: var(--sidebar); margin: 0;">
           <div style="font-size: 0.75rem; color: var(--text-muted);">Legjobb tantárgy</div>
-          <div style="font-size: 1rem; font-weight: 800; color: var(--primary); margin: 4px 0;" title="${escapeHtml(bestSub)}">${escapeHtml(bestSub)}</div>
+          <div style="font-size: 1rem; font-weight: 700; color: var(--primary); margin: 4px 0;" title="${escapeHtml(bestSub)}">${escapeHtml(bestSub)}</div>
           <div style="font-size: 0.75rem; color: var(--text-muted);">Átlag: ${bestSubAvg > 0 ? bestSubAvg.toFixed(2) : "-"}</div>
         </div>
 
         <div class="card" style="padding: 12px 14px; background: var(--sidebar); margin: 0;">
           <div style="font-size: 0.75rem; color: var(--text-muted);">Legaktívabb hónap</div>
-          <div style="font-size: 1rem; font-weight: 800; color: var(--text); margin: 4px 0;">${topMonthName}</div>
+          <div style="font-size: 1rem; font-weight: 700; color: var(--text); margin: 4px 0;">${topMonthName}</div>
           <div style="font-size: 0.75rem; color: var(--text-muted);">${topMonthCount} rögzített jegy</div>
         </div>
       </div>
@@ -4125,7 +4194,7 @@ function openWrappedModal() {
       </div>
 
       <div style="text-align: center; margin-top: 6px;">
-        <p style="font-size: 0.82rem; color: var(--primary); font-weight: 700; margin-bottom: 12px;">KÉSZ, VÉGE, VAKÁCIÓ! Jó pihenést a nyárra!</p>
+        <p style="font-size: 0.82rem; color: var(--primary); font-weight: 600; margin-bottom: 12px;">KÉSZ, VÉGE, VAKÁCIÓ! Jó pihenést a nyárra!</p>
         <button class="btn btn-primary btn-block" onclick="document.getElementById('wrapped-modal').style.display='none'">Bezárás</button>
       </div>
     </div>

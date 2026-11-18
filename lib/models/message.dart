@@ -12,6 +12,20 @@ class MessageAttachment {
   }
 }
 
+/// A name that is safe to create inside a download folder: the last path
+/// part only, without characters a file system forbids, and never empty. An
+/// attachment name comes from the sender, so it is not trusted.
+String safeAttachmentFileName(String name) {
+  final cleaned = name
+      .split(RegExp(r'[\\/]'))
+      .last
+      .replaceAll(RegExp(r'[<>:"|?*\x00-\x1F]'), '_')
+      .trim()
+      .replaceAll(RegExp(r'\s+'), '_')
+      .replaceAll(RegExp(r'^\.+'), '');
+  return cleaned.isEmpty ? 'csatolmany' : cleaned;
+}
+
 class Message {
   final int id;
   final String senderName;

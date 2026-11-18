@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:pala/models/grade.dart';
 import '../../../core/adaptive/adaptive_breakpoints.dart';
 import '../../../core/utils/accent_insensitive_search.dart';
 import '../../../core/utils/csv_exporter.dart';
 import '../../../core/widgets/empty_state_widget.dart';
+import '../../../core/widgets/pala_table.dart';
 import '../../../core/widgets/skeleton_container.dart';
 import '../../../state/app_model.dart';
 import '../widgets/class_comparison_card.dart';
@@ -26,6 +28,10 @@ class _GradesViewState extends State<GradesView> with SingleTickerProviderStateM
   final TextEditingController _searchController = TextEditingController();
   final GhostGradeController _ghostController = GhostGradeController();
   int? _selectedGradeFilter; // null = all, 1..5
+
+  /// The desktop grade table starts with the newest rows; the rest opens on request.
+  static const _recentGradeRows = 10;
+  bool _showAllGrades = false;
 
   // Hungarian vowel harmony: 5-ös, 4-es, 3-as, 2-es, 1-es.
   static const _gradeChipLabels = {5: '5-ös', 4: '4-es', 3: '3-as', 2: '2-es', 1: '1-es'};
@@ -119,6 +125,10 @@ class _GradesViewState extends State<GradesView> with SingleTickerProviderStateM
     }
 
     final sortedSubjects = gradesBySubject.keys.toList()..sort();
+
+    // Every grade that passes the filters, newest first, for the desktop table.
+    final tableGrades = [for (final sub in sortedSubjects) ...gradesBySubject[sub]!]
+      ..sort((a, b) => (b.date ?? DateTime(0)).compareTo(a.date ?? DateTime(0)));
 
     return Scaffold(
       // The shell's AppBar already shows the screen title; this bar only carries the tabs and tools.
@@ -239,6 +249,27 @@ class _GradesViewState extends State<GradesView> with SingleTickerProviderStateM
                     ),
                     const SizedBox(height: 12),
 
+                    // Wide screens: every grade in one table, as on Kréta Web.
+                    if (isExpanded && tableGrades.isNotEmpty) ...[
+                      _gradeTable(_showAllGrades ? tableGrades : tableGrades.take(_recentGradeRows).toList()),
+                      if (tableGrades.length > _recentGradeRows)
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: OutlinedButton(
+                              onPressed: () => setState(() => _showAllGrades = !_showAllGrades),
+                              child: Text(
+                                _showAllGrades ? 'Csak a legutóbbi jegyek' : 'Mind a(z) ${tableGrades.length} jegy megjelenítése',
+                              ),
+                            ),
+                          ),
+                        ),
+                      const SizedBox(height: 20),
+                      Text('Tantárgyak', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 8),
+                    ],
+
                     // Empty state or Subject cards
                     if (sortedSubjects.isEmpty)
                       EmptyStateWidget.noResults(
@@ -311,6 +342,34 @@ class _GradesViewState extends State<GradesView> with SingleTickerProviderStateM
           ),
         ],
       ),
+    );
+  }
+
+  /// Kréta Web's grade table: one row per grade with its subject, theme,
+  /// weight, date and teacher.
+  Widget _gradeTable(List<Grade> grades) {
+    final date = DateFormat('yyyy.MM.dd');
+    return PalaTable(
+      key: const ValueKey('grades_table'),
+      columns: const [
+        PalaColumn('Jegy', width: 72),
+        PalaColumn('Tantárgy', flex: 3),
+        PalaColumn('Típus / Téma', flex: 4),
+        PalaColumn('Súly', width: 68),
+        PalaColumn('Dátum', width: 104),
+        PalaColumn('Tanár', flex: 3),
+      ],
+      rows: [
+        for (final g in grades)
+          [
+            PalaGradeBadge(value: g.valueKind == GradeValueKind.grade ? g.numericValue : null, label: g.displayValue),
+            PalaStrong(widget.appModel.getDisplaySubject(g.subject)),
+            Text((g.theme?.trim().isNotEmpty ?? false) ? g.theme!.trim() : (g.type ?? '-')),
+            Text('${g.weight.round()}%'),
+            Text(g.date != null ? date.format(g.date!.toLocal()) : '-'),
+            Text(g.teacherName ?? '-'),
+          ],
+      ],
     );
   }
 }

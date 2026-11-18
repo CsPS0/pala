@@ -19,6 +19,9 @@ import '../../../state/app_model.dart';
 import '../widgets/countdown_hero_card.dart';
 import '../widgets/timetable_tile.dart';
 import 'package:pala/utils/pala_clock.dart';
+import '../../../core/theme/app_shapes.dart';
+import '../../../core/widgets/pala_table.dart';
+import '../../../theme/pala_theme.dart';
 
 /// Overhauled Live Dashboard ("Élő Dashboard") View for real-time academic tracking.
 class LiveDashboardView extends StatefulWidget {
@@ -170,64 +173,32 @@ class _LiveDashboardViewState extends State<LiveDashboardView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          flex: 5,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              CountdownHeroCard(
-                                currentLesson: currentLesson,
-                                nextLesson: nextLesson,
-                                todayLessons: todayLessons,
-                                now: now,
-                                getDisplaySubject: widget.appModel.getDisplaySubject,
-                              ),
-                              const SizedBox(height: 16),
-                              _buildQuickActions(context, colorScheme),
-                              const SizedBox(height: 20),
-                              _buildKpiMetrics(context, theme, colorScheme),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 20),
-                        Expanded(
-                          flex: 6,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              _buildTimetableHeader(context, theme, colorScheme, now, todayLessons),
-                              const SizedBox(height: 12),
-                              if (todayLessons.isEmpty)
-                                EmptyStateWidget(
-                                  icon: Icons.event_available_outlined,
-                                  title: 'Mára nincs tanítás',
-                                  description: 'Nincsenek bejegyzett tanórák mára a Kréta rendszerben.',
-                                  primaryActionLabel: 'Órarend megnyitása',
-                                  onPrimaryAction: widget.onNavigate != null ? () => widget.onNavigate!(AppPages.timetable) : null,
-                                )
-                              else
-                                ...todayLessons.map((lesson) {
-                                  final isNow =
-                                      lesson.startTime != null &&
-                                      lesson.endTime != null &&
-                                      now.isAfter(lesson.startTime!) &&
-                                      now.isBefore(lesson.endTime!);
-                                  final isPast = lesson.endTime != null && now.isAfter(lesson.endTime!);
-                                  return TimetableTile(
-                                    lesson: lesson,
-                                    isNow: isNow,
-                                    isPast: isPast,
-                                    getDisplaySubject: widget.appModel.getDisplaySubject,
-                                  );
-                                }),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                            // Kréta Web's order: the live banner, the summary
+                            // tiles, then today's lessons as a table.
+                            CountdownHeroCard(
+                              currentLesson: currentLesson,
+                              nextLesson: nextLesson,
+                              todayLessons: todayLessons,
+                              now: now,
+                              getDisplaySubject: widget.appModel.getDisplaySubject,
+                            ),
+                            const SizedBox(height: 16),
+                            _buildStatTiles(context),
+                            const SizedBox(height: 24),
+                            _buildTimetableHeader(context, theme, colorScheme, now, todayLessons),
+                            const SizedBox(height: 12),
+                            if (todayLessons.isEmpty)
+                              EmptyStateWidget(
+                                icon: Icons.event_available_outlined,
+                                title: 'Mára nincs tanítás',
+                                description: 'Nincsenek bejegyzett tanórák mára a Kréta rendszerben.',
+                                primaryActionLabel: 'Órarend megnyitása',
+                                onPrimaryAction: widget.onNavigate != null ? () => widget.onNavigate!(AppPages.timetable) : null,
+                              )
+                            else
+                              _buildTodayTable(context, todayLessons, now, showTeacher: constraints.maxWidth >= 760),
+                            const SizedBox(height: 20),
+                            _buildQuickActions(context, colorScheme),
                             const SizedBox(height: 20),
                             _buildInsights(context, theme, colorScheme, sideBySide: constraints.maxWidth >= 1000),
                           ],
@@ -397,7 +368,7 @@ class _LiveDashboardViewState extends State<LiveDashboardView> {
         width: 40,
         height: 32,
         alignment: Alignment.center,
-        decoration: BoxDecoration(color: color.withValues(alpha: 0.18), borderRadius: BorderRadius.circular(8)),
+        decoration: BoxDecoration(color: color.withValues(alpha: 0.18), borderRadius: BorderRadius.circular(AppShapes.control)),
         child: Text(g.displayValue, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: color, fontWeight: FontWeight.w900)),
       ),
       title: Text(widget.appModel.getDisplaySubject(g.subject), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)),
@@ -513,6 +484,90 @@ class _LiveDashboardViewState extends State<LiveDashboardView> {
     );
   }
 
+  /// The wide-screen summary row, in Kréta Web's stat tile look.
+  Widget _buildStatTiles(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final gpa = widget.appModel.overallGpa;
+    final missed = widget.appModel.totalMissedHours;
+    final hwCount = widget.appModel.homework.where((h) => isUpcoming(h.deadline) && !widget.appModel.completedHomework.contains(h.uid)).length;
+    final examCount = widget.appModel.exams.where((e) => isUpcoming(e.date)).length;
+
+    Widget tile(String title, String value, String note, int page, {Color? color}) {
+      return Expanded(
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppShapes.card),
+            onTap: widget.onNavigate != null ? () => widget.onNavigate!(page) : null,
+            child: PalaStatTile(title: title, value: value, note: note, valueColor: color),
+          ),
+        ),
+      );
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        tile('Tanulmányi átlag', gpa > 0 ? gpa.toStringAsFixed(2) : '-', 'Összes tantárgy alapján', AppPages.grades),
+        const SizedBox(width: 16),
+        tile(
+          'Mulasztott órák',
+          '$missed óra',
+          'A 250 órás keretből',
+          AppPages.absences,
+          color: missed >= 200 ? colorScheme.error : (missed >= 150 ? colorScheme.tertiary : null),
+        ),
+        const SizedBox(width: 16),
+        tile('Házi feladatok', '$hwCount db', 'Még hátralévő', AppPages.tasks),
+        const SizedBox(width: 16),
+        tile('Számonkérések', '$examCount db', 'A következő napokban', AppPages.tasks),
+      ],
+    );
+  }
+
+  /// Today's lessons as Kréta Web's table: number, time, subject, room,
+  /// teacher and where the lesson stands.
+  Widget _buildTodayTable(BuildContext context, List<TimetableEntry> lessons, DateTime now, {required bool showTeacher}) {
+    final time = DateFormat('HH:mm');
+    final muted = PalaTheme.textMuted;
+    return PalaTable(
+      key: const ValueKey('today_table'),
+      columns: [
+        const PalaColumn('Óra', width: 60),
+        const PalaColumn('Idősáv', width: 124),
+        const PalaColumn('Tantárgy', flex: 4),
+        const PalaColumn('Terem', flex: 2),
+        if (showTeacher) const PalaColumn('Tanár', flex: 3),
+        const PalaColumn('Státusz', width: 132),
+      ],
+      rows: [
+        for (final l in lessons)
+          () {
+            final isNow = l.startTime != null && l.endTime != null && now.isAfter(l.startTime!) && now.isBefore(l.endTime!);
+            final isPast = l.endTime != null && now.isAfter(l.endTime!);
+            final substitute = l.substituteTeacher?.trim().isNotEmpty ?? false;
+            final (label, color) = l.isCancelled
+                ? ('Elmarad', PalaTheme.danger)
+                : substitute
+                    ? ('Helyettesítés', PalaTheme.warning)
+                    : isNow
+                        ? ('Folyamatban', Theme.of(context).primaryColor)
+                        : isPast
+                            ? ('Megtartva', PalaTheme.success)
+                            : ('Hátravan', muted);
+            return <Widget>[
+              Text('${l.lessonNumber}.', style: const TextStyle(fontWeight: FontWeight.w600)),
+              Text(l.startTime != null && l.endTime != null ? '${time.format(l.startTime!)} - ${time.format(l.endTime!)}' : '-'),
+              PalaStrong(widget.appModel.getDisplaySubject(l.subject)),
+              Text(l.room ?? '-'),
+              if (showTeacher) Text(substitute ? l.substituteTeacher! : (l.teacher ?? '-')),
+              PalaPill(label, color: color),
+            ];
+          }(),
+      ],
+    );
+  }
+
   Widget _buildKpiMetrics(BuildContext context, ThemeData theme, ColorScheme colorScheme) {
     final gpa = widget.appModel.overallGpa;
     final missed = widget.appModel.totalMissedHours;
@@ -588,12 +643,12 @@ class _LiveDashboardViewState extends State<LiveDashboardView> {
         color: colorScheme.surfaceContainerLow,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppShapes.card),
           side: BorderSide(color: colorScheme.outlineVariant, width: 1),
         ),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppShapes.card),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
             child: Column(

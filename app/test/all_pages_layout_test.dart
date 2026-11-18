@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:pala_app/core/adaptive/adaptive_scaffold.dart';
+import 'package:pala_app/core/adaptive/pala_sidebar.dart';
 import 'package:pala_app/core/theme/m3_theme.dart';
 import 'package:pala_app/features/grades/widgets/grade_summary_card.dart';
 import 'package:pala_app/state/app_model.dart';
@@ -54,7 +55,7 @@ void main() {
 
     testWidgets('desktop 1440x900 ($theme): every rail page renders without errors', (tester) async {
       await pumpDemo(tester, const Size(1440, 900), dark: dark);
-      final rail = find.byType(NavigationRail);
+      final rail = find.byType(PalaSidebar);
       for (final page in _railPages) {
         await tester.tap(find.descendant(of: rail, matching: find.text(page)));
         await settle(tester);

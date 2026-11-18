@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:pala/models/grade.dart';
 import 'package:pala/rules/grade_rules.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_shapes.dart';
 
 /// Hierarchical Grade Summary Card (Organism) displaying subject average, class comparison, and trend.
 class GradeSummaryCard extends StatefulWidget {
@@ -76,11 +77,11 @@ class _GradeSummaryCardState extends State<GradeSummaryCard> {
         color: colorScheme.surfaceContainerLow,
         margin: const EdgeInsets.symmetric(vertical: 6),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppShapes.card),
           side: BorderSide(color: colorScheme.outlineVariant, width: 1),
         ),
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppShapes.card),
           onTap: () => setState(() => _isExpanded = !_isExpanded),
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -98,7 +99,7 @@ class _GradeSummaryCardState extends State<GradeSummaryCard> {
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: avgColor.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(AppShapes.card),
                         border: Border.all(color: avgColor.withValues(alpha: 0.4), width: 1.5),
                       ),
                       child: Text(
@@ -202,7 +203,7 @@ class _GradeSummaryCardState extends State<GradeSummaryCard> {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: gradeColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppShapes.control),
               border: Border.all(color: gradeColor.withValues(alpha: 0.3)),
             ),
             child: Text(

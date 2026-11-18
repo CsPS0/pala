@@ -707,7 +707,7 @@ function updateSpGhostSimulation() {
   outEl.innerHTML = `
     <strong>${escapeHtml(sub)}</strong>: ${cur.toFixed(2)} &rarr;
     <strong style="color:var(--primary);">${proj.toFixed(2)}</strong>
-    <span style="color:${diffColor}; font-weight:800; margin-left:4px;">(${diff >= 0 ? "+" : ""}${diff.toFixed(2)})</span>
+    <span style="color:${diffColor}; font-weight:700; margin-left:4px;">(${diff >= 0 ? "+" : ""}${diff.toFixed(2)})</span>
   `;
 }
 

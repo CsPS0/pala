@@ -435,28 +435,24 @@ extension PalaAppGradesView on PalaApp {
     print('Tárgy:         \x1B[1;33m${m.subject}\x1B[0m');
     print('----------------------------------------');
     
-    String fullText = m.text;
-    if (m.id != 0 && (fullText.isEmpty || fullText == m.subject)) {
-      print('Üzenet letöltése...');
-      try {
-        final fetched = await _client!.getMessageContent(m.id);
-        if (fetched != null && fetched.isNotEmpty) {
-          fullText = fetched;
-        }
-      } catch (e) {
-        PalaLogger.debug('Failed to fetch message body: $e');
+    print('Üzenet letöltése...');
+    final full = await _loadFullMessage(m);
+    _clearScreen();
+    _showMainMenuBanner();
+    print('\n\x1B[1;36m=== Üzenet Részletei ===\x1B[0m\n');
+    print('Feladó:        \x1B[1m${m.senderName}\x1B[0m');
+    print('Dátum:         ${m.sentDate?.toString().substring(0, 16) ?? "-"}');
+    print('Tárgy:         \x1B[1;33m${m.subject}\x1B[0m');
+    print('----------------------------------------');
+
+    print('Szöveg:\n${_messageBodyText(m, full)}');
+    final attachments = (full ?? m).attachments;
+    if (attachments.isNotEmpty) {
+      print('\nCsatolmányok (letöltés az Üzenetek menüből):');
+      for (final att in attachments) {
+        print('  - ${att.name}');
       }
-      _clearScreen();
-      _showMainMenuBanner();
-      print('\n\x1B[1;36m=== Üzenet Részletei ===\x1B[0m\n');
-      print('Feladó:        \x1B[1m${m.senderName}\x1B[0m');
-      print('Dátum:         ${m.sentDate?.toString().substring(0, 16) ?? "-"}');
-      print('Tárgy:         \x1B[1;33m${m.subject}\x1B[0m');
-      print('----------------------------------------');
     }
-    
-    final cleanText = fullText.replaceAll(RegExp(r'<[^>]*>'), '').trim();
-    print('Szöveg:\n$cleanText');
   }
 
   void _showAbsenceDetails(Absence a) {

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 import 'api.dart';
@@ -603,35 +604,56 @@ class KretaClient {
     return _cacheFallback(url);
   }
 
-  Future<bool> downloadAttachment(int id, String fileName) async {
-    final url = 'https://files.e-kreta.hu/v1/dokumentumok/uzenetek/$id';
-    
-    if (Platform.environment['NO_NET'] == '1' || AppState.instance.isOffline) {
-      return false;
+  /// A message attachment's bytes, or null when it cannot be fetched
+  /// (offline, not logged in, or e-Ügyintézés refused). An expired access
+  /// token is renewed once.
+  Future<Uint8List?> fetchAttachment(int id) async {
+    if (Platform.environment['NO_NET'] == '1' || AppState.instance.isOffline || accessToken == null) {
+      return null;
     }
-
-    if (accessToken == null) {
-      throw Exception('Nincs bejelentkezve (hiányzó accessToken).');
-    }
-
-    final headers = KretaAPI.apiHeaders(accessToken!);
+    final url = Uri.parse(KretaAPI.attachment(id));
     try {
-      final response = await http.get(Uri.parse(url), headers: headers);
-      if (response.statusCode == 200) {
-        final home = Platform.environment['USERPROFILE'] ?? Platform.environment['HOME'] ?? '.';
-        final downloadsPath = p.join(home, 'Downloads');
-        final downloadsDir = Directory(downloadsPath);
-        final outDir = downloadsDir.existsSync() ? downloadsDir.path : home;
-        
-        final safeName = fileName.replaceAll(RegExp(r'\s+'), '_');
-        final file = File(p.join(outDir, safeName));
-        await file.writeAsBytes(response.bodyBytes);
-        return true;
+      for (var attempt = 0; attempt < 2; attempt++) {
+        final response =
+            await http.get(url, headers: KretaAPI.apiHeaders(accessToken!)).timeout(const Duration(seconds: 30));
+        if (response.statusCode == 200) return response.bodyBytes;
+        if (response.statusCode == 401 && attempt == 0 && await refreshAccessToken()) continue;
+        PalaLogger.debug('Failed to download attachment $id: HTTP ${response.statusCode}');
+        return null;
       }
     } catch (e) {
       PalaLogger.debug('Failed to download attachment $id: $e');
     }
-    return false;
+    return null;
+  }
+
+  /// Downloads an attachment into [directory] (the user's Downloads folder
+  /// by default) and returns the file, or null on failure. The name is made
+  /// safe and an existing file is never overwritten.
+  Future<File?> saveAttachment(int id, String fileName, {String? directory}) async {
+    final bytes = await fetchAttachment(id);
+    if (bytes == null) return null;
+    try {
+      final dir = Directory(directory ?? _downloadsDir());
+      if (!dir.existsSync()) dir.createSync(recursive: true);
+      final safeName = safeAttachmentFileName(fileName);
+      final stem = p.basenameWithoutExtension(safeName), ext = p.extension(safeName);
+      var file = File(p.join(dir.path, safeName));
+      for (var n = 1; file.existsSync(); n++) {
+        file = File(p.join(dir.path, '${stem}_$n$ext'));
+      }
+      await file.writeAsBytes(bytes);
+      return file;
+    } catch (e) {
+      PalaLogger.debug('Failed to save attachment $id: $e');
+      return null;
+    }
+  }
+
+  static String _downloadsDir() {
+    final home = Platform.environment['USERPROFILE'] ?? Platform.environment['HOME'] ?? '.';
+    final downloads = Directory(p.join(home, 'Downloads'));
+    return downloads.existsSync() ? downloads.path : home;
   }
 
   Future<List<dynamic>?> getGroupAverages() async {
@@ -815,11 +837,13 @@ class KretaClient {
     return null;
   }
 
-  Future<String?> getMessageContent(int id) async {
-    final url = BaseKreta.kretaAdmin + KretaApiEndpoints.message(id);
-    final data = await _getAPI(url);
-    if (data is Map<String, dynamic>) {
-      return data['uzenet']?['szoveg']?.toString() ?? data['szoveg']?.toString();
+  /// One message with its full text and attachments, or null when it cannot
+  /// be loaded. The inbox list ([getMessages]) only carries the first 100
+  /// characters of the body, so a reader always needs this.
+  Future<Message?> getMessage(int id) async {
+    final data = await _getAPI(KretaAPI.message(id));
+    if (data is Map<String, dynamic> && data['uzenet'] is Map) {
+      return Message.fromJson(data);
     }
     return null;
   }

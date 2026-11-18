@@ -94,20 +94,10 @@ extension PalaAppHomeworkView on PalaApp {
             final targy = msg.subject;
             final isRead = msg.isRead;
             
-            String fullText = msg.text;
-            if (msg.id != 0) {
-              try {
-                final fetchedText = await _client!.getMessageContent(msg.id);
-                if (fetchedText != null && fetchedText.isNotEmpty) {
-                  fullText = fetchedText;
-                }
-              } catch (e) {
-                PalaLogger.debug('Failed to fetch message content for id ${msg.id}: $e');
-              }
-            }
-            
-            final text = fullText.replaceAll(RegExp(r'<[^>]*>'), '').trim();
-            
+            final full = await _loadFullMessage(msg);
+            final text = _messageBodyText(msg, full);
+            final attachments = (full ?? msg).attachments;
+
             String marker = isRead ? " " : "*";
             print('----------------------------------------');
             print('[$marker] Dátum: $dateStr');
@@ -115,14 +105,14 @@ extension PalaAppHomeworkView on PalaApp {
             print('Tárgy: \x1B[1;33m$targy\x1B[0m');
             print('Üzenet:\n$text\n');
             
-            if (msg.attachments.isNotEmpty) {
+            if (attachments.isNotEmpty) {
               print('Csatolmányok:');
-              for (var att in msg.attachments) {
+              for (var att in attachments) {
                 print('  - ${att.name} (ID: ${att.id})');
               }
               final downloadAns = Utf8Input(prompt: 'Szeretnél letölteni csatolmányt ebből az üzenetből? (i/N)').interact().trim().toLowerCase();
               if (downloadAns == 'i' || downloadAns == 'y') {
-                await _downloadAttachmentFlow(msg.attachments);
+                await _downloadAttachmentFlow(attachments);
               }
             }
           }
@@ -161,38 +151,28 @@ extension PalaAppHomeworkView on PalaApp {
             print('Tárgy: \x1B[1;33m${msg.subject}\x1B[0m');
             print('----------------------------------------');
 
-            String fullText = msg.text;
-            if (msg.id != 0) {
-              print('Üzenet letöltése...');
-              try {
-                final fetchedText = await _client!.getMessageContent(msg.id);
-                if (fetchedText != null && fetchedText.isNotEmpty) {
-                  fullText = fetchedText;
-                }
-              } catch (e) {
-                PalaLogger.debug('Failed to fetch message content: $e');
-              }
-              _clearScreen();
-              print('\n--- Üzenet Részletei ---');
-              print('Dátum: $dateStr');
-              print('Feladó: \x1B[1;36m${msg.senderName}\x1B[0m');
-              print('Tárgy: \x1B[1;33m${msg.subject}\x1B[0m');
-              print('----------------------------------------');
-            }
+            print('Üzenet letöltése...');
+            final full = await _loadFullMessage(msg);
+            final attachments = (full ?? msg).attachments;
+            _clearScreen();
+            print('\n--- Üzenet Részletei ---');
+            print('Dátum: $dateStr');
+            print('Feladó: \x1B[1;36m${msg.senderName}\x1B[0m');
+            print('Tárgy: \x1B[1;33m${msg.subject}\x1B[0m');
+            print('----------------------------------------');
 
-            final text = fullText.replaceAll(RegExp(r'<[^>]*>'), '').trim();
-            print('Szöveg:\n$text\n');
+            print('Szöveg:\n${_messageBodyText(msg, full)}\n');
 
-            if (msg.attachments.isNotEmpty) {
+            if (attachments.isNotEmpty) {
               print('----------------------------------------');
               print('Csatolmányok:');
-              for (var att in msg.attachments) {
+              for (var att in attachments) {
                 print('  - ${att.name}');
               }
               print('');
               final downloadAns = Utf8Input(prompt: 'Szeretnél letölteni valamilyen csatolmányt? (i/N)').interact().trim().toLowerCase();
               if (downloadAns == 'i' || downloadAns == 'y') {
-                await _downloadAttachmentFlow(msg.attachments);
+                await _downloadAttachmentFlow(attachments);
               }
             } else {
               _pause();
@@ -217,19 +197,38 @@ extension PalaAppHomeworkView on PalaApp {
     
     final selected = attachments[choice];
     print('Letöltés folyamatban: ${selected.name}...');
-    final success = await _client!.downloadAttachment(selected.id, selected.name);
-    if (success) {
-      final home = Platform.environment['USERPROFILE'] ?? Platform.environment['HOME'] ?? '.';
-      final downloadsPath = p.join(home, 'Downloads');
-      final downloadsDir = Directory(downloadsPath);
-      final outDir = downloadsDir.existsSync() ? downloadsDir.path : home;
-      final safeName = selected.name.replaceAll(RegExp(r'\s+'), '_');
-      final finalPath = p.join(outDir, safeName);
-      print('\x1B[92mSikeresen letöltve! Fájl helye: $finalPath\x1B[0m');
+    final file = await _client!.saveAttachment(selected.id, selected.name);
+    if (file != null) {
+      print('\x1B[92mSikeresen letöltve! Fájl helye: ${file.path}\x1B[0m');
+    } else if (_client is DemoKretaClient) {
+      print('\x1B[33mDemó módban a csatolmányok nem tölthetők le.\x1B[0m');
     } else {
-      print('\x1B[31mHiba történt a letöltés során.\x1B[0m');
+      print('\x1B[31mA csatolmány most nem tölthető le. Ellenőrizd az internetkapcsolatot, és próbáld újra.\x1B[0m');
     }
     _pause();
+  }
+
+  /// The message with its full text and attachments, or null when it cannot
+  /// be loaded. The inbox list only carries a short preview of the body.
+  Future<Message?> _loadFullMessage(Message msg) async {
+    if (msg.id == 0) return null;
+    try {
+      return await _client!.getMessage(msg.id);
+    } catch (e) {
+      PalaLogger.debug('Failed to fetch message ${msg.id}: $e');
+      return null;
+    }
+  }
+
+  /// The body as plain text. Without the full message only the preview from
+  /// the list is known, and the reader is told so.
+  String _messageBodyText(Message preview, Message? full) {
+    if (full != null) {
+      final text = htmlToText(full.text);
+      return text.isNotEmpty ? text : '(Nincs szöveges tartalom.)';
+    }
+    final text = htmlToText(preview.text);
+    return '\x1B[33mA teljes szöveg most nem tölthető be, csak az eleje látszik.\x1B[0m\n$text';
   }
 
   Future<void> _sendMessageFlow() async {

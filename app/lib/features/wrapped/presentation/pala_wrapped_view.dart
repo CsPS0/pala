@@ -8,6 +8,7 @@ import '../../../core/adaptive/adaptive_breakpoints.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../state/app_model.dart';
 import '../widgets/wrapped_summary_card.dart';
+import '../../../core/theme/app_shapes.dart';
 
 /// Full-screen annual performance summary module ("Pala Wrapped").
 class PalaWrappedView extends StatefulWidget {
@@ -188,7 +189,7 @@ class _PalaWrappedViewState extends State<PalaWrappedView> {
                     ),
                     Expanded(
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(AppShapes.control),
                         child: LinearProgressIndicator(
                           value: ratio,
                           minHeight: 12,
@@ -240,7 +241,7 @@ class _PalaWrappedViewState extends State<PalaWrappedView> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
                 color: AppColors.success.withValues(alpha: 0.25),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppShapes.card),
                 border: Border.all(color: AppColors.success),
               ),
               child: Text(
@@ -331,7 +332,7 @@ class _PalaWrappedViewState extends State<PalaWrappedView> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppShapes.card),
             border: Border.all(color: Colors.white12),
           ),
           child: Column(
@@ -485,7 +486,7 @@ class _PalaWrappedViewState extends State<PalaWrappedView> {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.25),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppShapes.card),
         border: Border.all(color: Colors.white12),
       ),
       child: Column(

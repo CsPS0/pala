@@ -1389,18 +1389,42 @@ class KretaApi {
   }
 
   /**
-   * Fetches full content of an e-Ügyintézés message.
+   * Fetches one e-Ügyintézés message with its full text and attachments, or
+   * null when it cannot be loaded. The inbox list only carries the first 100
+   * characters of the body, so a reader always needs this. Mirrors
+   * KretaClient.getMessage in lib/api/client.dart.
    */
-  static async getMessageContent(token, messageId) {
+  static async getMessage(token, messageId) {
+    const data = await this.fetchAdmin(token, `kommunikacio/postaladaelemek/${encodeURIComponent(messageId)}`);
+    const msg = data?.uzenet;
+    if (!msg || typeof msg !== "object") return null;
+    return {
+      content: msg.szoveg || "",
+      attachments: Array.isArray(msg.csatolmanyok) ? msg.csatolmanyok : []
+    };
+  }
+
+  /**
+   * Downloads a message attachment as a Blob, or null on failure. The bytes
+   * are served by e-Ügyintézés itself (the files host only takes uploads).
+   * Mirrors KretaClient.fetchAttachment in lib/api/client.dart.
+   */
+  static async downloadAttachment(token, attachmentId) {
+    const url = `${KRETA_ADMIN}/api/v1/dokumentumok/uzenetek/${encodeURIComponent(attachmentId)}`;
     try {
-      const data = await this.fetchAdmin(token, `kommunikacio/postaladaelemek/${messageId}`);
-      if (data && typeof data === "object") {
-        return data.uzenet?.szoveg || data.uzenetSzoveg || data.szoveg || "";
+      const res = await fetch(url, {
+        headers: { "Authorization": `Bearer ${token}`, "apiKey": KRETA_API_KEY },
+        credentials: "include",
+        signal: AbortSignal.timeout(30000)
+      });
+      if (!res.ok) {
+        console.warn(`A csatolmány letöltése nem sikerült (${res.status}).`);
+        return null;
       }
-      return "";
+      return await res.blob();
     } catch (e) {
-      console.warn("getMessageContent error:", e);
-      return "";
+      console.warn("downloadAttachment error:", e);
+      return null;
     }
   }
 

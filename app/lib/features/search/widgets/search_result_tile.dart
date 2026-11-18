@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/adaptive/adaptive_breakpoints.dart';
+import '../../../core/theme/app_shapes.dart';
 
 enum SearchCategory {
   grade,
@@ -64,11 +65,11 @@ class SearchResultTile extends StatelessWidget {
           margin: const EdgeInsets.symmetric(vertical: 3),
           color: colorScheme.surfaceContainerLow,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppShapes.card),
             side: BorderSide(color: colorScheme.outlineVariant),
           ),
           child: InkWell(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppShapes.card),
             onTap: onTap,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -80,7 +81,7 @@ class SearchResultTile extends StatelessWidget {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: iconColor.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(AppShapes.card),
                     ),
                     child: Icon(icon, color: iconColor, size: 20),
                   ),

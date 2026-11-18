@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_shapes.dart';
 
 /// Full-screen swipeable card organism for Pala Wrapped annual summary deck.
 class WrappedSummaryCard extends StatelessWidget {
@@ -30,7 +31,7 @@ class WrappedSummaryCard extends StatelessWidget {
         elevation: 0,
         color: AppColors.darkSurfaceContainerLow,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppShapes.card),
           side: const BorderSide(color: AppColors.darkSurfaceContainerHigh),
         ),
         clipBehavior: Clip.antiAlias,
@@ -46,7 +47,7 @@ class WrappedSummaryCard extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.35),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppShapes.card),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,

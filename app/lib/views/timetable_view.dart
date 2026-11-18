@@ -7,6 +7,7 @@ import 'package:pala/utils/ics_exporter.dart';
 import '../state/app_model.dart';
 import '../theme/pala_theme.dart';
 import 'package:pala/utils/pala_clock.dart';
+import '../core/theme/app_shapes.dart';
 
 class TimetableView extends StatefulWidget {
   final AppModel appModel;
@@ -134,12 +135,12 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                             message: widget.appModel.isDemo ? 'Kattints a demó A/B hét váltásához' : 'Az iskola hetirendje erre a hétre',
                             child: InkWell(
                               onTap: widget.appModel.isDemo ? () => widget.appModel.toggleABWeek() : null,
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(AppShapes.control),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                                 decoration: BoxDecoration(
                                   color: primary.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(AppShapes.control),
                                   border: Border.all(color: primary.withValues(alpha: 0.5)),
                                 ),
                                 child: Row(
@@ -174,7 +175,7 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                             margin: const EdgeInsets.only(right: 10),
                             decoration: BoxDecoration(
                               color: PalaTheme.card,
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(AppShapes.control),
                               border: Border.all(color: PalaTheme.border),
                             ),
                             child: Row(
@@ -233,7 +234,7 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                             foregroundColor: primary,
                             side: BorderSide(color: primary.withValues(alpha: 0.4)),
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppShapes.control)),
                           ),
                           onPressed: _exportIcs,
                           icon: Icon(Icons.calendar_month_outlined, size: 15),
@@ -266,7 +267,7 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                               margin: const EdgeInsets.symmetric(horizontal: 4),
                               decoration: BoxDecoration(
                                 color: isToday ? primary.withValues(alpha: 0.04) : PalaTheme.card,
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(AppShapes.card),
                                 border: Border.all(
                                   color: isToday ? primary.withValues(alpha: 0.5) : PalaTheme.border,
                                   width: isToday ? 1.5 : 1.0,
@@ -457,7 +458,7 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
       padding: EdgeInsets.all(compact ? 10 : 14),
       decoration: BoxDecoration(
         color: isNow ? primary.withValues(alpha: 0.08) : PalaTheme.card,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppShapes.card),
         border: Border.all(
           color: isNow
               ? primary
@@ -476,7 +477,7 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: isNow ? primary : PalaTheme.text.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(AppShapes.control),
             ),
             child: Text(
               '${l.lessonNumber}.',
@@ -570,7 +571,7 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                     margin: const EdgeInsets.symmetric(horizontal: 2),
                     decoration: BoxDecoration(
                       color: isToday ? primary.withValues(alpha: 0.15) : PalaTheme.sidebar,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppShapes.control),
                       border: isToday ? Border.all(color: primary.withValues(alpha: 0.4)) : null,
                     ),
                     alignment: Alignment.center,
@@ -598,7 +599,7 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                     height: 64,
                     decoration: BoxDecoration(
                       color: PalaTheme.card,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppShapes.control),
                       border: Border.all(color: PalaTheme.border),
                     ),
                     alignment: Alignment.center,
@@ -621,7 +622,7 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                           margin: const EdgeInsets.symmetric(horizontal: 2),
                           decoration: BoxDecoration(
                             color: PalaTheme.card.withValues(alpha: 0.3),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(AppShapes.control),
                             border: Border.all(color: PalaTheme.border.withValues(alpha: 0.3)),
                           ),
                           alignment: Alignment.center,
@@ -643,7 +644,7 @@ class _TimetableViewState extends State<TimetableView> with SingleTickerProvider
                           color: isCancelled 
                               ? PalaTheme.danger.withValues(alpha: 0.08) 
                               : (subTeacher != null ? PalaTheme.warning.withValues(alpha: 0.08) : PalaTheme.card),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(AppShapes.control),
                           border: Border.all(
                             color: isCancelled 
                                 ? PalaTheme.danger.withValues(alpha: 0.4) 

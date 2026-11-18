@@ -5,6 +5,7 @@ import 'package:pala/models/homework.dart';
 import 'package:pala/rules/schedule_rules.dart';
 import '../state/app_model.dart';
 import '../theme/pala_theme.dart';
+import '../core/theme/app_shapes.dart';
 
 class TasksView extends StatefulWidget {
   final AppModel appModel;
@@ -85,7 +86,7 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
                         child: Material(
                           color: PalaTheme.card,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(AppShapes.card),
                             side: BorderSide(color: PalaTheme.border),
                           ),
                           child: CheckboxListTile(
@@ -144,7 +145,7 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: PalaTheme.card,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppShapes.card),
                           border: Border.all(color: PalaTheme.border),
                         ),
                         // Type badge above the subject: beside it, long Kréta types
@@ -156,7 +157,7 @@ class _TasksViewState extends State<TasksView> with SingleTickerProviderStateMix
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
                                 color: primary.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(6),
+                                borderRadius: BorderRadius.circular(AppShapes.control),
                               ),
                               child: Text(
                                 e.mode.isNotEmpty ? e.mode : 'Dolgozat',

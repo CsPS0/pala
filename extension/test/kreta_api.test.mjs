@@ -221,3 +221,51 @@ test("manualOverrides keeps only what the user changed, not Kréta's own values"
   const saved = { ...KretaApi.manualOverrides({ name: "Minta Anna", phone: "+36 30 999", classGrade: "11.B", bankAccount: "1111-2222", taxId: "123", omId: "" }, kp) };
   assert.deepEqual(saved, { phone: "+36 30 999", taxId: "123" });
 });
+
+// A KretaApi whose network calls are answered by `respond(url, options)`.
+function apiWithFetch(respond) {
+  const calls = [];
+  const fetch = async (url, options = {}) => {
+    calls.push({ url: String(url), options });
+    return respond(String(url), options);
+  };
+  return { ...loadKretaApi({ fetch, AbortSignal }), calls };
+}
+
+test("getMessage reads the full text and attachments from the detail endpoint", async () => {
+  const { KretaApi, calls } = apiWithFetch(async () => ({
+    ok: true,
+    json: async () => ({
+      azonosito: 42,
+      uzenet: {
+        szoveg: "<p>Kedves Szülők!</p><p>Indulás 7:30-kor az iskola elől.</p>",
+        csatolmanyok: [{ azonosito: 7, fajlNev: "program.pdf" }]
+      }
+    })
+  }));
+  const full = await KretaApi.getMessage("token-1", 42);
+  assert.equal(calls[0].url, "https://eugyintezes.e-kreta.hu/api/v1/kommunikacio/postaladaelemek/42");
+  assert.match(full.content, /Indulás 7:30-kor/);
+  assert.equal(full.attachments[0].azonosito, 7);
+  assert.equal(full.attachments[0].fajlNev, "program.pdf");
+});
+
+test("getMessage is null when the message cannot be loaded", async () => {
+  const { KretaApi } = apiWithFetch(async () => ({ ok: false, status: 404 }));
+  assert.equal(await KretaApi.getMessage("token-1", 43), null);
+});
+
+test("downloadAttachment asks e-Ügyintézés with the bearer token", async () => {
+  const blob = { size: 3 };
+  const { KretaApi, calls } = apiWithFetch(async () => ({ ok: true, blob: async () => blob }));
+  assert.equal(await KretaApi.downloadAttachment("token-1", 7), blob);
+  assert.equal(calls[0].url, "https://eugyintezes.e-kreta.hu/api/v1/dokumentumok/uzenetek/7");
+  assert.equal(calls[0].options.headers.Authorization, "Bearer token-1");
+});
+
+test("downloadAttachment is null on an error status or a network failure", async () => {
+  const refused = apiWithFetch(async () => ({ ok: false, status: 404 }));
+  assert.equal(await refused.KretaApi.downloadAttachment("token-1", 7), null);
+  const offline = apiWithFetch(async () => { throw new TypeError("Failed to fetch"); });
+  assert.equal(await offline.KretaApi.downloadAttachment("token-1", 7), null);
+});

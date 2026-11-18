@@ -12,10 +12,14 @@ import '../../views/tasks_view.dart';
 import '../../views/timetable_view.dart';
 import 'adaptive_breakpoints.dart';
 import 'app_pages.dart';
+import 'pala_sidebar.dart';
+import '../theme/pala_tokens.dart';
 import 'package:pala/utils/pala_clock.dart';
+import '../theme/app_shapes.dart';
 
-/// Unified adaptive root scaffold auto-swapping between NavigationBar (<600dp)
-/// and NavigationRail (>=600dp) while preserving state via IndexedStack and PageStorageKey.
+/// Unified adaptive root scaffold: a bottom NavigationBar on phones (<600dp)
+/// and, from 600dp up, Kréta Web's layout (a [PalaSidebar] and a top bar),
+/// while preserving state via IndexedStack and PageStorageKey.
 class AdaptiveScaffold extends StatefulWidget {
   final AppModel appModel;
 
@@ -188,31 +192,23 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
         final bottomNavIndex = barSlot >= 0 ? barSlot : _compactBranches.length;
 
         return Scaffold(
-          appBar: _buildAppBar(context, theme, colorScheme, isCompact: isCompact),
+          appBar: isCompact ? _buildAppBar(context, theme, colorScheme, isCompact: true) : null,
           body: Row(
             children: [
-              if (!isCompact) ...[
-                NavigationRail(
+              if (!isCompact)
+                PalaSidebar(
                   extended: isLargeDesktop,
-                  // Rows narrower than this get centred in the rail, so keep it above the longest label.
-                  minExtendedWidth: 256,
-                  labelType: isLargeDesktop ? NavigationRailLabelType.none : NavigationRailLabelType.all,
                   selectedIndex: _currentIndex,
-                  onDestinationSelected: _navigateToIndex,
-                  destinations: [
-                    for (final d in _destinations)
-                      NavigationRailDestination(
-                        icon: Icon(d.$1),
-                        selectedIcon: Icon(d.$2),
-                        label: Text(d.$3),
-                      ),
-                  ],
+                  onSelected: _navigateToIndex,
+                  items: [for (final d in _destinations) PalaSidebarItem(d.$1, d.$2, d.$3)],
+                  userName: widget.appModel.student?.name,
+                  userSubtitle: widget.appModel.student?.institutionName,
+                  onUserTap: () => _navigateToIndex(AppPages.profile),
                 ),
-                const VerticalDivider(width: 1),
-              ],
               Expanded(
                 child: Column(
                   children: [
+                    if (!isCompact) _buildTopBar(context, isLargeDesktop: isLargeDesktop),
                     _buildMaintenanceBanner(colorScheme),
                     Expanded(
                       child: IndexedStack(
@@ -249,6 +245,101 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
     );
   }
 
+  /// Kréta Web's top bar: the page title on the left, bordered action
+  /// buttons on the right, and a thin progress line while data loads.
+  Widget _buildTopBar(BuildContext context, {required bool isLargeDesktop}) {
+    final t = PalaTokens.of(context);
+    final model = widget.appModel;
+    Widget action({required IconData icon, required String label, required VoidCallback? onPressed}) {
+      if (!isLargeDesktop) {
+        return IconButton(tooltip: label, icon: Icon(icon, size: 20), onPressed: onPressed);
+      }
+      return OutlinedButton.icon(
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(0, 38),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          // From the theme, so the label keeps the app's font family.
+          textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: 13.5, fontWeight: FontWeight.w600),
+        ),
+        onPressed: onPressed,
+        icon: Icon(icon, size: 16),
+        label: Text(label),
+      );
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          height: 64,
+          padding: const EdgeInsets.symmetric(horizontal: 28),
+          decoration: BoxDecoration(
+            color: t.sidebar,
+            border: Border(bottom: BorderSide(color: t.border)),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  _titles[_currentIndex],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: t.text, fontSize: 20, fontWeight: FontWeight.w700),
+                ),
+              ),
+              if (model.isDemo) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: t.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(AppShapes.control),
+                    border: Border.all(color: t.primary.withValues(alpha: 0.3)),
+                  ),
+                  child: Text(
+                    'DEMÓ',
+                    style: TextStyle(color: t.primary, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.5),
+                  ),
+                ),
+                const SizedBox(width: 12),
+              ],
+              // Pala Wrapped: only in the summer break or demo mode. A plain
+              // button, so it does not read as an AI feature.
+              if (isWrappedSeason(PalaClock.now()) || model.isDemo) ...[
+                action(
+                  icon: Icons.summarize_outlined,
+                  label: 'Pala Wrapped',
+                  onPressed: () => PalaWrappedView.show(context, model),
+                ),
+                const SizedBox(width: 12),
+              ],
+              action(
+                icon: Icons.search,
+                label: 'Keresés',
+                onPressed: () => GlobalSearchView.show(context, model),
+              ),
+              const SizedBox(width: 12),
+              action(
+                icon: Icons.refresh,
+                label: 'Frissítés',
+                onPressed: model.isLoading ? null : () => model.refreshAll(),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 2,
+          child: model.isLoading
+              ? LinearProgressIndicator(
+                  minHeight: 2,
+                  backgroundColor: Colors.transparent,
+                  valueColor: AlwaysStoppedAnimation<Color>(t.primary),
+                )
+              : null,
+        ),
+      ],
+    );
+  }
+
   PreferredSizeWidget _buildAppBar(
     BuildContext context,
     ThemeData theme,
@@ -268,7 +359,7 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: colorScheme.primary,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(AppShapes.control),
                 ),
                 child: const Text(
                   'PALA',
@@ -312,7 +403,7 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: colorScheme.tertiaryContainer,
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(AppShapes.control),
               border: Border.all(color: colorScheme.tertiary),
             ),
             child: Text(

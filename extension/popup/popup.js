@@ -965,8 +965,8 @@ function renderTasks(homework, exams) {
     card.className = "item-card";
     const isExam = it.type === "exam";
     const tag = isExam
-      ? `<span style="color: var(--danger); font-weight:800; font-size: 0.75rem;">DOLGOZAT</span>`
-      : `<span style="color: var(--info); font-weight:800; font-size: 0.75rem;">HÁZI</span>`;
+      ? `<span style="color: var(--danger); font-weight:700; font-size: 0.75rem;">DOLGOZAT</span>`
+      : `<span style="color: var(--info); font-weight:700; font-size: 0.75rem;">HÁZI</span>`;
 
     card.innerHTML = `
       <div style="min-width:0; flex:1;">

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_shapes.dart';
 
 
 /// Quick action button atom adhering to Material Design 3 and WCAG 2.1 AA touch target standards.
@@ -30,7 +31,9 @@ class QuickActionButton extends StatelessWidget {
         backgroundColor: effectiveColor,
         foregroundColor: effectiveTextColor,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        // Tonal, not the gradient that the theme gives primary actions.
+        backgroundBuilder: (context, states, child) => child ?? const SizedBox.shrink(),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppShapes.card)),
       ),
       onPressed: onPressed,
       child: Row(

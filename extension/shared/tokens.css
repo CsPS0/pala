@@ -1,0 +1,121 @@
+/*
+ * Pala design tokens for the extension's three pages (popup, side panel,
+ * dashboard). The colours are the app's (app/lib/core/theme/app_colors.dart,
+ * also website/src/app/globals.css). The shapes and the component rules follow
+ * Kréta Web, the page the CLI serves (lib/web/pala_web_html.dart). Keep the
+ * values in step with the :root block of that file.
+ */
+:root {
+  color-scheme: dark;
+  --bg: #0e0e11;
+  --sidebar: #151518;
+  --card: #1b1b1f;
+  --card-hover: #222227;
+  --card-alt: #18181c;
+  --border: #28282d;
+  --border-focus: #ff8800;
+  --primary: #ff8800;
+  --primary-hover: #ffa033;
+  --primary-rgb: 255, 136, 0;
+  --primary-fill: #ff8800;
+  --primary-fill-end: #ff6600;
+  --primary-fill-hover: #ffa033;
+  --on-primary: #000000;
+  --text: #f3f3f6;
+  --text-muted: #8c8c94;
+  --text-subtle: #85858d;
+  --success: #30d158;
+  --warning: #ffd60a;
+  --danger: #ff453a;
+  --info: #0a84ff;
+  --purple: #bf5af2;
+  --grade-5: #30d158;
+  --grade-4: #45c465;
+  --grade-3: #ffd60a;
+  --grade-2: #ff8800;
+  --grade-1: #ff453a;
+  --grade-5-rgb: 48, 209, 88;
+  --grade-4-rgb: 69, 196, 101;
+  --grade-3-rgb: 255, 214, 10;
+  --grade-2-rgb: 255, 136, 0;
+  --grade-1-rgb: 255, 69, 58;
+  --shade: rgba(0, 0, 0, 0.28);
+  --tint: rgba(255, 255, 255, 0.07);
+  --tint-soft: rgba(255, 255, 255, 0.02);
+  /* Cards and tables; buttons, inputs, nav items and badges. */
+  --radius: 10px;
+  --radius-sm: 6px;
+  --transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f4f4f7;
+  --sidebar: #ffffff;
+  --card: #ffffff;
+  --card-hover: #efeff4;
+  --card-alt: #f8f8fb;
+  --border: #e1e1e6;
+  --border-focus: #964a00;
+  --primary: #964a00;
+  --primary-hover: #7a3c00;
+  --primary-rgb: 150, 74, 0;
+  --text: #18181b;
+  --text-muted: #686872;
+  --text-subtle: #6e6e78;
+  --success: #1b7f3b;
+  --warning: #8a6100;
+  --danger: #c62828;
+  --info: #0b5cc2;
+  --purple: #8e24aa;
+  --grade-5: #17602f;
+  --grade-4: #3f5c17;
+  --grade-3: #674b00;
+  --grade-2: #87410b;
+  --grade-1: #9a2e27;
+  --grade-5-rgb: 23, 96, 47;
+  --grade-4-rgb: 63, 92, 23;
+  --grade-3-rgb: 103, 75, 0;
+  --grade-2-rgb: 135, 65, 11;
+  --grade-1-rgb: 154, 46, 39;
+  --shade: rgba(24, 24, 27, 0.04);
+  --tint: rgba(24, 24, 27, 0.08);
+  --tint-soft: rgba(24, 24, 27, 0.03);
+}
+
+/* Grade colours: one scale on every surface (5 and 4 green, 3 yellow, 2 orange, 1 red).
+   The -rgb channels exist because color-mix() needs Firefox 113, and the manifest allows 109. */
+.grade-5 { background: rgba(var(--grade-5-rgb), 0.2); color: var(--grade-5); }
+.grade-4 { background: rgba(var(--grade-4-rgb), 0.2); color: var(--grade-4); }
+.grade-3 { background: rgba(var(--grade-3-rgb), 0.2); color: var(--grade-3); }
+.grade-2 { background: rgba(var(--grade-2-rgb), 0.2); color: var(--grade-2); }
+.grade-1 { background: rgba(var(--grade-1-rgb), 0.2); color: var(--grade-1); }
+
+/* Buttons: bordered card surface; the primary one is the orange gradient. */
+.btn {
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+  padding: 8px 16px;
+  font-size: 0.85rem;
+}
+.btn:hover { background: var(--card-hover); border-color: var(--text-subtle); }
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-fill) 0%, var(--primary-fill-end) 100%);
+  color: var(--on-primary);
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(255, 136, 0, 0.2);
+}
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--primary-fill-hover) 0%, #ff7700 100%);
+  border-color: transparent;
+  box-shadow: 0 4px 14px rgba(255, 136, 0, 0.35);
+}
+.btn-secondary { background: var(--card); border: 1px solid var(--border); color: var(--text); }
+.btn-secondary:hover { background: var(--card-hover); border-color: var(--text-subtle); }
+.btn-block { width: 100%; }

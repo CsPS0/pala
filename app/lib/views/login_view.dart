@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../state/app_model.dart';
 import '../theme/pala_theme.dart';
 import 'kreta_web_login_view.dart';
+import '../core/theme/app_shapes.dart';
 
 class LoginView extends StatefulWidget {
   final AppModel appModel;
@@ -252,7 +253,7 @@ class _LoginViewState extends State<LoginView> {
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
                         color: primary,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(AppShapes.card),
                       ),
                       child: Text(
                         'PALA',
@@ -290,7 +291,7 @@ class _LoginViewState extends State<LoginView> {
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: PalaTheme.card,
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(AppShapes.card),
                       border: Border.all(color: PalaTheme.border),
                     ),
                     child: Column(
@@ -324,7 +325,7 @@ class _LoginViewState extends State<LoginView> {
                             child: Material(
                               color: PalaTheme.sidebar,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(AppShapes.control),
                                 side: BorderSide(color: PalaTheme.border),
                               ),
                               child: ListView.separated(
@@ -541,7 +542,7 @@ class _LoginViewState extends State<LoginView> {
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       side: BorderSide(color: PalaTheme.border),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppShapes.card)),
                       foregroundColor: PalaTheme.text,
                     ),
                     icon: Icon(Icons.play_arrow_outlined, size: 18),

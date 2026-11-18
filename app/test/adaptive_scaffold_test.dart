@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:pala_app/core/adaptive/adaptive_breakpoints.dart';
 import 'package:pala_app/core/adaptive/adaptive_scaffold.dart';
+import 'package:pala_app/core/adaptive/pala_sidebar.dart';
 import 'package:pala_app/core/theme/m3_theme.dart';
 import 'package:pala_app/state/app_model.dart';
 
@@ -37,11 +38,11 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(NavigationBar), findsOneWidget);
-      expect(find.byType(NavigationRail), findsNothing);
+      expect(find.byType(PalaSidebar), findsNothing);
       expect(find.text('PALA'), findsNothing); // brand badge is wide-only
     });
 
-    testWidgets('renders left NavigationRail on expanded viewport (>=600dp)', (tester) async {
+    testWidgets('renders the left sidebar on expanded viewport (>=600dp)', (tester) async {
       tester.view.physicalSize = const Size(1000, 800);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -57,7 +58,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byType(NavigationRail), findsOneWidget);
+      expect(find.byType(PalaSidebar), findsOneWidget);
       expect(find.byType(NavigationBar), findsNothing);
       expect(find.text('PALA'), findsOneWidget);
     });
@@ -96,8 +97,8 @@ void main() {
       tester.view.physicalSize = const Size(1100, 1200);
       await tester.pump(const Duration(milliseconds: 200));
 
-      // Confirm NavigationRail is now active and search text + tab state persisted
-      expect(find.byType(NavigationRail), findsOneWidget);
+      // Confirm the sidebar is now active and search text + tab state persisted
+      expect(find.byType(PalaSidebar), findsOneWidget);
       expect(find.byType(NavigationBar), findsNothing);
       expect(find.text('Mat'), findsOneWidget);
 
@@ -116,7 +117,7 @@ void main() {
 
       tester.view.physicalSize = const Size(1100, 1200);
       await tester.pump(const Duration(milliseconds: 200));
-      expect(find.byType(NavigationRail), findsOneWidget);
+      expect(find.byType(PalaSidebar), findsOneWidget);
       expect(find.textContaining('Aktív szellem jegyek (1)'), findsOneWidget);
     });
   });

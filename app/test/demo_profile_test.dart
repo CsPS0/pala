@@ -79,10 +79,15 @@ void main() {
 
       // Open Pala Wrapped view: the app bar shortcut is wide-only (phones use Settings).
       // Demo mode shows it outside the summer break too.
-      expect(find.widgetWithText(TextButton, 'Pala Wrapped'), findsNothing);
+      // The top bar button is an OutlinedButton.icon, a private subclass, so match by predicate.
+      Finder wrappedButton() => find.ancestor(
+            of: find.text('Pala Wrapped'),
+            matching: find.byWidgetPredicate((w) => w is OutlinedButton),
+          );
+      expect(wrappedButton(), findsNothing);
       tester.view.physicalSize = const Size(1200, 800);
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(TextButton, 'Pala Wrapped'));
+      await tester.tap(wrappedButton());
       await tester.pumpAndSettle();
       expect(find.text('Itt a te tanéved összegzése'), findsOneWidget);
     });

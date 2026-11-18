@@ -96,6 +96,10 @@ class EmptyStateWidget extends StatelessWidget {
                     ConstrainedBox(
                       constraints: AdaptiveBreakpoints.touchTargetConstraints(context),
                       child: FilledButton.tonal(
+                        // Tonal, not the gradient that the theme gives primary actions.
+                        style: ButtonStyle(
+                          backgroundBuilder: (context, states, child) => child ?? const SizedBox.shrink(),
+                        ),
                         onPressed: onPrimaryAction,
                         child: Text(primaryActionLabel!),
                       ),

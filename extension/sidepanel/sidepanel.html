@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pala — Kréta Oldalsáv</title>
+  <link rel="stylesheet" href="../shared/tokens.css">
   <link rel="stylesheet" href="sidepanel.css">
 </head>
 <body>
@@ -69,11 +70,11 @@
     </button>
     <button class="sp-tab" data-tab="view-sp-grades" type="button" role="tab" aria-selected="false" aria-controls="view-sp-grades">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
-      <span>Jegymátrix</span>
+      <span>Osztályzatok</span>
     </button>
     <button class="sp-tab" data-tab="view-sp-absences" type="button" role="tab" aria-selected="false" aria-controls="view-sp-absences">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-      <span>Hiányzások</span>
+      <span>Mulasztások</span>
     </button>
   </nav>
 
@@ -129,7 +130,7 @@
       <!-- Recent Grades Section -->
       <div class="sp-section-header">
         <h2>Legutóbbi érdemjegyek</h2>
-        <button class="btn-link" data-goto="view-sp-grades" type="button">Jegymátrix megnyitása</button>
+        <button class="btn-link" data-goto="view-sp-grades" type="button">Osztályzatok megnyitása</button>
       </div>
       <div id="sp-recent-grades" class="sp-stack-list"></div>
 

@@ -1,45 +1,3 @@
-:root {
-  --bg: #0c0d10;
-  --sidebar: #13151a;
-  --card: #181b22;
-  --card-hover: #20242d;
-  --card-alt: #15181e;
-  --border: #262a34;
-  --primary: #ff8800;
-  --primary-hover: #ffa033;
-  --primary-rgb: 255, 136, 0;
-  --primary-fill: #ff8800;
-  --text: #f3f4f6;
-  --text-muted: #8b909a;
-  --text-subtle: #878c96;
-  --success: #30d158;
-  --warning: #ffd60a;
-  --danger: #ff6158;
-  --info: #3198ff;
-  --radius: 12px;
-  --transition: all 0.15s ease-out;
-  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --on-primary: #0b0b0e;
-}
-
-:root[data-theme="light"] {
-  --primary: #924800;
-  --primary-rgb: 146, 72, 0;
-  --success: #176e33;
-  --warning: #8a6100;
-  --danger: #ba2626;
-  --info: #0b5cc2;
-  --bg: #f4f5f8;
-  --sidebar: #ffffff;
-  --card: #ffffff;
-  --card-hover: #eef0f5;
-  --card-alt: #f7f8fa;
-  --border: #dfe2e8;
-  --text: #18191c;
-  --text-muted: #646872;
-  --text-subtle: #6c707a;
-}
-
 * {
   box-sizing: border-box;
   margin: 0;
@@ -84,7 +42,7 @@ body {
   border: 1px solid transparent;
   padding: 4px 7px;
   margin-left: -7px;
-  border-radius: 10px;
+  border-radius: var(--radius);
   color: var(--text);
   cursor: pointer;
   text-align: left;
@@ -99,7 +57,7 @@ body {
 .sp-brand-logo {
   width: 28px;
   height: 28px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 
@@ -115,7 +73,7 @@ body {
 
 .sp-student-name {
   font-size: 0.86rem;
-  font-weight: 800;
+  font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -137,7 +95,7 @@ body {
   width: 250px;
   background: var(--sidebar);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   z-index: 300;
   overflow: hidden;
@@ -146,7 +104,7 @@ body {
 .sp-profile-menu-title {
   padding: 8px 12px;
   font-size: 0.75rem;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   color: var(--text-muted);
   border-bottom: 1px solid var(--border);
@@ -183,7 +141,7 @@ body {
 /* Badges */
 .badge {
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   padding: 3px 8px;
   border-radius: 999px;
   border: 1px solid var(--border);
@@ -222,7 +180,7 @@ body {
   background: rgba(var(--primary-rgb), 0.14);
   border-color: rgba(var(--primary-rgb), 0.35);
   color: var(--primary);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 /* 4-Tab Navigation Bar */
@@ -243,9 +201,9 @@ body {
   border: 1px solid transparent;
   color: var(--text-muted);
   padding: 6px 4px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -305,22 +263,22 @@ body {
 }
 .sp-live-tag {
   font-size: 0.75rem;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: 0.6px;
   color: var(--primary);
 }
 .room-pill {
   font-size: 0.75rem;
-  font-weight: 800;
+  font-weight: 700;
   padding: 2px 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid var(--border);
   color: var(--text);
 }
 .sp-live-subject {
   font-size: 1.05rem;
-  font-weight: 800;
+  font-weight: 700;
   margin-bottom: 3px;
 }
 .sp-live-details {
@@ -330,9 +288,9 @@ body {
 }
 .sub-alert-banner {
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   padding: 6px 9px;
-  border-radius: 7px;
+  border-radius: var(--radius-sm);
   margin-bottom: 8px;
 }
 .sub-alert-banner.is-sub {
@@ -360,7 +318,7 @@ body {
 }
 .sp-live-countdown {
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   text-align: right;
 }
 
@@ -390,12 +348,12 @@ body {
 .sp-kpi-label {
   font-size: 0.75rem;
   color: var(--text-muted);
-  font-weight: 700;
+  font-weight: 600;
   display: block;
 }
 .sp-kpi-val {
   font-size: 1.25rem;
-  font-weight: 900;
+  font-weight: 700;
   display: block;
   margin: 3px 0 2px 0;
 }
@@ -415,14 +373,14 @@ body {
 }
 .sp-section-header h2 {
   font-size: 0.85rem;
-  font-weight: 800;
+  font-weight: 700;
 }
 .btn-link {
   background: none;
   border: none;
   color: var(--primary);
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
 }
 .btn-link:hover { text-decoration: underline; }
@@ -437,7 +395,7 @@ body {
 .sp-list-item {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius);
   padding: 9px 12px;
   display: flex;
   align-items: center;
@@ -467,12 +425,12 @@ body {
 .sp-lesson-num {
   width: 26px;
   height: 26px;
-  border-radius: 7px;
+  border-radius: var(--radius-sm);
   background: var(--sidebar);
   border: 1px solid var(--border);
   color: var(--text-muted);
   font-size: 0.75rem;
-  font-weight: 800;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -481,7 +439,7 @@ body {
 
 .sp-item-title {
   font-size: 0.81rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
@@ -502,19 +460,14 @@ body {
 .grade-badge {
   width: 28px;
   height: 28px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 0.84rem;
-  font-weight: 900;
+  font-weight: 700;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
-.grade-5 { background: rgba(48, 209, 88, 0.18); color: var(--success); border: 1px solid rgba(48, 209, 88, 0.42); }
-.grade-4 { background: rgba(10, 132, 255, 0.18); color: var(--info); border: 1px solid rgba(10, 132, 255, 0.42); }
-.grade-3 { background: rgba(255, 214, 10, 0.18); color: var(--warning); border: 1px solid rgba(255, 214, 10, 0.42); }
-.grade-2 { background: rgba(var(--primary-rgb), 0.18); color: var(--primary); border: 1px solid rgba(var(--primary-rgb), 0.42); }
-.grade-1 { background: rgba(255, 69, 58, 0.2); color: var(--danger); border: 1px solid rgba(255, 69, 58, 0.45); }
 .grade-badge.grade-percent {
   min-width: 36px; width: auto; padding: 0 5px; font-size: 0.75rem;
   background: rgba(10, 132, 255, 0.18); color: var(--info); border: 1px solid rgba(10, 132, 255, 0.4);
@@ -549,7 +502,7 @@ body {
 }
 .sp-day-group-header {
   font-size: 0.75rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--primary);
   padding: 6px 4px 2px 4px;
   text-transform: uppercase;
@@ -566,7 +519,7 @@ body {
   flex: 1;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 8px 11px;
   color: var(--text);
   font-size: 0.78rem;
@@ -583,7 +536,7 @@ body {
   justify-content: space-between;
   cursor: pointer;
   font-size: 0.8rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--primary);
   list-style: none;
 }
@@ -602,7 +555,7 @@ body {
 .sp-select {
   background: var(--sidebar);
   border: 1px solid var(--border);
-  border-radius: 7px;
+  border-radius: var(--radius-sm);
   padding: 6px 8px;
   color: var(--text);
   font-size: 0.75rem;
@@ -611,7 +564,7 @@ body {
 .sp-ghost-output {
   background: var(--sidebar);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 8px 10px;
   font-size: 0.75rem;
 }
@@ -631,7 +584,7 @@ body {
 }
 .sp-matrix-sub {
   font-size: 0.84rem;
-  font-weight: 800;
+  font-weight: 700;
 }
 .sp-matrix-meta {
   font-size: 0.75rem;
@@ -640,9 +593,9 @@ body {
 }
 .sp-matrix-avg {
   font-size: 0.92rem;
-  font-weight: 900;
+  font-weight: 700;
   padding: 4px 9px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 .sp-matrix-pills {
@@ -663,7 +616,7 @@ body {
 }
 .sp-gauge-pct {
   font-size: 0.9rem;
-  font-weight: 900;
+  font-weight: 700;
 }
 .sp-gauge-numbers {
   display: flex;
@@ -674,7 +627,7 @@ body {
 }
 .sp-gauge-main {
   font-size: 1.35rem;
-  font-weight: 900;
+  font-weight: 700;
 }
 .sp-gauge-rem {
   font-size: 0.75rem;
@@ -704,7 +657,7 @@ body {
 }
 .sp-cat-val {
   font-size: 0.92rem;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 /* Chips & Buttons */
@@ -720,7 +673,7 @@ body {
   border: 1px solid var(--border);
   color: var(--text-muted);
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   padding: 4px 10px;
   border-radius: 999px;
   white-space: nowrap;
@@ -730,25 +683,18 @@ body {
 .chip-btn:hover { background: var(--card-hover); color: var(--text); }
 .chip-btn.active { background: var(--primary-fill); color: var(--on-primary); border-color: var(--primary-fill); }
 
-.btn {
-  border: none;
-  font-weight: 700;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: var(--transition);
-}
-.btn-primary { background: var(--primary-fill); color: var(--on-primary); padding: 7px 12px; font-size: 0.76rem; }
-.btn-secondary { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; font-size: 0.75rem; }
-.btn-secondary:hover { background: var(--card-hover); }
+.btn-primary { padding: 7px 12px; font-size: 0.76rem; }
+.btn-secondary { padding: 6px 10px; font-size: 0.75rem; }
 .btn-sm { font-size: 0.75rem; padding: 5px 10px; }
 .btn-xs { font-size: 0.75rem; padding: 3px 8px; }
 .btn-icon {
+  padding: 0;
   width: 28px;
   height: 28px;
   background: var(--card);
   border: 1px solid var(--border);
   color: var(--text);
-  border-radius: 7px;
+  border-radius: var(--radius-sm);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -762,7 +708,7 @@ body {
 }
 .skeleton-card {
   height: 48px;
-  border-radius: 10px;
+  border-radius: var(--radius);
   background: linear-gradient(90deg, var(--card) 25%, var(--card-hover) 50%, var(--card) 75%);
   background-size: 200% 100%;
   animation: pala-shimmer 1.4s infinite;
@@ -816,7 +762,7 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
   background-color: var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   border: 2px solid transparent;
   background-clip: padding-box;
 }

@@ -10,6 +10,7 @@ import '../../../core/utils/accent_insensitive_search.dart';
 import '../../../core/widgets/empty_state_widget.dart';
 import '../../../state/app_model.dart';
 import '../widgets/search_result_tile.dart';
+import '../../../core/theme/app_shapes.dart';
 
 /// Global Search ("Kereső") overlay with Hungarian accent-insensitive multi-category matching.
 class GlobalSearchView extends StatefulWidget {
@@ -226,7 +227,7 @@ class _GlobalSearchViewState extends State<GlobalSearchView> {
                                     alignment: Alignment.center,
                                     decoration: BoxDecoration(
                                       color: gradeColor.withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(8),
+                                      borderRadius: BorderRadius.circular(AppShapes.control),
                                       border: Border.all(color: gradeColor),
                                     ),
                                     child: Text(
@@ -325,7 +326,7 @@ class _GlobalSearchViewState extends State<GlobalSearchView> {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
               color: colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(AppShapes.card),
             ),
             child: Text(
               '$count',
