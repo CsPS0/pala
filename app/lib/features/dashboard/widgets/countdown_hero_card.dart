@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 import 'package:pala/models/timetable_entry.dart';
 import '../../../core/theme/app_shapes.dart';

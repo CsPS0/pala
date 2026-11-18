@@ -1,6 +1,6 @@
 // Every page in demo mode at a phone and a desktop size. Any exception
 // (including a RenderFlex overflow) fails the test.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:pala_app/core/adaptive/adaptive_scaffold.dart';

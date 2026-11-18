@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Colours by role, for the widgets that follow Kréta Web's component rules
 /// (sidebar, top bar, tables, stat tiles). The same values as the CSS tokens

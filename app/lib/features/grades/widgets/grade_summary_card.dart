@@ -1,5 +1,5 @@
 import 'average_trend_chart.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 import 'package:pala/models/grade.dart';
 import 'package:pala/rules/grade_rules.dart';

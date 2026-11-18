@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// My average next to the class average for every subject and overall
 /// (Kréta's OsztalyCsoportAtlag), like the extension's Osztályzatok card.
