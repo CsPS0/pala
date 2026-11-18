@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_shapes.dart';
 
 /// Absence Progress Gauge (Organism) tracking cumulative missed hours against the 250-hour legal limit.
 class AbsenceProgressGauge extends StatelessWidget {
@@ -40,7 +41,7 @@ class AbsenceProgressGauge extends StatelessWidget {
       color: colorScheme.surfaceContainerHigh,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppShapes.card),
         side: BorderSide(color: gaugeColor.withValues(alpha: isCritical ? 0.8 : 0.4), width: isCritical ? 2 : 1),
       ),
       child: Padding(
@@ -55,7 +56,7 @@ class AbsenceProgressGauge extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: gaugeColor.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(AppShapes.control),
                     ),
                     child: Text(
                       statusLabel,
@@ -104,7 +105,7 @@ class AbsenceProgressGauge extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             ClipRRect(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppShapes.control),
               child: LinearProgressIndicator(
                 value: progress,
                 minHeight: 10,

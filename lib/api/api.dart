@@ -104,6 +104,12 @@ class KretaAPI {
         BaseKreta.kreta(iss) + KretaApiEndpoints.capabilities;
     static String messages() =>
         BaseKreta.kretaAdmin + KretaApiEndpoints.messages;
+    static String message(int id) =>
+        BaseKreta.kretaAdmin + KretaApiEndpoints.message(id);
+    /// A message attachment's bytes. They are served by e-Ügyintézés itself;
+    /// the files host only takes uploads.
+    static String attachment(int id) =>
+        BaseKreta.kretaAdmin + KretaApiEndpoints.attachment(id);
     static String teachers() =>
         BaseKreta.kretaAdmin + KretaApiEndpoints.teachers;
     static String sendMessage() =>
@@ -147,6 +153,7 @@ class KretaApiEndpoints {
     static const capabilities = "/ellenorzo/V3/Sajat/Intezmenyek";
     static const messages = "/api/v1/kommunikacio/postaladaelemek/sajat";
     static String message(int id) => "/api/v1/kommunikacio/postaladaelemek/$id";
+    static String attachment(int id) => "/api/v1/dokumentumok/uzenetek/$id";
     // Same list the official e-Ügyintézés recipient picker loads for "Tanárok".
     static const teachers = "/api/v1/kreta/alkalmazottak/tanar";
     static const sendMessage = "/api/v1/kommunikacio/uzenetek";

@@ -8,6 +8,7 @@ import 'package:pala/api/client.dart';
 import 'package:pala/api/demo_client.dart';
 import 'package:pala/app/state/app_state.dart';
 import 'package:pala/utils/encryption.dart';
+import 'package:pala/utils/html_text.dart';
 import 'package:pala/rules/absence_rules.dart';
 import 'package:pala/models/grade.dart';
 import 'package:pala/rules/grade_rules.dart';
@@ -325,15 +326,53 @@ class PalaWebServer {
       }).toList();
       _sendJson(request, list);
     } else if (request.method == 'GET' && path == '/api/messages') {
+      // The list only has the first 100 characters of each body; the page
+      // asks /api/message for the full text when a message is opened.
       final messages = await client?.getMessages() ?? [];
       final list = messages.map((m) => {
+        'id': m.id,
         'sender': m.senderName,
         'subject': m.subject,
-        'text': m.text,
+        'text': htmlToText(m.text),
         'date': m.sentDate?.toIso8601String(),
         'attachments': m.attachments.map((a) => {'id': a.id, 'name': a.name}).toList(),
       }).toList();
       _sendJson(request, list);
+    } else if (request.method == 'GET' && path == '/api/message') {
+      final id = int.tryParse(request.uri.queryParameters['id'] ?? '');
+      final message = id == null ? null : await client?.getMessage(id);
+      if (message == null) {
+        _sendError(request, HttpStatus.badGateway, 'Az üzenet most nem tölthető be. Próbáld újra később.');
+        return;
+      }
+      _sendJson(request, {
+        'id': message.id,
+        'text': htmlToText(message.text),
+        'attachments': message.attachments.map((a) => {'id': a.id, 'name': a.name}).toList(),
+      });
+    } else if (request.method == 'GET' && path == '/api/attachment') {
+      final id = int.tryParse(request.uri.queryParameters['id'] ?? '');
+      if (id == null) {
+        _sendError(request, HttpStatus.badRequest, 'Hiányzó csatolmány azonosító.');
+        return;
+      }
+      if (client is DemoKretaClient) {
+        _sendError(request, HttpStatus.notFound, 'Demó módban a csatolmányok nem tölthetők le.');
+        return;
+      }
+      final bytes = await client?.fetchAttachment(id);
+      if (bytes == null) {
+        _sendError(request, HttpStatus.badGateway, 'A csatolmány most nem tölthető le. Próbáld újra később.');
+        return;
+      }
+      // Sent as a download, never rendered: the content comes from the sender.
+      request.response
+        ..statusCode = HttpStatus.ok
+        ..headers.contentType = ContentType.binary
+        ..headers.set('Content-Disposition', 'attachment')
+        ..headers.set('X-Content-Type-Options', 'nosniff')
+        ..add(bytes);
+      await request.response.close();
     } else if (request.method == 'GET' && path == '/api/absences') {
       final absences = await client?.getAbsences() ?? [];
       final quota = AppState.instance.parentalQuota;

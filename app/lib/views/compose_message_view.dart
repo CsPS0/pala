@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../state/app_model.dart';
 import '../theme/pala_theme.dart';
+import '../core/theme/app_shapes.dart';
 
 class ComposeMessageModal extends StatefulWidget {
   final AppModel appModel;
@@ -176,7 +177,7 @@ class _ComposeMessageModalState extends State<ComposeMessageModal> {
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
                 color: PalaTheme.card,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppShapes.control),
                 border: Border.all(color: PalaTheme.border),
               ),
               child: DropdownButtonHideUnderline(

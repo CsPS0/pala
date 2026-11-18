@@ -20,7 +20,13 @@ class PalaWebHtml {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pala // Vezérlőpult</title>
   <style>
+    /* Pala design tokens. The colours are the app's
+       (app/lib/core/theme/app_colors.dart) and the website's
+       (website/src/app/globals.css); the shapes and component rules below are
+       this page's own and are what the extension and the desktop app follow.
+       Keep the values in step with extension/shared/tokens.css. */
     :root {
+      color-scheme: dark;
       --bg: #0e0e11;
       --sidebar: #151518;
       --card: #1b1b1f;
@@ -31,17 +37,70 @@ class PalaWebHtml {
       --primary: #ff8800;
       --primary-hover: #ffa033;
       --primary-rgb: 255, 136, 0;
+      --primary-fill: #ff8800;
+      --primary-fill-end: #ff6600;
+      --primary-fill-hover: #ffa033;
+      --on-primary: #000000;
       --text: #f3f3f6;
       --text-muted: #8c8c94;
-      --text-subtle: #5f5f67;
+      --text-subtle: #85858d;
       --success: #30d158;
       --warning: #ffd60a;
       --danger: #ff453a;
       --info: #0a84ff;
       --purple: #bf5af2;
+      --grade-5: #30d158;
+      --grade-4: #45c465;
+      --grade-3: #ffd60a;
+      --grade-2: #ff8800;
+      --grade-1: #ff453a;
+      --grade-5-rgb: 48, 209, 88;
+      --grade-4-rgb: 69, 196, 101;
+      --grade-3-rgb: 255, 214, 10;
+      --grade-2-rgb: 255, 136, 0;
+      --grade-1-rgb: 255, 69, 58;
+      --shade: rgba(0, 0, 0, 0.28);
+      --tint: rgba(255, 255, 255, 0.07);
+      --tint-soft: rgba(255, 255, 255, 0.02);
       --radius: 10px;
       --radius-sm: 6px;
       --transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        color-scheme: light;
+        --bg: #f4f4f7;
+        --sidebar: #ffffff;
+        --card: #ffffff;
+        --card-hover: #efeff4;
+        --card-alt: #f8f8fb;
+        --border: #e1e1e6;
+        --border-focus: #964a00;
+        --primary: #964a00;
+        --primary-hover: #7a3c00;
+        --primary-rgb: 150, 74, 0;
+        --text: #18181b;
+        --text-muted: #686872;
+        --text-subtle: #6e6e78;
+        --success: #1b7f3b;
+        --warning: #8a6100;
+        --danger: #c62828;
+        --info: #0b5cc2;
+        --purple: #8e24aa;
+        --grade-5: #17602f;
+        --grade-4: #3f5c17;
+        --grade-3: #674b00;
+        --grade-2: #87410b;
+        --grade-1: #9a2e27;
+        --grade-5-rgb: 23, 96, 47;
+        --grade-4-rgb: 63, 92, 23;
+        --grade-3-rgb: 103, 75, 0;
+        --grade-2-rgb: 135, 65, 11;
+        --grade-1-rgb: 154, 46, 39;
+        --shade: rgba(24, 24, 27, 0.04);
+        --tint: rgba(24, 24, 27, 0.08);
+        --tint-soft: rgba(24, 24, 27, 0.03);
+      }
     }
     * {
       box-sizing: border-box;
@@ -95,8 +154,8 @@ class PalaWebHtml {
       gap: 12px;
     }
     .logo-badge {
-      background: linear-gradient(135deg, var(--primary) 0%, #ff6600 100%);
-      color: #000;
+      background: linear-gradient(135deg, var(--primary-fill) 0%, var(--primary-fill-end) 100%);
+      color: var(--on-primary);
       font-weight: 900;
       font-size: 0.9rem;
       padding: 5px 9px;
@@ -108,7 +167,7 @@ class PalaWebHtml {
     .logo-title {
       font-size: 1.15rem;
       font-weight: 700;
-      color: #fff;
+      color: var(--text);
       letter-spacing: 0.3px;
     }
     .nav-links {
@@ -144,7 +203,7 @@ class PalaWebHtml {
     .user-profile {
       padding: 16px 20px;
       border-top: 1px solid var(--border);
-      background-color: rgba(0, 0, 0, 0.25);
+      background-color: var(--shade);
       cursor: pointer;
       transition: var(--transition);
     }
@@ -154,7 +213,7 @@ class PalaWebHtml {
     .user-name {
       font-weight: 600;
       font-size: 0.92rem;
-      color: #fff;
+      color: var(--text);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -190,7 +249,7 @@ class PalaWebHtml {
     .page-title {
       font-size: 1.25rem;
       font-weight: 700;
-      color: #fff;
+      color: var(--text);
     }
     .top-actions {
       display: flex;
@@ -218,14 +277,25 @@ class PalaWebHtml {
       border-color: var(--text-subtle);
     }
     .btn-primary {
-      background: linear-gradient(135deg, var(--primary) 0%, #ff6600 100%);
-      color: #000;
+      background: linear-gradient(135deg, var(--primary-fill) 0%, var(--primary-fill-end) 100%);
+      color: var(--on-primary);
       border-color: transparent;
       box-shadow: 0 2px 8px rgba(var(--primary-rgb), 0.2);
     }
     .btn-primary:hover {
-      background: linear-gradient(135deg, var(--primary-hover) 0%, #ff7700 100%);
+      background: linear-gradient(135deg, var(--primary-fill-hover) 0%, #ff7700 100%);
       box-shadow: 0 4px 14px rgba(var(--primary-rgb), 0.35);
+    }
+    .subtabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .subtab.active {
+      background-color: rgba(var(--primary-rgb), 0.12);
+      color: var(--primary);
+      border-color: rgba(var(--primary-rgb), 0.3);
     }
     .btn-danger {
       background-color: rgba(255, 69, 58, 0.15);
@@ -285,7 +355,7 @@ class PalaWebHtml {
     .card-value {
       font-size: 1.85rem;
       font-weight: 700;
-      color: #fff;
+      color: var(--text);
     }
     .card-subtext {
       font-size: 0.8rem;
@@ -307,7 +377,7 @@ class PalaWebHtml {
       align-items: flex-start;
       gap: 14px;
       padding-bottom: 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid var(--tint);
       font-size: 0.9rem;
       width: 100%;
       min-width: 0;
@@ -324,7 +394,7 @@ class PalaWebHtml {
       max-width: 140px;
     }
     .info-val {
-      color: #fff;
+      color: var(--text);
       font-weight: 600;
       text-align: right;
       word-break: break-word;
@@ -356,7 +426,7 @@ class PalaWebHtml {
       margin-top: 4px;
     }
     .progress-bar-bg {
-      background-color: rgba(255, 255, 255, 0.08);
+      background-color: var(--tint);
       border-radius: 4px;
       height: 6px;
       overflow: hidden;
@@ -365,7 +435,7 @@ class PalaWebHtml {
     }
     .progress-bar-fill {
       height: 100%;
-      background: linear-gradient(90deg, var(--primary) 0%, #ffaa33 100%);
+      background: linear-gradient(90deg, var(--primary-fill) 0%, #ffaa33 100%);
       transition: width 0.3s ease;
     }
 
@@ -384,7 +454,7 @@ class PalaWebHtml {
       text-align: left;
     }
     th {
-      background-color: rgba(0, 0, 0, 0.3);
+      background-color: var(--shade);
       padding: 13px 16px;
       font-size: 0.78rem;
       font-weight: 600;
@@ -403,7 +473,7 @@ class PalaWebHtml {
       border-bottom: none;
     }
     tr:hover td {
-      background-color: rgba(255, 255, 255, 0.02);
+      background-color: var(--tint-soft);
     }
 
     /* Grade Badges */
@@ -417,11 +487,11 @@ class PalaWebHtml {
       font-weight: 700;
       font-size: 0.95rem;
     }
-    .grade-5 { background-color: rgba(48, 209, 88, 0.2); color: var(--success); }
-    .grade-4 { background-color: rgba(255, 136, 0, 0.2); color: var(--primary); }
-    .grade-3 { background-color: rgba(255, 214, 10, 0.2); color: var(--warning); }
-    .grade-2 { background-color: rgba(255, 149, 0, 0.2); color: #ff9500; }
-    .grade-1 { background-color: rgba(255, 69, 58, 0.2); color: var(--danger); }
+    .grade-5 { background-color: rgba(var(--grade-5-rgb), 0.2); color: var(--grade-5); }
+    .grade-4 { background-color: rgba(var(--grade-4-rgb), 0.2); color: var(--grade-4); }
+    .grade-3 { background-color: rgba(var(--grade-3-rgb), 0.2); color: var(--grade-3); }
+    .grade-2 { background-color: rgba(var(--grade-2-rgb), 0.2); color: var(--grade-2); }
+    .grade-1 { background-color: rgba(var(--grade-1-rgb), 0.2); color: var(--grade-1); }
     .grade-other { background-color: rgba(140, 140, 148, 0.18); color: var(--text-muted); }
 
     /* Timetable Grid */
@@ -440,10 +510,10 @@ class PalaWebHtml {
       font-size: 0.85rem;
       border-radius: var(--radius-sm);
       border: 1px solid var(--border);
-      color: #fff;
+      color: var(--text);
     }
     .tt-period-num {
-      background-color: rgba(0, 0, 0, 0.3);
+      background-color: var(--shade);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -472,7 +542,7 @@ class PalaWebHtml {
     .tt-subject {
       font-weight: 600;
       font-size: 0.88rem;
-      color: #fff;
+      color: var(--text);
       word-break: break-word;
     }
     .tt-room {
@@ -582,7 +652,7 @@ class PalaWebHtml {
     .pill-yellow { background-color: rgba(255, 214, 10, 0.2); color: var(--warning); }
     .pill-red { background-color: rgba(255, 69, 58, 0.2); color: var(--danger); }
     .pill-orange { background-color: rgba(var(--primary-rgb), 0.2); color: var(--primary); }
-    .pill-gray { background-color: rgba(255, 255, 255, 0.1); color: var(--text-muted); }
+    .pill-gray { background-color: var(--tint); color: var(--text-muted); }
 
     /* TUI Settings lock overlay */
     .tui-locked-wrapper {
@@ -635,7 +705,7 @@ class PalaWebHtml {
     .grade-chart-track {
       flex-grow: 1;
       height: 14px;
-      background-color: rgba(255, 255, 255, 0.06);
+      background-color: var(--tint);
       border-radius: 7px;
       overflow: hidden;
     }
@@ -684,17 +754,17 @@ class PalaWebHtml {
         <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
         <span>Vezérlőpult</span>
       </li>
-      <li class="nav-item" onclick="switchTab('grades')">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-        <span>Érdemjegyek</span>
-      </li>
       <li class="nav-item" onclick="switchTab('timetable')">
         <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         <span>Órarend</span>
       </li>
+      <li class="nav-item" onclick="switchTab('grades')">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        <span>Osztályzatok</span>
+      </li>
       <li class="nav-item" onclick="switchTab('homework')">
         <svg class="icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-        <span>Házi feladatok & Dolgozatok</span>
+        <span>Feladatok & Dolgozatok</span>
       </li>
       <li class="nav-item" onclick="switchTab('messages')">
         <svg class="icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
@@ -702,19 +772,11 @@ class PalaWebHtml {
       </li>
       <li class="nav-item" onclick="switchTab('absences')">
         <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        <span>Mulasztások & Igazolások</span>
-      </li>
-      <li class="nav-item" onclick="switchTab('stats')">
-        <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        <span>Statisztika & Átlagok</span>
+        <span>Mulasztások</span>
       </li>
       <li class="nav-item" onclick="switchTab('profile')">
         <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span>Tanulói Adatlap</span>
-      </li>
-      <li class="nav-item" onclick="switchTab('settings')">
-        <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        <span>Beállítások</span>
+        <span>Fiók & Profil</span>
       </li>
     </ul>
     <div class="user-profile" onclick="switchTab('profile')" title="Kattints a részletes tanulói adatlap megnyitásához">
@@ -759,7 +821,7 @@ class PalaWebHtml {
 
         <div class="grid-cards">
           <div class="card">
-            <div class="card-title">Tanulmányi Átlag (GPA)</div>
+            <div class="card-title">Tanulmányi átlag</div>
             <div class="card-value" id="dashGpa">--</div>
             <div class="card-subtext" id="dashGpaSub">Összes tantárgy alapján</div>
           </div>
@@ -782,7 +844,7 @@ class PalaWebHtml {
 
         <div class="card" style="margin-bottom: 24px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-            <h3 style="font-size: 1rem; color: #fff;">Mai Órarend Részletesen</h3>
+            <h3 style="font-size: 1rem; color: var(--text);">Mai Órarend Részletesen</h3>
             <button class="btn" onclick="switchTab('timetable')">Teljes heti órarend &rarr;</button>
           </div>
           <div class="table-container" style="margin-bottom: 0;">
@@ -807,6 +869,10 @@ class PalaWebHtml {
 
       <!-- TAB: GRADES -->
       <section id="tab-grades" class="tab-pane">
+        <div class="subtabs">
+          <button class="btn subtab active" onclick="switchTab('grades')">Jegyek</button>
+          <button class="btn subtab" onclick="switchTab('stats')">Statisztika és átlagok</button>
+        </div>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; flex-wrap: wrap;">
           <input type="text" id="gradeSearch" class="form-control" placeholder="Keresés tantárgy vagy téma alapján..." style="max-width: 350px;" oninput="filterGrades()" />
           <div style="display: flex; gap: 8px;">
@@ -854,7 +920,7 @@ class PalaWebHtml {
 
       <!-- TAB: HOMEWORK & EXAMS -->
       <section id="tab-homework" class="tab-pane">
-        <h3 style="margin-bottom: 16px; color: #fff;">Közelgő Dolgozatok és Számonkérések</h3>
+        <h3 style="margin-bottom: 16px; color: var(--text);">Közelgő Dolgozatok és Számonkérések</h3>
         <div class="table-container">
           <table id="examsTable">
             <thead>
@@ -872,7 +938,7 @@ class PalaWebHtml {
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin: 28px 0 16px 0; flex-wrap: wrap; gap: 8px;">
-          <h3 style="color: #fff;">Házi Feladatok (Interaktív Teendőlista)</h3>
+          <h3 style="color: var(--text);">Házi Feladatok (Interaktív Teendőlista)</h3>
           <span style="font-size: 0.8rem; color: var(--text-muted);">A pipálás a böngésződben mentésre kerül</span>
         </div>
         <div class="table-container">
@@ -896,7 +962,7 @@ class PalaWebHtml {
       <!-- TAB: MESSAGES -->
       <section id="tab-messages" class="tab-pane">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-          <h3 style="color: #fff;">Beérkezett Üzenetek</h3>
+          <h3 style="color: var(--text);">Beérkezett Üzenetek</h3>
           <button class="btn btn-primary" onclick="openComposerModal()">+ Új üzenet írása</button>
         </div>
 
@@ -938,7 +1004,7 @@ class PalaWebHtml {
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-          <h3 style="color: #fff;">Mulasztások Listája</h3>
+          <h3 style="color: var(--text);">Mulasztások Listája</h3>
           <button class="btn btn-primary" onclick="openExcuseGenerator()">+ Szülői Igazolás Készítése</button>
         </div>
 
@@ -962,24 +1028,28 @@ class PalaWebHtml {
 
       <!-- TAB: STATS & AVERAGES -->
       <section id="tab-stats" class="tab-pane">
+        <div class="subtabs">
+          <button class="btn subtab" onclick="switchTab('grades')">Jegyek</button>
+          <button class="btn subtab active" onclick="switchTab('stats')">Statisztika és átlagok</button>
+        </div>
         <div class="grid-cards">
           <div class="card" style="grid-column: span 2;">
-            <h3 style="font-size: 1rem; color: #fff; margin-bottom: 16px;">Jegyek Eloszlása</h3>
+            <h3 style="font-size: 1rem; color: var(--text); margin-bottom: 16px;">Jegyek Eloszlása</h3>
             <div id="gradeDistributionChart">
               <!-- Rendered by JS -->
             </div>
           </div>
           <div class="card">
-            <h3 style="font-size: 1rem; color: #fff; margin-bottom: 16px;">Tanulmányi Összegzés</h3>
+            <h3 style="font-size: 1rem; color: var(--text); margin-bottom: 16px;">Tanulmányi Összegzés</h3>
             <div style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.8;">
-              <div>Összes rögzített jegy: <strong id="statsTotalGrades" style="color: #fff;">--</strong></div>
+              <div>Összes rögzített jegy: <strong id="statsTotalGrades" style="color: var(--text);">--</strong></div>
               <div>Legjobb jegy arány (5-ös): <strong id="statsFivePct" style="color: var(--success);">--%</strong></div>
               <div>Bukási kockázat (1-es): <strong id="statsOneCount" style="color: var(--danger);">-- db</strong></div>
             </div>
           </div>
         </div>
 
-        <h3 style="margin: 28px 0 16px 0; color: #fff;">Tantárgyi Átlagok Rangsorolva</h3>
+        <h3 style="margin: 28px 0 16px 0; color: var(--text);">Tantárgyi Átlagok Rangsorolva</h3>
         <div class="table-container">
           <table id="subjectAveragesTable">
             <thead>
@@ -999,9 +1069,13 @@ class PalaWebHtml {
 
       <!-- TAB: USER PROFILE / INFORMATIONS -->
       <section id="tab-profile" class="tab-pane">
+        <div class="subtabs">
+          <button class="btn subtab active" onclick="switchTab('profile')">Tanulói adatlap</button>
+          <button class="btn subtab" onclick="switchTab('settings')">Beállítások</button>
+        </div>
         <div class="grid-cards">
           <div class="card" style="grid-column: span 2;">
-            <h3 style="font-size: 1.05rem; color: #fff; margin-bottom: 16px;">Személyes Adatok</h3>
+            <h3 style="font-size: 1.05rem; color: var(--text); margin-bottom: 16px;">Személyes Adatok</h3>
             <div class="info-list">
               <div class="info-row">
                 <span class="info-label">Teljes név</span>
@@ -1027,7 +1101,7 @@ class PalaWebHtml {
           </div>
 
           <div class="card">
-            <h3 style="font-size: 1.05rem; color: #fff; margin-bottom: 16px;">Elérhetőség & Cím</h3>
+            <h3 style="font-size: 1.05rem; color: var(--text); margin-bottom: 16px;">Elérhetőség & Cím</h3>
             <div class="info-list">
               <div class="info-row">
                 <span class="info-label">Email</span>
@@ -1047,7 +1121,7 @@ class PalaWebHtml {
 
         <div class="grid-cards">
           <div class="card">
-            <h3 style="font-size: 1.05rem; color: #fff; margin-bottom: 16px;">Oktatási Intézmény</h3>
+            <h3 style="font-size: 1.05rem; color: var(--text); margin-bottom: 16px;">Oktatási Intézmény</h3>
             <div class="info-list">
               <div class="info-row">
                 <span class="info-label">Intézmény neve</span>
@@ -1061,7 +1135,7 @@ class PalaWebHtml {
           </div>
 
           <div class="card" style="grid-column: span 2;">
-            <h3 style="font-size: 1.05rem; color: #fff; margin-bottom: 16px;">Regisztrált Gondviselők</h3>
+            <h3 style="font-size: 1.05rem; color: var(--text); margin-bottom: 16px;">Regisztrált Gondviselők</h3>
             <div id="profGuardiansList" class="info-list">
               <div style="color: var(--text-muted);">Nincsenek elérhető adatok.</div>
             </div>
@@ -1071,9 +1145,13 @@ class PalaWebHtml {
 
       <!-- TAB: SETTINGS -->
       <section id="tab-settings" class="tab-pane">
+        <div class="subtabs">
+          <button class="btn subtab" onclick="switchTab('profile')">Tanulói adatlap</button>
+          <button class="btn subtab active" onclick="switchTab('settings')">Beállítások</button>
+        </div>
         
         <!-- SECTION 1: WEB SETTINGS (ACTIVE) -->
-        <h2 style="font-size: 1.15rem; color: #fff; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+        <h2 style="font-size: 1.15rem; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
           <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
           Webes Felület Beállításai
           <span class="status-pill pill-green">AKTÍV</span>
@@ -1083,9 +1161,9 @@ class PalaWebHtml {
 
           <!-- Account & Web Session -->
           <div class="card">
-            <h3 style="font-size: 1rem; color: #fff; margin-bottom: 8px;">Fiók & Bejelentkezés</h3>
+            <h3 style="font-size: 1rem; color: var(--text); margin-bottom: 8px;">Fiók & Bejelentkezés</h3>
             <p style="font-size: 0.83rem; color: var(--text-muted); margin-bottom: 14px;">
-              Aktív profil: <strong id="setProfileStatus" style="color: #fff;">$safeStudent</strong>
+              Aktív profil: <strong id="setProfileStatus" style="color: var(--text);">$safeStudent</strong>
             </p>
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
               <button class="btn btn-primary" onclick="openLoginModal()">Fiókváltás / Belépés</button>
@@ -1095,7 +1173,7 @@ class PalaWebHtml {
 
           <!-- Web Cache & Storage -->
           <div class="card">
-            <h3 style="font-size: 1rem; color: #fff; margin-bottom: 8px;">Böngészős Gyorsítótár</h3>
+            <h3 style="font-size: 1rem; color: var(--text); margin-bottom: 8px;">Böngészős Gyorsítótár</h3>
             <p style="font-size: 0.83rem; color: var(--text-muted); margin-bottom: 14px;">
               A kipipált házi feladatok és helyi beállítások ürítése:
             </p>
@@ -1110,7 +1188,7 @@ class PalaWebHtml {
           <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
             <svg class="icon icon-lg" style="color: var(--warning);" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             <div>
-              <div style="font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <div style="font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                 Terminális (TUI) Beállítások
                 <span id="tuiLockBadge" class="status-pill pill-yellow">ZÁROLVA (Webes nézet)</span>
               </div>
@@ -1129,7 +1207,7 @@ class PalaWebHtml {
           <div class="grid-cards">
             <!-- Parental Quota Settings Card -->
             <div class="card">
-              <h3 style="font-size: 1.05rem; color: #fff; margin-bottom: 16px;">Szülői Igazolás Keret</h3>
+              <h3 style="font-size: 1.05rem; color: var(--text); margin-bottom: 16px;">Szülői Igazolás Keret</h3>
               <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">
                 Állítsd be az intézményed házirendje szerinti éves szülői igazolási keretet (alapértelmezett: 5 nap).
               </p>
@@ -1142,7 +1220,7 @@ class PalaWebHtml {
 
             <!-- Terminal Appearance -->
             <div class="card">
-              <h3 style="font-size: 1.05rem; color: #fff; margin-bottom: 16px;">Terminál Megjelenés</h3>
+              <h3 style="font-size: 1.05rem; color: var(--text); margin-bottom: 16px;">Terminál Megjelenés</h3>
               <div class="form-group">
                 <label>Terminál ASCII Fejléc</label>
                 <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text); font-weight: normal; margin-top: 6px;">
@@ -1155,7 +1233,7 @@ class PalaWebHtml {
 
           <!-- Subject Aliases Card -->
           <div class="card" style="margin-bottom: 24px;">
-            <h3 style="font-size: 1.05rem; color: #fff; margin-bottom: 12px;">Tantárgy Átnevezések (Aliasok)</h3>
+            <h3 style="font-size: 1.05rem; color: var(--text); margin-bottom: 12px;">Tantárgy Átnevezések (Aliasok)</h3>
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
               Itt egyéni rövid neveket állíthatsz be a hosszú tantárgynevek helyett (pl. Matematika &rarr; Matek).
             </p>
@@ -1192,7 +1270,7 @@ class PalaWebHtml {
   <div id="loginModal" class="modal-overlay">
     <div class="modal" style="max-width: 520px;">
       <div class="modal-header">
-        <h3 style="color: #fff;">Bejelentkezés Kréta Fiókba</h3>
+        <h3 style="color: var(--text);">Bejelentkezés Kréta Fiókba</h3>
         <button class="btn" onclick="closeLoginModal()">Bezárás</button>
       </div>
       <div class="modal-body">
@@ -1237,7 +1315,7 @@ class PalaWebHtml {
 
         <!-- Demo Account Section -->
         <div id="loginDemoForm" style="display: none; text-align: center; padding: 16px 0;">
-          <div style="font-size: 1.05rem; font-weight: 700; color: #fff; margin-bottom: 8px;">Teszt Elek Demó Profil</div>
+          <div style="font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 8px;">Teszt Elek Demó Profil</div>
           <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">
             Azonnali belépés valósághű generált tanévvel, 80+ érdemjeggyel, órarenddel és üzenetekkel jelszó nélkül.
           </p>
@@ -1255,7 +1333,7 @@ class PalaWebHtml {
   <div id="composerModal" class="modal-overlay">
     <div class="modal">
       <div class="modal-header">
-        <h3 style="color: #fff;" id="modalComposerTitle">Új üzenet küldése tanárnak</h3>
+        <h3 style="color: var(--text);" id="modalComposerTitle">Új üzenet küldése tanárnak</h3>
         <button class="btn" onclick="closeComposerModal()">Bezárás</button>
       </div>
       <div class="modal-body">
@@ -1285,16 +1363,20 @@ class PalaWebHtml {
   <div id="messageViewerModal" class="modal-overlay">
     <div class="modal">
       <div class="modal-header">
-        <h3 style="color: #fff;" id="viewMsgSubject">Üzenet részletei</h3>
+        <h3 style="color: var(--text);" id="viewMsgSubject">Üzenet részletei</h3>
         <button class="btn" onclick="closeMsgViewer()">Bezárás</button>
       </div>
       <div class="modal-body">
         <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
-          <div>Feladó: <strong id="viewMsgSender" style="color: #fff;">-</strong></div>
+          <div>Feladó: <strong id="viewMsgSender" style="color: var(--text);">-</strong></div>
           <div style="margin-top: 4px;">Dátum: <span id="viewMsgDate">-</span></div>
         </div>
         <div id="viewMsgBody" style="background-color: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; white-space: pre-wrap; font-size: 0.92rem; line-height: 1.6; color: var(--text);">
           -
+        </div>
+        <div id="viewMsgAttachments" style="display: none; margin-top: 14px;">
+          <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Csatolmányok</div>
+          <div id="viewMsgAttachmentList" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
         </div>
       </div>
       <div class="modal-footer">
@@ -1308,12 +1390,12 @@ class PalaWebHtml {
   <div id="ghostModal" class="modal-overlay">
     <div class="modal">
       <div class="modal-header">
-        <h3 style="color: #fff;">Szellem Jegy Szimulátor</h3>
+        <h3 style="color: var(--text);">Szellem Jegy Szimulátor</h3>
         <button class="btn" onclick="closeGhostSimulator()">Bezárás</button>
       </div>
       <div class="modal-body">
         <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 16px;">
-          Próbáld ki, hogyan változna a tantárgyi átlagod és az összesített GPA-d, ha kapnál egy bizonyos jegyet!
+          Próbáld ki, hogyan változna a tantárgyi átlagod és az összesített átlagod, ha kapnál egy bizonyos jegyet!
         </p>
         <div class="form-group">
           <label for="ghostSubjectSelect">Válassz tantárgyat</label>
@@ -1345,14 +1427,14 @@ class PalaWebHtml {
         <div style="margin-top: 20px; background-color: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 18px;">
           <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
             <span style="color: var(--text-muted);">Jelenlegi tantárgyi átlag:</span>
-            <strong id="ghostCurrentSubAvg" style="color: #fff;">--</strong>
+            <strong id="ghostCurrentSubAvg" style="color: var(--text);">--</strong>
           </div>
           <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
             <span style="color: var(--text-muted);">Új szimulált tantárgyi átlag:</span>
             <strong id="ghostNewSubAvg" style="color: var(--primary); font-size: 1.1rem;">--</strong>
           </div>
           <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 12px;">
-            <span style="color: var(--text-muted);">Új szimulált összesített GPA:</span>
+            <span style="color: var(--text-muted);">Új szimulált összesített átlag:</span>
             <strong id="ghostNewOverallGpa" style="color: var(--success);">--</strong>
           </div>
         </div>
@@ -1408,16 +1490,18 @@ class PalaWebHtml {
       const targetPane = document.getElementById('tab-' + tabId);
       if (targetPane) targetPane.classList.add('active');
 
+      // Nine panes behind the app's seven pages: statistics sit under
+      // Osztályzatok, the student record and the settings under Fiók & Profil.
       const navMap = {
         'dashboard': { idx: 0, title: 'Vezérlőpult' },
-        'grades': { idx: 1, title: 'Érdemjegyek' },
-        'timetable': { idx: 2, title: 'Órarend' },
-        'homework': { idx: 3, title: 'Házi feladatok & Dolgozatok' },
+        'timetable': { idx: 1, title: 'Órarend' },
+        'grades': { idx: 2, title: 'Osztályzatok' },
+        'stats': { idx: 2, title: 'Osztályzatok' },
+        'homework': { idx: 3, title: 'Feladatok & Dolgozatok' },
         'messages': { idx: 4, title: 'Üzenetek' },
-        'absences': { idx: 5, title: 'Mulasztások & Igazolások' },
-        'stats': { idx: 6, title: 'Statisztika & Átlagok' },
-        'profile': { idx: 7, title: 'Tanulói Adatlap' },
-        'settings': { idx: 8, title: 'Beállítások' }
+        'absences': { idx: 5, title: 'Mulasztások' },
+        'profile': { idx: 6, title: 'Fiók & Profil' },
+        'settings': { idx: 6, title: 'Fiók & Profil' }
       };
 
       const info = navMap[tabId];
@@ -1511,7 +1595,7 @@ class PalaWebHtml {
             gList.innerHTML = guardians.map(g => `
               <div class="info-row">
                 <div style="min-width: 0;">
-                  <div style="font-weight: 600; color: #fff; word-break: break-word;">\${escapeHtml(g.name || 'Gondviselő')}</div>
+                  <div style="font-weight: 600; color: var(--text); word-break: break-word;">\${escapeHtml(g.name || 'Gondviselő')}</div>
                   <div style="font-size: 0.78rem; color: var(--text-muted);">\${escapeHtml(g.type || 'Gondviselő')}</div>
                 </div>
                 <div style="text-align: right; font-size: 0.85rem; min-width: 0; word-break: break-word;">
@@ -1586,7 +1670,7 @@ class PalaWebHtml {
         const dateStr = g.date ? g.date.split('T')[0] : '-';
         return `<tr>
           <td><span class="grade-badge \${badgeClass}">\${val}</span></td>
-          <td style="font-weight: 600; color: #fff;">\${escapeHtml(g.subject || '-')}</td>
+          <td style="font-weight: 600; color: var(--text);">\${escapeHtml(g.subject || '-')}</td>
           <td>\${escapeHtml(g.theme || g.type || '-')}</td>
           <td>\${g.weight || 100}%</td>
           <td>\${dateStr}</td>
@@ -1613,7 +1697,7 @@ class PalaWebHtml {
       document.getElementById('statsOneCount').innerText = counts[1] + ' db';
 
       const chart = document.getElementById('gradeDistributionChart');
-      const colors = { 5: 'var(--success)', 4: 'var(--primary)', 3: 'var(--warning)', 2: '#ff9500', 1: 'var(--danger)' };
+      const colors = { 5: 'var(--grade-5)', 4: 'var(--grade-4)', 3: 'var(--grade-3)', 2: 'var(--grade-2)', 1: 'var(--grade-1)' };
       let html = '';
       for (let g = 5; g >= 1; g--) {
         const c = counts[g] || 0;
@@ -1650,7 +1734,7 @@ class PalaWebHtml {
         else if (avg < 4.0) { pill = 'pill-orange'; status = 'Jó'; }
 
         return `<tr>
-          <td style="font-weight: 600; color: #fff;">\${escapeHtml(s)}</td>
+          <td style="font-weight: 600; color: var(--text);">\${escapeHtml(s)}</td>
           <td style="font-weight: 700; font-size: 1.05rem;">\${avg}</td>
           <td>\${cnt} db jegy</td>
           <td><span class="status-pill \${pill}">\${status}</span></td>
@@ -1760,7 +1844,7 @@ class PalaWebHtml {
         return `<tr style="\${isCancelled ? 'opacity: 0.5;' : ''}">
           <td style="font-weight: 700;">\${l.lessonNumber || '-'}.</td>
           <td>\${timeRange}</td>
-          <td style="font-weight: 600; color: #fff;">\${escapeHtml(l.subject || '-')}</td>
+          <td style="font-weight: 600; color: var(--text);">\${escapeHtml(l.subject || '-')}</td>
           <td>\${escapeHtml(l.room || '-')}</td>
           <td>\${escapeHtml(l.teacherName || '-')}</td>
           <td>\${statusPill}</td>
@@ -1811,7 +1895,7 @@ class PalaWebHtml {
         } else {
           examsTbody.innerHTML = exams.map(e => `<tr>
             <td style="font-weight: 600;">\${e.date ? e.date.split('T')[0] : '-'}</td>
-            <td style="font-weight: 600; color: #fff;">\${escapeHtml(e.subject || '-')}</td>
+            <td style="font-weight: 600; color: var(--text);">\${escapeHtml(e.subject || '-')}</td>
             <td><span class="status-pill pill-orange">\${escapeHtml(e.mode || 'Dolgozat')}</span></td>
             <td>\${escapeHtml(e.theme || '-')}</td>
           </tr>`).join('');
@@ -1830,7 +1914,7 @@ class PalaWebHtml {
             return `<tr id="hw_row_\${escapeHtml(hwId)}" class="\${isDone ? 'hw-done' : ''}">
               <td><input type="checkbox" class="hw-checkbox" \${isDone ? 'checked' : ''} data-hw-id="\${escapeHtml(hwId)}" /></td>
               <td style="font-weight: 600; color: var(--warning);">\${h.deadline ? h.deadline.split('T')[0] : '-'}</td>
-              <td style="font-weight: 600; color: #fff;">\${escapeHtml(h.subject || '-')}</td>
+              <td style="font-weight: 600; color: var(--text);">\${escapeHtml(h.subject || '-')}</td>
               <td>\${escapeHtml(h.text || '-')}</td>
               <td>\${h.date ? h.date.split('T')[0] : '-'}</td>
             </tr>`;
@@ -1866,7 +1950,7 @@ class PalaWebHtml {
         }
         tbody.innerHTML = cachedMessages.map((m, idx) => `<tr>
           <td>\${m.date ? m.date.split('T')[0] : '-'}</td>
-          <td style="font-weight: 600; color: #fff;">\${escapeHtml(m.sender || '-')}</td>
+          <td style="font-weight: 600; color: var(--text);">\${escapeHtml(m.sender || '-')}</td>
           <td>\${escapeHtml(m.subject || '-')}</td>
           <td><button class="btn" onclick="openMsgViewer(\${idx})">Megnyitás</button></td>
         </tr>`).join('');
@@ -1875,13 +1959,18 @@ class PalaWebHtml {
       }
     }
 
-    function openMsgViewer(idx) {
+    let openMsgIdx = -1;
+
+    async function openMsgViewer(idx) {
       const msg = cachedMessages[idx];
       if (!msg) return;
+      openMsgIdx = idx;
+      const body = document.getElementById('viewMsgBody');
       document.getElementById('viewMsgSubject').innerText = msg.subject || 'Üzenet';
       document.getElementById('viewMsgSender').innerText = msg.sender || 'Ismeretlen feladó';
       document.getElementById('viewMsgDate').innerText = msg.date ? msg.date.replace('T', ' ').substring(0, 16) : '-';
-      document.getElementById('viewMsgBody').innerText = msg.text || 'Nincs szövegtartalom.';
+      body.innerText = msg.full ? (msg.text || 'Nincs szöveges tartalom.') : 'Üzenet betöltése...';
+      renderMsgAttachments(msg);
 
       document.getElementById('btnReplyMsg').onclick = () => {
         closeMsgViewer();
@@ -1889,9 +1978,66 @@ class PalaWebHtml {
       };
 
       document.getElementById('messageViewerModal').classList.add('open');
+
+      // The list only carries the first 100 characters of the body.
+      if (msg.full) return;
+      try {
+        const full = await apiFetch('/api/message?id=' + encodeURIComponent(msg.id));
+        msg.text = full.text;
+        msg.attachments = full.attachments || [];
+        msg.full = true;
+        if (openMsgIdx !== idx) return;
+        body.innerText = msg.text || 'Nincs szöveges tartalom.';
+        renderMsgAttachments(msg);
+      } catch (e) {
+        if (openMsgIdx !== idx) return;
+        body.innerText = 'A teljes szöveg most nem tölthető be, csak az eleje látszik.\\n\\n' + (msg.text || '');
+        showToast(e.message || 'Az üzenet most nem tölthető be.', 'error');
+      }
+    }
+
+    function renderMsgAttachments(msg) {
+      const box = document.getElementById('viewMsgAttachments');
+      const list = document.getElementById('viewMsgAttachmentList');
+      const atts = msg.attachments || [];
+      list.replaceChildren();
+      box.style.display = atts.length ? 'block' : 'none';
+      atts.forEach((a) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.innerText = a.name || 'Csatolmány';
+        btn.title = 'Letöltés';
+        btn.onclick = () => downloadAttachment(a, btn);
+        list.appendChild(btn);
+      });
+    }
+
+    async function downloadAttachment(att, btn) {
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/attachment?id=' + encodeURIComponent(att.id), { headers: { 'X-Pala-Token': sessionToken } });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || 'A csatolmány most nem tölthető le.');
+        }
+        const url = URL.createObjectURL(await res.blob());
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = att.name || 'csatolmany';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+        showToast((att.name || 'A csatolmány') + ' letöltve.');
+      } catch (e) {
+        showToast(e.message || 'A csatolmány most nem tölthető le.', 'error');
+      } finally {
+        btn.disabled = false;
+      }
     }
 
     function closeMsgViewer() {
+      openMsgIdx = -1;
       document.getElementById('messageViewerModal').classList.remove('open');
     }
 
@@ -1928,7 +2074,7 @@ class PalaWebHtml {
 
           return `<tr>
             <td style="font-weight: 600;">\${a.date ? a.date.split('T')[0] : '-'}</td>
-            <td style="font-weight: 600; color: #fff;">\${escapeHtml(a.subject || '-')}</td>
+            <td style="font-weight: 600; color: var(--text);">\${escapeHtml(a.subject || '-')}</td>
             <td>\${escapeHtml(a.type || 'Hiányzás')}</td>
             <td><span class="status-pill \${pill}">\${escapeHtml(a.status || '-')}</span></td>
             <td>\${a.delayMinutes ? a.delayMinutes + ' perc' : '-'}</td>
@@ -1976,7 +2122,7 @@ class PalaWebHtml {
         return;
       }
       tbody.innerHTML = keys.map(k => `<tr>
-        <td style="font-weight: 600; color: #fff;">\${escapeHtml(k)}</td>
+        <td style="font-weight: 600; color: var(--text);">\${escapeHtml(k)}</td>
         <td style="color: var(--primary); font-weight: 600;">\${escapeHtml(aliases[k])}</td>
         <td><button class="btn btn-danger" data-alias="\${escapeHtml(k)}">Törlés</button></td>
       </tr>`).join('');
@@ -2110,8 +2256,8 @@ class PalaWebHtml {
           const keys = Object.keys(res || {});
           if (keys.length > 0) {
             suggBox.innerHTML = keys.slice(0, 8).map(code => `
-              <div style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem;" data-code="\${escapeHtml(code)}" data-name="\${escapeHtml(res[code])}">
-                <div style="font-weight: 600; color: #fff;">\${escapeHtml(res[code])}</div>
+              <div style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--tint); font-size: 0.85rem;" data-code="\${escapeHtml(code)}" data-name="\${escapeHtml(res[code])}">
+                <div style="font-weight: 600; color: var(--text);">\${escapeHtml(res[code])}</div>
                 <div style="font-size: 0.75rem; color: var(--text-muted);">\${escapeHtml(code)}</div>
               </div>
             `).join('');

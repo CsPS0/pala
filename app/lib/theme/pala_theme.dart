@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/theme/app_colors.dart';
+import '../core/theme/pala_tokens.dart';
 
 /// Legacy color getters for the older views; values come from [AppColors]
 /// where the two palettes agree.
@@ -14,12 +15,12 @@ class PalaTheme {
   /// call site.
   static bool isLight = false;
 
-  static const Color _darkBackground = AppColors.darkSurfaceContainerLowest;
-  static const Color _darkSidebar = Color(0xFF151518);
-  static const Color _darkCard = AppColors.darkSurfaceContainerLow;
-  static const Color _darkBorder = AppColors.darkSurfaceContainerHigh;
-  static const Color _darkText = Color(0xFFF3F3F6);
-  static const Color _darkTextMuted = Color(0xFF8C8C94);
+  static const Color _darkBackground = PalaTokens.darkBg;
+  static const Color _darkSidebar = PalaTokens.darkSidebar;
+  static const Color _darkCard = PalaTokens.darkCard;
+  static const Color _darkBorder = PalaTokens.darkBorder;
+  static const Color _darkText = PalaTokens.darkText;
+  static const Color _darkTextMuted = PalaTokens.darkTextMuted;
 
   static Color get background => isLight ? lightBackground : _darkBackground;
   static Color get sidebar => isLight ? lightSidebar : _darkSidebar;
@@ -34,10 +35,10 @@ class PalaTheme {
   static Color get warning => isLight ? const Color(0xFF8A6100) : AppColors.warning;
   static Color get danger => isLight ? const Color(0xFFC62828) : const Color(0xFFFF453A);
 
-  static const Color lightBackground = Color(0xFFF5F5F7);
-  static const Color lightSidebar = Color(0xFFFFFFFF);
-  static const Color lightCard = Color(0xFFFFFFFF);
-  static const Color lightBorder = Color(0xFFE0E0E3);
-  static const Color lightText = Color(0xFF1C1C1E);
-  static const Color lightTextMuted = Color(0xFF6E6E76);
+  static const Color lightBackground = PalaTokens.lightBg;
+  static const Color lightSidebar = PalaTokens.lightSidebar;
+  static const Color lightCard = PalaTokens.lightCard;
+  static const Color lightBorder = PalaTokens.lightBorder;
+  static const Color lightText = PalaTokens.lightText;
+  static const Color lightTextMuted = PalaTokens.lightTextMuted;
 }

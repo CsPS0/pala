@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pala // Vezérlőpult</title>
+  <link rel="stylesheet" href="../shared/tokens.css">
   <link rel="stylesheet" href="dashboard.css">
 </head>
 <body>
@@ -147,7 +148,7 @@
             <line x1="6" y1="18" x2="6.01" y2="18"></line>
           </svg>
         </div>
-        <h1 id="dash-maint-view-title" style="font-size: 1.4rem; font-weight: 900; margin-bottom: 8px;">A KRÉTA rendszer karbantartás alatt áll</h1>
+        <h1 id="dash-maint-view-title" style="font-size: 1.4rem; font-weight: 700; margin-bottom: 8px;">A KRÉTA rendszer karbantartás alatt áll</h1>
         <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px;">
           A Kréta központi szerverei tervezett vagy rendkívüli karbantartás miatt átmenetileg nem elérhetők. Mivel még nincsenek helyben tárolt offline adatok ehhez a fiókhoz, az adatok megjelenítése nem lehetséges a karbantartás befejezéséig.
         </p>
@@ -587,7 +588,7 @@
         <div class="card stat-card">
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span class="stat-label">250 Órás Limit</span>
-            <span id="absences-zone-status" class="badge" style="color: var(--success); font-weight: 700; font-size: 0.75rem;">Biztonságos (0%)</span>
+            <span id="absences-zone-status" class="badge" style="color: var(--success); font-weight: 600; font-size: 0.75rem;">Biztonságos (0%)</span>
           </div>
           <div id="absences-limit-pct" class="stat-val green" style="margin-top: 4px;">0.0%</div>
           <div id="absences-remaining-hours" class="stat-sub" style="margin-top: 4px;">250 óra maradt a határig</div>
@@ -599,7 +600,7 @@
         <div class="card stat-card">
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span class="stat-label">Szülői Igazolás Keret</span>
-            <span id="absences-parental-status" class="badge" style="font-size: 0.75rem; font-weight: 700;">0 / 3 nap</span>
+            <span id="absences-parental-status" class="badge" style="font-size: 0.75rem; font-weight: 600;">0 / 3 nap</span>
           </div>
           <div id="absences-parental-val" class="stat-val orange" style="margin-top: 4px;">0 / 3 nap</div>
           <div id="absences-parental-sub" class="stat-sub" style="margin-top: 4px;">3 nap maradt felhasználható</div>
@@ -627,7 +628,7 @@
       </details>
 
       <!-- Detailed Absences Table Container -->
-      <div class="card" style="border-radius: 16px;">
+      <div class="card" style="border-radius: var(--radius);">
         <div class="section-header-row">
           <h2 class="section-title">Részletes Mulasztási Napló</h2>
           <div class="filter-chips-row" id="absences-filter-chips" style="padding: 0;">
@@ -660,12 +661,12 @@
           </div>
 
           <div style="display: flex; align-items: center; gap: 10px;">
-            <button id="btn-toggle-api-warning" class="btn btn-secondary" style="display: flex; align-items: center; gap: 8px; border-color: rgba(255,136,0,0.5); background: rgba(255,136,0,0.12); color: var(--primary); padding: 8px 14px; font-weight: 700;" title="Kréta API korlátozás és hiányzó adatok információ">
-              <span style="display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--primary-fill); color: #000; font-weight: 900; font-size: 0.85rem; line-height: 1;">!</span>
+            <button id="btn-toggle-api-warning" class="btn btn-secondary" style="display: flex; align-items: center; gap: 8px; border-color: rgba(255,136,0,0.5); background: rgba(255,136,0,0.12); color: var(--primary); padding: 8px 14px; font-weight: 600;" title="Kréta API korlátozás és hiányzó adatok információ">
+              <span style="display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--primary-fill); color: #000; font-weight: 700; font-size: 0.85rem; line-height: 1;">!</span>
               <span style="font-size: 0.82rem;">API Korlátozás Infó</span>
             </button>
 
-            <button id="btn-global-edit-profile" class="btn btn-primary" style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; font-weight: 700;">
+            <button id="btn-global-edit-profile" class="btn btn-primary" style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; font-weight: 600;">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -678,9 +679,9 @@
         <!-- Prominent API Warning Banner -->
         <div id="student-api-banner" class="card" style="margin-bottom: 20px; border-left: 4px solid var(--primary); background: rgba(255,136,0,0.06); padding: 14px 18px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;">
           <div style="display: flex; gap: 14px; align-items: flex-start;">
-            <div style="min-width: 34px; height: 34px; border-radius: 50%; background: var(--primary-fill); color: #000; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 900; line-height: 1; flex-shrink: 0;">!</div>
+            <div style="min-width: 34px; height: 34px; border-radius: 50%; background: var(--primary-fill); color: #000; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 700; line-height: 1; flex-shrink: 0;">!</div>
             <div>
-              <div style="font-weight: 800; font-size: 0.92rem; color: var(--primary); margin-bottom: 4px;">Kréta API Korlátozás — Hiányozhatnak adatok</div>
+              <div style="font-weight: 700; font-size: 0.92rem; color: var(--primary); margin-bottom: 4px;">Kréta API Korlátozás — Hiányozhatnak adatok</div>
               <p style="font-size: 0.8rem; color: var(--text); line-height: 1.5; margin: 0;">
                 A Kréta a <code>TanuloAdatlap</code> végponton nem küld el minden adatot: az OM-azonosító, az adóazonosító, a TAJ-szám, az igazolványok és a számlavezető bank neve hiányzik. A bankszámlaszámot és a tulajdonos nevét elküldi, ha az iskola rögzítette. Ahol „-” áll, a <strong>„Profil Szerkesztése”</strong> gombbal kézzel kitöltheted. A Pala ezeket csak ezen az eszközön tárolja.
               </p>
@@ -705,19 +706,19 @@
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
           <!-- Card 1: Account Login & Switch -->
           <div class="card">
-            <h2 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 16px; color: var(--primary);">Kréta Fiók & Bejelentkezés</h2>
+            <h2 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 16px; color: var(--primary);">Kréta Fiók & Bejelentkezés</h2>
 
             <div class="input-group" style="position: relative; margin-bottom: 14px;">
-              <label style="display: block; font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Iskola keresése (név vagy kód):</label>
+              <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">Iskola keresése (név vagy kód):</label>
               <input type="text" id="dash-login-institute" placeholder="pl. Neumann, Petőfi, bmszc, klik..." autocomplete="off" class="modern-input">
               <input type="hidden" id="dash-login-institute-code" value="">
               <div id="dash-school-dropdown" class="school-dropdown" style="display: none;"></div>
               <div id="dash-selected-school-info" style="display: none; font-size: 0.75rem; color: var(--primary); margin-top: 4px; font-weight: 600;"></div>
             </div>
 
-            <div id="dash-login-error" style="display: none; padding: 8px 12px; border-radius: 6px; font-size: 0.75rem; margin-bottom: 14px; background: rgba(255,69,58,0.15); color: var(--danger); border: 1px solid rgba(255,69,58,0.3);"></div>
+            <div id="dash-login-error" style="display: none; padding: 8px 12px; border-radius: var(--radius-sm); font-size: 0.75rem; margin-bottom: 14px; background: rgba(255,69,58,0.15); color: var(--danger); border: 1px solid rgba(255,69,58,0.3);"></div>
 
-            <button id="btn-dash-web-login" class="btn btn-primary btn-block" style="padding: 12px; font-size: 0.9rem; font-weight: 700; margin-bottom: 8px;">Bejelentkezés a Kréta felületén</button>
+            <button id="btn-dash-web-login" class="btn btn-primary btn-block" style="padding: 12px; font-size: 0.9rem; font-weight: 600; margin-bottom: 8px;">Bejelentkezés a Kréta felületén</button>
             <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-bottom: 12px; line-height: 1.4;">
               Keresd meg az iskolád, majd kattints a gombra. A Kréta belépési oldal megnyílik, bejelentkezel, a bővítmény automatikusan elvégzi a többit.
             </p>
@@ -726,9 +727,9 @@
 
           <!-- Card 2: System, Cache & Diagnostics -->
           <div class="card">
-            <h2 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 16px; color: var(--primary);">Munkamenet & Rendszer</h2>
+            <h2 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 16px; color: var(--primary);">Munkamenet & Rendszer</h2>
 
-            <div style="background: var(--sidebar); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; font-size: 0.82rem;">
+            <div style="background: var(--sidebar); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 16px; font-size: 0.82rem;">
               <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                 <span style="color: var(--text-muted);">Aktuális felhasználó:</span>
                 <strong id="dash-settings-user">-</strong>
@@ -756,10 +757,10 @@
 
           <!-- Card 3: Exports & Preferences -->
           <div class="card">
-            <h2 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 16px; color: var(--primary);">Adatok Exportálása & Beállítások</h2>
+            <h2 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 16px; color: var(--primary);">Adatok Exportálása & Beállítások</h2>
 
             <div class="input-group" style="margin-bottom: 16px;">
-              <label style="display: block; font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Szülői igazolás limit (nap):</label>
+              <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Szülői igazolás limit (nap):</label>
               <div style="display: flex; gap: 8px;">
                 <input type="number" id="settings-parental-limit" min="1" max="15" value="3" class="modern-input" style="width: 100px;">
                 <button id="btn-save-parental-limit" class="btn btn-secondary">Mentés</button>
@@ -775,7 +776,7 @@
 
           <!-- Card: Megjelenés -->
           <div class="card">
-            <h2 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 12px; color: var(--primary);">Megjelenés</h2>
+            <h2 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 12px; color: var(--primary);">Megjelenés</h2>
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <div>
                 <strong style="display: block; font-size: 0.85rem; color: var(--text);">Sötét mód</strong>
@@ -795,7 +796,7 @@
           <!-- Card 4: Popup Testreszabása -->
           <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-              <h2 style="font-size: 1.05rem; font-weight: 800; color: var(--primary); margin: 0;">Popup Testreszabása</h2>
+              <h2 style="font-size: 1.05rem; font-weight: 700; color: var(--primary); margin: 0;">Popup Testreszabása</h2>
               <span class="badge" style="background: var(--sidebar);">Gyorsnézet</span>
             </div>
 
@@ -805,7 +806,7 @@
 
             <div style="display: flex; flex-direction: column; gap: 14px; font-size: 0.82rem;">
               <div>
-                <label style="display: block; font-size: 0.76rem; font-weight: 700; color: var(--text-muted); margin-bottom: 5px;">Alapértelmezett kezdőlap a popupban:</label>
+                <label style="display: block; font-size: 0.76rem; font-weight: 600; color: var(--text-muted); margin-bottom: 5px;">Alapértelmezett kezdőlap a popupban:</label>
                 <select id="dash-popup-pref-default-tab" class="modern-select">
                   <option value="tab-grades">Jegyek</option>
                   <option value="tab-today">Mai Órák</option>
@@ -851,7 +852,7 @@
 
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-top: 6px; border-top: 1px solid var(--border);">
                 <div>
-                  <label style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Jegyek száma:</label>
+                  <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Jegyek száma:</label>
                   <select id="dash-popup-pref-max-grades" class="modern-select">
                     <option value="3">3 db legutóbbi</option>
                     <option value="5">5 db legutóbbi</option>
@@ -861,7 +862,7 @@
                   </select>
                 </div>
                 <div>
-                  <label style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Feladatok száma:</label>
+                  <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Feladatok száma:</label>
                   <select id="dash-popup-pref-max-tasks" class="modern-select">
                     <option value="3">3 db legközelebbi</option>
                     <option value="5" selected>5 db legközelebbi</option>
@@ -880,7 +881,7 @@
 
           <!-- Card 5: Egyéni Tantárgy & Tanár Aliasok -->
           <div class="card" style="grid-column: 1 / -1;">
-            <h2 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 8px; color: var(--primary);">Egyéni Tantárgy & Tanár Aliasok</h2>
+            <h2 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; color: var(--primary);">Egyéni Tantárgy & Tanár Aliasok</h2>
             <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.4;">
               Itt adhatsz meg egyéni, rövidebb neveket a hosszú vagy bonyolult hivatalos Kréta elnevezések helyett (pl. "Magyar nyelv és irodalom 11.B" &rarr; "Magyar"). Az aliasok azonnal megjelennek az órarenden, a jegyeknél és a feladatoknál.
             </p>
@@ -891,10 +892,10 @@
             <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;">
               <div style="position: relative; flex: 1; min-width: 200px;">
                 <input type="text" id="alias-orig-input" autocomplete="off" placeholder="Eredeti Kréta tantárgynév (pl. Német nyelv)" class="modern-input">
-                <div id="alias-orig-suggestions" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 20; max-height: 220px; overflow-y: auto; background: var(--card); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);"></div>
+                <div id="alias-orig-suggestions" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 20; max-height: 220px; overflow-y: auto; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: 0 8px 24px rgba(0,0,0,0.4);"></div>
               </div>
               <input type="text" id="alias-custom-input" placeholder="Új megjelenített név (pl. Német)" class="modern-input" style="flex: 1; min-width: 200px;">
-              <button id="btn-add-alias" class="btn btn-primary" style="padding: 8px 16px; font-weight: 700;">+ Hozzáadás</button>
+              <button id="btn-add-alias" class="btn btn-primary" style="padding: 8px 16px; font-weight: 600;">+ Hozzáadás</button>
             </div>
             <div id="alias-list" style="display: flex; flex-wrap: wrap; gap: 8px;">
               <!-- Rendered dynamically -->
@@ -904,18 +905,18 @@
           <!-- In development: shown, but not usable yet -->
           <div class="card dev-feature-card" aria-disabled="true">
             <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px;">
-              <h2 style="font-size: 1.05rem; font-weight: 800; color: var(--primary); margin: 0;">Egyéni szín</h2>
+              <h2 style="font-size: 1.05rem; font-weight: 700; color: var(--primary); margin: 0;">Egyéni szín</h2>
               <span class="badge badge-maintenance">Fejlesztés alatt</span>
             </div>
             <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">Saját kiemelőszín a narancs helyett. Hamarosan.</p>
             <div style="display: flex; gap: 8px; align-items: center;">
-              <input type="color" value="#ff8800" disabled aria-label="Kiemelőszín (fejlesztés alatt)" style="width: 44px; height: 32px; border: 1px solid var(--border); border-radius: 8px; background: none;">
+              <input type="color" value="#ff8800" disabled aria-label="Kiemelőszín (fejlesztés alatt)" style="width: 44px; height: 32px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: none;">
               <button type="button" class="btn btn-secondary btn-sm" disabled>Alkalmazás</button>
             </div>
           </div>
           <div class="card dev-feature-card" aria-disabled="true">
             <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px;">
-              <h2 style="font-size: 1.05rem; font-weight: 800; color: var(--primary); margin: 0;">Szinkronizálás eszközök között</h2>
+              <h2 style="font-size: 1.05rem; font-weight: 700; color: var(--primary); margin: 0;">Szinkronizálás eszközök között</h2>
               <span class="badge badge-maintenance">Fejlesztés alatt</span>
             </div>
             <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">A beállítások (aliasok, téma) átvitele a többi Pala eszközödre. Kréta-adatot nem fog szinkronizálni, és nem lesz hozzá Pala szerver.</p>
@@ -926,7 +927,7 @@
 
           <!-- Card 6: About Pala and its links -->
           <div class="card" style="grid-column: 1 / -1;">
-            <h2 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 8px; color: var(--primary);">Pala</h2>
+            <h2 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; color: var(--primary);">Pala</h2>
             <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.4;">
               Verzió: <strong id="settings-pala-version">-</strong>. Ingyenes, nyílt forráskódú Kréta-kliens; nem az eKréta hivatalos alkalmazása.
             </p>
@@ -943,28 +944,28 @@
   <div id="msg-composer-modal" class="modal-overlay" style="display: none;">
     <div class="modal-card" style="max-width: 540px; width: 90%;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <h2 style="font-size: 1.15rem; font-weight: 800; color: var(--primary);">Új üzenet küldése tanárnak</h2>
+        <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--primary);">Új üzenet küldése tanárnak</h2>
         <button id="btn-close-composer" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.8rem;">&#10005;</button>
       </div>
 
       <div class="input-group" style="margin-bottom: 12px;">
-        <label style="display: block; font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Címzett tanár:</label>
+        <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Címzett tanár:</label>
         <select id="comp-teacher-select" class="modern-select">
           <option value="">Tanárok betöltése...</option>
         </select>
       </div>
 
       <div class="input-group" style="margin-bottom: 12px;">
-        <label style="display: block; font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Tárgy:</label>
+        <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Tárgy:</label>
         <input type="text" id="comp-subject-input" placeholder="pl. Kérdés a dolgozattal vagy házi feladattal kapcsolatban" class="modern-input">
       </div>
 
       <div class="input-group" style="margin-bottom: 14px;">
-        <label style="display: block; font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Üzenet szövege:</label>
+        <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Üzenet szövege:</label>
         <textarea id="comp-text-input" rows="6" placeholder="Tisztelt Tanárnő / Tanár Úr!..." class="modern-input" style="resize: vertical; font-family: inherit;"></textarea>
       </div>
 
-      <div id="comp-feedback-box" style="display: none; padding: 8px 12px; border-radius: 6px; font-size: 0.75rem; margin-bottom: 14px;"></div>
+      <div id="comp-feedback-box" style="display: none; padding: 8px 12px; border-radius: var(--radius-sm); font-size: 0.75rem; margin-bottom: 14px;"></div>
 
       <div style="display: flex; justify-content: flex-end; gap: 8px;">
         <button id="btn-cancel-composer" class="btn btn-secondary">Mégse</button>
@@ -980,7 +981,7 @@
       <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px;">
         <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
           <span id="task-detail-badge" class="badge">Feladat</span>
-          <h2 id="task-detail-title" style="font-size: 1.1rem; font-weight: 800; margin: 0;">-</h2>
+          <h2 id="task-detail-title" style="font-size: 1.1rem; font-weight: 700; margin: 0;">-</h2>
         </div>
         <button type="button" id="btn-close-task-detail" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.8rem;" aria-label="Bezárás">&#10005;</button>
       </div>
@@ -993,7 +994,7 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
         <div style="display: flex; align-items: center; gap: 8px;">
           <span id="viewer-msg-type-badge" class="badge">Üzenet</span>
-          <h2 id="viewer-msg-title" style="font-size: 1.1rem; font-weight: 800; margin: 0;">-</h2>
+          <h2 id="viewer-msg-title" style="font-size: 1.1rem; font-weight: 700; margin: 0;">-</h2>
         </div>
         <button id="btn-close-viewer" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.8rem;">&#10005;</button>
       </div>
@@ -1003,13 +1004,14 @@
         <div style="margin-top: 2px;">Dátum: <span id="viewer-msg-date">-</span></div>
       </div>
 
-      <div id="viewer-msg-content" style="background: var(--sidebar); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; font-size: 0.86rem; line-height: 1.6; white-space: pre-wrap; margin-bottom: 14px; max-height: 360px; overflow-y: auto;">
+      <div id="viewer-msg-content" style="background: var(--sidebar); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; font-size: 0.86rem; line-height: 1.6; white-space: pre-wrap; margin-bottom: 14px; max-height: 360px; overflow-y: auto;">
         -
       </div>
 
       <div id="viewer-attachments-box" style="display: none; margin-bottom: 14px;">
-        <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">Csatolmányok:</span>
+        <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">Csatolmányok:</span>
         <div id="viewer-attachments-list" style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px;"></div>
+        <div id="viewer-attachments-status" style="font-size: 0.75rem; margin-top: 6px; color: var(--text-muted);"></div>
       </div>
 
       <div style="display: flex; justify-content: flex-end; gap: 8px;">
@@ -1023,7 +1025,7 @@
   <div id="student-extra-modal" class="modal-overlay" style="display: none;">
     <div class="modal-card" style="max-width: 680px; width: 92%; max-height: 90vh; overflow-y: auto;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <h2 style="font-size: 1.15rem; font-weight: 800; margin: 0; color: var(--primary);">Teljes Tanulói Profil Szerkesztése</h2>
+        <h2 style="font-size: 1.15rem; font-weight: 700; margin: 0; color: var(--primary);">Teljes Tanulói Profil Szerkesztése</h2>
         <button id="btn-close-extra-modal" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.8rem;">&#10005;</button>
       </div>
 
@@ -1039,8 +1041,8 @@
 
       <div style="display: flex; flex-direction: column; gap: 20px;">
         <!-- Group 1: Személyes Adatok -->
-        <div style="background: var(--sidebar); border: 1px solid var(--border); border-radius: 10px; padding: 16px;">
-          <h3 style="font-size: 0.92rem; font-weight: 800; color: var(--primary); margin-bottom: 12px;">Személyes Adatok</h3>
+        <div style="background: var(--sidebar); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px;">
+          <h3 style="font-size: 0.92rem; font-weight: 700; color: var(--primary); margin-bottom: 12px;">Személyes Adatok</h3>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px;">
             <div>
               <label class="field-label">Tanuló teljes neve:</label>
@@ -1074,8 +1076,8 @@
         </div>
 
         <!-- Group 2: Intézmény & Elérhetőségek -->
-        <div style="background: var(--sidebar); border: 1px solid var(--border); border-radius: 10px; padding: 16px;">
-          <h3 style="font-size: 0.92rem; font-weight: 800; color: var(--primary); margin-bottom: 12px;">Intézmény & Elérhetőségek</h3>
+        <div style="background: var(--sidebar); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px;">
+          <h3 style="font-size: 0.92rem; font-weight: 700; color: var(--primary); margin-bottom: 12px;">Intézmény & Elérhetőségek</h3>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px;">
             <div>
               <label class="field-label">Intézmény neve:</label>
@@ -1101,8 +1103,8 @@
         </div>
 
         <!-- Group 3: Bankszámla Adatok -->
-        <div style="background: var(--sidebar); border: 1px solid var(--border); border-radius: 10px; padding: 16px;">
-          <h3 style="font-size: 0.92rem; font-weight: 800; color: var(--primary); margin-bottom: 12px;">Bankszámla Adatok (Ösztöndíj & Juttatások)</h3>
+        <div style="background: var(--sidebar); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px;">
+          <h3 style="font-size: 0.92rem; font-weight: 700; color: var(--primary); margin-bottom: 12px;">Bankszámla Adatok (Ösztöndíj & Juttatások)</h3>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px;">
             <div style="grid-column: 1 / -1;">
               <label class="field-label">Bankszámlaszám (16 vagy 24 számjegy):</label>
@@ -1129,8 +1131,8 @@
         </div>
 
         <!-- Group 4: Hivatalos Okmányok -->
-        <div style="background: var(--sidebar); border: 1px solid var(--border); border-radius: 10px; padding: 16px;">
-          <h3 style="font-size: 0.92rem; font-weight: 800; color: var(--primary); margin-bottom: 12px;">Hivatalos Okmányok & Igazolványok</h3>
+        <div style="background: var(--sidebar); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px;">
+          <h3 style="font-size: 0.92rem; font-weight: 700; color: var(--primary); margin-bottom: 12px;">Hivatalos Okmányok & Igazolványok</h3>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px;">
             <div>
               <label class="field-label">Adóazonosító jel (10 számjegy):</label>
@@ -1160,7 +1162,7 @@
         </div>
       </div>
 
-      <div id="extra-modal-status" style="display: none; margin-top: 14px; font-size: 0.78rem; font-weight: 600; padding: 10px; border-radius: 6px; background: rgba(48,209,88,0.1); border: 1px solid rgba(48,209,88,0.25);"></div>
+      <div id="extra-modal-status" style="display: none; margin-top: 14px; font-size: 0.78rem; font-weight: 600; padding: 10px; border-radius: var(--radius-sm); background: rgba(48,209,88,0.1); border: 1px solid rgba(48,209,88,0.25);"></div>
 
       <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
         <button id="btn-cancel-extra-modal" class="btn btn-secondary">Mégse</button>
@@ -1174,8 +1176,8 @@
     <div class="modal-card" style="max-width: 580px; width: 92%; max-height: 90vh; overflow-y: auto;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
         <div style="display: flex; align-items: center; gap: 8px;">
-          <span class="badge" style="background: var(--primary-fill); color: #000; font-weight: 900; padding: 4px 8px;">PALA</span>
-          <h2 style="font-size: 1.25rem; font-weight: 900; letter-spacing: 2px; margin: 0; color: var(--text);">WRAPPED</h2>
+          <span class="badge" style="background: var(--primary-fill); color: #000; font-weight: 700; padding: 4px 8px;">PALA</span>
+          <h2 style="font-size: 1.25rem; font-weight: 700; letter-spacing: 2px; margin: 0; color: var(--text);">WRAPPED</h2>
         </div>
         <button id="btn-close-wrapped" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.8rem;">&#10005;</button>
       </div>

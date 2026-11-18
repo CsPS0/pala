@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:pala/utils/pala_clock.dart';
+import 'package:pala_app/core/adaptive/pala_sidebar.dart';
 import 'package:pala_app/core/theme/m3_theme.dart';
 import 'package:pala_app/main.dart';
 import 'package:pala_app/state/app_model.dart';
@@ -139,7 +140,10 @@ void main() {
         await tester.pump(const Duration(milliseconds: 500));
 
         for (final label in shot.taps) {
-          await tester.tap(find.text(label).last);
+          // Desktop pages are opened from the sidebar: the dashboard has quick-action
+          // buttons with the same labels, which can sit below the visible area.
+          final inSidebar = find.descendant(of: find.byType(PalaSidebar), matching: find.text(label));
+          await tester.tap(inSidebar.evaluate().isNotEmpty ? inSidebar : find.text(label).last);
           await tester.pump(const Duration(milliseconds: 500));
           await tester.pump(const Duration(milliseconds: 500));
         }

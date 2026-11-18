@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_shapes.dart';
 
 enum StatusBadgeType {
   info,
@@ -69,7 +70,7 @@ class StatusBadge extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
           color: bg,
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(AppShapes.control),
           border: Border.all(color: fg.withValues(alpha: 0.2), width: 1),
         ),
         child: Row(

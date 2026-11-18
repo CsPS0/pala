@@ -18,6 +18,7 @@ import 'package:pala/models/message.dart';
 import 'package:pala/models/note.dart';
 import 'package:pala/models/student.dart';
 import 'package:pala/models/timetable_entry.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 import '../notifications/background_check.dart';
@@ -476,18 +477,27 @@ class AppModel extends ChangeNotifier {
     return _aliases[original] ?? original;
   }
 
-  /// A message's full text as plain text. The list may carry only part of
-  /// it, so an empty body is fetched from e-Ügyintézés.
+  /// A message's full text as plain text. The inbox list only carries the
+  /// first 100 characters of the body, so the message itself is always
+  /// fetched from e-Ügyintézés; it throws when that fails.
   Future<String> messageText(Message m) async {
-    if (m.text.trim().isNotEmpty) return htmlToText(m.text);
-    if (_isDemo || _client == null) return '';
-    return htmlToText(await _client!.getMessageContent(m.id));
+    if (_isDemo || _client == null) return htmlToText(m.text);
+    final full = await _client!.getMessage(m.id);
+    if (full == null) throw Exception('Az üzenet most nem tölthető be.');
+    return htmlToText(full.text);
   }
 
-  /// Saves an attachment into the user's Downloads folder (desktop only).
-  Future<bool> downloadAttachment(MessageAttachment a) async {
-    if (_isDemo || _client == null) return false;
-    return _client!.downloadAttachment(a.id, a.name);
+  /// Downloads an attachment and returns the saved file, or null when it
+  /// cannot be downloaded (demo data has nothing to download). A desktop
+  /// saves into the Downloads folder; a phone keeps the file in the app's
+  /// temporary folder, from where the system viewer opens it.
+  Future<File?> saveAttachment(MessageAttachment a) async {
+    if (_isDemo || _client == null) return null;
+    String? directory;
+    if (Platform.isAndroid || Platform.isIOS) {
+      directory = '${(await getTemporaryDirectory()).path}/csatolmanyok';
+    }
+    return _client!.saveAttachment(a.id, a.name, directory: directory);
   }
 
   Future<void> clearLocalCache() async {

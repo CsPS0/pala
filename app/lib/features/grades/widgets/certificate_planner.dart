@@ -4,6 +4,7 @@ import 'package:pala/rules/grade_rules.dart';
 
 import '../../../core/adaptive/adaptive_breakpoints.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_shapes.dart';
 
 /// Certificate Planner ("Bizonyítvány tervező") projection dashboard.
 class CertificatePlanner extends StatefulWidget {
@@ -96,7 +97,7 @@ class _CertificatePlannerState extends State<CertificatePlanner> {
         Card(
           color: colorScheme.surfaceContainerHigh,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppShapes.card),
             side: BorderSide(color: colorScheme.outlineVariant, width: 1),
           ),
           child: Padding(
@@ -194,7 +195,7 @@ class _CertificatePlannerState extends State<CertificatePlanner> {
             color: colorScheme.surfaceContainerLow,
             margin: const EdgeInsets.symmetric(vertical: 6),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppShapes.card),
               side: BorderSide(color: colorScheme.outlineVariant, width: 1),
             ),
             child: Padding(
@@ -217,7 +218,7 @@ class _CertificatePlannerState extends State<CertificatePlanner> {
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
                           color: AppColors.getGradeColor(avg, Theme.of(context).brightness).withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(AppShapes.control),
                           border: Border.all(color: AppColors.getGradeColor(avg, Theme.of(context).brightness)),
                         ),
                         child: Text(
@@ -260,13 +261,13 @@ class _CertificatePlannerState extends State<CertificatePlanner> {
                                 constraints: AdaptiveBreakpoints.touchTargetConstraints(context),
                                 child: InkWell(
                                   onTap: () => setState(() => _targetGrades[sub] = g),
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(AppShapes.card),
                                   child: Container(
                                     height: 48,
                                     alignment: Alignment.center,
                                     decoration: BoxDecoration(
                                       color: isSelected ? color : colorScheme.surfaceContainerHigh,
-                                      borderRadius: BorderRadius.circular(10),
+                                      borderRadius: BorderRadius.circular(AppShapes.card),
                                       border: Border.all(
                                         color: isSelected ? color : colorScheme.outlineVariant,
                                         width: isSelected ? 2 : 1,

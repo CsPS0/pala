@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/adaptive/adaptive_breakpoints.dart';
+import '../../../core/theme/app_shapes.dart';
 
 enum AbsenceCategoryType {
   excused,
@@ -68,14 +69,14 @@ class AbsenceCategoryTile extends StatelessWidget {
           elevation: 0,
           margin: const EdgeInsets.symmetric(vertical: 4),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppShapes.card),
             side: BorderSide(
               color: isSelected ? toneColor : colorScheme.outlineVariant,
               width: isSelected ? 2 : 1,
             ),
           ),
           child: InkWell(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppShapes.card),
             onTap: onTap,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -87,7 +88,7 @@ class AbsenceCategoryTile extends StatelessWidget {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: toneColor.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(AppShapes.card),
                     ),
                     child: Icon(icon, color: toneColor, size: 22),
                   ),

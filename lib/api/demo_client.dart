@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import '../models/models.dart';
 import 'client.dart';
 import 'demo_data.dart';
@@ -72,11 +74,16 @@ class DemoKretaClient extends KretaClient {
   }
 
   @override
-  Future<String?> getMessageContent(int id) async {
-    final messages = DemoData.getMessages();
-    final msg = messages.firstWhere((m) => m.id == id, orElse: () => messages.first);
-    return msg.text;
+  Future<Message?> getMessage(int id) async {
+    for (final m in DemoData.getMessages()) {
+      if (m.id == id) return m;
+    }
+    return null;
   }
+
+  /// Demo attachments are names only; there is nothing to download.
+  @override
+  Future<Uint8List?> fetchAttachment(int id) async => null;
 
   @override
   Future<List<Absence>?> getAbsences() async {

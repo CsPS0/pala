@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pala/models/grade.dart';
 import '../../../core/adaptive/adaptive_breakpoints.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_shapes.dart';
 
 class MockGradeItem {
   final String id;
@@ -310,7 +311,7 @@ class _GhostGradeCalculatorState extends State<GhostGradeCalculator> {
             Card.filled(
               color: colorScheme.surfaceContainerHigh,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppShapes.card),
                 side: BorderSide(color: colorScheme.outlineVariant, width: 1),
               ),
               child: Padding(
@@ -452,14 +453,14 @@ class _GhostGradeCalculatorState extends State<GhostGradeCalculator> {
                     constraints: AdaptiveBreakpoints.touchTargetConstraints(context),
                     child: InkWell(
                       onTap: () => _controller.setSelectedGrade(val),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppShapes.card),
                       child: Container(
                         width: 48,
                         height: 48,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
                           color: isSelected ? gradeColor : colorScheme.surfaceContainerHigh,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppShapes.card),
                           border: Border.all(
                             color: isSelected ? gradeColor : colorScheme.outlineVariant,
                             width: 2,
@@ -532,7 +533,7 @@ class _GhostGradeCalculatorState extends State<GhostGradeCalculator> {
                   color: colorScheme.surfaceContainerLow,
                   margin: const EdgeInsets.symmetric(vertical: 4),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppShapes.card),
                     side: BorderSide(color: colorScheme.outlineVariant),
                   ),
                   child: ListTile(
@@ -543,7 +544,7 @@ class _GhostGradeCalculatorState extends State<GhostGradeCalculator> {
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: color.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(AppShapes.control),
                         border: Border.all(color: color),
                       ),
                       child: Text(
@@ -574,7 +575,7 @@ class _GhostGradeCalculatorState extends State<GhostGradeCalculator> {
       return Card.filled(
         color: colorScheme.surfaceContainerLow,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppShapes.card),
           side: BorderSide(color: colorScheme.outlineVariant, width: 1),
         ),
         child: buildCalculatorContent(),

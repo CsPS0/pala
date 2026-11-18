@@ -20,6 +20,7 @@ import 'package:pala/utils/chart_generator.dart';
 import 'package:pala/utils/csv.dart';
 import 'package:pala/utils/ics_exporter.dart';
 import 'package:pala/utils/encryption.dart';
+import 'package:pala/utils/html_text.dart';
 import 'package:pala/utils/web_composer.dart';
 import 'package:pala/web/pala_web_server.dart';
 import 'package:pala/app/components/custom_menu.dart';

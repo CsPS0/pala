@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:pala/models/timetable_entry.dart';
 import '../../../core/adaptive/adaptive_breakpoints.dart';
 import '../../../core/widgets/status_badge.dart';
+import '../../../core/theme/app_shapes.dart';
 
 /// Chronological timetable feed item (Molecule) surfacing substitutions and cancellations.
 class TimetableTile extends StatelessWidget {
@@ -61,12 +62,12 @@ class TimetableTile extends StatelessWidget {
             margin: const EdgeInsets.symmetric(vertical: 4),
             color: cardBg,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppShapes.card),
               side: BorderSide(color: borderColor, width: isNow ? 2 : 1),
             ),
             child: InkWell(
               onTap: onTap,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppShapes.card),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Row(
@@ -79,7 +80,7 @@ class TimetableTile extends StatelessWidget {
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: isNow ? colorScheme.primary : colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(AppShapes.card),
                       ),
                       child: Text(
                         '${lesson.lessonNumber}',

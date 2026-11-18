@@ -9,4 +9,21 @@ void main() {
     expect(htmlToText('sima szöveg'), 'sima szöveg');
     expect(htmlToText('<ul><li>egy</li><li>kettő</li></ul>'), 'egy\nkettő');
   });
+
+  test('htmlToText drops a tag that the 100-character preview cut in half', () {
+    expect(htmlToText('<p>A részletek a csatolt fájlban <stro'), 'A részletek a csatolt fájlban');
+    expect(htmlToText('<p>Kedves Szülők!</p><p style="margin:0;font-fam'), 'Kedves Szülők!');
+    expect(htmlToText('2 < 3 és 5 > 4'), '2 < 3 és 5 > 4');
+  });
+
+  test('htmlToText leaves out style and script blocks', () {
+    expect(htmlToText('<style>p { color: red; }</style><p>Szöveg</p><script>alert(1)</script>'), 'Szöveg');
+  });
+
+  test('htmlToText keeps the address of a link whose label hides it', () {
+    expect(htmlToText('<p>Jelentkezés <a href="https://pelda.hu/urlap">ezen az űrlapon</a>.</p>'),
+        'Jelentkezés ezen az űrlapon (https://pelda.hu/urlap).');
+    expect(htmlToText('<a href="https://pelda.hu">https://pelda.hu</a>'), 'https://pelda.hu');
+    expect(htmlToText('<a href="javascript:alert(1)">katt</a>'), 'katt');
+  });
 }

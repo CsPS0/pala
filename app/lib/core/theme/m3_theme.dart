@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
+import 'app_shapes.dart';
 import 'app_typography.dart';
 
 /// Provides Material Design 3 theme configurations for Pala.
@@ -48,7 +49,7 @@ class M3Theme {
         elevation: 0,
         color: AppColors.darkSurfaceContainerLow,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppShapes.card),
           side: const BorderSide(color: AppColors.darkOutlineVariant, width: 1),
         ),
         margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 0),
@@ -111,28 +112,22 @@ class M3Theme {
         filled: true,
         fillColor: AppColors.darkSurfaceContainerLow,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppShapes.control),
           borderSide: const BorderSide(color: AppColors.darkOutlineVariant),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppShapes.control),
           borderSide: const BorderSide(color: AppColors.darkOutlineVariant),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppShapes.control),
           borderSide: const BorderSide(color: AppColors.primary, width: 2),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
-      filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.onPrimary,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          minimumSize: const Size(48, 48),
-          textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-        ),
-      ),
+      filledButtonTheme: FilledButtonThemeData(style: AppShapes.primaryButton()),
+      elevatedButtonTheme: ElevatedButtonThemeData(style: AppShapes.primaryButton()),
+      outlinedButtonTheme: OutlinedButtonThemeData(style: AppShapes.borderedButton(colorScheme)),
       dividerTheme: const DividerThemeData(
         color: AppColors.darkOutlineVariant,
         thickness: 1,
@@ -182,7 +177,7 @@ class M3Theme {
         elevation: 0,
         color: AppColors.lightSurfaceContainerLowest,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppShapes.card),
           side: const BorderSide(color: AppColors.lightOutlineVariant, width: 1),
         ),
         margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 0),
@@ -245,28 +240,22 @@ class M3Theme {
         filled: true,
         fillColor: AppColors.lightSurfaceContainerLowest,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppShapes.control),
           borderSide: const BorderSide(color: AppColors.lightOutlineVariant),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppShapes.control),
           borderSide: const BorderSide(color: AppColors.lightOutlineVariant),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppShapes.control),
           borderSide: const BorderSide(color: AppColors.lightPrimary, width: 2),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
-      filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(
-          backgroundColor: AppColors.lightPrimary,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          minimumSize: const Size(48, 48),
-          textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-        ),
-      ),
+      filledButtonTheme: FilledButtonThemeData(style: AppShapes.primaryButton()),
+      elevatedButtonTheme: ElevatedButtonThemeData(style: AppShapes.primaryButton()),
+      outlinedButtonTheme: OutlinedButtonThemeData(style: AppShapes.borderedButton(colorScheme)),
       dividerTheme: const DividerThemeData(
         color: AppColors.lightOutlineVariant,
         thickness: 1,

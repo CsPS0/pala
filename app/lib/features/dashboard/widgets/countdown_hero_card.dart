@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pala/models/timetable_entry.dart';
+import '../../../core/theme/app_shapes.dart';
 
 /// Class Countdown Hero Card (Organism) displaying real-time class progress or break countdown.
 class CountdownHeroCard extends StatelessWidget {
@@ -30,7 +31,7 @@ class CountdownHeroCard extends StatelessWidget {
       child: Card.filled(
         color: colorScheme.surfaceContainerHigh,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppShapes.card),
           side: BorderSide(color: colorScheme.outlineVariant, width: 1),
         ),
         child: Padding(
@@ -62,7 +63,7 @@ class CountdownHeroCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: colorScheme.primary,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(AppShapes.control),
                   ),
                   child: Text(
                     'FOLYAMATBAN LÉVŐ ÓRA',
@@ -128,7 +129,7 @@ class CountdownHeroCard extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppShapes.control),
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 8,
@@ -167,7 +168,7 @@ class CountdownHeroCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: colorScheme.tertiaryContainer,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(AppShapes.control),
                   ),
                   child: Text(
                     'SZÜNET - KÖVETKEZŐ ÓRA',
@@ -214,7 +215,7 @@ class CountdownHeroCard extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppShapes.control),
             child: LinearProgressIndicator(
               value: breakProgress,
               minHeight: 8,
