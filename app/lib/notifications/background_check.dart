@@ -5,7 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:pala/api/client.dart';
 import 'package:pala/app/state/app_state.dart';
+import 'package:pala/utils/alert_digest.dart';
 import 'package:pala/utils/encryption.dart';
+import 'package:pala/utils/gemini_summarizer.dart';
 import '../state/session_store.dart';
 import 'notification_service.dart';
 
@@ -29,6 +31,9 @@ void callbackDispatcher() {
 /// substituted lessons. Kept separate from that file because it needs its
 /// own session loading (no CLI process context here) and Flutter-only
 /// notification/storage APIs.
+///
+/// Every alert also goes to the chat channels set up in Settings (Slack,
+/// Discord), as one message per run, like the daemon's digest.
 Future<void> checkForUpdatesAndNotify() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (Platform.isAndroid || Platform.isIOS) {
@@ -48,15 +53,31 @@ Future<void> checkForUpdatesAndNotify() async {
   SessionStore.attach(client);
 
   final prefs = await SharedPreferences.getInstance();
+  final alerts = <RunAlert>[];
+  try {
+    await _runChecks(client, prefs, alerts);
+  } finally {
+    // Sent even when a later check failed, so alerts that were already shown
+    // on the phone are not lost for the chat channels.
+    final configDir = AppState.instance.configDir;
+    await sendAlertDigest(alerts, configuredAlertSinks(configDir), GeminiSummarizer.fromConfig(configDir));
+  }
+}
 
+/// Shows a phone notification and queues the same line for the chat digest.
+/// [geminiText] is the line without names, the only form a Gemini summary
+/// may see (see [RunAlert]).
+Future<void> _alert(List<RunAlert> alerts, String message, {String? geminiText}) async {
+  alerts.add((text: message, gemini: geminiText ?? message));
+  await NotificationService.instance.show('Pala (Kréta)', message);
+}
+
+Future<void> _runChecks(KretaClient client, SharedPreferences prefs, List<RunAlert> alerts) async {
   final grades = await client.getGrades();
   if (grades != null) {
     final oldCount = prefs.getInt('pala_bg_grades_count') ?? 0;
     if (oldCount > 0 && grades.length > oldCount) {
-      await NotificationService.instance.show(
-        'Pala (Kréta)',
-        'Kaptál ${grades.length - oldCount} új jegyet!',
-      );
+      await _alert(alerts, 'Kaptál ${grades.length - oldCount} új jegyet!');
     }
     await prefs.setInt('pala_bg_grades_count', grades.length);
   }
@@ -65,10 +86,7 @@ Future<void> checkForUpdatesAndNotify() async {
   if (homework != null) {
     final oldCount = prefs.getInt('pala_bg_homework_count') ?? 0;
     if (oldCount > 0 && homework.length > oldCount) {
-      await NotificationService.instance.show(
-        'Pala (Kréta)',
-        'Kaptál ${homework.length - oldCount} új házi feladatot!',
-      );
+      await _alert(alerts, 'Kaptál ${homework.length - oldCount} új házi feladatot!');
     }
     await prefs.setInt('pala_bg_homework_count', homework.length);
   }
@@ -78,21 +96,18 @@ Future<void> checkForUpdatesAndNotify() async {
     final tomorrow = DateTime.now().add(const Duration(days: 1));
     for (final exam in exams) {
       if (exam.date != null && _isSameDay(exam.date!, tomorrow)) {
-        await NotificationService.instance.show(
-          'Pala (Kréta)',
-          'Holnap dolgozat: ${exam.subject} (${exam.mode})',
-        );
+        await _alert(alerts, 'Holnap dolgozat: ${exam.subject} (${exam.mode})');
         break;
       }
     }
   }
 
-  await _checkScheduleChanges(client, prefs);
+  await _checkScheduleChanges(client, prefs, alerts);
 }
 
 bool _isSameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
 
-Future<void> _checkScheduleChanges(KretaClient client, SharedPreferences prefs) async {
+Future<void> _checkScheduleChanges(KretaClient client, SharedPreferences prefs, List<RunAlert> alerts) async {
   final today = DateTime.now();
   final start = DateTime(today.year, today.month, today.day);
   final end = start.add(const Duration(days: 2));
@@ -109,14 +124,12 @@ Future<void> _checkScheduleChanges(KretaClient client, SharedPreferences prefs) 
 
     final dayLabel = _isSameDay(lesson.date ?? today, today) ? 'Ma' : 'Holnap';
     if (lesson.isCancelled) {
-      await NotificationService.instance.show(
-        'Pala (Kréta)',
-        '$dayLabel elmarad: ${lesson.subject} (${lesson.lessonNumber}. óra)',
-      );
+      await _alert(alerts, '$dayLabel elmarad: ${lesson.subject} (${lesson.lessonNumber}. óra)');
     } else {
-      await NotificationService.instance.show(
-        'Pala (Kréta)',
+      await _alert(
+        alerts,
         '$dayLabel helyettesítés: ${lesson.subject} — ${lesson.substituteTeacher}',
+        geminiText: '$dayLabel helyettesítés: ${lesson.subject}',
       );
     }
     notifiedIds.add(id);

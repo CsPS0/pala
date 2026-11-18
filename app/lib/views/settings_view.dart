@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pala/app/state/app_state.dart';
 import 'package:pala/links.dart';
+import 'package:pala/utils/chat_webhooks.dart';
 import 'package:pala/rules/wrapped_season.dart';
 import 'package:pala/version.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../notifications/chat_alerts_card.dart';
 import '../state/app_model.dart';
 import '../theme/pala_theme.dart';
 import '../features/wrapped/presentation/pala_wrapped_view.dart';
@@ -551,6 +554,10 @@ class _SettingsViewState extends State<SettingsView> with SingleTickerProviderSt
                   ),
                 ],
               ),
+
+              const SizedBox(height: 12),
+
+              ChatAlertsCard(store: ChatWebhookStore(AppState.instance.configDir)),
 
               const SizedBox(height: 12),
 
