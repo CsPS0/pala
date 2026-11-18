@@ -142,12 +142,27 @@ class AppState {
     }
   }
 
-  Map<String, dynamic> getAuthData() {
-    return _load(authFile);
+  /// What the scheduled check (`--daemon`) remembers between runs: counts,
+  /// already announced ids, and the Moodle token. It has its own plain JSON
+  /// file because auth.json is encrypted: reading auth.json as plain JSON
+  /// failed, came back empty, and saving it then overwrote the Kréta login.
+  File get daemonStateFile {
+    _ensureConfigDir();
+    return File('$configDir/daemon_state.json');
   }
 
-  void saveAuthData(Map<String, dynamic> data) {
-    _save(authFile, data);
+  Map<String, dynamic> getDaemonState() {
+    return _load(daemonStateFile);
+  }
+
+  void saveDaemonState(Map<String, dynamic> data) {
+    _save(daemonStateFile, data);
+    // It holds the Moodle token, so keep it as private as auth.json.
+    if (Platform.isLinux || Platform.isMacOS) {
+      try {
+        Process.runSync('chmod', ['600', daemonStateFile.path]);
+      } catch (_) {}
+    }
   }
 
   Map<String, dynamic> getAppState() {
@@ -259,6 +274,9 @@ class AppState {
     }
     if (authFile.existsSync()) {
       authFile.deleteSync();
+    }
+    if (daemonStateFile.existsSync()) {
+      daemonStateFile.deleteSync();
     }
     final secureFile = File('$configDir/.secure_token');
     if (secureFile.existsSync()) {

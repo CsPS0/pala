@@ -43,6 +43,31 @@ void main() {
     expect(AppState.instance.isSetupCompleted, isTrue);
   });
 
+  test('daemon state never touches the encrypted auth file', () {
+    // Before the fix the daemon read auth.json as plain JSON, got {} back,
+    // and wrote its counts over the encrypted Kréta login.
+    const encryptedLogin = 'v3:aXY=:Y2lwaGVydGV4dA==';
+    AppState.instance.authFile.writeAsStringSync(encryptedLogin);
+
+    final state = AppState.instance.getDaemonState();
+    state['gradesCount'] = 3;
+    AppState.instance.saveDaemonState(state);
+
+    expect(AppState.instance.authFile.readAsStringSync(), encryptedLogin);
+    expect(AppState.instance.getDaemonState()['gradesCount'], 3);
+    expect(AppState.instance.daemonStateFile.path, endsWith('daemon_state.json'));
+
+    AppState.instance.authFile.deleteSync();
+  });
+
+  test('clearAllData deletes the daemon state', () {
+    AppState.instance.saveDaemonState({'gradesCount': 1});
+
+    AppState.instance.clearAllData();
+
+    expect(AppState.instance.daemonStateFile.existsSync(), isFalse);
+  });
+
   test('hasAuth checks if authFile exists', () {
     expect(AppState.instance.hasAuth(), isFalse);
     AppState.instance.authFile.writeAsStringSync('{}');

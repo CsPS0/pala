@@ -3,7 +3,7 @@ part of '../cli_app.dart';
 extension PalaAppDaemonLogic on PalaApp {
   Future<void> _checkNewItems() async {
       final state = AppState.instance;
-      final oldGradesCount = int.tryParse(state.getAuthData()['gradesCount']?.toString() ?? '0') ?? 0;
+      final oldGradesCount = int.tryParse(state.getDaemonState()['gradesCount']?.toString() ?? '0') ?? 0;
       
       final grades = await _client!.getGrades();
       if (grades != null) {
@@ -19,21 +19,21 @@ extension PalaAppDaemonLogic on PalaApp {
               .join('\n');
           await _showToast('Pala (Kréta)', 'Kaptál $newGradesCount új jegyet!\n$details');
         }
-        final currentData = state.getAuthData();
+        final currentData = state.getDaemonState();
         currentData['gradesCount'] = grades.length;
-        state.saveAuthData(currentData);
+        state.saveDaemonState(currentData);
       }
   
-      final oldHwCount = int.tryParse(state.getAuthData()['homeworkCount']?.toString() ?? '0') ?? 0;
+      final oldHwCount = int.tryParse(state.getDaemonState()['homeworkCount']?.toString() ?? '0') ?? 0;
       final homeworks = await _client!.getHomework(start: DateTime.now().subtract(Duration(days: 7)));
       if (homeworks != null) {
         if (homeworks.length > oldHwCount && oldHwCount > 0) {
           final newHwCount = homeworks.length - oldHwCount;
           await _showToast('Pala (Kréta)', 'Kaptál $newHwCount új házi feladatot!');
         }
-        final currentData = state.getAuthData();
+        final currentData = state.getDaemonState();
         currentData['homeworkCount'] = homeworks.length;
-        state.saveAuthData(currentData);
+        state.saveDaemonState(currentData);
       }
 
       final exams = await _client!.getExams();
@@ -50,10 +50,10 @@ extension PalaAppDaemonLogic on PalaApp {
   // Two notices per exam: one when it first appears in Kréta, one the day before.
   Future<void> _checkExams(List<Exam> exams) async {
     final state = AppState.instance;
-    final authData = state.getAuthData();
-    final firstRun = authData['notifiedExamIds'] == null;
-    final announced = ((authData['notifiedExamIds'] as List?)?.map((e) => e.toString()) ?? const <String>[]).toSet();
-    final reminded = ((authData['remindedExamIds'] as List?)?.map((e) => e.toString()) ?? const <String>[]).toSet();
+    final daemonState = state.getDaemonState();
+    final firstRun = daemonState['notifiedExamIds'] == null;
+    final announced = ((daemonState['notifiedExamIds'] as List?)?.map((e) => e.toString()) ?? const <String>[]).toSet();
+    final reminded = ((daemonState['remindedExamIds'] as List?)?.map((e) => e.toString()) ?? const <String>[]).toSet();
 
     final today = DateTime.now();
     final startOfToday = DateTime(today.year, today.month, today.day);
@@ -87,9 +87,9 @@ extension PalaAppDaemonLogic on PalaApp {
     announced.retainWhere(currentIds.contains);
     reminded.retainWhere(currentIds.contains);
 
-    authData['notifiedExamIds'] = announced.toList();
-    authData['remindedExamIds'] = reminded.toList();
-    state.saveAuthData(authData);
+    daemonState['notifiedExamIds'] = announced.toList();
+    daemonState['remindedExamIds'] = reminded.toList();
+    state.saveDaemonState(daemonState);
   }
 
   bool _isSameDay(DateTime? a, DateTime b) {
@@ -111,8 +111,8 @@ extension PalaAppDaemonLogic on PalaApp {
 
     final changed = lessons.where((l) => l.isCancelled || (l.substituteTeacher?.isNotEmpty ?? false));
 
-    final authData = state.getAuthData();
-    final notifiedIds = ((authData['notifiedScheduleChangeIds'] as List?)?.map((e) => e.toString()) ?? const <String>[]).toSet();
+    final daemonState = state.getDaemonState();
+    final notifiedIds = ((daemonState['notifiedScheduleChangeIds'] as List?)?.map((e) => e.toString()) ?? const <String>[]).toSet();
 
     for (final lesson in changed) {
       final id = lesson.uid ?? '${lesson.date}_${lesson.lessonNumber}_${lesson.subject}';
@@ -131,8 +131,8 @@ extension PalaAppDaemonLogic on PalaApp {
     final currentIds = lessons.map((l) => l.uid ?? '${l.date}_${l.lessonNumber}_${l.subject}').toSet();
     notifiedIds.retainWhere(currentIds.contains);
 
-    authData['notifiedScheduleChangeIds'] = notifiedIds.toList();
-    state.saveAuthData(authData);
+    daemonState['notifiedScheduleChangeIds'] = notifiedIds.toList();
+    state.saveDaemonState(daemonState);
   }
 
   // The text comes from Kréta (subject and teacher names), so it is passed as
@@ -201,8 +201,8 @@ extension PalaAppDaemonLogic on PalaApp {
     }
 
     final state = AppState.instance;
-    var authData = state.getAuthData();
-    final moodle = MoodleClient(url, token: authData['moodleToken']?.toString());
+    var daemonState = state.getDaemonState();
+    final moodle = MoodleClient(url, token: daemonState['moodleToken']?.toString());
 
     try {
       if (moodle.token == null) {
@@ -211,14 +211,14 @@ extension PalaAppDaemonLogic on PalaApp {
         if (user == null || password == null) return;
         // The guard remembers a refused login, so a wrong password is reported
         // once and not on every scheduled run.
-        authData = state.getAuthData();
+        daemonState = state.getDaemonState();
         try {
-          if (!await moodleLoginWithGuard(moodle, authData, user, password)) {
+          if (!await moodleLoginWithGuard(moodle, daemonState, user, password)) {
             PalaLogger.debug('Moodle login skipped: these credentials were refused before.');
             return;
           }
         } finally {
-          state.saveAuthData(authData);
+          state.saveDaemonState(daemonState);
         }
       }
 
@@ -226,14 +226,14 @@ extension PalaAppDaemonLogic on PalaApp {
       // fails, the next run still counts that list as unrecorded, instead of
       // announcing every item that was already there.
       final notifications = await moodle.getNotifications();
-      final seenNotifications = MoodleSeenIds.update(notifications, (n) => '${n.id}', authData['moodleNotifiedIds']);
+      final seenNotifications = MoodleSeenIds.update(notifications, (n) => '${n.id}', daemonState['moodleNotifiedIds']);
       for (final n in seenNotifications.fresh) {
         // Notification subjects often name the sender or the poster.
         await _showToast('Pala (Moodle)', 'Moodle: ${n.subject}', geminiText: 'Új Moodle értesítés');
       }
 
       final events = await moodle.getUpcomingEvents();
-      final seenEvents = MoodleSeenIds.update(events, (e) => '${e.id}', authData['moodleEventIds']);
+      final seenEvents = MoodleSeenIds.update(events, (e) => '${e.id}', daemonState['moodleEventIds']);
       for (final e in seenEvents.fresh) {
         final due = e.due;
         final dueLabel = due == null
@@ -243,15 +243,15 @@ extension PalaAppDaemonLogic on PalaApp {
         await _showToast('Pala (Moodle)', 'Új Moodle esemény: ${e.name}$course$dueLabel');
       }
 
-      authData = state.getAuthData();
-      if (seenNotifications.next != null) authData['moodleNotifiedIds'] = seenNotifications.next;
-      if (seenEvents.next != null) authData['moodleEventIds'] = seenEvents.next;
-      state.saveAuthData(authData);
+      daemonState = state.getDaemonState();
+      if (seenNotifications.next != null) daemonState['moodleNotifiedIds'] = seenNotifications.next;
+      if (seenEvents.next != null) daemonState['moodleEventIds'] = seenEvents.next;
+      state.saveDaemonState(daemonState);
     } on MoodleLoginException catch (e) {
       // Drop a dead token so the next run logs in again.
-      authData = state.getAuthData();
-      authData.remove('moodleToken');
-      state.saveAuthData(authData);
+      daemonState = state.getDaemonState();
+      daemonState.remove('moodleToken');
+      state.saveDaemonState(daemonState);
       final hint = e.isBadCredentials ? ' Új próbálkozás csak a felhasználónév vagy a jelszó módosítása után.' : '';
       await _showToast('Pala (Moodle)', '$e.$hint');
     } catch (e) {

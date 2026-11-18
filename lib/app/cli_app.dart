@@ -142,11 +142,14 @@ class PalaApp {
         }
       }
     } on FormatException catch (_) {
-      print('\x1B[1;31mA titkosítási kulcs érvénytelen (valószínűleg megváltozott a számítógép neve). Kérlek, jelentkezz be újra!\x1B[0m\n');
-      if (authFile.existsSync()) authFile.deleteSync();
+      // The file is kept: a new login overwrites it anyway, and deleting it
+      // would lose every saved profile for good.
+      print('\x1B[1;31mA mentett bejelentkezés nem olvasható (valószínűleg megváltozott a titkosítási kulcs). Kérlek, jelentkezz be újra!\x1B[0m\n');
       return false;
     } catch (e) {
-      // Ignore other errors like network timeouts on refresh
+      // Network timeouts on refresh and similar; runDaemon tells them apart
+      // from a rejected session through KretaClient.sessionExpired.
+      PalaLogger.debug('Auto-login failed: $e');
     }
     
     return false;
@@ -155,9 +158,15 @@ class PalaApp {
   Future<void> runDaemon() async {
     if (!await _tryAutoLogin()) {
       // A scheduled run has no one watching it, so say in chat that the
-      // login failed instead of failing silently.
+      // login failed instead of failing silently. Only a session Kréta
+      // rejected needs a new login; a client with a live session that still
+      // failed most likely hit a network error.
+      final client = _client;
+      final unreachable = client != null && !client.sessionExpired;
       await sendToAllSinks(configuredAlertSinks(AppState.instance.configDir), 'Pala (hiba)',
-          'A Kréta bejelentkezés nem sikerült. Jelentkezz be újra a Palában.');
+          unreachable
+              ? 'A Kréta most nem érhető el. A következő futás újra próbálja.'
+              : 'A Kréta bejelentkezés nem sikerült. Jelentkezz be újra a Palában.');
       exitCode = 1;
       return;
     }
