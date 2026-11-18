@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Shimmer-animated placeholder shape matching card and content geometry.
 class SkeletonContainer extends StatefulWidget {

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Semantic colors and palette definitions for Pala Material Design 3 themes.
 class AppColors {

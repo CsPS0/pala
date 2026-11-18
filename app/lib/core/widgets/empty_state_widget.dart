@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../adaptive/adaptive_breakpoints.dart';
 
 /// Contextual empty, offline, and error state indicator with recovery action triggers.

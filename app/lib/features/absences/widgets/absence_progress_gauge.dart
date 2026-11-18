@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../../../core/theme/app_shapes.dart';
 
 /// Absence Progress Gauge (Organism) tracking cumulative missed hours against the 250-hour legal limit.

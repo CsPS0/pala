@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Material Design 3 typography definitions complying with WCAG 2.1 AA contrast standards.
 class AppTypography {

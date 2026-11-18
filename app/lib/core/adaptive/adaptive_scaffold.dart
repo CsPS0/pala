@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pala/rules/wrapped_season.dart';
 import '../../features/absences/presentation/absences_view.dart';
 import '../../features/dashboard/presentation/live_dashboard_view.dart';
